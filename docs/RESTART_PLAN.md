@@ -277,6 +277,35 @@ dos binários que sobreviveram em pastas.
 
 ## 9. Estratégia de Recovery
 
+### 9.0 ✅ VALIDADO EM HARDWARE — 2026-09-14
+
+O recovery deixou de ser plano e virou fato. Executado num GN-438 que
+rodava a OpenPod 3.0:
+
+```
+setores do sistema           420
+ja corretos, pulados         383
+regravados                    37
+tabela de particoes          NAO TOCADA (ja era a de fabrica)
+area livre                   3 setores sujos -> zerados
+releitura                    0x000000..0x1A3038 identico ao de fabrica
+                             0x1A3038..0x1FC000 todo 0xFF
+PSMP                         intocada
+```
+
+Três coisas que isso fecha:
+
+1. **`erase_flash` sai de NUNCA EXERCITADO para CONFIRMADO.** Era o único
+   comando do kit sem uso em hardware.
+2. **REC-1 deixou de ser decisão e virou resolvido.** A área livre pode
+   ser zerada com segurança; não é preciso `.up` gigante nenhum.
+3. **A premissa do `write_flash` que pula bloco igual é real**, medida:
+   383 de 420 setores pulados, e a tabela de partições intacta ao fim de
+   uma operação que a endereçava.
+
+O recovery oficial é um comando: `sudo sh RECOVERY.sh`, em
+`recovery/VOLTAR_AO_ORIGINAL.md`.
+
 ### 9.1 O que já está pronto — CONFIRMADO
 
 **Camada 0 — ROM de máscara.** Modo download (`301a:2800`), acessível
@@ -298,7 +327,7 @@ anterior em cada release.
 
 | # | lacuna | classe | proposta |
 |---|---|---|---|
-| **REC-1** | o `.up` de restauração cobre `0..0x1A3038`. As rotinas do OpenPod na **área livre** (`0x1A3038..0x1FC000`) **permanecem gravadas** | CONFIRMADO | **DECIDIDO em 14/09: fica como está, declarado.** Apagar a área livre exigiria um `.up` maior que qualquer um já testado neste aparelho, e a pasta de emergência **não carrega artefato não testado**. Os bytes são inertes (classe **PROVÁVEL**: a FIRM de fábrica sempre rodou com essa área apagada, logo não depende do conteúdo). Se um dia for preciso zerar, é trabalho para `tools/`, com teste próprio |
+| **REC-1** | o `.up` de restauração cobre `0..0x1A3038`. As rotinas do OpenPod na **área livre** (`0x1A3038..0x1FC000`) **permanecem gravadas** | ✅ **RESOLVIDO em 14/09** — o `RECOVERY.sh` zera a área livre com `erase_flash`, validado em hardware (§9.0). O texto abaixo é o registro da decisão anterior, quando o mecanismo ainda não tinha sido exercitado. | ~~**DECIDIDO em 14/09: fica como está, declarado.**~~ Apagar a área livre exigiria um `.up` maior que qualquer um já testado neste aparelho, e a pasta de emergência **não carrega artefato não testado**. Os bytes são inertes (classe **PROVÁVEL**: a FIRM de fábrica sempre rodou com essa área apagada, logo não depende do conteúdo). Se um dia for preciso zerar, é trabalho para `tools/`, com teste próprio |
 | **REC-2** | a ferramenta de recuperação do Mac vive em **`/tmp/smtlink_mac`** | CONFIRMADO (existe agora; `/tmp` é volátil) | ✅ **RESOLVIDO** — `recovery/ferramenta/smtlink_dump_macos_arm64`, ao lado do binário Linux, do `smtlink_dump.c`, do `Makefile` e do `payload/`. Sha no `SHA256SUMS` do kit |
 | **REC-3** | `RECUPERAR.md` aponta para `firmware/READBACK/GN438_bricked_dump.bin`, que **não existe** — é o roteiro de um incidente | CONFIRMADO | ✅ **RESOLVIDO** — `recovery/RECUPERAR.md` é roteiro puro, sem arquivo de evento. O material do incidente continua em `historico/recuperacao/` e em `docs/INCIDENTE_V028.md` |
 

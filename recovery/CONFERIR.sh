@@ -12,5 +12,8 @@ $SHA SHA256SUMS
 echo
 echo "kit INTEGRO."
 echo
-echo "  aparelho funcionando, volta planejada ao original -> VOLTAR_AO_ORIGINAL.md"
-echo "  aparelho sem responder, emergencia                -> RECUPERAR.md"
+echo "  RECOVERY OFICIAL          sudo sh RECOVERY.sh"
+echo "  so olhar, sem escrever    sudo sh RECOVERY.sh --so-analise"
+echo
+echo "  roteiro                   VOLTAR_AO_ORIGINAL.md"
+echo "  emergencia                RECUPERAR.md"

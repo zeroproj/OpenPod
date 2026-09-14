@@ -9,15 +9,35 @@
 ## Onde o aparelho está
 
 ```
-OpenPod 3.0        (interno V100)   <- RECONSTRUIDA do ORIGINAL, aguardando teste
-                                      primeira imagem gerada por receita declarada
-                                      (tools/build.py, 26 passos). SEM o Extras.
-OpenPod 2.4        (interno V077)   <- gravada; melhor versao testada ate agora
-OpenPod 2.2        (interno V073)   <- gravada antes
-OpenPod 2.1        (interno V070)   <- gravada antes; defeitos 1,2,5,6 seguem abertos
-kit e .up em       OpenPod 3.0/
-anterior           OpenPod 2.0       (interno V060)
-releases antigas   historico/releases/
+FIRMWARE DE FABRICA        <- 2026-09-14, recovery validado em hardware
+                              flash identica a de fabrica, PSMP intocada
+```
+
+**O aparelho voltou ao zero de propósito**, para a linha OpenPod Core
+começar de uma base conhecida. O que ele tinha antes: **OpenPod 3.0** —
+o que resolve a dúvida que os docs carregavam, de que a 3.0 nunca havia
+sido gravada. Ela foi.
+
+```
+antes do recovery   OpenPod 3.0   sha c5265e95beae634cfe9a4dfe0bbc4fa6...
+                                  37 setores fora do de fabrica
+                                  3 setores sujos na area livre
+depois              fabrica       sistema identico, area livre 0xFF,
+                                  PSMP preservada
+fotografia          recovery/leitura/antes_20260914_*.bin  (na maquina Linux)
+```
+
+> **A fotografia do estado anterior está só na máquina Linux.** É a única
+> cópia do que havia no aparelho — vale trazer para `firmware/READBACK/`.
+
+### O histórico, para referência
+
+```
+OpenPod 3.1        (interno V101)   gerada, nunca gravada
+OpenPod 3.0        (interno V100)   GRAVADA; era o que estava no aparelho
+OpenPod 2.4        (interno V077)   gravada antes
+OpenPod 2.2        (interno V073)   gravada antes
+kits e .up em      OpenPod X.Y/  e  historico/releases/
 ```
 
 > **Regra de processo (mantenedor, 2026-09-14):** nenhuma versão nova é
