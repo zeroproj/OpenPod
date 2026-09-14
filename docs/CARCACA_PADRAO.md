@@ -166,8 +166,8 @@ pós-gravação**, porque corrupção de heap não muda os bytes gravados.
 **Duas coisas boas:**
 
 1. O tamanho aparece em **dois imediatos de 8 bits** — `0x00D2EBBC` e
-   `0x00D2EBDA`. `0x54` → `0x78` cabe folgado em `movs r0,#imm8`
-   (máximo 255). **Dois bytes.**
+   `0x00D2EBDA`. O valor final, medido em §4.4, é `0x54` → **`0x70`**, e
+   cabe folgado em `movs r0,#imm8` (máximo 255). **Dois bytes.**
 2. **O firmware já confere a falha de alocação** e sai limpo, registrando
    no log. Não é um `malloc` cego.
 
