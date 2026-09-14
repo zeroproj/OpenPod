@@ -302,6 +302,11 @@ CORE_2_1 = CORE_2_0 + [
     # 2.1 existe para fazer. A 2.1 nao chegou a ser gravada.
     ("fix_barra_selecao_criacao.py", [], "a segunda selecao da home, 4 B"),
     ("patch_marte_paleta.py", [], "Marte M1: o tema claro do iPod nano"),
+    # Descoberto na tela, com a 2.1 gravada: os rotulos das listas sumiam.
+    # Os dois criadores compartilhados pintavam fundo com PRETO FIXO, e a
+    # tabela tinha o campo `cor_tela` praticamente morto. Enquanto o tema
+    # era escuro os dois davam no mesmo; o Marte separou.
+    ("patch_fundo_lista.py", [], "o fundo do conteiner e da linha vem da tabela"),
 ]
 
 # ---------------------------------------------------------------------------

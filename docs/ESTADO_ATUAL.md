@@ -19,7 +19,15 @@ OpenPod Core 1.0           <- GRAVADA E TESTADA em 14/09
                               DEFEITOS: fundo da abertura branco com a
                               logo preta; tela Informacoes sobreposta
 
-OpenPod Core 2.1           <- INSTRUMENTO DE MEDICAO, nao degrau.
+OpenPod Core 2.1.1         <- GERADA. 8 bytes: o fundo do conteiner e
+                              da linha passa a vir de `cor_tela`.
+                              Sem ela as listas ficam ILEGIVEIS no tema
+                              claro — texto preto sobre linha preta
+
+OpenPod Core 2.1           <- GRAVADA. RESPONDEU A PERGUNTA: o tema claro
+                              do nano FUNCIONA neste display (a home e a
+                              prova). E expos o defeito acima.
+                              INSTRUMENTO DE MEDICAO, nao degrau.
                               Marte M1 + o conserto das duas selecoes.
                               Gravada para responder "o tema claro do
                               nano funciona neste display?".
