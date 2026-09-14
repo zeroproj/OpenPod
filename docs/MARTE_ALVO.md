@@ -48,6 +48,50 @@ só orienta — ela **corrige**.
 
 ---
 
+## 0-bis. O TEMA CLARO NÃO SERVE NESTE PAINEL — 2026-09-14
+
+**Decisão do mantenedor, e não é preferência: é limitação de hardware
+medida.**
+
+Com o tema claro, aparecem **faixas horizontais** na área de conteúdo,
+visíveis a olho nu — não é artefato de foto. A causa foi isolada por
+eliminação, um variável por vez (trabalho feito em paralelo, em
+`OpenPod GPT/`):
+
+```
+BG_GRAD = 0 nas linhas normais   ->  faixas IGUAIS
+                                     o degrade herdado do tema: DESCARTADO
+
+cores chapadas inconfundiveis    ->  linhas vermelhas, e as faixas
+                                     PERSISTIRAM DENTRO DO VERMELHO
+                                     composicao LVGL e tabela: DESCARTADAS
+```
+
+Sobra o **caminho global de exibição** — driver, controlador ou o próprio
+painel. As faixas aparecem sobre fundo claro e somem sobre escuro.
+
+### Consequência para a regra §0
+
+A referência diz **claro**; o painel diz **escuro**. Pela própria regra,
+o desvio fica registrado com o motivo:
+
+> **O OpenPod segue o Marte em tudo — geometria, ausência de traço entre
+> itens, ausência de ícones de linha, barra de seleção de borda a borda,
+> tipografia — EXCETO na luminância, que é invertida: fundo preto, texto
+> branco.**
+
+Não é escolha estética e **não deve ser revisitada** sem que alguém
+primeiro resolva as faixas no nível do driver do LCD.
+
+### O que NÃO fazer
+
+**Nenhum patch de estilo para esse defeito.** Cor, opacidade, borda,
+degradê e geometria já foram eliminados por experimento. O próximo
+estudo, se algum dia for autorizado, é do **driver/gamma do LCD** — outra
+camada, outro projeto.
+
+---
+
 ## 1. O que o alvo tem, item a item
 
 ```

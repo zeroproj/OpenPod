@@ -9,15 +9,26 @@
 ## Onde o aparelho está
 
 ```
-FIRMWARE DE FABRICA        <- no APARELHO agora
-                              recovery validado em hardware 2026-09-14
-                              flash identica a de fabrica, PSMP intocada
+OpenPod Core 1.0.1   <- NO APARELHO (2026-09-14). E a STABLE.
+                        O mantenedor voltou a ela depois de concluir que
+                        o tema claro nao serve neste painel.
+                        firmware/RELEASE/OpenPod Core 1.0.1/
+```
 
-OpenPod Core 1.0           <- GRAVADA E TESTADA em 14/09
-                              ligou; menus PT-BR "perfeito"; "Atualizar
-                              por SD" apareceu; nada quebrado
-                              DEFEITOS: fundo da abertura branco com a
-                              logo preta; tela Informacoes sobreposta
+> **A linha 2.x nao foi descartada** — esta inteira no repositorio, e o
+> que ela ensinou vale independente do que esta gravado:
+>
+> - a **conversao da home** para `CRIA_LINHA` FUNCIONA, validada em
+>   hardware (9 linhas, rotulos legiveis, selecao azul). A geometria
+>   precisa ser forcada em `128x16, x=0` — o quadro de icone antigo
+>   entrega uma largura estreita e errada;
+> - as **faixas** no fundo claro sao do **LCD**, nao do firmware:
+>   eliminadas composicao LVGL, tabela de tema e degrade, por
+>   experimento. Ver `docs/MARTE_ALVO.md` §0-bis;
+> - por isso o Marte segue valendo em tudo **menos na luminancia**, que
+>   e invertida.
+
+### As versoes geradas nesta linha
 
 OpenPod Core 2.3           <- GERADA. 8 pontos de texto BRANCO FIXO
                               passam a ler a tabela (bateria da faixa,
