@@ -478,6 +478,15 @@ d053672ece12ae961dbf00cca71fc331ca6db4798a11a2f12581504104fed487  ./firmware/REL
 f04979b73fae8809f4a7646adcc514e4fb9c49d7983b0c638c5583716a6bf9ab  ./firmware/RELEASE/OpenPod Core 2.2/OpenPod_Core_2.2_1A4000.bin
 0008e41e788a3a286501b33e99d93e8be8d9992a108f6c523b8add64e58a02a3  ./firmware/RELEASE/OpenPod Core 2.2/base_121000.bin
 119a172090f024fc121e9582dd5516beabe6346b6720343cb6ad20b366f46298  ./firmware/RELEASE/OpenPod Core 2.2/base_1A4000.bin
+300a87c768bd1c1cae56795910f44e242525717d927057d2d766e482987b2f2c  ./firmware/RELEASE/OpenPod Core 2.3/OpenPod_Core_2.3.up
+8f3d59d57f7a91d2d1b9370454c26d4bcb993c48ddd7822fa14676d269dbf282  ./firmware/RELEASE/OpenPod Core 2.3/OpenPod_Core_2.3_123000.bin
+421decb869645cbe46c307c48b67fa51242b14f7dc45d76b5b534cbf633db325  ./firmware/RELEASE/OpenPod Core 2.3/OpenPod_Core_2.3_128000.bin
+6d3b1b74576994ebb4b3ab833e8c6f2504fffa412c82998000b508f0326b235e  ./firmware/RELEASE/OpenPod Core 2.3/OpenPod_Core_2.3_1A4000.bin
+edcd49beba5a7c576e8bd94b5d5779667a61dd1b67a86b55c4923e7b7805af63  ./firmware/RELEASE/OpenPod Core 2.3/OpenPod_Core_2.3_1A6000.bin
+56f6996c47eceda5076a0202b0b0b678c5135fede20b97a29a025e798d856723  ./firmware/RELEASE/OpenPod Core 2.3/base_123000.bin
+9796f96c62223cf50b388deb747ba74c11252e63f46be3f27e337e5b63643b15  ./firmware/RELEASE/OpenPod Core 2.3/base_128000.bin
+f04979b73fae8809f4a7646adcc514e4fb9c49d7983b0c638c5583716a6bf9ab  ./firmware/RELEASE/OpenPod Core 2.3/base_1A4000.bin
+f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6  ./firmware/RELEASE/OpenPod Core 2.3/base_1A6000.bin
 4a2f6f8037c3cd05a0be0dac073851478b12f76d4b586f2945cf97c28f9340b7  ./firmware/RELEASE/OpenPod v044/update.up
 c98227c3b2911b8c2fdce4eecbc61ea28353d968de9d2864ccb6e3ed6c4d733c  ./firmware/VENDOR/B27_251112.up
 b7cd5eb952be5328cbaa926099cf8d88168633c1fab6d0f31f3a283c9e24b36f  ./firmware/WORKING/GN438_analysis.bin
@@ -494,6 +503,8 @@ c98f22a26b8633cb5132fb5939769cdf3b832350300b28e0017b18be76123e74  ./firmware/WOR
 82f4e2f799202b79b23d8c86708eb07bf0a5605079bd426c133f55aa0901d716  ./firmware/WORKING/GN438_core_2.1_carimbado.bin
 92e9590de62b9c34393b4c6e5610daa8d26f875f58edeaf9f5bffbb723734ebb  ./firmware/WORKING/GN438_core_2.2.bin
 b060a48dbc91651bf9979093e7b61fe5affd38b31faaa318abe00d25c114af06  ./firmware/WORKING/GN438_core_2.2_carimbado.bin
+f2399318849a0d684c2844c81aa9034a4ceeb0e1ca50d2739485e1d1788ee0ef  ./firmware/WORKING/GN438_core_2.3.bin
+4ed26f595932e2aa4edaf7ae12154fca4ea033b24a0d5912e093b5bb54536c39  ./firmware/WORKING/GN438_core_2.3_carimbado.bin
 53dc2cb959cd6021bcf3bde39485747295e1c79a76a621f154e4bc7fcbdf82c9  ./firmware/WORKING/GN438_diagnostico_cores.bin
 9dc755eef24e3e09c8939d90c89d9a241e0c6edd75b377c1792e743ccc79215c  ./firmware/WORKING/GN438_openpod_v001.bin
 d10b935ce87ae06dfa5c1881557f358734507c92e1d87bb35da60ddd8c4d31e4  ./firmware/WORKING/GN438_openpod_v002.bin

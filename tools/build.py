@@ -128,6 +128,7 @@ SHA_ORIGINAL = ("b7cd5eb952be5328cbaa926099cf8d88168633c1"
 MAPA = {
     # 0x001A3038..0x001A3040 e a string "OpenPod" do patch_status_bar,
     # em endereco FIXO na ferramenta. Os lotes comecam depois dela.
+    "patch_texto_branco_fixo.py": (0x001A6000, 0x0010),
     "patch_barra_selecao.py":  (0x001A3040, 0x0100),
     "patch_scrollbar3.py":     (0x001A3140, 0x0100),
     "patch_update_sd.py":      (0x001A3240, 0x0100),
@@ -318,6 +319,10 @@ CORE_2_1 = CORE_2_0 + [
 # ---------------------------------------------------------------------------
 CORE_2_2_MARTE = CORE_2_1 + [
     ("patch_sem_separador.py", [], "sem traco entre os itens, como o nano"),
+    # O diagnostico de cores mostrou: ha texto com BRANCO FIXO no codigo,
+    # que some no tema claro. Censo: 8 pontos, todos com r1. Nao e o
+    # relogio — esse vem de um dos 24 de origem nao identificada.
+    ("patch_texto_branco_fixo.py", [], "8 pontos de branco fixo passam a ler a tabela"),
 ]
 
 # ---------------------------------------------------------------------------

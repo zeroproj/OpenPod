@@ -19,7 +19,11 @@ OpenPod Core 1.0           <- GRAVADA E TESTADA em 14/09
                               DEFEITOS: fundo da abertura branco com a
                               logo preta; tela Informacoes sobreposta
 
-OpenPod Core 2.2           <- GERADA. 1 byte: sem traco entre os itens,
+OpenPod Core 2.3           <- GERADA. 8 pontos de texto BRANCO FIXO
+                              passam a ler a tabela (bateria da faixa,
+                              menu Bluetooth). NAO conserta o relogio
+
+OpenPod Core 2.2           <- 1 byte: sem traco entre os itens,
                               como o mockup do Marte manda
 
 OpenPod Core 2.1.1         <- GRAVADA. Os rotulos VOLTARAM; tema claro
