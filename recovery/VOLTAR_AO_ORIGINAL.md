@@ -1,4 +1,4 @@
-# RECOVERY OFICIAL do GN-438 — voltar ao firmware de fábrica
+# RECOVERY OFICIAL do GN-438
 
 > **Validado em hardware em 2026-09-14**, num GN-438 que rodava a
 > OpenPod 3.0. Resultado: 37 setores regravados, área livre zerada,
@@ -9,13 +9,31 @@
 
 ---
 
+## Os dois alvos
+
+| situação | comando |
+|---|---|
+| o aparelho deu defeito e você quer **o OpenPod de volta**, funcionando | `sudo sh RECOVERY.sh --alvo core` |
+| o OpenPod é o suspeito, ou você quer o aparelho **como saiu de fábrica** | `sudo sh RECOVERY.sh` |
+| não sabe | **fábrica** — é o padrão |
+
+**Por que fábrica é o padrão.** É o único artefato deste projeto cuja
+correção **não depende de trabalho nosso**. Se um dia a baseline do Core
+estiver errada de um jeito que ainda não percebemos, um recovery que só
+restaura o Core não salva — ele reinstala o problema.
+
+O recovery para o Core é **conveniência**. O recovery para a fábrica é
+**garantia**. Os dois moram no mesmo kit; detalhe em `imagens/ALVOS.md`.
+
+---
+
 ## Em um comando
 
 ```sh
 cd recovery
 sh CONFERIR.sh                 # confere o kit — só leitura
 # USB conectado → segure VOLUME ↓ → aperte RESET
-sudo sh RECOVERY.sh
+sudo sh RECOVERY.sh            # ou: sudo sh RECOVERY.sh --alvo core
 ```
 
 E só. O script faz tudo em sequência, pedindo confirmação uma vez:
@@ -26,8 +44,8 @@ E só. O script faz tudo em sequência, pedindo confirmação uma vez:
 3. LÊ os 2 MiB e guarda a fotografia do estado anterior
 4. compara e mostra o que vai mudar, setor a setor
 5. pede que você digite GRAVAR
-6. grava  0x000000..0x1A3038   sistema: bootloader, tabela, FIRM, TONE
-7. apaga  0x1A3038..0x1FC000   área livre
+6. grava  0x000000..<até onde a imagem do alvo tem conteúdo>
+7. apaga  dali até 0x1FC000 — o que sobrou da versão anterior
 8. relê os 2 MiB e confere as três regiões
 9. diz o que o aparelho tinha antes e o que tem agora
 ```
@@ -38,9 +56,13 @@ tocada.**
 ### Variações
 
 ```sh
+sudo sh RECOVERY.sh --alvo core           # volta ao OpenPod Core STABLE
 sudo sh RECOVERY.sh --so-analise          # SÓ LÊ. Não escreve nada
-sudo sh RECOVERY.sh --manter-area-livre   # não apaga a área livre
+sudo sh RECOVERY.sh --manter-area-livre   # não apaga o que sobrou
 ```
+
+Os modificadores combinam: `--alvo core --so-analise` mostra o que uma
+volta ao Core faria, sem escrever nada.
 
 O `--so-analise` é a forma segura de descobrir o que está no aparelho:
 ele lê, mostra a lista de setores divergentes e para antes de escrever.
@@ -89,15 +111,29 @@ Bloco que já está correto não é apagado nem regravado. Na validação de
 intocada. Ainda assim o script confere e avisa em bloco separado se ela
 divergir — a garantia só vale enquanto a premissa valer.
 
-### Apagar a área livre
+### Apagar o que sobra da área livre
 
-Parece destrutivo e é o contrário: `0x1A3038..0x1FC000` é **`0xFF` no
-firmware de fábrica**. Voltar para `0xFF` é restaurar.
+Parece destrutivo e é o contrário: essa região é **`0xFF` no firmware de
+fábrica**. Voltar para `0xFF` é restaurar.
 
-O cuidado real está no setor `0x1A3000`, que é **misto** — tem a cauda da
-TONE até `0x1A3038` e área livre depois. Apagá-lo levaria junto um pedaço
-da TONE, então ele é **reescrito** com o conteúdo de fábrica, nunca
-apagado. Só de `0x1A4000` em diante é que se apaga.
+**O limite não é constante** — depende do alvo. O `fabrica` termina na
+TONE; o `core` **usa** a área livre, porque é lá que moram as rotinas e
+os textos do OpenPod. O script calcula: último byte que não é `0xFF`,
+nunca antes do fim da TONE, arredondado para cima:
+
+```
+fabrica      0x1A3038  ->  grava ate 0x1A4000, apaga 352 KiB
+core 1.0.1   0x1A493B  ->  grava ate 0x1A5000, apaga 348 KiB
+```
+
+Assim o alvo fica exato: nem sobra byte de uma versão anterior, nem se
+apaga o que a versão nova precisa.
+
+O cuidado está no **setor de fronteira**, aquele em que o conteúdo da
+imagem acaba no meio. Apagá-lo levaria junto o que vem antes. Por isso a
+gravação vai até o limite **alinhado para cima**: esse setor recebe o
+conteúdo da imagem inteiro, `0xFF` do rabo incluso, e o apagamento começa
+no setor seguinte.
 
 ---
 
@@ -121,9 +157,15 @@ entra no cálculo do tamanho, mas o ponteiro de dados é `mem[i + j]`, com
 
 ## Depois
 
-Desplugue e ligue. Deve abrir com o logotipo **GENAI** de fábrica e a
-home em **grade 3×3**. Se abrir com a logo do OpenPod, a gravação não
-pegou — **não desligue**, avise.
+Desplugue e ligue.
+
+| alvo | deve abrir com |
+|---|---|
+| fabrica | logotipo **GENAI** e home em **grade 3×3** |
+| core | logo do **OpenPod sobre preto** |
+
+Se abrir com a outra coisa, a gravação não pegou — **não desligue**,
+avise.
 
 A fotografia do estado anterior fica em `leitura/antes_AAAAMMDD_HHMMSS.bin`.
 É a única cópia do que havia no aparelho — guarde antes de rodar o
@@ -160,7 +202,7 @@ CONFERIR.sh            confere o kit                     SÓ LEITURA
 VOLTAR_AO_ORIGINAL.md  este roteiro
 RECUPERAR.md           emergência: aparelho sem responder
 SHA256SUMS             sha de cada arquivo
-imagens/               original 2 MiB, .up de restauração, ptable de fábrica
+imagens/               os dois alvos + ALVOS.md, .up de restauração, ptable
 ferramenta/            binários Linux x86-64 e macOS arm64, fonte, payload
 leitura/               criada no uso: fotografias do aparelho
 ```

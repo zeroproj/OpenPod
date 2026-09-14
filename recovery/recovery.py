@@ -30,11 +30,15 @@ AS DUAS COISAS QUE PARECEM PERIGOSAS E NAO SAO
     CONFERE e avisa em separado se a tabela divergir, porque a garantia
     so vale enquanto a premissa valer.
 
-    Apagar a area livre parece destrutivo e e o contrario: aquela regiao
-    e 0xFF no firmware de fabrica. Voltar para 0xFF e restaurar, nao
-    destruir. O cuidado real esta no setor 0x1A3000, que e MISTO — tem a
-    cauda da TONE ate 0x1A3038 e area livre depois. Ele e REESCRITO com o
-    conteudo de fabrica, nunca apagado.
+    Apagar o que sobra da area livre parece destrutivo e e o contrario:
+    a regiao e 0xFF no firmware de fabrica. Voltar para 0xFF e restaurar.
+
+    O cuidado esta no SETOR DE FRONTEIRA — aquele em que o conteudo da
+    imagem acaba no meio. Apaga-lo levaria junto o que vem antes (a cauda
+    da TONE, no alvo `fabrica`). Por isso a gravacao vai ate o limite
+    ALINHADO para cima: o setor de fronteira recebe o conteudo da imagem
+    inteiro, 0xFF do rabo incluso, e o apagamento comeca no setor
+    seguinte.
 
 CONFIRMADO EM HARDWARE em 2026-09-14, num GN-438 que rodava a OpenPod
 3.0: 37 setores regravados, area livre zerada, releitura identica a de
@@ -44,16 +48,57 @@ fabrica.
 import hashlib, os, subprocess, sys, time
 
 SMT      = os.environ["SMT"]
-ORIGINAL = "imagens/GN438_original.bin"
-SHA_ORIG = "b7cd5eb952be5328cbaa926099cf8d88168633c1fab6d0f31f3a283c9e24b36f"
+
+# Os dois alvos. FABRICA e o padrao, e continua sendo a garantia: e o
+# unico artefato cuja correcao nao depende de trabalho nosso. CORE e
+# conveniencia — poupa reinstalar tudo quando o defeito e outro.
+# Detalhe em imagens/ALVOS.md.
+ALVOS = {
+    "fabrica": ("imagens/GN438_original.bin",
+                "b7cd5eb952be5328cbaa926099cf8d88168633c1"
+                "fab6d0f31f3a283c9e24b36f",
+                "firmware de fabrica"),
+    "core":    ("imagens/OpenPod_Core_1.0.1.bin",
+                "36125f5665b8613e0d96215e2ffcf36170d847068"
+                "d0c72e572167fe506400c1f",
+                "OpenPod Core 1.0.1 (STABLE)"),
+}
 SETOR    = 0x1000
 PTABLE   = 0x00D000
-SISTEMA  = 0x1A3038          # fim da TONE: fim do que se grava
-LIVRE    = 0x1FC000          # inicio da PSMP: fim do que se apaga
-MISTO    = 0x1A3000          # setor com cauda da TONE + area livre
+TONE_FIM = 0x1A3038          # fim da particao TONE
+LIVRE    = 0x1FC000          # inicio da PSMP: nada e tocado dali em diante
 
 MANTER = "--manter-area-livre" in sys.argv
 SO_VER = "--so-analise" in sys.argv
+ALVO   = "fabrica"
+for i, x in enumerate(sys.argv):
+    if x == "--alvo" and i + 1 < len(sys.argv):
+        ALVO = sys.argv[i + 1]
+if ALVO not in ALVOS:
+    sys.exit("alvo desconhecido: %s  (use %s)" % (ALVO, " ou ".join(ALVOS)))
+IMAGEM, SHA_ALVO, DESC_ALVO = ALVOS[ALVO]
+
+
+def extensao(d):
+    """Ate onde esta imagem tem conteudo, arredondado para setor.
+
+    O `fabrica` termina na TONE (0x1A3038) e tem a area livre virgem. O
+    `core` usa a area livre — as rotinas e os textos do OpenPod moram
+    la. Entao o limite nao pode ser constante: e o ultimo byte que nao e
+    0xFF, nunca antes do fim da TONE.
+
+        fabrica      0x1A3038 -> alinhado 0x1A4000
+        core 1.0.1   0x1A493B -> alinhado 0x1A5000
+
+    Dali ate a PSMP, apaga. Assim o alvo fica exato: nem sobra byte de
+    uma versao anterior, nem se apaga o que a versao nova precisa.
+    """
+    fim = 0
+    for i in range(LIVRE - 1, 0, -1):
+        if d[i] != 0xFF:
+            fim = i + 1
+            break
+    return (max(fim, TONE_FIM) + SETOR - 1) & ~(SETOR - 1)
 
 
 def sha(b):
@@ -98,15 +143,21 @@ def main():
     os.makedirs("leitura", exist_ok=True)
     titulo("OPENPOD — RECOVERY OFICIAL DO GN-438")
 
-    orig = open(ORIGINAL, "rb").read()
-    if sha(orig) != SHA_ORIG:
-        sys.exit("PARE: imagens/GN438_original.bin nao confere com o sha conhecido")
-    print(f"  imagem de fabrica   conferida, {SHA_ORIG[:24]}...")
-    print(f"  vai gravar          0x000000..0x{SISTEMA:06X}   sistema")
+    if not os.path.exists(IMAGEM):
+        sys.exit(f"PARE: {IMAGEM} nao existe neste kit")
+    orig = open(IMAGEM, "rb").read()
+    if sha(orig) != SHA_ALVO:
+        sys.exit(f"PARE: {IMAGEM} nao confere com o sha conhecido")
+    SISTEMA = extensao(orig)
+    print(f"  alvo                {DESC_ALVO}")
+    print(f"  imagem              {IMAGEM}")
+    print(f"                      conferida, {SHA_ALVO[:24]}...")
+    print(f"  vai gravar          0x000000..0x{SISTEMA:06X}")
     if MANTER:
-        print( "  area livre          MANTIDA (--manter-area-livre)")
+        print( "  nao apaga           --manter-area-livre")
     else:
-        print(f"  vai apagar          0x{SISTEMA:06X}..0x{LIVRE:06X}   area livre")
+        print(f"  vai apagar          0x{SISTEMA:06X}..0x{LIVRE:06X}   "
+              f"({(LIVRE-SISTEMA)//1024} KiB)")
     print(f"  nao toca            0x{LIVRE:06X}..0x200000   PSMP, suas configuracoes")
     if SO_VER:
         print( "  modo                --so-analise: NADA sera escrito")
@@ -131,7 +182,7 @@ def main():
     sis = setores(orig, d, 0, SISTEMA)
     suj = sorted({i // SETOR * SETOR for i in range(SISTEMA, LIVRE)
                   if d[i] != 0xFF})
-    n_sis = -(-SISTEMA // SETOR)
+    n_sis = SISTEMA // SETOR
     print(f"        SISTEMA    {n_sis} setores, {n_sis - len(sis)} ja corretos, "
           f"{len(sis)} a regravar")
     for s in sorted(sis):
@@ -151,12 +202,12 @@ def main():
         print("  Esta operacao VAI regrava-lo.")
         print("  " + "!" * 62)
     else:
-        print("  A tabela de particoes ja e a de fabrica — nao sera tocada.")
+        print("  A tabela de particoes ja esta certa — nao sera tocada.")
     print()
 
     nada = not sis and (MANTER or not suj)
     if nada:
-        print("  O aparelho JA esta de fabrica. Nada a fazer. Pode desplugar.")
+        print(f"  O aparelho JA esta em {DESC_ALVO}. Nada a fazer. Pode desplugar.")
         return 0
     if SO_VER:
         print("  --so-analise: parando aqui. Nada foi escrito.")
@@ -189,20 +240,18 @@ def main():
     print("  [4/5] gravando")
     if sis:
         print(f"        sistema 0x000000..0x{SISTEMA:06X}")
-        if not roda("write_flash", 0, 0, hex(SISTEMA), ORIGINAL):
+        if not roda("write_flash", 0, 0, hex(SISTEMA), IMAGEM):
             return morreu("a gravacao do sistema")
     else:
         print("        sistema ja correto, pulado")
 
     if not MANTER and suj:
-        # O setor MISTO nao pode ser apagado: leva junto a cauda da TONE.
-        print(f"        setor misto 0x{MISTO:06X} (cauda da TONE + area livre)")
-        open("leitura/_misto.bin", "wb").write(orig[MISTO:MISTO + SETOR])
-        if not roda("write_flash", hex(MISTO), 0, hex(SETOR), "leitura/_misto.bin"):
-            return morreu("a reescrita do setor misto")
-        print(f"        apagando 0x{MISTO + SETOR:06X}..0x{LIVRE:06X}  "
-              f"({(LIVRE - MISTO - SETOR) // 1024} KiB)")
-        if not roda("erase_flash", hex(MISTO + SETOR), hex(LIVRE - MISTO - SETOR)):
+        # Nao ha mais setor misto para tratar a parte: a gravacao acima
+        # vai ate o limite ALINHADO, entao o setor de fronteira ja
+        # recebeu o conteudo da imagem — inclusive o 0xFF do rabo.
+        print(f"        apagando 0x{SISTEMA:06X}..0x{LIVRE:06X}  "
+              f"({(LIVRE - SISTEMA) // 1024} KiB)")
+        if not roda("erase_flash", hex(SISTEMA), hex(LIVRE - SISTEMA)):
             return morreu("o apagamento da area livre")
     print()
 
@@ -220,11 +269,11 @@ def main():
 
     titulo("RESULTADO")
     print(f"  sistema     0x000000..0x{SISTEMA:06X}   "
-          + ("IDENTICO AO DE FABRICA" if not dif_sis
+          + ("IDENTICO AO ALVO" if not dif_sis
              else f"{len(dif_sis)} BYTES DIFERENTES, 1o em 0x{dif_sis[0]:06X}"))
     print(f"  area livre  0x{SISTEMA:06X}..0x{LIVRE:06X}   "
           + ("MANTIDA a pedido" if MANTER else
-             "TODA 0xFF, como de fabrica" if not dif_liv
+             "TODA 0xFF" if not dif_liv
              else f"{len(dif_liv)} bytes nao sao 0xFF"))
     print(f"  PSMP        0x{LIVRE:06X}..0x200000   "
           + ("intocada" if psmp_ok else "MUDOU — nao devia"))
@@ -239,10 +288,10 @@ def main():
         print("=" * 66)
         return 1
     print("  Pode desplugar e ligar.")
-    print("  Deve abrir com o logotipo GENAI e a home em grade 3x3.")
+    print("  Deve abrir com o logotipo GENAI e a home em grade 3x3."
+          if ALVO == "fabrica" else
+          "  Deve abrir com a logo do OpenPod sobre preto.")
     print("=" * 66)
-    if os.path.exists("leitura/_misto.bin"):
-        os.remove("leitura/_misto.bin")
     return 0
 
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 # RECOVERY.sh — O RECOVERY OFICIAL DO OPENPOD.
 #
-# Devolve o GN-438 ao firmware de fabrica, do comeco ao fim, num comando:
+# Devolve o GN-438 a um estado conhecido, do comeco ao fim, num comando:
 #
 #     le -> analisa -> confirma -> grava o sistema -> apaga a area livre
 #        -> rele -> confere -> diz o que o aparelho tinha antes
@@ -9,9 +9,19 @@
 # A PSMP (0x1FC000, suas configuracoes de usuario) nunca e tocada.
 #
 # USO
-#     sudo sh RECOVERY.sh                        recovery completo
+#     sudo sh RECOVERY.sh                        volta AO DE FABRICA
+#     sudo sh RECOVERY.sh --alvo core            volta AO OPENPOD CORE
 #     sudo sh RECOVERY.sh --so-analise           SO LE, nao escreve nada
-#     sudo sh RECOVERY.sh --manter-area-livre    nao apaga a area livre
+#     sudo sh RECOVERY.sh --manter-area-livre    nao apaga o que sobra
+#
+# OS DOIS ALVOS
+#     fabrica  (padrao)  o dump do aparelho no inicio do projeto. E a
+#                        GARANTIA: o unico artefato cuja correcao nao
+#                        depende de trabalho nosso
+#     core               a baseline STABLE do OpenPod Core. E a
+#                        CONVENIENCIA: poupa reinstalar tudo quando o
+#                        defeito e outro
+#     Na duvida, fabrica. Detalhe em imagens/ALVOS.md
 #
 # ANTES
 #     1. sh CONFERIR.sh                          confere este kit
