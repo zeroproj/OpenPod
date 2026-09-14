@@ -848,15 +848,35 @@ Foi exatamente essa a única modificação da história do projeto que nunca
 funcionou no aparelho — o submenu "Extras" não abria, depois de três
 tentativas empilhadas.
 
-**Medido, e vale registrar:** converter a home NÃO cai nessa classe.
+**⚠️ CORREÇÃO — 2026-09-14, no mesmo dia.** Este parágrafo dizia que
+converter a home NÃO cai nessa classe, apoiado em:
 
 ```text
 page_home_event_cb        NENHUMA chamada de alocacao
 page_home_menu_event_cb   NENHUMA chamada de alocacao
 ```
 
-A home já tem nove itens e já tem o espaço deles. Só mudar a contagem
-é que custa caro.
+As duas linhas são verdadeiras, **mas a conclusão estava errada**: quem
+aloca é o `page_home_create`, e ele aloca.
+
+```text
+00D2EBBC  5420  movs r0, #0x54     <- 84 bytes
+00D2EBC0        bl   0xD58188         malloc
+00D2EBC6        cbnz r0, ...          confere a falha
+00D2EBDA  5422  movs r2, #0x54     <- memset(p, 0, 84)
+```
+
+A home guarda **dois** ponteiros por item (`[sl+4]!` e `[sl+0x24]`,
+espaçamento `0x24` = 9×4). O molde do Configurar produz **três** — a
+linha também é guardada. Adotar o molde exige um terceiro array,
+**+0x24 bytes**.
+
+**Conclusão correta:** converter a home **mexe em alocação, sim** — mas
+num ponto único, com o tamanho em dois imediatos de 8 bits, e com
+checagem de falha já existente. É risco localizado, não difuso.
+
+O quadro completo — a carcaça, o molde do Configurar decodificado e a
+ordem de trabalho — está em **`docs/CARCACA_PADRAO.md`**.
 
 ## 23. Cor e fonte — pontos medidos no firmware de fábrica
 

@@ -193,20 +193,18 @@ antes resolver no nível do driver do LCD.
 | **6** | **M-h** degradê | deixou de ser aposta: as 19 cores e os pixels já existem | rotina nova |
 | **7** | **M-g** bateria colorida | primeiro pixel do NanoClone no firmware → **obriga o crédito na tela Sobre** | bitmap |
 
-### O que destrava o passo 4, e já está medido
+### O passo 4 tem molde pronto — e um pré-requisito medido
 
-Converter a home era adiado por medo de aritmética de alocação, por
-analogia com o `make_extras_menu`. **Medido, e o argumento caiu:**
+**A carcaça existe no firmware de fábrica**, e Configurar já a usa:
+`CRIA_FAIXA` (52 chamadas), `CRIA_CONTEINER` (59) e `CRIA_LINHA` (39).
+A home não usa nenhuma das três. O molde inteiro, decodificado, está em
+**`docs/CARCACA_PADRAO.md`**.
 
-```
-page_home_event_cb        NENHUMA chamada de alocacao
-page_home_menu_event_cb   NENHUMA chamada de alocacao
-```
-
-O `make_extras_menu` precisou de ponteiro porque **mudou a quantidade de
-itens** (3 → 6), e o buffer é dimensionado pela contagem. A home já tem
-nove itens e já tem o espaço deles. Detalhe em `GUI_ANALYSIS.md`
-PARTE IV §22.
+⚠️ **Pré-requisito:** adotar o molde na home exige um **terceiro array de
+ponteiros** (a linha também é guardada), o que muda a alocação de
+`page_home_create` — `movs r0,#0x54` em `0x00D2EBBC`. É risco localizado
+e barato (dois imediatos), **mas os 12 bytes restantes da estrutura
+precisam ser mapeados antes**. Ver `CARCACA_PADRAO.md` §4.
 
 ### A regra que vale para todos os passos
 
