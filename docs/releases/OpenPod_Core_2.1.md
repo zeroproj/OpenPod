@@ -4,14 +4,42 @@
 Base       OpenPod Core 2.0
 Receita    tools/build.py --receita core2.1      28 passos
 Gerada     2026-09-14
-Status     EXPERIMENTAL
+Status     EXPERIMENTAL — e assim FICA. Ver §0.
 Kit        firmware/RELEASE/OpenPod Core 2.1/
 Diff       11 bytes em 2 setores
 ```
 
 **Duas mudanças, e a segunda entrou de propósito** — explicação na §1-bis.
 
-**Dez bytes.** É a versão de maior efeito visível e menor risco do
+## 0. O que esta versão é, e o que ela não é
+
+**Ela é um instrumento de medição, não um degrau da linha Core.**
+
+Decidido em 2026-09-14, depois de duas medições
+(`docs/PADRONIZAR_HOME.md` §7):
+
+- a home só pode clarear se a folha de imagem escura sair do caminho, e
+  quem faz isso é o desenho **próprio** da home — o caminho que queremos
+  substituir. Não existe versão que mostre o tema claro e evite esse
+  caminho;
+- logo, para ver o tema do nano na tela hoje, é preciso passar pela
+  carcaça herdada.
+
+Então a 2.1 é gravada para responder **uma** pergunta que só o aparelho
+responde:
+
+> **O tema claro do nano funciona neste display?**
+
+E essa resposta **não depende** de qual caminho desenha a home — serve
+igual para a versão padronizada que vem depois.
+
+**Ela não vira STABLE, e não vira baseline de nada.** A padronização de
+verdade é o Nível 2 de `docs/PADRONIZAR_HOME.md`, e ela não ficou mais
+barata por causa desta versão.
+
+---
+
+**Dez bytes de cor.** É a versão de maior efeito visível e menor risco do
 projeto inteiro.
 
 ---

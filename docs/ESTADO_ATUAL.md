@@ -19,8 +19,14 @@ OpenPod Core 1.0           <- GRAVADA E TESTADA em 14/09
                               DEFEITOS: fundo da abertura branco com a
                               logo preta; tela Informacoes sobreposta
 
-OpenPod Core 2.1           <- GERADA. Marte M1: o tema claro do nano,
-                              10 bytes na tabela. EXPERIMENTAL
+OpenPod Core 2.1           <- INSTRUMENTO DE MEDICAO, nao degrau.
+                              Marte M1 + o conserto das duas selecoes.
+                              Gravada para responder "o tema claro do
+                              nano funciona neste display?".
+                              EXPERIMENTAL e assim FICA — nao vira
+                              STABLE nem baseline.
+                              A padronizacao de verdade e o Nivel 2 de
+                              docs/PADRONIZAR_HOME.md
 
 OpenPod Core 2.0           <- NO APARELHO. A carcaca funciona:
                               home com os 9 itens, Configurar certa,
