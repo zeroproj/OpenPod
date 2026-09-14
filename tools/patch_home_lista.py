@@ -156,6 +156,7 @@ SIMB = {
 IDS      = 0x00C486C4          # tabela de ids de texto da home, 9 entradas
 HANDLER  = 0x00D2E951          # page_home_event_cb | 1 (thumb)
 N_ITENS  = 9
+TOPO     = 19          # `inicio_lista` do Marte: onde a lista comeca, abaixo da barra de status
 
 
 # ---------------------------------------------------------------------------
@@ -262,6 +263,23 @@ def fonte():
     bl    CRIA_CONTEINER
     mov   r7, r0
 
+    @ O conteiner nasce do TAMANHO DA TELA INTEIRA, comecando em y=0 —
+    @ e a barra de status (relogio, bateria) mora ali em cima. Sem isto
+    @ o primeiro item e desenhado POR BAIXO dela. Visto na tela.
+    @
+    @ TOPO = 19 e o `inicio_lista` do Marte (marte/paleta/nanoclone.json).
+    bl    DISP
+    bl    ALTURA
+    subs  r1, r0, #{TOPO}
+    sxth  r1, r1
+    mov   r0, r7
+    bl    SET_HEIGHT
+    movs  r3, #{TOPO}             @ y
+    movs  r2, #0                  @ x
+    movs  r1, #2                  @ alinhamento, como o Configurar usa
+    mov   r0, r7
+    bl    SET_POS
+
     @ --- preparo do laco ------------------------------------------------
     ldr   r6, =0x{IDS:08X}        @ tabela de ids da home
     sub.w sl, r8, #4              @ base dos arrays, pre-indexada
@@ -273,22 +291,29 @@ laco:
     bl    CRIA_LINHA
     mov   sb, r0
 
-    @ altura = tela_h / 7, como o Configurar faz
+    @ altura da linha = (tela_h - TOPO) / 9
+    @
+    @ NAO e a formula do Configurar. Ele usa tela_h/7 porque tem 10 itens
+    @ e mostra ~7, rolando o resto. A home tem NOVE itens que precisam
+    @ CABER, e sem barra de rolagem (M-d).
+    @     160/7 = 22 ; 22 * 9 = 198  >  160   <- transbordava. Visto na tela.
+    @     (160-19)/9 = 15 ; 15 * 9 = 135      <- cabe, com folga
     bl    DISP
     bl    ALTURA
-    movs  r1, #7
+    subs  r0, r0, #{TOPO}
+    movs  r1, #{N_ITENS}
     sdiv  r1, r0, r1
     sxth  r1, r1
     mov   r0, sb
     bl    SET_HEIGHT
 
-    @ y = (tela_h / 7) * indice - 1
+    @ y = altura_da_linha * indice, RELATIVO ao conteiner
     bl    DISP
     bl    ALTURA
-    movs  r3, #7
+    subs  r0, r0, #{TOPO}
+    movs  r3, #{N_ITENS}
     sdiv  r3, r0, r3
     mul   r3, r3, r5
-    subs  r3, #1
     sxth  r3, r3
     movs  r2, #0
     movs  r1, #2

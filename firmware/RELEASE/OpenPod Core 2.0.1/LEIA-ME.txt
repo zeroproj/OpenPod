@@ -1,0 +1,66 @@
+OpenPod Core 2.0.1 — conserta a GEOMETRIA da lista da home
+==========================================================
+
+A 2.0 PROVOU O QUE PRECISAVA PROVAR
+
+    A home virou LISTA, os nove textos certos, e o aparelho ligou.
+    A conversao funciona. Os defeitos da 2.0 foram de GEOMETRIA, e
+    os dois eram conta minha errada.
+
+OS DOIS DEFEITOS, E A CONTA
+
+    1. A LISTA TRANSBORDAVA.
+       Usei a formula do Configurar: altura_linha = tela_h / 7.
+       O Configurar tem 10 itens e mostra ~7, ROLANDO o resto.
+       A home tem NOVE que precisam CABER, e sem barra de rolagem (M-d).
+
+           160 / 7  = 22 px  ;  22 * 9 = 198 px   numa tela de 160
+                                                  -> o ultimo item cortado
+
+       Agora:  (160 - 19) / 9 = 15 px  ;  15 * 9 = 135 px   cabe
+
+    2. O PRIMEIRO ITEM ENTRAVA NA BARRA DE STATUS.
+       O conteiner nascia do tamanho da tela inteira, comecando em y=0,
+       e a barra de status (relogio, bateria) mora ali. O primeiro item
+       era desenhado por baixo dela — o "Musica" embaralhado no topo.
+
+       Agora o conteiner comeca em y=19, que e o `inicio_lista` do Marte
+       (marte/paleta/nanoclone.json).
+
+COMO GRAVAR
+
+    1. copie  OpenPod_Core_2.0.1.up  para a RAIZ do cartao, como update.up
+    2. Configurar -> Atualizar por SD -> Sim
+    3. APAGUE o update.up do cartao
+
+    Em Configurar > Informacoes:  OpenPod Core 2.0.1
+
+O QUE OLHAR
+
+    1. Os NOVE itens cabem na tela, sem corte embaixo?
+    2. O primeiro item ("Musica") esta LIMPO, sem se misturar com o
+       relogio/bateria?
+    3. A NAVEGACAO funciona? Sobe, desce, entra em cada um, volta.
+       Esta e a pergunta central: a navegacao nao foi tocada em nenhuma
+       das duas versoes.
+    4. Da para ver qual item esta selecionado? Ainda e COR DE TEXTO,
+       nao barra — esperado, e a Etapa 2.
+    5. O FUNDO esta preto?
+       Pergunto porque na foto da 2.0 ele parecia AZULADO. Conferi no
+       codigo: o conteiner e as linhas pegam a cor do getter 0x00D2138A,
+       que devolve ZERO — preto. Entao a suspeita e que era o balanco de
+       branco da camera (aquela foto tinha luz ambiente; as anteriores
+       eram no escuro). Se estiver azul MESMO olhando direto, me diga:
+       ai e defeito e eu procuro.
+
+SE QUEBRAR
+
+    Volte para a 1.4 (a ultima antes da home mudar):
+    firmware/RELEASE/OpenPod Core 1.4/OpenPod_Core_1.4.up
+
+    Se nem ligar: USB -> segure VOLUME BAIXO -> RESET, e siga recovery/
+
+HASHES
+
+    imagem sem carimbo  a8052ccca4ec0c2c6e90e51c6c90559d57819de3759fb030e3348adee4011193
+    diff contra a 2.0:  196 bytes, so no setor 0x12E000
