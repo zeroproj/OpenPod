@@ -116,51 +116,75 @@ O que a análise responde, e nenhum outro passo responde: qual versão está
 
 ---
 
-## Passo 3 — gravar só o que está diferente
-
-Da análise sai um kit com **um arquivo por setor divergente** e um
-script que, para cada um:
-
-1. grava o setor — `write_flash <endereço> 0 0x1000 <arquivo_do_setor>`;
-2. **relê aquele mesmo setor** do aparelho e compara o SHA-256;
-3. só então passa para o próximo.
-
-Duas ordens que não são preferência, são regra paga com aparelho:
-
-| regra | o quê |
-|---|---|
-| **R2** | a tabela de partições (`0x00D000`) é **o último** setor da sessão, se é que precisa ser gravada. Depois de cada escrita individual o aparelho tem de continuar bootável |
-| **R3** | conferência é por **releitura do aparelho**, nunca por hash de arquivo no PC |
-
-O formato de cada linha é sempre este — o exemplo real que recuperou o
-aparelho em 13/09, quando um único setor precisou voltar:
+## Passo 3 — reinstalar o sistema
 
 ```sh
-sudo ./ferramenta/smtlink_dump_linux_x86_64 init write_flash 0xD000 0 0x1000 ptable_D000_original.bin
+sudo ./2_RESTAURAR.sh
 ```
+
+Ele grava **a imagem inteira de fábrica**, `0x000000..0x1A3038` —
+bootloader, tabela de partições, FIRM e TONE. É um reinstalar, não um
+remendo do que mudou.
+
+Antes de escrever, o script:
+
+1. lê os 2 MiB e compara com o de fábrica;
+2. mostra **quantos dos 420 setores serão de fato regravados** e quantos
+   serão pulados;
+3. avisa, em bloco separado, se a **tabela de partições** estiver
+   diferente — é o setor que brickou o primeiro aparelho do projeto;
+4. só então pede que você digite `GRAVAR`.
+
+Depois de gravar, relê os 2 MiB e compara byte a byte.
+
+### Gravar tudo não é apagar tudo
+
+O `write_flash` compara cada bloco de 4 KiB **antes** de apagar:
+
+```c
+if (!m2) continue;   // same data
+```
+
+Bloco que já está correto não é apagado nem regravado. Então mandar a
+imagem inteira toca fisicamente só o que difere — inclusive deixando a
+tabela de partições intacta quando ela já é a de fábrica, que é o caso
+deste aparelho.
+
+### O que não é tocado
+
+```
+0x1A3038 .. 0x1FC000   área livre — pode ter rotinas do OpenPod, inertes
+0x1FC000 .. 0x200000   PSMP — suas configurações de usuário
+```
+
+Inertes porque a FIRM de fábrica não tem nenhum gancho para elas: aquela
+área sempre foi `0xFF` de fábrica, então o firmware não depende do que
+está lá.
 
 ---
 
-## Passo 3-alternativo — gravar tudo, se não houver análise
+## Passo 3b — zerar também a área livre  (OPCIONAL)
 
 ```sh
-./9_GRAVAR_TUDO.sh CONFIRMO
+sudo ./9b_APAGAR_AREA_LIVRE.sh CONFIRMO
 ```
 
-Grava `0x000000..0x1A3038` direto da imagem de 2 MiB — onde o byte 0 do
-arquivo já é o byte 0 da flash, e é isso que torna a linha correta. Ele
-confere o SHA-256 da imagem de origem antes de começar, e relê os 2 MiB
-no fim para comparar.
+Só se você quiser a flash **literalmente** igual à de fábrica. Não é
+necessário: depois do Passo 3 o aparelho já é um GN-438 de fábrica.
 
-Isto **reescreve também o bootloader**. É aceitável porque o modo
-download está no silício e responde mesmo que a escrita falhe no meio —
-mas é bem mais escrita do que o necessário. **Prefira o Passo 3.**
+Ele reescreve o setor misto `0x1A3000` — que tem a cauda da TONE mais o
+começo da área livre, e por isso não pode ser simplesmente apagado — e
+depois apaga `0x1A4000..0x1FC000`.
+
+> ⚠️ É o único passo de todo o kit que usa um comando **nunca exercitado
+> neste projeto** (`erase_flash`). Rode depois de o Passo 3 ter
+> conferido, e só se quiser mesmo.
 
 ---
 
 ## Passo 4 — conferir
 
-O `9_GRAVAR_TUDO.sh` já confere sozinho. Para conferir à mão a qualquer
+O `2_RESTAURAR.sh` já confere sozinho. Para conferir à mão a qualquer
 momento:
 
 ```sh
@@ -215,11 +239,13 @@ Rode `./1_LER.sh` de novo — ele não escreve nada — e mande o resultado.
 ## O que tem nesta pasta
 
 ```
-CONFERIR.sh            confere o kit                      SO LEITURA
-0_COMPILAR.sh          compila a ferramenta do fonte      nao fala com o aparelho
-1_LER.sh               le 2 MiB e imprime o diagnostico   SO LEITURA
-9_GRAVAR_TUDO.sh       restauracao completa               ESCREVE  (pede CONFIRMO)
-VOLTAR_AO_ORIGINAL.md  este roteiro
+CONFERIR.sh              confere o kit                     SO LEITURA
+0_COMPILAR.sh            compila a ferramenta do fonte     nao fala com o aparelho
+1_LER.sh                 le 2 MiB e imprime o diagnostico  SO LEITURA
+2_RESTAURAR.sh           reinstala o sistema de fabrica    ESCREVE (pede GRAVAR)
+  restaurar.py           o miolo do 2_RESTAURAR.sh
+9b_APAGAR_AREA_LIVRE.sh  zera a area livre — OPCIONAL      ESCREVE (pede CONFIRMO)
+VOLTAR_AO_ORIGINAL.md    este roteiro
 RECUPERAR.md           o roteiro de emergencia
 SHA256SUMS             sha de cada arquivo
 imagens/               original 2 MiB, .up de restauracao, ptable de fabrica
