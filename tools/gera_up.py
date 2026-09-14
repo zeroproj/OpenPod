@@ -40,7 +40,7 @@ ATE ONDE COBRIR
 USO
     python3 tools/gera_up.py \\
         --in  firmware/WORKING/GN438_openpod_v044.bin \\
-        --out "OpenPod 1.0/OpenPod_1.0.up"
+        --out "firmware/RELEASE/OpenPod 1.0/OpenPod_1.0.up"
 
     python3 tools/gera_up.py --autoteste
         reconstroi o .up original e compara byte a byte com

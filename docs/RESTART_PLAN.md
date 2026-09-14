@@ -45,7 +45,7 @@ marte/                estudo NanoClone: referência, paleta, adaptados
 | OpenPod 3.1 | V101 | 3.0 + 3 ferramentas que a medição mostrou faltando — **nunca gravada** |
 
 **CONFIRMADO nesta sessão:** `firmware/WORKING/GN438_build.bin`,
-`GN438_openpod_v101.bin` e a base do kit `OpenPod 3.1/` são **a mesma
+`GN438_openpod_v101.bin` e a base do kit `firmware/RELEASE/OpenPod 3.1/` são **a mesma
 imagem** (sha `ab98ef39…`). A 3.1 é, portanto, exatamente a saída de
 `tools/build.py` de hoje.
 
@@ -162,8 +162,8 @@ Conferidos nesta sessão, campo a campo e CRC recalculado:
 
 | arquivo | payload | CRC | veredito |
 |---|---|---|---|
-| `OpenPod 3.1/OpenPod 3.1.up` | 1.732.608 B | `0x6FC6` | **OK** |
-| `OpenPod v044/update.up` | 1.720.320 B | `0xF309` | **OK** |
+| `firmware/RELEASE/OpenPod 3.1/OpenPod 3.1.up` | 1.732.608 B | `0x6FC6` | **OK** |
+| `firmware/RELEASE/OpenPod v044/update.up` | 1.720.320 B | `0xF309` | **OK** |
 | `firmware/WORKING/update_restore_original.up` | 1.716.280 B | `0x77F5` | **OK** |
 
 ### 3.4 Kit de setores — APROVADO

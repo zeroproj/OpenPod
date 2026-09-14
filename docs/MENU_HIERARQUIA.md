@@ -273,7 +273,7 @@ os alvos. Depois conferi por fora, com capstone:
 0x00DA3048   b5f79eb8   b.w  #0xd58188
 ```
 
-**8 bytes, 3 setores.** `tools/test_exec_free_area.py`.
+**8 bytes, 3 setores.** `tests/test_exec_free_area.py`.
 
 ---
 

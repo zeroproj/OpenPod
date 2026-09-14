@@ -26,7 +26,7 @@ PROPOSITO
     Nenhum teste escreve em firmware/ORIGINAL/. Tudo acontece em memoria.
 
 USO
-    python3 tools/test_roundtrip.py [--in firmware/ORIGINAL/GN438_original.bin]
+    python3 tests/test_roundtrip.py [--in firmware/ORIGINAL/GN438_original.bin]
 
 DEPENDENCIAS
     Python 3 + tools/fw_common.py + tools/rebuild_firmware.py
@@ -41,7 +41,9 @@ import os
 import struct
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# as ferramentas moram em tools/; os testes sairam para tests/ em 14/09
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 import fw_common as fw
 import rebuild_firmware as rb
 

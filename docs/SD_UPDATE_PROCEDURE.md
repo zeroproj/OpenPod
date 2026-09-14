@@ -19,7 +19,7 @@ Procedimento para instalar um pacote `update.up` no GN-438.
 | 3 | Leitura por USB funciona | ✅ `RECOVERY_CHECK.md` |
 | 4 | **Escrita e apagamento por USB funcionam** | ✅ `WRITE_TEST_RESULT.md` |
 | 5 | Pacote validado | ✅ 11 checks + idêntico ao `fwhelper` |
-| 6 | Pacote de restauração pronto | ✅ `firmware/SDCARD_restore/` |
+| 6 | Pacote de restauração pronto | ✅ `update/SDCARD_restore/` |
 
 ---
 
@@ -70,8 +70,8 @@ Prepare **dois** cartões, ou um cartão e a pasta de restauração à mão:
 
 | Pasta do projeto | Para quê |
 |---|---|
-| `firmware/SDCARD_v001/update.up` | instalar o V001 |
-| `firmware/SDCARD_restore/update.up` | voltar ao firmware original |
+| `update/SDCARD_v001/update.up` | instalar o V001 |
+| `update/SDCARD_restore/update.up` | voltar ao firmware original |
 
 Os dois arquivos já estão **com o nome correto**. Não renomeie.
 
@@ -83,7 +83,7 @@ Os dois arquivos já estão **com o nome correto**. Não renomeie.
 
 ```text
 1. cartão em FAT32 (ou exFAT)
-2. copiar  firmware/SDCARD_v001/update.up  para a RAIZ do cartão
+2. copiar  update/SDCARD_v001/update.up  para a RAIZ do cartão
 3. conferir: o arquivo tem de se chamar exatamente  update.up
              e estar na raiz, não em subpasta
 ```
@@ -159,7 +159,7 @@ apenas na `PSMP`.
 
 ### O aparelho liga normalmente, mas você quer voltar
 
-Use `firmware/SDCARD_restore/update.up` — mesmo procedimento, §4.
+Use `update/SDCARD_restore/update.up` — mesmo procedimento, §4.
 
 ### O aparelho não carrega a aplicação
 

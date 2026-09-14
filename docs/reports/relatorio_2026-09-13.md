@@ -937,8 +937,8 @@ de console em `0x049F80` (`cpu`, `reboot`, `update`, `sleep`, `tp`, `sd`).
 (8 idiomas). Queda de energia durante a gravação é o cenário mais próximo
 de um brick real.
 
-**Pacotes prontos:** `firmware/SDCARD_v001/update.up` e
-`firmware/SDCARD_restore/update.up` — já com o **nome correto**, porque o
+**Pacotes prontos:** `update/SDCARD_v001/update.up` e
+`update/SDCARD_restore/update.up` — já com o **nome correto**, porque o
 bootloader procura o literal `0:\update.up` e renomear errado é o erro
 mais fácil.
 

@@ -813,7 +813,7 @@ porque o tema virou tabela:
 
 ```text
 firmware/WORKING/GN438_diagnostico_cores.bin     7 bytes trocados
-DIAGNOSTICO cores/update.up
+experiments/DIAGNOSTICO cores/update.up
 
    cor_tela        -> VERMELHO
    cor_faixa       -> VERDE

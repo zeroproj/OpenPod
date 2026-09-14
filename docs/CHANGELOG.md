@@ -149,7 +149,7 @@ número, hash e registro do que mudou.
 | `tools/fw_common.py` | CRC-16/CCITT-FALSE e layout dos cabeçalhos (fonte única) |
 | `tools/rebuild_firmware.py` | desmonta e remonta o container, regenerando CRCs |
 | `tools/validate_firmware.py` | validação independente + comparação byte a byte |
-| `tools/test_roundtrip.py` | testes de regressão, incluindo controle negativo |
+| `tests/test_roundtrip.py` | testes de regressão, incluindo controle negativo |
 
 **Resultado do round-trip:**
 
@@ -1019,8 +1019,8 @@ errado é o erro mais fácil de cometer, e o bootloader procura o literal
 
 | Pasta | SHA-256 |
 |---|---|
-| `firmware/SDCARD_v001/update.up` | `b45bcf6d…c314` |
-| `firmware/SDCARD_restore/update.up` | `82f0ae8c…35c8` |
+| `update/SDCARD_v001/update.up` | `b45bcf6d…c314` |
+| `update/SDCARD_restore/update.up` | `82f0ae8c…35c8` |
 
 Cada uma com um `LEIA-ME.txt` explicando o conteúdo e a limitação.
 
@@ -2862,7 +2862,7 @@ recuperação fica intacto nos dois resultados.
 A ferramenta codifica, **decodifica de volta e compara**; conferido
 também por capstone, por fora.
 
-**8 bytes, 3 setores.** `tools/test_exec_free_area.py`.
+**8 bytes, 3 setores.** `tests/test_exec_free_area.py`.
 
 ---
 

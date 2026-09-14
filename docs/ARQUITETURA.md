@@ -562,7 +562,7 @@ rastrear o renderizador — tentei e caiu em ruído. Parei.
 **`cor_tela` da tabela do Saturno tem UM único leitor**: o thunk do S12,
 que serve só a página 0x18. Fora dele, ninguém lê o campo.
 
-Consequência direta: o **`DIAGNOSTICO cores/update.up`** que eu montei
+Consequência direta: o **`experiments/DIAGNOSTICO cores/update.up`** que eu montei
 para identificar a faixa **não consegue testar este defeito**. Ele muda
 `cor_tela` para vermelho, e isso não pinta nada além da 0x18. Gravar
 aquela imagem teria queimado uma sessão de teste para não responder nada.

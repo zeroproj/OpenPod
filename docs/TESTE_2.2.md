@@ -101,4 +101,4 @@ sobrepondo no alto?
 O suspeito número um é o **Extras** — é despacho de página. O Saturno
 (S11/S12) só mexe em aparência.
 
-A 2.1 continua gravável: o kit está em `OpenPod 2.1/`.
+A 2.1 continua gravável: o kit está em `firmware/RELEASE/OpenPod 2.1/`.

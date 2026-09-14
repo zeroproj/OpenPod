@@ -53,7 +53,7 @@ O QUE E ALTERADO
     fora desse CRC.
 
 USO
-    python3 tools/test_exec_free_area.py \
+    python3 tests/test_exec_free_area.py \
         --in  firmware/WORKING/GN438_openpod_v019.bin \
         --out firmware/WORKING/GN438_openpod_v020.bin [--dry-run]
 
@@ -74,7 +74,9 @@ import os
 import struct
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# as ferramentas moram em tools/; os testes sairam para tests/ em 14/09
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 import fw_common as fw
 
 XIP = 0x00C00000

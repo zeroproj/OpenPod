@@ -46,7 +46,7 @@ python3 tools/validate_firmware.py \
     --expect-sha256 b7cd5eb952be5328cbaa926099cf8d88168633c1fab6d0f31f3a283c9e24b36f
 
 # 3. testes de regressão (identidade, regeneração de CRC, sensibilidade)
-python3 tools/test_roundtrip.py
+python3 tests/test_roundtrip.py
 
 # 4. confirmação com ferramentas do sistema, independentes do meu código
 cmp      firmware/ORIGINAL/GN438_original.bin firmware/WORKING/GN438_rebuilt_original.bin
@@ -62,7 +62,7 @@ md5           firmware/ORIGINAL/GN438_original.bin firmware/WORKING/GN438_rebuil
 | `tools/fw_common.py` | CRC-16/CCITT-FALSE e layout dos cabeçalhos, em um lugar só |
 | `tools/rebuild_firmware.py` | desmonta e remonta o container |
 | `tools/validate_firmware.py` | validação independente + comparação byte a byte |
-| `tools/test_roundtrip.py` | testes de regressão, incluindo controle negativo |
+| `tests/test_roundtrip.py` | testes de regressão, incluindo controle negativo |
 
 `fw_common.py` existe para que rebuild e validação **não possam divergir
 em silêncio**: ambos usam a mesma implementação de CRC e a mesma política.
@@ -173,7 +173,7 @@ um motivo difícil de diagnosticar.
 
 Um round-trip idêntico, sozinho, **não prova nada**: uma ferramenta que
 apenas copiasse o arquivo passaria no mesmo teste. Por isso foram
-escritos três testes em `tools/test_roundtrip.py`.
+escritos três testes em `tests/test_roundtrip.py`.
 
 ### T1 — Identidade ✅
 

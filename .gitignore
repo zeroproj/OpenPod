@@ -18,11 +18,15 @@ firmware/READBACK/*.bin
 firmware/VENDOR/*.zip
 
 # kits e releases: os binarios saem, os LEIA-ME e scripts ficam
-OpenPod*/*.bin
-OpenPod*/*.up
-DIAGNOSTICO*/*.up
-firmware/SDCARD*/*.up
+firmware/RELEASE/**/*.bin
+firmware/RELEASE/**/*.up
+experiments/**/*.up
+experiments/**/*.bin
+update/**/*.up
 firmware/WORKING/*.up
+recovery/leitura/
+recovery.zip
+*.zip
 historico/kits/**/*.bin
 historico/kits/*.zip
 historico/releases/**/*.bin
