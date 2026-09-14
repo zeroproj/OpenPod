@@ -183,6 +183,16 @@ CORE_1_0 = [
     ("patch_menu_text.py", ["--set", "pt:3=Vídeo"],
      "'Vídeo' com maiuscula (o original e minusculo)"),
     ("patch_update_sd.py",     [], "item 'Atualizar por SD' em Configurar"),
+
+    # --- Marte M-a, 2026-09-14. O PRIMEIRO passo rumo ao alvo visual.
+    #
+    # 1 byte DENTRO de CRIA_LINHA (0x00D21764), a rotina compartilhada
+    # que 39 telas usam. Nao aloca, nao usa area livre, nao cria objeto.
+    #
+    # Entra no FIM da receita de proposito: e independente de tudo o que
+    # vem antes, entao pode sair daqui sem quebrar nada. Foi essa
+    # propriedade que faltou na linha 2.x.
+    ("patch_sem_separador.py", [], "M-a: sem traco entre os itens, como o nano"),
 ]
 
 
