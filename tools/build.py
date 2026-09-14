@@ -267,9 +267,30 @@ CORE_1_0 = [
     ("patch_update_sd.py",     [], "item 'Atualizar por SD' em Configurar"),
 ]
 
+
+# ---------------------------------------------------------------------------
+# CORE 2.0 — a carcaca da interface.
+#
+# E a receita `interface` MENOS o submenu Extras. Motivo medido, nao
+# preferencia: o `make_extras_menu` esconde 6 itens da home atras da
+# pagina 0x53, e quem faz o Enter dela rotear e o `patch_extras` — que
+# esta FORA porque nao funcionou no aparelho. Com um e sem o outro, os
+# seis itens ficariam so de enfeite, e a pagina 0x53 e uma lista MORTA de
+# 3 itens no firmware de fabrica.
+#
+# Sem o submenu, a home vira lista com TODOS os itens: nada se esconde,
+# nada deixa de abrir. Menos parecido com o nano, e honesto.
+# ---------------------------------------------------------------------------
+CORE_2_0 = [p for p in INTERFACE
+            if p[0] not in ("make_extras_menu.py",)]
+# O `--add Extras` do `relocate_lang_table` FICA. Tentei tirar junto, e o
+# `patch_titulos` recusou: "id 216 (pagina 0x53) aponta fora da imagem".
+# Ele usa esse id como TITULO da pagina 0x53. Medido, nao suposto.
+
 RECEITAS = {
     "interface": INTERFACE,
     "core1.0":   CORE_1_0,
+    "core2.0":   CORE_2_0,
 }
 
 # Patches deliberadamente FORA da receita, e por que.

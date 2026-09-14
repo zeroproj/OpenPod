@@ -76,15 +76,69 @@ pergunta só: *o tema claro do nano agrada neste aparelho?*
 ## 3. Core 2.0 — a carcaça
 
 ```
-receita     tools/build.py --receita interface
+receita     tools/build.py --receita core2.0
 base        Core 1.0.1 (STABLE)
-diff        8.925 bytes em 39 setores, menor offset 0x04867C
+diff        8.875 bytes em 36 setores, menor offset 0x04867C
 validacao   21 OK + a falha de CRC da R1; guardas todas OK
 ```
 
-O que ela traz: home em lista, barra de seleção, rolagem escondida,
-faixa superior com a string "OpenPod", título próprio em 37 telas,
-as rotinas de chrome e a **tabela de tema** do Saturno (S1–S12).
+O que ela traz, e tudo isso **é** mudança de interface:
+
+| o quê | de | para |
+|---|---|---|
+| **home** | grade 3×3 de ícones | **lista**, 9 itens, um por linha |
+| **seleção** | fundo do rótulo | **barra** de borda a borda, quadrada |
+| **faixa superior** | não existia nas subtelas | título próprio em **37 telas** |
+| **altura de linha** | duas: 10 px e 16 px | **uma**, 16 px, vinda da tabela |
+| **ícones de lista** | ligados | **desligados** (S7) — igual ao `.cfg` do nano |
+| **barra de rolagem** | visível | escondida em **59 telas** |
+| **recuo do texto** | constante crua | campo da tabela (S8) |
+| **cores** | espalhadas pelo código | **uma tabela de 19 bytes** em `0x1A5400` |
+
+A previsão da home, lida da imagem construída:
+
+```
+itens : 9        rotulo: 116 px, alinhado a esquerda
+ 0 Musica        39 px   (6,16)
+ 1 Video         31 px   (6,32)
+ 2 Gravacao      52 px   (6,48)
+ 3 Radio         33 px   (6,64)
+ 4 Livro digital 62 px   (6,80)
+ 5 Imagem        46 px   (6,96)
+ 6 Bluetooth     52 px   (6,112)
+ 7 Configurar    58 px   (6,128)
+ 8 Pastas        39 px   (6,144)
+
+rotulos que estouram a largura: 0
+```
+
+### 3.1 Por que `core2.0` e não `interface`
+
+A receita `interface` traz também o `make_extras_menu`, que deixa a home
+com **4 itens** — Música, Imagem, Extras, Configurar — e empurra os
+outros seis para um submenu na página 0x53.
+
+**Mas quem faz o Enter desse submenu rotear é o `patch_extras`, que está
+FORA porque não funcionou no aparelho.** Com um e sem o outro, os seis
+itens ficariam de enfeite — e a página 0x53 é, de fábrica, uma **lista
+morta de 3 itens**. Seis funções do aparelho sumiriam atrás de um menu
+que não abre.
+
+Medido, não suposto — a prévia das duas receitas:
+
+```
+receita interface   itens: 4     <- Musica, Imagem, Extras, Configurar
+receita core2.0     itens: 9     <- todos, nada escondido
+```
+
+Então a Core 2.0 é a `interface` **menos o submenu Extras**. Menos
+parecida com o nano, que tem submenus; honesta, que é o que vale mais.
+O submenu volta quando o roteamento funcionar.
+
+> Uma sutileza que só apareceu ao testar: o `--add Extras` do
+> `relocate_lang_table` **fica**. Tentei tirar junto e o `patch_titulos`
+> recusou — "id 216 (página 0x53) aponta fora da imagem". Ele usa esse id
+> como **título** daquela página.
 
 ### O que ela traz de defeito, e é preciso dizer antes
 
