@@ -720,3 +720,183 @@ Há **51** chamadas a `0x00D4D064` no firmware, quase todas `(obj, 0, 0)`:
 
 Por isso a linha herdava o arredondamento do tema. A home não usa
 `0x00D21764`, e por isso já era quadrada.
+
+---
+
+# PARTE IV — Os dois caminhos de desenho do firmware de fábrica
+
+> **Procedência.** Esta parte foi extraída em 2026-09-14 de três
+> documentos da linha 2.x que foram APAGADOS no mesmo dia, a pedido do
+> mantenedor: `PROJETO_SATURNO.md`, `CONVERTER_HOME.md` e
+> `PADRONIZAR_HOME.md`.
+>
+> **O que veio e o que não veio.** Vieram só as MEDIÇÕES sobre o firmware
+> ORIGINAL. Ficaram de fora os planos, as receitas e todos os endereços
+> da faixa `0x001A5400..0x001A5880` — aquela área era onde os patches da
+> 2.x escreviam, e não existe no firmware de fábrica. Se você encontrar
+> um endereço `0x1A5xxx` citado como se fosse do firmware, é engano.
+
+## 19. O firmware tem DOIS desenhos para a mesma ideia — CONFIRMADO
+
+Não é uma variação: são duas implementações independentes.
+
+```text
+HOME (pagina 1)                 AS 36 TELAS DE LISTA
+  rotulos soltos                  framework de widgets
+  posicao por coordenada          faixa     = helper 0x00D216F0
+  sem conteiner de linha          linha     = helper 0x00D21764
+  sem objeto de linha             conteiner = helper 0x00D21690
+  cores na mao                    cores pelo tema da LVGL
+```
+
+**CONFIRMADO:** `page_home_create` não chama nenhum dos três helpers.
+
+### Por que isso importa
+
+Toda propriedade que um objeto não seta explicitamente é decidida pelo
+**tema da LVGL**, que não é nosso. Três defeitos visuais distintos
+(raio da seleção, texto cinza nas listas, faixa clara vazia) tiveram
+essa mesma causa. Não é descuido repetido: é propriedade da arquitetura.
+
+## 20. O laço da home, decodificado — CONFIRMADO
+
+`0x00D2ECEE` … `0x00D2ED8E`. `r5` é índice em bytes: `adds r5,#4` e
+`cmp r5,#0x24` → **9 voltas**.
+
+**São DOIS objetos por item**, irmãos, filhos do contêiner, posicionados
+um sobre o outro por coordenada absoluta:
+
+```text
+r7 = conteiner            <- criado antes; PAD_ROW e PAD_COLUMN = 0
+fp = tabela de coordenadas
+sp+0x4C = tabela de ids de texto
+
+laco, r5 = 0 ate 0x24 de 4 em 4        (9 voltas)
+
+    sb = 0xD5D850(r7)                  objeto 1 — o icone/quadro
+    flag(sb, 2) ; add_event_cb(sb, ...) ; flag(sb, 0x8000)
+    x = ldrsh[fp+r5] ; y = ldrsh[fp+r5+2]
+    posiciona(sb, x, y)                COORDENADA ABSOLUTA
+
+    r6 = lv_label_create(r7)           objeto 2 — o rotulo, IRMAO do 1o
+    texto = get_string(tabela[r5])
+    label_set_text(r6, texto)
+    set_style_text_color(r6, cor, 0)
+    label_set_long_mode(r6, 0)
+    flag(r6, 0x8000)
+    posiciona(r6, x, y)                tambem por coordenada
+
+    guarda os dois ponteiros nos arrays
+```
+
+Tabelas de coordenadas: `0x00C4867C` e `0x00C486A0`.
+Tabela de ids de texto da home: `0x000486C4` (offset de arquivo).
+
+**Consequência medida:** não existe linha para pintar. O que parece
+"fundo do item" é o objeto `sb`, pintado por conta própria. Por isso
+uma cor de fundo de tela nunca alcança a home, a seleção precisa pintar
+o fundo do próprio rótulo, e o espaçamento vem da tabela de
+coordenadas, não de `PAD_ROW`.
+
+## 21. O molde certo já existe no firmware — `page_home_menu_event_cb` (0x53)
+
+```text
+r6 = 0
+laco:
+    r4 = CRIA_LINHA(conteiner)                    0x00D21764
+    altura = tela/7 ; set_height(r4)              0x00D4A1EA
+    border_side(r4, 2)  e, se r6==2, border_side(r4, 3)
+    add_event_cb(r4, handler, 0x0D)               0x00D47064
+    sl = CRIA_ROTULO(r4)                          0x00D5E2E8   <- icone
+         set_style_text_font(sl, 0x00CA671C)      0x00D4D12E
+         set_text(sl, ...)                        0x00D5ED94
+    sb = CRIA_ROTULO(r4)                          0x00D5E2E8   <- texto
+         set_width / set_long_mode(sb, 4)         0x00D4A1BA / 0x00D5EF04
+         id = tabela[r6] ; set_text(sb, get_string(id))
+    r6 += 1
+```
+
+Um laço, uma tabela de ids, três helpers — **o rótulo mora DENTRO da
+linha**. É o desenho correto, e está pronto no firmware de fábrica.
+
+### A home, ao lado
+
+```text
+chamadas aos helpers .......... NENHUMA
+set_style_text_color .......... 7x
+setters de padding na mao ..... 6  (0xD4D01C 028 034 040 04C 058)
+funcoes de imagem ............. 0xD55FCC 0xD55FF4 0xD56000 0xD5615C
+palette_main .................. 2x
+```
+
+## 22. ⚠️ O perigo medido: a página 0x53 e a ALOCAÇÃO
+
+A página `0x53` tem **três** itens de fábrica, e o buffer dela é
+dimensionado pela contagem:
+
+```text
+Esquema confirmado em page_set_menu (10 itens):
+  rotulos = N*4      icones = 2*N*4
+  botoes 0x00   rotulos 0x18   icones 0x30   malloc 0x4C
+```
+
+**Esticar a contagem de itens mexe em alocação e aritmética de
+ponteiro. Erro de offset corrompe a heap, e corrupção de heap NÃO
+aparece na verificação byte a byte pós-gravação.**
+
+Foi exatamente essa a única modificação da história do projeto que nunca
+funcionou no aparelho — o submenu "Extras" não abria, depois de três
+tentativas empilhadas.
+
+**Medido, e vale registrar:** converter a home NÃO cai nessa classe.
+
+```text
+page_home_event_cb        NENHUMA chamada de alocacao
+page_home_menu_event_cb   NENHUMA chamada de alocacao
+```
+
+A home já tem nove itens e já tem o espaço deles. Só mudar a contagem
+é que custa caro.
+
+## 23. Cor e fonte — pontos medidos no firmware de fábrica
+
+```text
+0x00CDF078   tabela de paletas da LVGL, indexada por 16 bits
+0x00CA671C   a fonte de ICONES — 44 pontos, em 32 telas
+0x00D4CAC4   caminho comum do raio
+```
+
+`palette_main(7)` é chamado em três pontos: `0x00D2EB42` e `0x00D2EDB2`
+(home) e `0x00DA3520` (a rotina compartilhada das 39 telas).
+
+```text
+palette_main(7) = 0xFA05 pre-invertido = RGB565 0x05FA = RGB(0,190,213)
+```
+
+Cores neste binário são RGB565 **pré-invertidas** — ver `COLOR_SOURCE.md` §9.
+
+### Os dois getters de cor da tela de abertura
+
+```text
+0x00D21384   getter de cor CLARA   <- sobrecarregado: umas telas usam
+                                      como TEXTO, outras como FUNDO
+0x00D2138A   getter de PRETO
+```
+
+Escurecer o getter claro deixaria o texto de Configurar invisível. Foi
+por isso que a Core 1.0.1 redirecionou as CHAMADAS (`0x0012285C` e
+`0x001228E6`), e não o valor devolvido.
+
+## 24. O que NÃO foi resolvido, e continua em aberto
+
+**A barra no descanso de tela.** Não existe página de descanso de tela —
+só `page_scrsaver_time`, que é a configuração. O relógio grande é
+desenhado **sem transição de página**, e o chrome só é destruído em
+`view_page_create`. Por isso ele sobrevive a uma barra desenhada.
+
+Achar o caminho de desenho do descanso de tela é investigação aberta.
+
+**A camada de mensagem não quebra linha.** `page_info` monta uma
+mensagem (descritor em `0x008238F0`, entregue a `0x00D0D818`), e esse
+caminho ignora `\n` — ao contrário de um rótulo LVGL comum. Confirmado na
+tela. Limite de largura medido: **113 px** por espaço de texto.

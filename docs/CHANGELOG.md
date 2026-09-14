@@ -7,6 +7,85 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-14 — LIMPEZA: a linha 2.x foi removida
+
+> Pedido do mantenedor, nas palavras dele:
+>
+> *"realmente você está pegando códigos e problemas de versões anteriores
+> bugadas. Pedi para você mudar só o menu, você veio com um update 2.4
+> com alteração da barra superior que não pedi."*
+>
+> E, sobre o acervo: *"não podemos usar essas referências, elas não são
+> boas"*, *"experiments são problemáticas"*.
+
+**A causa era estrutural, não desatenção.** As receitas 2.x encadeavam
+até 31 passos em que o `patch_chrome_padrao` — a barra superior — era
+**pré-requisito declarado** dos doze passos do Saturno. Mexer em qualquer
+item da lista arrastava a barra junto. O acoplamento estava na receita,
+não no firmware.
+
+**Agravante medido:** existiam duas coisas chamadas "OpenPod 1.0" no
+mesmo repositório — `historico/releases/OpenPod 1.0` (morta) e
+`firmware/RELEASE/OpenPod Core 1.0.1` (viva).
+
+### O que saiu
+
+| | |
+|---|---|
+| `tools/` | 56 ferramentas: 28 da receita 2.x (Saturno S3–S12, chrome_padrao, marte_paleta, status_bar, titulos, extras, home, `exp_home_linha`) e 28 experimentos da lista `FORA` |
+| `build.py` | receitas `interface`, `core2.0`, `core2.1`, `core2.2`, `marte`, `carcaca`. Resta **uma**: `core1.0` |
+| `firmware/RELEASE/` | 22 kits mortos (OpenPod 1.4–3.1, Core 2.0–2.4, v044) |
+| `firmware/WORKING/` | imagens `v001`–`v101` e todas as 2.x |
+| `docs/` | 8 planos da 2.x, e 5 relatórios de versão |
+| `experiments/` | SONDA, DIAGNOSTICO cores, HOME como linha |
+| `historico/` | kits V001–V044 e releases da numeração velha |
+| `update/SDCARD_v001` | pacote da V001 |
+
+### O que ficou, e por quê
+
+```
+firmware/ORIGINAL       intocado, sha b7cd5eb9... conferido antes e depois
+OpenPod Core 1.0.1      a unica STABLE, a que esta no aparelho
+recovery/               + modo_download, promovido de historico/recuperacao
+marte/                  a BASE VISUAL — decisao do mantenedor
+analysis/ extracted/    a engenharia reversa
+docs/                   o entendimento do firmware
+tools/                  30 ferramentas: a receita, o pipeline, a analise
+```
+
+### As medições foram extraídas antes de apagar
+
+`PROJETO_SATURNO.md`, `CONVERTER_HOME.md` e `PADRONIZAR_HOME.md` tinham
+planos mortos **misturados com medições reais do firmware de fábrica**. As
+medições foram para **`GUI_ANALYSIS.md` PARTE IV** antes da remoção: os
+dois caminhos de desenho, o laço da home decodificado (dois objetos por
+item), o molde de `page_home_menu_event_cb`, o perigo de alocação da
+página `0x53`, e os pontos de cor e fonte.
+
+> ⚠️ Endereços `0x001A5xxx` eram a área onde os patches da 2.x escreviam.
+> **Não existem no firmware de fábrica.**
+
+### Validação depois da limpeza
+
+```
+tools/build.py --receita core1.0
+  sha256  7312fbd066b1a31e508a51c9c44c5e203e17e6d1e1b9719c0df7e37e7b250d34
+  bate com o hash publicado da Core 1.0.1   OK
+  21 verificacoes OK + a falha de CRC da R1, a esperada
+  nada abaixo de 0x00D000  |  0x00D000 intocado  |  PSMP intocada
+```
+
+**Recuperabilidade:** tudo está no git, no commit da limpeza — **exceto**
+o que estava no `.gitignore`: as imagens de `firmware/WORKING/` e a maior
+parte de `firmware/RELEASE/`. Essas se perderam de verdade.
+
+### A regra que fica
+
+**Volta um passo por vez, testado no aparelho, e nunca empacotado com
+algo que não foi pedido.**
+
+---
+
 ## Imagens de firmware
 
 ### `GN438_readback_2026-09-12.bin` — RELEITURA DO APARELHO (evidência)

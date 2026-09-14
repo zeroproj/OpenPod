@@ -1,161 +1,135 @@
 # Estado atual — leia isto primeiro
 
-> Atualizado em 2026-09-13, depois da barra superior, do raio e da
-> navegação.
+> Atualizado em **2026-09-14**, depois da limpeza que removeu a linha 2.x.
+>
 > **Este é o documento de entrada.** Depois dele: `CLAUDE.md` (regras do
 > projeto), `PROTOCOLO_GRAVACAO.md` (como gravar), `MODO_DOWNLOAD.md`
-> (como recuperar), `ROADMAP_1.1.md` (o que falta).
+> (como recuperar).
 
-## Onde o aparelho está
+---
+
+## 1. Onde o aparelho está
 
 ```
-OpenPod Core 2.4     <- GERADA. A CARCACA em tema escuro.
-                        altura_linha 16 px (o padrao do nano) governando
-                        38 pontos em 28 telas, por UM byte.
-                        firmware/RELEASE/OpenPod Core 2.4/
-
-OpenPod Core 1.0.1   <- NO APARELHO (2026-09-14). E a STABLE.
-                        O mantenedor voltou a ela depois de concluir que
-                        o tema claro nao serve neste painel.
+OpenPod Core 1.0.1   <- NO APARELHO, e a unica STABLE
                         firmware/RELEASE/OpenPod Core 1.0.1/
+                        imagem     7312fbd066b1a31e508a51c9c44c5e20...
+                        carimbada  36125f5665b8613e0d96215e2ffcf361...
 ```
 
-> **A linha 2.x nao foi descartada** — esta inteira no repositorio, e o
-> que ela ensinou vale independente do que esta gravado:
->
-> - a **conversao da home** para `CRIA_LINHA` FUNCIONA, validada em
->   hardware (9 linhas, rotulos legiveis, selecao azul). A geometria
->   precisa ser forcada em `128x16, x=0` — o quadro de icone antigo
->   entrega uma largura estreita e errada;
-> - as **faixas** no fundo claro sao do **LCD**, nao do firmware:
->   eliminadas composicao LVGL, tabela de tema e degrade, por
->   experimento. Ver `docs/MARTE_ALVO.md` §0-bis;
-> - por isso o Marte segue valendo em tudo **menos na luminancia**, que
->   e invertida.
+Confirmada na tela pelo mantenedor em 14/09: *"Tudo funcionou."*
 
-### As versoes geradas nesta linha
+**Não existe nenhuma outra versão viva.** Se você encontrar referência a
+uma Core 2.x, a uma OpenPod 1.4–3.1 ou a um kit `V0xx`, é referência
+morta: foi tudo removido em 14/09 e não deve ser usado como base.
 
-OpenPod Core 2.3           <- GERADA. 8 pontos de texto BRANCO FIXO
-                              passam a ler a tabela (bateria da faixa,
-                              menu Bluetooth). NAO conserta o relogio
-
-OpenPod Core 2.2           <- 1 byte: sem traco entre os itens,
-                              como o mockup do Marte manda
-
-OpenPod Core 2.1.1         <- GRAVADA. Os rotulos VOLTARAM; tema claro
-                              de pe; selecao com texto branco. Antes: 8 bytes: o fundo do conteiner e
-                              da linha passa a vir de `cor_tela`.
-                              Sem ela as listas ficam ILEGIVEIS no tema
-                              claro — texto preto sobre linha preta
-
-OpenPod Core 2.1           <- GRAVADA. RESPONDEU A PERGUNTA: o tema claro
-                              do nano FUNCIONA neste display (a home e a
-                              prova). E expos o defeito acima.
-                              INSTRUMENTO DE MEDICAO, nao degrau.
-                              Marte M1 + o conserto das duas selecoes.
-                              Gravada para responder "o tema claro do
-                              nano funciona neste display?".
-                              EXPERIMENTAL e assim FICA — nao vira
-                              STABLE nem baseline.
-                              A padronizacao de verdade e o Nivel 2 de
-                              docs/PADRONIZAR_HOME.md
-
-OpenPod Core 2.0           <- NO APARELHO. A carcaca funciona:
-                              home com os 9 itens, Configurar certa,
-                              titulo na faixa. DEFEITO: o branco do
-                              conteiner aparece onde nao ha item
-                              (Despertador, listas vazias)
-                              a carcaca: home em lista, faixa com titulo,
-                              tabela de tema. EXPERIMENTAL.
-                              volta em 1 comando: RECOVERY.sh --alvo core
-
-OpenPod Core 1.0.1         <- NO APARELHO, e STABLE
-                              instalada PELO CARTAO, funcionou
-                              "Tudo funcionou" — mantenedor, 14/09
-                              === BASELINE da linha Core ===
-```
-
-> **A primeira instalacao da Core 1.0 tem de ser POR CABO**, pelo kit de
-> setores (8 setores, 32 KiB). O firmware de fabrica nao tem caminho de
-> interface para o update por SD — o item "Atualizar por SD" e uma das
-> coisas que a Core 1.0 traz. Da Core 1.0 em diante, o cartao resolve.
-
-**O aparelho voltou ao zero de propósito**, para a linha OpenPod Core
-começar de uma base conhecida. O que ele tinha antes: **OpenPod 3.0** —
-o que resolve a dúvida que os docs carregavam, de que a 3.0 nunca havia
-sido gravada. Ela foi.
+### Como reconstruir a 1.0.1 do zero
 
 ```
-antes do recovery   OpenPod 3.0   sha c5265e95beae634cfe9a4dfe0bbc4fa6...
-                                  37 setores fora do de fabrica
-                                  3 setores sujos na area livre
-depois              fabrica       sistema identico, area livre 0xFF,
-                                  PSMP preservada
-fotografia          recovery/leitura/antes_20260914_*.bin  (na maquina Linux)
+tools/build.py --receita core1.0
 ```
 
-> **A Core 1.0.1 é a baseline.** Versões novas partem dela, não do
-> ORIGINAL — é o que "STABLE" autoriza (§6 do prompt-mestre). Para
-> reconstruí-la do zero: `tools/build.py --receita core1.0`.
-
-> **A fotografia do estado anterior está só na máquina Linux.** É a única
-> cópia do que havia no aparelho — vale trazer para `firmware/READBACK/`.
-
-### O histórico, para referência
+É a única receita que existe. **Seis passos**, partindo do ORIGINAL:
 
 ```
-OpenPod 3.1        (interno V101)   gerada, nunca gravada
-OpenPod 3.0        (interno V100)   GRAVADA; era o que estava no aparelho
-OpenPod 2.4        (interno V077)   gravada antes
-OpenPod 2.2        (interno V073)   gravada antes
-kits e .up em      OpenPod X.Y/  e  historico/releases/
+1. patch_logo.py              a logo do OpenPod na tela de abertura
+2. patch_fundo_abertura.py    o fundo da abertura fica preto
+3. relocate_lang_table.py     tabela do portugues para a area livre
+4. aplica_textos.py           textos revisados em portugues do Brasil
+5. patch_menu_text.py         'Video' com maiuscula
+6. patch_update_sd.py         item 'Atualizar por SD' em Configurar
 ```
 
-> **Regra de processo (mantenedor, 2026-09-14):** nenhuma versão nova é
-> gerada sem ele pedir. Corrige-se, valida-se, e só então se empacota.
-> A próxima será a **2.2**.
+A imagem **sem carimbo** é reproduzível byte a byte. A carimbada não —
+ver `docs/releases/OpenPod_Core_1.0.1.md` §7-bis.
 
-> Arquitetura do firmware (MVP, camadas, caminho da tecla): `docs/ARQUITETURA.md`
-> Tabela de simbolos recuperada (412 funcoes): `docs/SIMBOLOS.md`
-> Cobertura medida do firmware (o que sabemos e o que não): `docs/COBERTURA.md`
+---
 
-## 🔴 DEFEITOS ABERTOS DA 2.1
+## 2. O que a 1.0.1 entrega
 
-| # | defeito | o que já se sabe |
-|---|---|---|
-| 1 | **faixa clara vazia** sob o título | **CAUSA PROVÁVEL ENCONTRADA — ver `ARQUITETURA.md` §12.** O fundo do display é **BRANCO**: `lv_disp_drv_register` escreve `0xFF` em três bytes consecutivos do `lv_disp_t` (`0x001567F6`) logo antes de criar as telas — o padrão de `disp->bg_color = branco; bg_opa = COVER` do LVGL v8. E **nenhuma página pinta o fundo da tela**. Logo, tudo que a faixa e o contêiner não cobrem aparece branco. Nas listas isso é a fresta entre o fim da faixa (`y=17`) e o início do contêiner (`y=19`). **Descoberta colateral grave: `cor_tela` da nossa tabela tem UM único leitor** (o thunk do S12, página 0x18) — ela é praticamente morta, e por isso o `experiments/DIAGNOSTICO cores/update.up` **não consegue testar este defeito**. Gravá-lo teria sido perda de tempo. **Teste certo, de 1 byte:** trocar `movs r3,#0xff` por `movs r3,#0x00` em `0x001567F6` e ver se a faixa fica preta |
-| 2 | **título colide** com contador na lista de Música (`Músi̶ta̶52`) | nosso título é `TOP_MID x_ofs=+4` (`0x001226AC`). A faixa também desenha rótulos em `TOP_LEFT x=40` e `TOP_RIGHT x=−45`, que juntos ocupam x 40..83 — o centro. **Mas esses dois são ícones** (glifos U+E6xx/U+F2xx da fonte de ícones), não o contador: o contador em si **ainda não foi localizado**; a página 0x03 (`page_music_song`) só faz um `align(CENTER)` e um `set_width`. Não corrigido: mover o título sem saber o que colide seria chute |
-| 3 | ~~**fundo branco** na página 0x18 (Gravação)~~ **CORRIGIDO (S12, V072)** | `0x00122F5A` pinta `BG_COLOR` do estado normal com o getter de **texto** (`0x00D21384`). **Correção de registro: não é bug nosso.** No firmware de fábrica esse getter já era `mov.w r0,#-1` (branco) — a V013 não mudou nada aqui. São 2 objetos, ambos da página 0x18, com três estados: normal branco, `LV_PART_SELECTED` = `palette(7)`, foco = `palette(0xE)`. A correção não foi pintar de preto: foi fazer o fundo ler `cor_tela` (+0x00), o campo que existe para isso. Os outros dois estados (`LV_PART_SELECTED`, foco) são estado e não padronização — ficam intocados |
-| 4 | ~~**altura da linha não centralizada**~~ | **CORRIGIDO (S11, V071).** E era pior do que eu havia anotado: não eram 35 pontos com valor coincidente — eram **38 pontos com DUAS alturas**. 28 usavam o imediato **10 px**; 10 calculavam `160/10` = **16 px**. A tabela e a home dizem 16, então as 28 é que divergiam: listas mais apertadas e seleção 6 px mais baixa que a da home. Os 38 agora leem `altura_linha` (+0x0D). `audita_chrome.py` passou a conferir a linha — e o novo teste **acusa a V070 e aprova a V071**, que é a prova de que o ponto cego fechou |
-| 5 | **vão de 5 px** abaixo da faixa nas 14 telas sem lista | **DIAGNOSTICADO, correção pronta para aplicar.** A causa exata: essas telas calculam a própria geometria a partir de `tela/7`. Com `r7=7`: faixa = `160/7` = **22**, contêiner = `160−22` = **138**, alinhado ao RODAPÉ → topo em `y=22`. O S9 baixou a faixa para 17 e **não tocou no contêiner**, então sobra o vão de 22−17 = **5 px**. A correção é desviar o `set_h` do contêiner para o thunk `cont_h` (`0x00DA530C`), que faz `160 − inicio_lista` = **141**; como o alinhamento é ao rodapé, o topo cai exatamente em `y=19`, igual às listas. **12 dos 15 contêineres** têm o padrão uniforme (`set_h` + `align` BOTTOM=5) e aceitam a correção direta: páginas 0x08 0x0F 0x11 0x1F 0x2B 0x2C 0x2D 0x2F 0x31 0x44 0x4F 0x52. **Três precisam de exame individual:** 0x0D (`0x0012B9AE`, sem align no rastro) e os dois contêineres da 0x19 (`0x001359F2` sem align; `0x00135FF2` sem set_h) |
-| 7 | ~~**Extras: clicar nao leva a nada**~~ | **CORRIGIDO (patch_extras_fix, V073).** O `patch_extras` da 2.1 mandava a mensagem para a **entrada** de `page1_process`, que exige `msg[0x0a]==2`; o Extras chega com `==4` e ela morria em `0x00100F66`, antes do `tbh`. Tabela, mapa e rotina estavam certos — o trajeto e que nao era. **A correcao obvia (escrever 2 no campo) seria um bug silencioso**: a cauda `0x00101036` le `[0x0a]` e o repassa junto com `[0x08]`, e e isso que faz o "voltar" retornar ao Extras em vez da home. A rotina agora entra em `0x00100FB2` (direto no despacho, depois de guardas que `pstr_page84_process` ja fez identicas) e monta `r6` com o global `0x00823D05`, que a cauda `0x0010101C` **le antes de escrever**. Simulacao estatica: os seis indices caem nos seis handlers certos |
-| 6 | **barra da home no descanso de tela** | não existe página de descanso; o chrome sobrevive porque não há transição de página |
+| | |
+|---|---|
+| textos | 175 revisados em português do Brasil; cabem em 113 px |
+| tela de abertura | logo do OpenPod sobre preto, sem moldura clara |
+| tela Sobre | título curto, versão em uma linha, sem sobreposição |
+| atualização por SD | `Configurar → Atualizar por SD` arma o flag e reinicia |
 
-### O que a 2.1 ACERTOU, confirmado na tela
+**O que ela deliberadamente NÃO faz:** a home continua a **grade 3×3 de
+fábrica**. Não há home em lista, faixa superior com título, tabela de
+tema, submenu Extras nem cor de seleção. Isso é escolha, não pendência:
+a 1.0 existe para ser uma fundação em que um defeito tenha causa óbvia.
+
+---
+
+## 3. Por que a linha 2.x foi removida — 2026-09-14
+
+Pedido do mantenedor, nas palavras dele:
+
+> *"realmente você está pegando códigos e problemas de versões anteriores
+> bugadas. Pedi para você mudar só o menu, você veio com um update 2.4 com
+> alteração da barra superior que não pedi."*
+
+Procede, e **a causa era estrutural, não desatenção.** As receitas 2.x
+encadeavam até 31 passos em que o `patch_chrome_padrao` — a barra
+superior — era **pré-requisito declarado** dos doze passos do Saturno.
+Mexer em qualquer item da lista arrastava a barra junto, porque a receita
+não permitia separar. O acoplamento estava na receita, não no firmware.
+
+**Agravante medido:** havia duas coisas chamadas "OpenPod 1.0" no mesmo
+repositório — `historico/releases/OpenPod 1.0` (linha morta) e
+`firmware/RELEASE/OpenPod Core 1.0.1` (linha viva). Isso dava margem para
+buscar referência na errada.
+
+### O que sobreviveu, e onde está
+
+As **medições sobre o firmware de fábrica** foram extraídas antes de
+apagar os planos, e estão em **`docs/GUI_ANALYSIS.md` PARTE IV**:
+
+- os dois caminhos de desenho do firmware (home × as 36 telas de lista);
+- o laço da home decodificado — são **dois objetos por item**;
+- o molde certo, que já existe de fábrica em `page_home_menu_event_cb`;
+- o perigo medido da alocação na página `0x53`;
+- os pontos de cor e fonte.
+
+> ⚠️ **Cuidado com endereços `0x001A5xxx`.** Aquela faixa era onde os
+> patches da 2.x escreviam. Ela **não existe no firmware de fábrica**. Se
+> um documento citar `0x1A5400` como se fosse do firmware, é engano.
+
+### A regra que fica
+
+**Volta um passo por vez, testado no aparelho, e nunca empacotado com
+algo que não foi pedido.**
+
+---
+
+## 4. Como gravar
+
+Pelo cartão SD, que é como o mantenedor atualiza:
 
 ```
-as 50 faixas com a mesma altura        home limpa
-Configurar praticamente correta        tema em tabela de 19 bytes
-```
-
-**Não confirmado ainda:** se os seis itens do Extras abrem as telas certas.
-
-O mantenedor atualiza **pelo cartão SD**, não por cabo. O `.up` sai junto
-de todo kit, automaticamente.
-
-## Como gravar
-
-```
-1. copie  firmware/RELEASE/OpenPod 1.8/OpenPod 1.8.up  para a raiz do cartão como  update.up
-2. Configurar → Atualizar por SD → Sim
-3. o aparelho reinicia e se atualiza sozinho
-4. APAGUE o update.up do cartão
+1. copie  firmware/RELEASE/OpenPod Core 1.0.1/OpenPod_Core_1.0.1.up
+   para a RAIZ do cartao, com o nome  update.up
+2. no aparelho: Configurar -> Atualizar por SD -> Sim
+3. ele reinicia e se atualiza
+4. APAGUE o update.up do cartao
 ```
 
 O `.up` **não confere estado** — reescreve a imagem inteira, então
-funciona a partir de qualquer versão. Não existe "gravar o kit errado".
+funciona a partir de qualquer versão.
 
-## Como recuperar, se quebrar
+> **A primeira instalação sobre o firmware de FÁBRICA tem de ser por
+> cabo.** O firmware de fábrica não tem caminho de interface para o
+> update por SD — o item "Atualizar por SD" é justamente uma das coisas
+> que a Core 1.0 traz. Depois disso, o cartão resolve.
+
+> ⚠️ O kit por cabo da 1.0.1 é **diferencial** (2 setores) e **recusa** se
+> o aparelho não estiver na Core 1.0. O kit da Core 1.0 foi removido na
+> limpeza. Para ir de fábrica até a 1.0.1 hoje: gere a imagem completa com
+> `tools/build.py --receita core1.0` e grave por `recovery/`.
+
+---
+
+## 5. Como recuperar, se quebrar
 
 ```
 USB conectado  ->  segure VOLUME ↓  ->  aperte RESET
@@ -163,89 +137,80 @@ USB conectado  ->  segure VOLUME ↓  ->  aperte RESET
 
 O aparelho enumera como `301a:2800` e a flash fica toda acessível, mesmo
 com o firmware destruído. Foi assim que o primeiro aparelho voltou depois
-do incidente da V028. Material em `historico/recuperacao/`.
+do incidente da V028.
+
+```
+recovery/                  o caminho de volta, com SHA256SUMS
+recovery/modo_download/    smtlink_dump, firmware de fabrica, ptable 0xD000
+recovery/imagens/          GN438_original.bin, OpenPod_Core_1.0.1.bin,
+                           ptable_D000_original.bin, restaura_original.up
+```
 
 **Este hardware é recuperável por software, sempre.** A ROM de máscara
 roda antes de qualquer coisa que a gente escreva.
 
-## O que foi feito
+---
 
-| | |
-|---|---|
-| home | lista estilo nano, barra de seleção de borda a borda, sem chevron |
-| Extras e Configurar | mesma altura de linha, sem engrenagem, sem separador, mesma cor |
-| todas as listas | rolagem escondida (59 telas), largura de texto igual |
-| textos | 175 revisados; cabem em 113 px: 124 → 176 |
-| tela Sobre | título curto, versão em uma linha, sem ícone |
-| atualização por SD | `Configurar → Atualizar por SD` arma o flag e reinicia |
-| carimbo de versão | automático no gerador de kit (regra R7) |
-| **barra superior** | **título em 37 telas, vindo de `get_string` (1.6)** |
-| **raio da seleção** | **barra quadrada nas 39 telas, como a home (1.6)** |
-| navegação | ~~M volta, VOL desce (1.7)~~ — **revertida na 1.8**, era o padrão do produto |
-
-## O que falta
-
-**1. Acabamento da barra nas subtelas** — o título está lá, mas a faixa
-em si continua preta e lisa, com altura diferente por tela (16 px onde o
-divisor é 10, 22 px onde é 7). A home tem degradê e separador, pintados
-na folha de imagem. Unificar exige mexer no objeto da faixa
-(`0x00D216F0`), não na folha. Só depois de ver a 1.7 no aparelho.
-
-**2. ESC morto nas subtelas** — a tecla `0x1B` cai num `pop` puro. Não
-foi tocada pela 1.7. Só importa se algum botão emitir `0x1B`; hoje não
-se sabe se algum emite.
-
-**3. As 28 telas fora da tabela de navegação** — não tratam `0x12` como
-"próximo", então continuam com VOL = voltar e M morto. Entre elas o
-**Now Playing**. Cada uma exige olhar o que o `0x12` faz lá.
-
-**4. Página 23 (`page_record_time`) sem título** — tem faixa e linhas,
-mas só carrega glifos de ícone; não identifiquei a tela. São 2 bytes na
-tabela `TITULOS` quando alguém souber o que ela é.
-
-## O que a 1.7 já confirmou no aparelho
+## 6. Onde estão as coisas
 
 ```
-barra superior com titulo   OK   nas telas de lista
-alturas de linha            OK   "todos no tamanho certo"
-codigo na area livre        OK   a rotina do titulo executou
-```
-
-Isso fecha a última reserva sobre a área livre: o V017 provou **leitura**
-de dado por XIP, o V020 provou **execução**, e agora uma rotina nossa de
-verdade roda em produção.
-
-## O que ainda não foi visto na tela
-
-- se alguma das 37 telas ficou com título errado ou sobreposto;
-- se a barra de seleção ficou quadrada (o raio entrou junto, na 1.6/1.7);
-- se remover o cartão SD na home ainda apaga o título (era defeito da
-  1.5; a correção nunca foi reproduzida no aparelho, só no código).
-
-## Onde estão as coisas
-
-```
-tools/           20+ ferramentas, cada uma com o porquê no cabeçalho
-docs/            30 documentos
 firmware/
-  ORIGINAL/      GN438_original.bin — sagrado, sha b7cd5eb9...
-  WORKING/       a cadeia V001..V053
+  ORIGINAL/      GN438_original.bin — SAGRADO, sha b7cd5eb9...
+  RELEASE/       so  OpenPod Core 1.0.1/
+  WORKING/       analysis, core_1.0.1, rebuilt_original, restore.up
   VENDOR/        Flashloader SL-DEV oficial da Shenju
-historico/
-  kits/          82 kits antigos
-  releases/      OpenPod 1.0 .. 1.4
-  recuperacao/   o que salvou o aparelho
+  READBACK/      leituras do aparelho
+
+recovery/        caminho de volta + modo_download
+marte/           a BASE VISUAL — mockups e paleta de referencia
+analysis/        a engenharia reversa
+extracted/       recursos extraidos do firmware
+tools/           ferramentas; cada uma com o porque no cabecalho
+docs/            o entendimento do firmware
 ```
 
-## As regras que custaram versão
+### Por onde começar a entender o firmware
+
+```
+FIRMWARE_ANALYSIS.md   as 23 perguntas respondidas
+FIRMWARE_MAP.md        o mapa real dos 2 MiB
+ARQUITETURA.md         MVP, camadas, caminho da tecla
+GUI_ANALYSIS.md        a GUI — e a PARTE IV, as medicoes herdadas
+SIMBOLOS.md            412 funcoes recuperadas
+COBERTURA.md           o que sabemos e o que NAO sabemos
+MARTE_ALVO.md          a especificacao visual do produto
+```
+
+---
+
+## 7. Investigações em aberto
+
+Nenhuma delas bloqueia a 1.0.1. São conhecimento que falta.
+
+| # | em aberto |
+|---|---|
+| 1 | **A camada de mensagem não quebra linha.** `page_info` monta uma mensagem (descritor `0x008238F0`, entregue a `0x00D0D818`) e esse caminho ignora `\n`. Por isso a tela Sobre mostra uma linha só. Confirmado na tela |
+| 2 | **O desenho do descanso de tela.** Não existe página de descanso — só `page_scrsaver_time`, que é a configuração. O relógio grande é desenhado sem transição de página, e o chrome só é destruído em `view_page_create` |
+| 3 | **ESC (`0x1B`) morto nas subtelas** — cai num `pop` puro. Só importa se algum botão emitir `0x1B`; não se sabe se algum emite |
+| 4 | **28 telas fora da tabela de navegação** — não tratam `0x12` como "próximo". Entre elas o **Now Playing** |
+| 5 | **Página 23 (`page_record_time`) não identificada** — tem faixa e linhas, mas só carrega glifos de ícone |
+| 6 | **O contador da lista de Música não foi localizado** — a página `0x03` só faz `align(CENTER)` e `set_width` |
+
+---
+
+## 8. As regras que custaram versão
 
 Estão em `PROTOCOLO_GRAVACAO.md` (R0–R7) e em
-`OpenPod_Design_System.md` (R-L1 a R-L3). As três que mais se repetiram:
+`OpenPod_Design_System.md` (R-L1 a R-L3). As que mais se repetiram:
 
-- **Um caminho corrigido, outro esquecido.** V016, V027, V031, e a barra
-  de rolagem. Quando um patch muda a aparência de um objeto, enumerar
-  **todos** os pontos que criam ou repintam aquele objeto.
+- **Um caminho corrigido, outro esquecido.** Quando um patch muda a
+  aparência de um objeto, enumerar **todos** os pontos que criam ou
+  repintam aquele objeto.
 - **Semelhança visual não é evidência de código compartilhado.** Extras e
   Configurar *parecem* a mesma tela e são funções diferentes.
 - **Prévia em ASCII prova correção, não estética.** Para decisão visual,
   o aparelho é o único juiz.
+- **Nenhuma versão nova é gerada sem o mantenedor pedir.** Corrige-se,
+  valida-se, e só então se empacota.
+- **Aparência se decide pela referência do Marte**, ou pelos objetos
+  dele — nunca por invenção.

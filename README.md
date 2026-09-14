@@ -4,11 +4,16 @@ Transformar o **Iigenai GN-438** — um player YP3/Smartlink de baixo custo
 — num player com a experiência de um iPod, progressivamente, sem
 reescrever o firmware do zero.
 
-> **Estado em 2026-09-14:** projeto reiniciado como **OpenPod Core**. O
-> aparelho está com o **firmware de fábrica**, por decisão, para a nova
-> linha começar de uma base conhecida.
+> **Estado em 2026-09-14:** o aparelho está na **OpenPod Core 1.0.1**, a
+> única versão STABLE. A linha 2.x (Saturno, chrome, Marte-paleta,
+> carcaça) foi **removida** neste dia, a pedido do mantenedor: ela
+> acoplava a barra superior a tudo o mais, e mudanças pedidas vinham com
+> carona não pedida.
 >
-> Entrada obrigatória: **[`docs/RESTART_PLAN.md`](docs/RESTART_PLAN.md)**.
+> **A referência é a Core 1.0.1 e o que foi desmontado e entendido do
+> firmware.** Nada de versão anterior serve como base.
+>
+> Entrada obrigatória: **[`docs/ESTADO_ATUAL.md`](docs/ESTADO_ATUAL.md)**.
 
 ---
 
@@ -16,8 +21,7 @@ reescrever o firmware do zero.
 
 | quero... | leia |
 |---|---|
-| entender o estado e o plano | `docs/RESTART_PLAN.md` |
-| saber o que está no aparelho | `docs/ESTADO_ATUAL.md` |
+| entender o estado e o que está no aparelho | `docs/ESTADO_ATUAL.md` |
 | as regras do projeto | `CLAUDE.md` |
 | voltar o aparelho ao de fábrica | `recovery/VOLTAR_AO_ORIGINAL.md` |
 | como gravar, e o que já custou caro | `docs/PROTOCOLO_GRAVACAO.md` |
@@ -31,8 +35,8 @@ reescrever o firmware do zero.
 ```
 firmware/
   ORIGINAL/     GN438_original.bin — sagrado, modo 444, sha b7cd5eb9…
-  WORKING/      a cadeia v001..v101 e as saídas de build
-  RELEASE/      os kits publicados: OpenPod 1.4 .. 3.1, v044
+  WORKING/      a cópia de trabalho e a imagem da Core 1.0.1
+  RELEASE/      o único kit publicado: OpenPod Core 1.0.1
   VENDOR/       Flashloader SL-DEV oficial da Shenju
   READBACK/     leituras feitas do aparelho
 
@@ -43,14 +47,13 @@ update/         pacotes .up para atualizar pelo cartão SD
 
 tools/          a receita e as ferramentas. `build.py` é o centro
 tests/          testes que não falam com o aparelho
-experiments/    diagnósticos e sondas — nunca viram release
 patches/        patches avulsos
 analysis/       varreduras, disassembly, mapas
 extracted/      gráficos, fontes e recursos extraídos
 assets/         a logo do OpenPod e material de referência
 marte/          o estudo NanoClone: paleta, ícones adaptados, mockups
-docs/           46 documentos; `reports/` guarda os relatórios longos
-historico/      kits e releases antigos, e o material da recuperação
+                — A BASE VISUAL do projeto
+docs/           o entendimento do firmware; `reports/` guarda os longos
 ```
 
 ---
@@ -61,10 +64,12 @@ Não é mais uma corrente de patches aplicados à mão. É uma **receita
 declarada**:
 
 ```sh
-python3 tools/build.py --receita core1.0   --saida firmware/WORKING/core10.bin
-python3 tools/build.py --receita interface --saida firmware/WORKING/iface.bin
+python3 tools/build.py --receita core1.0 --saida firmware/WORKING/core101.bin
 python3 tools/build.py --so-lista
 ```
+
+**Existe UMA receita, `core1.0`, de seis passos.** As receitas 2.x foram
+removidas em 2026-09-14 — ver `docs/ESTADO_ATUAL.md` §3.
 
 O `build.py` confere o sha do ORIGINAL antes de começar, roda cada passo
 num arquivo próprio, impõe um **mapa de endereços da área livre** (cada
@@ -75,7 +80,6 @@ Depois:
 
 ```sh
 python3 tools/validate_firmware.py <imagem>     # estrutura, CRCs, partições
-python3 tools/audita_chrome.py     <imagem>     # divergências de tema
 python3 tools/gera_up.py --in <imagem> --out <pacote.up>
 python3 tools/make_install_kit.py  --base ... --alvo ...   # kit de setores
 ```

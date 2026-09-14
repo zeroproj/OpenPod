@@ -211,59 +211,20 @@ RECEITAS = {
     "core1.0": CORE_1_0,
 }
 
-# Patches deliberadamente FORA da receita, e por que.
+# Ferramentas que existem mas NAO entram na receita, e por que.
+#
+# Esta lista tinha 23 entradas ate 2026-09-14. As outras 22 eram patches
+# de interface da linha 2.x — chevron, Extras, sonda, scrollbar, raio,
+# respiro, navegacao, e seis marcados so como "experimento". Os arquivos
+# foram APAGADOS junto com a linha, a pedido do mantenedor:
+#
+#     "experiments sao problematicas"
+#     "nao podemos usar essas referencias, elas nao sao boas"
+#
+# Manter a lista descrevendo arquivos inexistentes seria manter o convite
+# a reaproveita-los. Esta tudo no git, no commit da limpeza.
 FORA = [
-    # O CHEVRON FICA FORA — o mantenedor lembrou, e a medicao confirmou.
-    #
-    # Eu o inclui porque `afere_fora.py` mostrou "RECUSA" na 2.4 e eu li
-    # isso como "ja aplicada". **Recusa tambem pode ser incompativel**, e
-    # era esse o caso: ele aborta na 2.4 porque calcula faixa livre de
-    # 0 px. Na 2.4 os chevrons estao APAGADOS (indice de fundo 0x01);
-    # incluir esta ferramenta os REDESENHAVA, com indice 0x00.
-    #
-    # Falha do meu instrumento de medicao, nao da ferramenta.
-    ("patch_chevron.py",          "os chevrons ficam APAGADOS, nao menores"),
-    # --- O EXTRAS FICA DE FORA, e isto e decisao, nao esquecimento.
-    #
-    # `patch_extras` + `_fix` + `_fix2` sao TRES patches empilhados no
-    # mesmo ponto, e mesmo assim os seis itens nao abrem no aparelho. A
-    # sonda (`patch_sonda.py`) tentou medir o indice que chega e a
-    # leitura saiu ambigua — o titulo so e atualizado quando o rotulo e
-    # recriado, e ele nem sempre e.
-    #
-    # Sem o patch, o Extras volta ao comportamento de fabrica: os tres
-    # primeiros itens abrem (Despertador, Imagem, Dicionario) e os outros
-    # tres nao fazem nada. E pior em funcao, melhor em honestidade: nada
-    # na receita finge funcionar.
-    ("patch_extras.py",           "Extras nao funciona; ver docs/ESTADO_ATUAL.md"),
-    ("patch_extras_fix.py",       "idem"),
-    ("patch_extras_fix2.py",      "idem — msg[0x0a]=2 nao mudou o sintoma"),
-    # --- diagnostico e teoria derrubada
-    ("patch_sonda.py",            "instrumento de diagnostico, nao produto"),
-    ("patch_fundo_display.py",    "hipotese DERRUBADA pelo aparelho: o fundo "
-                                  "branco do display nao e a causa da faixa"),
-    ("patch_titulo_orfao.py",     "INCORPORADO ao patch_titulos"),
-    ("patch_scrollbar.py",        "superado pelo scrollbar3"),
-    ("patch_scrollbar2.py",       "superado pelo scrollbar3"),
-    ("patch_bar_height.py",       "superado pelo Saturno (altura_faixa)"),
-    # patch_status_bar / fix_status_bar SAIRAM desta lista em 2026-09-14:
-    # estavam nos DOIS lugares ao mesmo tempo (RECEITA e FORA). A receita
-    # e que esta certa — `afere_fora.py` mostrou que o `patch_status_bar`
-    # grava a string "OpenPod" em 0x1A3038, usada no BOOT e no titulo da
-    # home, e a 3.0 saiu sem as duas coisas por causa desta linha.
-    ("patch_raio_selecao.py",     "tentativa falha; ver fix_raio_selecao"),
-    ("fix_raio_selecao.py",       "superado pelo Saturno (campo raio)"),
-    ("patch_respiro_lista.py",    "superado pelo Saturno (inicio_lista)"),
-    ("patch_lista_sistema.py",    "superado pelo Saturno"),
-    ("patch_home_padrao.py",      "superado pelo S4"),
-    ("patch_navegacao.py",        "REVERTIDO na 1.8 — o padrao de fabrica vale"),
-    ("patch_versao.py",           "aplicado pelo make_install_kit (regra R7)"),
-    ("patch_home_icon.py",        "experimento de icone unico"),
-    ("patch_fonte_negrito.py",    "experimento"),
-    ("patch_largura_barra.py",    "experimento"),
-    ("patch_battery_y.py",        "experimento"),
-    ("patch_selecao_criacao.py",  "experimento"),
-    ("make_v030.py",              "rede de seguranca, aplicada a parte"),
+    ("patch_versao.py",  "aplicado pelo make_install_kit (regra R7)"),
 ]
 
 
