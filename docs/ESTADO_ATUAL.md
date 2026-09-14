@@ -19,10 +19,10 @@ OpenPod Core 1.0           <- GRAVADA E TESTADA em 14/09
                               DEFEITOS: fundo da abertura branco com a
                               logo preta; tela Informacoes sobreposta
 
-OpenPod Core 1.0.1         <- GERADA, corrige os dois
-                              firmware/RELEASE/OpenPod Core 1.0.1/
-                              10 bytes sobre a 1.0, 2 setores
-                              instalar PELO CARTAO (e testa o recurso)
+OpenPod Core 1.0.1         <- NO APARELHO, e STABLE
+                              instalada PELO CARTAO, funcionou
+                              "Tudo funcionou" — mantenedor, 14/09
+                              === BASELINE da linha Core ===
 ```
 
 > **A primeira instalacao da Core 1.0 tem de ser POR CABO**, pelo kit de
@@ -43,6 +43,10 @@ depois              fabrica       sistema identico, area livre 0xFF,
                                   PSMP preservada
 fotografia          recovery/leitura/antes_20260914_*.bin  (na maquina Linux)
 ```
+
+> **A Core 1.0.1 é a baseline.** Versões novas partem dela, não do
+> ORIGINAL — é o que "STABLE" autoriza (§6 do prompt-mestre). Para
+> reconstruí-la do zero: `tools/build.py --receita core1.0`.
 
 > **A fotografia do estado anterior está só na máquina Linux.** É a única
 > cópia do que havia no aparelho — vale trazer para `firmware/READBACK/`.

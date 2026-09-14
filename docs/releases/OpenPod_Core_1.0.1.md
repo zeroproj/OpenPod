@@ -4,9 +4,15 @@
 Base       OpenPod Core 1.0, gravada e testada no aparelho
 Receita    tools/build.py --receita core1.0      6 passos
 Gerada     2026-09-14
-Status     EXPERIMENTAL
+Status     STABLE  <- declarado pelo mantenedor em 2026-09-14,
+                      depois de ver o aparelho
 Kit        firmware/RELEASE/OpenPod Core 1.0.1/
+Baseline   e a base valida para a Core 1.1 em diante
 ```
+
+> **STABLE não é um carimbo de qualidade: é uma autorização.** Quer dizer
+> que esta imagem pode ser usada como base de versões seguintes, sem
+> reconstruir tudo a partir do ORIGINAL. Regra §6 do prompt-mestre.
 
 Versão de **correção**. Mesmo objetivo da 1.0; conserta os dois defeitos
 que o aparelho mostrou.
@@ -189,14 +195,33 @@ sudo sh flash_OpenPod_Core_1.0.1.sh /opt/smartlink_flash
 
 ---
 
-## 7. O que olhar
+## 7. ✅ Confirmado no aparelho — 2026-09-14
 
-1. **Abertura** — a logo aparece sobre **preto**, sem retângulo claro em
-   volta?
-2. **Configurar → Informações** — duas linhas: `Sobre o aparelho` e
-   `OpenPod Core 1.0.1`, sem sobrepor?
-3. **Atualizar por SD** — se você instalou por cartão, ele funcionou?
-4. O resto continua igual à 1.0?
+Relato do mantenedor: **"Tudo funcionou."**
+
+```
+abertura                  logo sobre PRETO, sem moldura clara        OK
+Configurar > Informacoes  duas linhas, sem sobrepor                  OK
+Atualizar por SD          instalada PELO CARTAO, funcionou           OK
+resto                     igual a 1.0                                OK
+```
+
+### O que o item 3 fecha, e não é pouco
+
+A instalação por cartão funcionou **de ponta a ponta**, numa imagem
+gerada pelo nosso pipeline:
+
+```
+build.py -> gera_up.py -> update.up no cartao
+   -> Configurar > Atualizar por SD
+      -> HAL_pmu_sd_update_flag_set (0x00CF6CA0, orfa de fabrica)
+         -> reboot -> bootloader le 0:/update.up
+            -> grava -> boota na versao nova
+```
+
+Cada elo desse caminho era, até hoje, **análise estática**. Agora é
+**CONFIRMADO**. A partir daqui toda versão instala sem cabo, sem abrir o
+aparelho, sem modo download.
 
 ---
 

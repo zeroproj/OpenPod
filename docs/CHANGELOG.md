@@ -3940,3 +3940,34 @@ Medido agora: a tela tem **dois** espaços de texto, o título
 Decisão do mantenedor: voltar a uma linha só, como da 1.4 à 3.0. O
 cabeçalho do `patch_versao.py` foi corrigido — a afirmação errada não
 fica no repositório.
+
+### ✅ Core 1.0.1 declarada STABLE — 2026-09-14
+
+Mantenedor, depois de ver o aparelho: **"Tudo funcionou."**
+
+```
+abertura                  logo sobre PRETO, sem moldura clara   OK
+Configurar > Informacoes  duas linhas, sem sobrepor             OK
+Atualizar por SD          instalada PELO CARTAO, funcionou      OK
+```
+
+**A Core 1.0.1 e a BASELINE da linha Core.** Versoes novas partem dela,
+nao do ORIGINAL — e o que STABLE autoriza (§6 do prompt-mestre).
+Reconstruivel a qualquer momento: `tools/build.py --receita core1.0` sai
+sempre em `7312fbd066b1a31e...`.
+
+### O caminho de atualizacao inteiro deixou de ser teoria
+
+A instalacao por cartao funcionou de ponta a ponta, com uma imagem gerada
+pelo nosso pipeline:
+
+```
+build.py -> gera_up.py -> update.up no cartao
+  -> Configurar > Atualizar por SD
+     -> HAL_pmu_sd_update_flag_set (0x00CF6CA0, orfa no firmware de fabrica)
+        -> reboot -> bootloader le 0:/update.up -> grava -> boota
+```
+
+Cada elo era **analise estatica**. Agora e **CONFIRMADO**. Consequencia
+pratica: daqui em diante nenhuma versao precisa de cabo, de modo download
+ou de abrir o aparelho.

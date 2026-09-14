@@ -472,6 +472,24 @@ linhas que cabem nos 113 px: `OpenPod Core 1.0` (102 px) e `GN-438`
 > última ferramenta fora do MAPA. Corrigir quando o carimbo entrar na
 > receita.
 
+### 11.4-quater ✅ STABLE — 2026-09-14
+
+**A Core 1.0.1 rodou no aparelho e o mantenedor a declarou STABLE.**
+É a baseline da linha Core.
+
+```
+imagem      7312fbd066b1a31e508a51c9c44c5e203e17e6d1e1b9719c0df7e37e7b250d34
+carimbada   36125f5665b8613e0d96215e2ffcf36170d847068d0c72e572167fe506400c1f
+receita     tools/build.py --receita core1.0   (deterministica)
+relatorio   docs/releases/OpenPod_Core_1.0.1.md
+```
+
+O §18 do prompt-mestre está **cumprido**: update por SD (confirmado de
+ponta a ponta), informações do produto, logo do OpenPod, português do
+Brasil. Com uma ressalva registrada: a tela Informações mostra nome e
+versão, não as quatro linhas de §18.2 — a camada de mensagem não quebra
+linha.
+
 ### 11.4-ter ✅ GERADA — 2026-09-14
 
 ```

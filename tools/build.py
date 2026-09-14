@@ -231,6 +231,16 @@ INTERFACE = [
 # ---------------------------------------------------------------------------
 # OPENPOD CORE 1.0 — deliberadamente pequena.
 #
+# Esta receita produz a **OpenPod Core 1.0.1**, declarada STABLE pelo
+# mantenedor em 2026-09-14 depois de rodar no aparelho: logo sobre preto,
+# tela Informacoes certa, e instalada PELO CARTAO — o que confirmou o
+# caminho de atualizacao inteiro.
+#
+#     imagem      7312fbd066b1a31e508a51c9c44c5e203e17e6d1e1b9719c0df7e37e7b250d34
+#     carimbada   36125f5665b8613e0d96215e2ffcf36170d847068d0c72e572167fe506400c1f
+#
+# E a BASELINE da linha Core: versoes novas podem partir dela.
+#
 # Base decidida pelo mantenedor em 2026-09-14: o firmware ORIGINAL.
 #
 # O objetivo desta versao nao e parecer melhor: e ser uma fundacao em que

@@ -1,5 +1,20 @@
 # GN-438 Update Mechanism
 
+> ## ✅ CONFIRMADO DE PONTA A PONTA — 2026-09-14
+>
+> A OpenPod Core 1.0.1 foi instalada **pelo cartão SD**, numa imagem
+> gerada pelo nosso pipeline, e funcionou:
+>
+> ```
+> build.py -> gera_up.py -> update.up na raiz do cartao
+>   -> Configurar > Atualizar por SD
+>      -> HAL_pmu_sd_update_flag_set (0x00CF6CA0)
+>         -> reboot -> bootloader le 0:/update.up -> grava -> boota
+> ```
+>
+> Tudo o que este documento descreve abaixo era **análise estática** até
+> essa data. O mecanismo está provado no hardware.
+
 Análise do mecanismo oficial de atualização por microSD, e avaliação de
 risco para o primeiro teste em hardware.
 
