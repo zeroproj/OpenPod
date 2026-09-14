@@ -2,9 +2,9 @@
 # flash_OpenPod_Core_2.1.sh — OpenPod. GERADO por tools/make_install_kit.py.
 # NAO EDITE A MAO: as constantes sao calculadas a partir das imagens.
 #
-# Marte M1: o tema claro do iPod nano, em 12 bytes de tabela.
+# Marte M1: tema claro do nano + a segunda selecao da home.
 #
-# Grava 2 setores de 4096 B (8 KiB). O bootloader (0x0..0xD000)
+# Grava 3 setores de 4096 B (12 KiB). O bootloader (0x0..0xD000)
 # nao e endereçado. write_flash sempre com 0 no 2o argumento, a
 # partir de um arquivo por setor (docs/WRITE_FLASH_SEMANTICS.md).
 #
@@ -29,6 +29,7 @@ die() {
     if [ "$WROTE" -ne 0 ]; then
         log "*** JA HAVIA GRAVADO $WROTE setor(es). NAO DESLIGUE O APARELHO."
         log "*** REVERSAO para o estado ANTERIOR (a base deste kit):"
+        log "***   sudo $TOOL --id $DEV write_flash 0x12E000 0 0x1000 base_12E000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x1A4000 0 0x1000 base_1A4000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x1A5000 0 0x1000 base_1A5000.bin"
         log "*** Depois rode diag.sh e confira antes de desligar."
@@ -42,7 +43,8 @@ size() { python3 -c "import os,sys;print(os.path.getsize(sys.argv[1]))" "$1"; }
 rsha() { python3 -c "import hashlib,sys;d=open(sys.argv[1],'rb').read()[int(sys.argv[2]):int(sys.argv[2])+int(sys.argv[3])];print(hashlib.sha256(d).hexdigest())" "$1" "$2" "$3"; }
 
 log "======================================================================"
-log " OpenPod — gravacao do OPENPOD CORE 2.1   (2 setores, 8 KiB)"
+log " OpenPod — gravacao do OPENPOD CORE 2.1   (3 setores, 12 KiB)"
+log " 0x12E000 +0x1000   <- OpenPod_Core_2.1_12E000.bin"
 log " 0x1A4000 +0x1000   <- OpenPod_Core_2.1_1A4000.bin"
 log " 0x1A5000 +0x1000   <- OpenPod_Core_2.1_1A5000.bin"
 log " bootloader (0x0..0xD000): NAO ENDERECADO"
@@ -64,8 +66,10 @@ ck_file() {
     obtido   $g"
     log "        OK   $1"
 }
+ck_file "OpenPod_Core_2.1_12E000.bin" de27d9691ff12768bd2c4ee7b11259dd56ae472cbce6d099875720a5d6b0e380
 ck_file "OpenPod_Core_2.1_1A4000.bin" ca3d72e89620723cd4d4b475e5855de49c0591d062c647f96bec626a3b2fbe2b
 ck_file "OpenPod_Core_2.1_1A5000.bin" 97ddd1cd48b3fe82d9d1eeb56581c9c786e0be51746d87687e5c2ccc9df5897c
+ck_file "base_12E000.bin" 7a025bbb63b5a88548f63bc839d5eebb4f8f2449e5f9c119011735d33e742f6d
 ck_file "base_1A4000.bin" 02ead2577c26da4138c7b5b1043a8f53de3b74b8f3de17a2fff14457903bf9ae
 ck_file "base_1A5000.bin" 0fe0d3f4359e92a39d854d76e860084f6595f73f9911a15017a0cfc512594fe3
 
@@ -157,8 +161,8 @@ ck "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3
 log ""
 log "======================================================================"
 log " Tudo conferido. A proxima etapa MODIFICA o firmware do aparelho."
-log "   grava  : 8 KiB em 2 setores"
-log "   muda   : Marte M1: o tema claro do iPod nano, em 12 bytes de tabela."
+log "   grava  : 12 KiB em 3 setores"
+log "   muda   : Marte M1: tema claro do nano + a segunda selecao da home."
 log "   NAO toca: bootloader, TONE, PSMP"
 log "======================================================================"
 printf 'Digite EXATAMENTE  GRAVAR  para continuar: '
@@ -181,8 +185,9 @@ wr() {
     obtido   $g"
     log "        OK — setor confere"
 }
-wr "4/6 1/2" 0x1A4000 "OpenPod_Core_2.1_1A4000.bin" ca3d72e89620723cd4d4b475e5855de49c0591d062c647f96bec626a3b2fbe2b
-wr "4/6 2/2" 0x1A5000 "OpenPod_Core_2.1_1A5000.bin" 97ddd1cd48b3fe82d9d1eeb56581c9c786e0be51746d87687e5c2ccc9df5897c
+wr "4/6 1/3" 0x12E000 "OpenPod_Core_2.1_12E000.bin" de27d9691ff12768bd2c4ee7b11259dd56ae472cbce6d099875720a5d6b0e380
+wr "4/6 2/3" 0x1A4000 "OpenPod_Core_2.1_1A4000.bin" ca3d72e89620723cd4d4b475e5855de49c0591d062c647f96bec626a3b2fbe2b
+wr "4/6 3/3" 0x1A5000 "OpenPod_Core_2.1_1A5000.bin" 97ddd1cd48b3fe82d9d1eeb56581c9c786e0be51746d87687e5c2ccc9df5897c
 rm -f "$WORK/sec.bin"
 
 log "[5/6] lendo a flash inteira e conferindo o estado DEPOIS..."
@@ -197,7 +202,7 @@ ck2() {
 }
 ck2 "bootloader" 0 51532 861184003923634be0f2ae9883456035b40d1ea72f97682890238edfae3acb31
 ck2 "ptable" 53248 64 9f93d4435e7cb819b2dad2f38edf91fb0a0af44654c4d9fcd3df174bf3380a2d
-ck2 "FIRM" 57344 1647984 de569488054688e457a64d59fa59c36caaf745d46e59ebca6ba98ae829796eef
+ck2 "FIRM" 57344 1647984 3e4169cc0e3e1e85c51fe53eb860873dad7d6d8a1cc401cb946d1cc34bca4fae
 ck2 "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3f8b4ace
 
 log ""
@@ -210,6 +215,7 @@ else
     log " [6/6] RESULTADO: ALGUMA REGIAO NAO CONFERE"
     log ""
     log "   NAO desligue o aparelho. REVERSAO para o estado ANTERIOR:"
+    log "     sudo $TOOL --id $DEV write_flash 0x12E000 0 0x1000 base_12E000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x1A4000 0 0x1000 base_1A4000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x1A5000 0 0x1000 base_1A5000.bin"
 fi

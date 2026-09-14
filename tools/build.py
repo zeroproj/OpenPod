@@ -295,6 +295,12 @@ CORE_2_0 = [p for p in INTERFACE
 # responde uma pergunta so — o tema claro do nano agrada neste aparelho?
 # ---------------------------------------------------------------------------
 CORE_2_1 = CORE_2_0 + [
+    # Entra JUNTO com a paleta, e nao numa 2.2, por um motivo: sem ele a
+    # home mostra DUAS selecoes — o item pintado na criacao fica com cor
+    # de letra, e a barra anda sem limpa-lo. Com o tema claro esse item
+    # ficaria azul sobre branco, contaminando justamente a pergunta que a
+    # 2.1 existe para fazer. A 2.1 nao chegou a ser gravada.
+    ("fix_barra_selecao_criacao.py", [], "a segunda selecao da home, 4 B"),
     ("patch_marte_paleta.py", [], "Marte M1: o tema claro do iPod nano"),
 ]
 
