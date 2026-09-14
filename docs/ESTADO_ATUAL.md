@@ -19,7 +19,14 @@ OpenPod Core 1.0           <- GRAVADA E TESTADA em 14/09
                               DEFEITOS: fundo da abertura branco com a
                               logo preta; tela Informacoes sobreposta
 
-OpenPod Core 2.0           <- GERADA, aguardando gravacao
+OpenPod Core 2.1           <- GERADA. Marte M1: o tema claro do nano,
+                              10 bytes na tabela. EXPERIMENTAL
+
+OpenPod Core 2.0           <- NO APARELHO. A carcaca funciona:
+                              home com os 9 itens, Configurar certa,
+                              titulo na faixa. DEFEITO: o branco do
+                              conteiner aparece onde nao ha item
+                              (Despertador, listas vazias)
                               a carcaca: home em lista, faixa com titulo,
                               tabela de tema. EXPERIMENTAL.
                               volta em 1 comando: RECOVERY.sh --alvo core

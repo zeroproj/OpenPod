@@ -287,10 +287,22 @@ CORE_2_0 = [p for p in INTERFACE
 # `patch_titulos` recusou: "id 216 (pagina 0x53) aponta fora da imagem".
 # Ele usa esse id como TITULO da pagina 0x53. Medido, nao suposto.
 
+# ---------------------------------------------------------------------------
+# CORE 2.1 — Marte M1. A carcaca da 2.0 mais doze bytes de cor.
+#
+# Sai separada da 2.0 de proposito: juntas, um defeito na tela nao diria
+# se foi a carcaca ou a paleta. Separada, e reversivel em 12 bytes e
+# responde uma pergunta so — o tema claro do nano agrada neste aparelho?
+# ---------------------------------------------------------------------------
+CORE_2_1 = CORE_2_0 + [
+    ("patch_marte_paleta.py", [], "Marte M1: o tema claro do iPod nano"),
+]
+
 RECEITAS = {
     "interface": INTERFACE,
     "core1.0":   CORE_1_0,
     "core2.0":   CORE_2_0,
+    "core2.1":   CORE_2_1,
 }
 
 # Patches deliberadamente FORA da receita, e por que.
