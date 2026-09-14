@@ -97,6 +97,10 @@ Cada uma tem um preço já pago; estão inteiras em
   por nada — confirmado no aparelho.
 - **Conferência é por releitura do aparelho**, nunca por hash de arquivo
   no PC.
+- **Aparência se decide pela referência, não por gosto.** Sempre o Marte
+  — `marte/mockups/marte_completo.png` e `marte/paleta/nanoclone.json` —
+  ou os próprios objetos do NanoClone em `marte/adaptado/`. A regra e o
+  porquê em [`docs/MARTE_ALVO.md`](docs/MARTE_ALVO.md) §0.
 - **Nada de hipótese apresentada como fato.** Cada afirmação carrega
   classe: CONFIRMADO, PROVÁVEL, HIPÓTESE, DESCONHECIDO.
 

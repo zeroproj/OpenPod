@@ -9,6 +9,45 @@
 
 ---
 
+## 0. A REGRA — decidida pelo mantenedor em 2026-09-14
+
+> *"Sempre usar o Marte como referência, ou usar os próprios objetos
+> deles."*
+
+Toda decisão visual do OpenPod se resolve por uma destas duas vias, nesta
+ordem:
+
+1. **A referência** — `marte/mockups/marte_completo.png` e o
+   `marte/paleta/nanoclone.json`. Medida, não impressão.
+2. **Os próprios objetos do NanoClone** — `marte/adaptado/`, já cortados
+   na nossa medida, e `marte/referencia/` com os 16 bitmaps originais.
+
+**Não inventar.** Se uma cor, uma altura, um espaçamento ou um ícone não
+estiver na referência nem nos ativos, a pergunta é *"o que o nano faz
+aqui?"* — e a resposta se procura no material, não se decide por gosto.
+
+### Por que a regra existe
+
+Este projeto já gastou versão inventando aparência. A referência elimina
+a classe inteira de discussão: em vez de *"ficou bom?"*, a pergunta vira
+*"bate com o alvo?"* — que tem resposta objetiva.
+
+E tem um efeito colateral que já apareceu: ao comparar com o mockup,
+**dois erros meus caíram no mesmo dia** (o uso errado de `cor_separador`
+e a suposição de que o degradê dependia de `BG_GRAD`). A referência não
+só orienta — ela **corrige**.
+
+### O que a regra obriga
+
+- Usar os pixels do NanoClone implica **CC BY-SA 3.0**: crédito a Billy
+  Blair, indicação de alteração, e share-alike nos derivados. Está em
+  `ATRIBUICAO.md`, e **falta pôr na tela Sobre** quando o primeiro
+  bitpixel dele entrar no firmware.
+- Onde o hardware não permitir seguir a referência, o desvio é
+  **registrado com o motivo** — não silencioso.
+
+---
+
 ## 1. O que o alvo tem, item a item
 
 ```
