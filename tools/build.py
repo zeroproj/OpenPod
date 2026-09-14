@@ -202,6 +202,11 @@ CORE_1_0 = [
     # Marte M-d. 1 byte no portao do LV_EVENT_DRAW_POST, no tratador de
     # evento compartilhado do lv_obj. Independente dos anteriores.
     ("patch_sem_rolagem.py",   [], "M-d: sem barra de rolagem, como o nano"),
+
+    # Marte M-e. 2 bytes: zera as DUAS strings de glifo DECORATIVO
+    # (U+F0C9 e U+F013). Os icones FUNCIONAIS — tique, volume,
+    # bluetooth, telefone — ficam. Independente dos anteriores.
+    ("patch_sem_icone_linha.py", [], "M-e: sem icone decorativo nas linhas"),
 ]
 
 

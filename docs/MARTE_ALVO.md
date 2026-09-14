@@ -127,7 +127,7 @@ Cada linha carrega classe de confiança, conforme a regra §7 do
 | **M-b** | home | **lista** | grade 3×3 de fábrica | **CONFIRMADO** | código novo |
 | **M-c** | título na faixa | "Menu", centralizado | faixa vazia, só a bateria | **VISTO NA TELA** | rotina + tabela |
 | ~~**M-d**~~ | barra de rolagem | **não existe** | ✅ **FEITO — Core 1.3** | — | **1 byte** |
-| **M-e** | ícones de linha | **não existem** | existem (engrenagens) | **VISTO NA TELA** | ⚠️ **SEM PORTÃO** — 37 pontos ou gancho (§2-ter) |
+| ~~**M-e**~~ | ícone **decorativo** de linha | não existe | ✅ **FEITO — Core 1.4**, 23 telas | — | **2 bytes** |
 | ~~**M-f**~~ cor | seleção | AZUL RGB(41,101,222) | ✅ **FEITO — Core 1.2**, 2 bytes | **PROVADO POR DIAGNÓSTICO** | falta só o degradê (= M-h) |
 | **M-g** | bateria | ícone colorido | glifo monocromático | PROVÁVEL | bitmap + M4 |
 | **M-h** | degradê da faixa | 19 linhas, `nanoclone.json` | faixa lisa | **CONFIRMADO** | rotina nova |
@@ -239,11 +239,49 @@ Apagar `U+F0C9` removeria ícone de **21 telas** e deixaria **16** com
 39 de `CRIA_LINHA`). É compartilhado, mas recebe **a linha**, não o
 ícone. Esconder um filho dali exige código novo.
 
-### Conclusão honesta
+### ✅ RESOLVIDO em 2 bytes — Core 1.4. E a conclusão acima estava errada
 
-**M-e custa 37 pontos, ou um gancho.** Diferente do M-f e do M-d, aqui a
-busca pelo portão foi feita e deu negativo — o firmware simplesmente não
-centraliza esta decisão.
+**A conclusão "sem portão, 37 pontos ou gancho" era minha, e caiu.**
+
+O que a derrubou não foi mais medição: foi uma observação do mantenedor
+na tela — *"a engrenagem sempre aparece e tem outras subtelas que aparece
+três tracinho"*.
+
+Com isso, o "21 de 37" deixou de ser inconsistência e virou **separação**:
+
+```
+U+F0C9  "tres tracinhos"   21 telas   DECORACAO   <- sai
+U+F013  engrenagem          2 telas   DECORACAO   <- sai
+------------------------------------------------- 23 telas
+U+F00C  tique / check      10 telas   FUNCIONAL   <- FICA
+U+F028  volume              2 telas   FUNCIONAL   <- FICA
+U+F294  bluetooth           1 tela    FUNCIONAL   <- FICA
+U+F095  telefone            1 tela    FUNCIONAL   <- FICA
+```
+
+As 16 telas que eu tratava como "sobra inconsistente" **nunca deveriam
+perder o ícone** — elas mostram informação, não enfeite.
+
+**O conserto:** zerar o primeiro byte das duas strings de glifo
+decorativo, que viram string vazia.
+
+```
+0x000D3261   EF -> 00     U+F0C9    38 ponteiros
+0x0005D622   EF -> 00     U+F013     2 ponteiros
+```
+
+Conferido: **nenhum ponteiro aponta para o meio** de nenhuma das duas.
+
+> **A lição, e ela vale mais que o patch:** o binário diz **quantos** e
+> **onde**. Ele não diz o que é **decoração** e o que é **informação** —
+> isso a tela responde, e quem olha a tela é o mantenedor. Eu tinha os
+> números certos e a conclusão errada por tentar decidir sozinho uma
+> pergunta de produto.
+
+**Em aberto, e só a tela responde:** se o texto encosta na esquerda ou
+fica um buraco onde estava o ícone. `lv_flex.c` está compilado, o que
+sugere que encosta. Se ficar buraco, é outro patch, sobre a posição do
+rótulo.
 
 ### ✅ M-f (a cor) — RESOLVIDO em 2 bytes. Core 1.2
 

@@ -1,0 +1,60 @@
+OpenPod Core 1.4 — sem icone decorativo nas linhas
+==================================================
+
+O QUE MUDA, em relacao a 1.3
+
+    UMA coisa: o icone DECORATIVO das linhas some.   2 bytes.
+
+        U+F0C9  "tres tracinhos"   21 telas   sai
+        U+F013  engrenagem          2 telas   sai
+
+O QUE **NAO** MUDA, e e de proposito
+
+    Os icones que sao INFORMACAO continuam:
+
+        U+F00C  o tique que marca a opcao ESCOLHIDA   10 telas
+        U+F028  volume      U+F294  bluetooth      U+F095  telefone
+
+    Em IDIOMA, o tique e o que diz qual idioma esta ativo. Tirar seria
+    seguir o mockup ao custo de quebrar a tela.
+
+    O ponto branco de estado (ex.: "Ativar alarme") e outro objeto, a
+    direita, e nao foi tocado.
+
+COMO GRAVAR
+
+    1. copie  OpenPod_Core_1.4.up  para a RAIZ do cartao, como update.up
+    2. Configurar -> Atualizar por SD -> Sim
+    3. APAGUE o update.up do cartao
+
+    Em Configurar > Informacoes deve aparecer  OpenPod Core 1.4
+
+O QUE OLHAR — e ha uma pergunta em ABERTO aqui
+
+    1. CONFIGURAR e DESPERTADOR: as engrenagens e os tracinhos sumiram?
+
+    2. >>> O TEXTO ENCOSTOU NA ESQUERDA, OU FICOU UM BURACO? <<<
+
+       Esta e a pergunta que o binario NAO respondeu. Depende de a linha
+       usar layout flex ou posicao absoluta para os filhos. O lv_flex.c
+       esta compilado, o que SUGERE que encosta — mas so a tela decide.
+
+       Se ficou buraco, nao e defeito inesperado: e o caso previsto, e o
+       conserto e outro patch pequeno sobre a posicao do rotulo.
+
+    3. IDIOMA: o TIQUE continua marcando o idioma ativo?
+       Se ele sumiu, isto e um defeito e deve ser relatado.
+
+    4. DESPERTADOR: o ponto branco de "Ativar alarme" continua la?
+
+    5. Nada quebrou: musica, radio, pastas, bluetooth.
+
+SE ALGO DER ERRADO
+
+    Volte para a 1.3 pelo mesmo caminho, com o .up dela.
+    Recuperacao completa em recovery/ e docs/MODO_DOWNLOAD.md
+
+HASHES
+
+    imagem sem carimbo  45780be578edb173ba9150bcc832f3107c8e3c2583590f241233530acd998617
+    diff contra a 1.3:  2 bytes, em 0x0005D622 e 0x000D3261
