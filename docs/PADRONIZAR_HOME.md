@@ -227,3 +227,83 @@ bugado, e dura uma versão.
 
 Alternativa, se a inconsistência incomodar mais que a espera: segurar a
 2.2 e soltar as duas juntas, quando a home estiver convertida.
+
+
+---
+
+## 7. Duas medições que derrubaram o plano da §5 — 2026-09-14
+
+### 7.1 O Nível 1 já estava feito
+
+Fui redirecionar os cinco pontos de cor da home e olhei o getter antes:
+
+```
+ORIGINAL    0x00D2E948   mov.w r0,#-1 ; bx lr        branco fixo
+Core 2.2    0x00D2E948   b.w 0xDA5980
+            0x00DA5980   ldr  r0,=0x00DA5400
+                         ldrh r0,[r0,#6]    <- cor_texto DA TABELA
+                         bx   lr
+```
+
+**O S10 já tinha redirecionado esse getter.** Os cinco pontos da home
+passam por ele, logo já leem a nossa tabela. Eu os rotulei como "getter
+do TEMA" na §4 e quase escrevi um patch para algo pronto.
+
+Corrigido: na Core 2.2 a home tira cor de **7 pontos, e os 7 leem a nossa
+tabela** — 5 via o getter (`cor_texto`), 2 via a rotina do S6
+(`cor_selecao`).
+
+### 7.2 O tema claro e a home de fábrica são incompatíveis
+
+Com a home de fábrica, Marte M1 põe `cor_texto` em **preto**. E a folha
+de imagem da home é escura:
+
+```
+folha da home  0x0CDD50   128x160 INDEXED_8
+   indice   1   13.640 px   RGB(0,0,0)      67% da tela, PRETO PURO
+   indice   0      995 px   RGB(254,254,254)
+```
+
+**Texto preto sobre preto.** A home ficaria ilegível.
+
+Para a home clarear é preciso que a folha escura saia do caminho — e quem
+faz isso é o `make_list_home` + `S5`, que são do desenho próprio da home.
+
+> **Consequência dura:** não existe versão que mostre o tema claro **e**
+> evite o caminho próprio da home. As duas coisas estão amarradas.
+
+### 7.3 E a variante que eu propus não compra o que eu achei
+
+Montei a variante "home vira lista, mas sem os dois patches que criaram
+a segunda seleção" (sem `patch_barra_selecao`, sem `patch_status_bar`).
+Aplicou inteira, e o `audita_chrome` deu **SEM DIVERGÊNCIAS**. Mas:
+
+```
+A  variante                          8.806 bytes, 35 setores
+B  Core 2.1 (carcaca + fix + Marte)  8.876 bytes, 36 setores
+```
+
+São a mesma coisa. A variante **continua levando** `make_list_home`, S4 e
+S5 — o desenho próprio da home. Ela só tira a barra de seleção e a string
+da faixa. Troca consistência visual por nada.
+
+**Descartada.** A medição matou a ideia, e é melhor assim do que
+descobrir na tela.
+
+---
+
+## 8. Onde isso deixa o projeto — honestamente
+
+| caminho | o que entrega | o que custa |
+|---|---|---|
+| **Core 2.1**, como está | o tema do nano na tela, tudo consistente, o defeito das duas seleções corrigido | carrega o desenho próprio da home, que é a causa da classe |
+| **Nível 2** primeiro | a causa resolvida | aritmética de alocação, a classe que nunca funcionou; e nenhuma tela nova até lá |
+
+**Recomendação: usar a Core 2.1 como instrumento, não como baseline.**
+
+Gravá-la responde uma pergunta que só o aparelho responde — *o tema claro
+do nano funciona neste display?* — e essa resposta **não depende** de qual
+caminho desenha a home. Marcada EXPERIMENTAL, nunca STABLE.
+
+E o Nível 2 segue como o trabalho de verdade, com o molde da 0x53 já
+decodificado (§3.1) e o risco já nomeado (§3.3).
