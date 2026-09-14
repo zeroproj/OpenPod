@@ -63,6 +63,43 @@ absoluta. Não existe objeto de linha, nem contêiner.
 
 Três queixas do mantenedor, uma causa só.
 
+### 2.1 O laço inteiro — corrigido depois de ler o miolo
+
+A primeira leitura viu um rótulo por item. **São dois objetos por item.**
+
+```
+r7 = conteiner            <- criado antes; recebe PAD_ROW e PAD_COLUMN = 0
+fp = tabela de coordenadas
+sp+0x4C = tabela de ids de texto
+
+laco, r5 = 0 ate 0x24 de 4 em 4        (9 voltas)
+
+    sb = 0xD5D850(r7)                  objeto 1 — o icone/quadro
+    flag(sb, 2) ; add_event_cb(sb, ...) ; flag(sb, 0x8000)
+    x = ldrsh[fp+r5] ; y = ldrsh[fp+r5+2]
+    0xDA5760(sb, x, y)                 posiciona por COORDENADA ABSOLUTA
+
+    r6 = lv_label_create(r7)           objeto 2 — o rotulo, IRMAO do 1o
+    texto = get_string(tabela[r5])
+    label_set_text(r6, texto)
+    set_style_text_color(r6, cor_texto, 0)
+    label_set_long_mode(r6, 0)
+    0xDA3040(r6, 0, 0)                 nossa rotina: bg_opa do rotulo
+    0xDA5780(r6, 0x74, 0xF)            nossa rotina: largura/altura
+    flag(r6, 0x8000)
+    0xDA5760(r6, x, y)                 posiciona tambem por coordenada
+
+    guarda os dois ponteiros nos arrays
+```
+
+**Os dois são irmãos, filhos do contêiner, posicionados um sobre o outro
+por coordenada.** Não há linha: o "fundo" de um item é o objeto `sb`, e o
+texto é um objeto separado por cima.
+
+> Isto fecha a última dúvida sobre o cinza da home: o que parece fundo de
+> item é `sb`, pintado por conta própria; o `cor_tela` nunca teve onde
+> pegar.
+
 ---
 
 ## 3. O molde, do próprio firmware
@@ -87,10 +124,22 @@ Trocar o corpo do laço. O que sai e o que entra:
 
 | hoje | depois |
 |---|---|
-| rótulo solto na tela | `CRIA_LINHA` no contêiner, rótulo dentro |
-| posição por coordenada absoluta | posição pelo empilhamento das linhas |
+| `sb` = objeto solto + rótulo IRMÃO | `sb` = `CRIA_LINHA(conteiner)`, rótulo **dentro** de `sb` |
+| os dois posicionados por coordenada | as linhas se empilham pelo layout do contêiner |
 | `bg_opa` no rótulo para a seleção | estado da linha, como nas 36 telas |
 | altura por `0xDA5780` | `altura_linha` da tabela, pelo helper |
+
+### O ponto que ainda não sei
+
+O contêiner `r7` é criado por `0xD5D850`, **não** por `CRIA_CONTEINER`.
+Para as linhas se empilharem sozinhas ele precisa do **layout** que o
+`CRIA_CONTEINER` configura — no molde da 0x53 nada posiciona as linhas, o
+que só funciona se o contêiner tiver layout.
+
+**Então a conversão provavelmente precisa trocar `r7` por
+`CRIA_CONTEINER` também.** É mais um gancho, e é a parte que eu ainda
+não confirmei. Se o layout não vier, as nove linhas empilham em cima umas
+das outras — falha visível na hora.
 
 **Os ponteiros continuam sendo guardados** nos mesmos dois arrays — a
 navegação não muda. É o objeto guardado que passa a ser a linha.
