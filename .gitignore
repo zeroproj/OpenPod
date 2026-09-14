@@ -50,3 +50,6 @@ __pycache__/
 
 # clone de terceiro (upstream smartlink_flash), nao e nosso codigo
 analysis/readbacks/**/smartlink_flash/
+
+# copia de trabalho paralela (repositorio proprio, 411 MB)
+OpenPod GPT/
