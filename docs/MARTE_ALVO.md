@@ -123,16 +123,38 @@ Cada linha carrega classe de confiança, conforme a regra §7 do
 
 | # | item do alvo | Marte quer | Core 1.0.1 tem | classe | custo |
 |---|---|---|---|---|---|
-| **M-a** | separador entre itens | **não existe** | existe, 1 px | **CONFIRMADO** | **1 byte** |
+| ~~**M-a**~~ | separador entre itens | **não existe** | ✅ **FEITO — Core 1.1** | **VISTO NA TELA** | 1 byte |
 | **M-b** | home | **lista** | grade 3×3 de fábrica | **CONFIRMADO** | código novo |
-| **M-c** | título na faixa | "Menu", centralizado | não existe | **CONFIRMADO** | rotina + tabela |
-| **M-d** | barra de rolagem | **não existe** | existe | **CONFIRMADO** | 1 ponto |
-| **M-e** | ícones de linha | **não existem** | existem | **CONFIRMADO** | 1 ponto |
-| **M-f** | seleção | barra de borda a borda, degradê azul | a de fábrica | **A MEDIR** | — |
+| **M-c** | título na faixa | "Menu", centralizado | faixa vazia, só a bateria | **VISTO NA TELA** | rotina + tabela |
+| **M-d** | barra de rolagem | **não existe** | existe, à direita | **VISTO NA TELA** | 1 ponto |
+| **M-e** | ícones de linha | **não existem** | existem (engrenagens) | **VISTO NA TELA** | 1 ponto |
+| **M-f** | seleção | degradê **AZUL** RGB(41,101,222) | **CIANO chapado** RGB(0,190,213), já de borda a borda | **VISTO NA TELA** | cor + degradê |
 | **M-g** | bateria | ícone colorido | glifo monocromático | PROVÁVEL | bitmap + M4 |
 | **M-h** | degradê da faixa | 19 linhas, `nanoclone.json` | faixa lisa | **CONFIRMADO** | rotina nova |
 | **M-i** | cores dos 6 campos | ver `nanoclone.json` | tema de fábrica | **A MEDIR** | — |
 | **M-j** | luminância | claro | escuro | **DESVIO ACEITO** | — não fazer |
+
+### ✅ M-a — FEITO, e confirmado na tela em 2026-09-14
+
+Gravada como **OpenPod Core 1.1**, pelo cartão. Foto do aparelho, tela
+Configurar: os seis itens sem traço entre eles.
+
+**E a distinção que eu já havia errado antes ficou provada na prática:**
+o traço de 1 px **embaixo da faixa** CONTINUA lá, como o alvo pede. São
+objetos diferentes — borda da FAIXA fica, borda da LINHA sai.
+
+> **A tese da carcaça está provada em hardware.** Um byte dentro de
+> `CRIA_LINHA` mudou a tela. Não é mais dedução: é observação.
+
+### O que a mesma foto mediu, de graça
+
+| item | o que a tela mostra |
+|---|---|
+| **M-f** | a seleção **já é de borda a borda** — a geometria está certa. Falta a COR: está **ciano chapado**, `palette_main(7)` = RGB(0,190,213). O alvo é **azul** RGB(41,101,222), em degradê |
+| **M-d** | a barra de rolagem aparece, fina, à direita da lista |
+| **M-e** | os ícones de engrenagem estão em toda linha. O nano não tem ícone de linha |
+| **M-c** | a faixa está vazia — só a bateria, à direita. Sem título |
+| **M-j** | tema escuro, como decidido. Sem faixas horizontais — o painel se comporta |
 
 ### A evidência de cada CONFIRMADO
 

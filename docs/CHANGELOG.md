@@ -7,6 +7,53 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-14 — OpenPod Core 1.1 — ✅ CONFIRMADA NA TELA
+
+**Um byte.** `0x0012179E`, `01` → `00`, dentro de `CRIA_LINHA`
+(`0x00D21764`, usada por 39 telas): a borda da linha vai a zero e o traço
+entre os itens some.
+
+Instalada pelo cartão. Foto da tela Configurar, mantenedor: *"Excelente"*.
+
+```
+sem traco entre os itens              OK
+traco embaixo da FAIXA preservado     OK   <- a distincao, provada
+nada mais mudou                       OK
+```
+
+> **A tese da carcaça está provada em hardware.** Um byte numa rotina
+> compartilhada mudou a tela. Deixou de ser dedução.
+
+Relatório: `docs/releases/OpenPod_Core_1.1.md`.
+
+### A mesma foto fechou três itens que estavam abertos
+
+| item | medido na tela |
+|---|---|
+| **M-f** seleção | **já é de borda a borda** — falta só a cor: é ciano `palette_main(7)` RGB(0,190,213); o alvo é azul RGB(41,101,222) |
+| **M-d** / **M-e** / **M-c** | rolagem, ícones de engrenagem e faixa sem título — todos confirmados |
+| **M-j** tema escuro | **sem faixas horizontais** — o desvio de `MARTE_ALVO` §0-bis se sustenta |
+
+### E a estrutura da home foi mapeada no mesmo dia
+
+Pré-requisito do passo seguinte, fechado (`CARCACA_PADRAO.md` §4.3):
+
+```
++0x00 .. +0x23   array A   9 ponteiros
++0x24 .. +0x47   array B   9 ponteiros
++0x48 .. +0x4B   campo r4
++0x4C .. +0x53   8 BYTES DE FOLGA, no FIM
+```
+
+Duas correções minhas: a folga é de **8** bytes, não 12 (faltava contar
+`r4`); e os offsets que publiquei do Configurar estavam deslocados de 4 —
+as instruções são pré-indexadas, o encoding não é o offset.
+
+Custo da conversão: `malloc`/`memset` de `0x54` → `0x70`, **dois
+imediatos de 8 bits**, e o campo `r4` não se move.
+
+---
+
 ## 2026-09-14 — LIMPEZA: a linha 2.x foi removida
 
 > Pedido do mantenedor, nas palavras dele:

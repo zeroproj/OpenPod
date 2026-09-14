@@ -11,13 +11,23 @@
 ## 1. Onde o aparelho está
 
 ```
-OpenPod Core 1.0.1   <- NO APARELHO, e a unica STABLE
+OpenPod Core 1.1     <- NO APARELHO. Confirmada na tela em 14/09
+                        firmware/RELEASE/OpenPod Core 1.1/
+                        imagem     f365e1fdd8a40bbdb38f3f0100cf3644...
+                        carimbada  843577e2f9026e6171ee5401f7136479...
+                        diff contra a 1.0.1: UM byte
+
+OpenPod Core 1.0.1   <- a BASELINE declarada STABLE
                         firmware/RELEASE/OpenPod Core 1.0.1/
                         imagem     7312fbd066b1a31e508a51c9c44c5e20...
-                        carimbada  36125f5665b8613e0d96215e2ffcf361...
 ```
 
-Confirmada na tela pelo mantenedor em 14/09: *"Tudo funcionou."*
+A 1.0.1 foi confirmada em 14/09 (*"Tudo funcionou"*). A **1.1** entrou no
+mesmo dia, pelo cartão, e o mantenedor confirmou pela foto da tela
+Configurar: **sem traço entre os itens, e o traço da faixa preservado.**
+
+> **Isso provou a tese da carcaça em hardware:** um byte dentro de
+> `CRIA_LINHA` mudou a tela inteira. Ver `docs/CARCACA_PADRAO.md`.
 
 **Não existe nenhuma outra versão viva.** Se você encontrar referência a
 uma Core 2.x, a uma OpenPod 1.4–3.1 ou a um kit `V0xx`, é referência
@@ -196,21 +206,25 @@ com classe de confiança e evidência citada. A ordem de trabalho está na
 Resumo da distância, hoje:
 
 ```
-M-a  separador entre itens    existe, deveria sumir     1 BYTE   0x0012179E
+M-a  separador entre itens    FEITO na Core 1.1, visto na tela
 M-b  home                     grade 3x3, deveria ser LISTA        codigo novo
 M-c  titulo na faixa          nao existe                          rotina
 M-d  barra de rolagem         existe, deveria sumir               1 ponto
 M-e  icones de linha          existem, deveriam sumir             1 ponto
-M-f  selecao                  A MEDIR
+M-f  selecao                  geometria JA CERTA; falta a cor
+                              e ciano RGB(0,190,213), alvo azul RGB(41,101,222)
 M-g  bateria                  glifo mono, deveria ser colorida    bitmap
 M-h  degrade da faixa         faixa lisa                          rotina
 M-i  as 6 cores               A MEDIR
 M-j  luminancia               DESVIO ACEITO — nao fazer (§0-bis)
 ```
 
-**O passo 1 é o M-a**: um byte, em código de fábrica, verificável na tela
-em segundos. É o único item do alvo que não dependia da infraestrutura
-removida na limpeza.
+~~**O passo 1 é o M-a**~~ ✅ **FEITO** — Core 1.1, confirmada na tela em
+14/09. Ver `docs/releases/OpenPod_Core_1.1.md`.
+
+**O passo seguinte** é o M-b, a home. O pré-requisito dele (mapear a
+estrutura de `page_home_create`) foi fechado no mesmo dia —
+`CARCACA_PADRAO.md` §4.3.
 
 **O marco de verdade é o M-b** — a home virar lista é o que faz o
 aparelho *parecer* o Marte. E o que travava esse passo caiu por medição:
