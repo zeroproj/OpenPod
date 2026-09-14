@@ -127,7 +127,7 @@ Cada linha carrega classe de confiança, conforme a regra §7 do
 | **M-b** | home | **lista** | grade 3×3 de fábrica | **CONFIRMADO** | código novo |
 | **M-c** | título na faixa | "Menu", centralizado | faixa vazia, só a bateria | **VISTO NA TELA** | rotina + tabela |
 | ~~**M-d**~~ | barra de rolagem | **não existe** | ✅ **FEITO — Core 1.3** | — | **1 byte** |
-| **M-e** | ícones de linha | **não existem** | existem (engrenagens) | **VISTO NA TELA** | ⚠️ 38 pontos ou gancho |
+| **M-e** | ícones de linha | **não existem** | existem (engrenagens) | **VISTO NA TELA** | ⚠️ **SEM PORTÃO** — 37 pontos ou gancho (§2-ter) |
 | ~~**M-f**~~ cor | seleção | AZUL RGB(41,101,222) | ✅ **FEITO — Core 1.2**, 2 bytes | **PROVADO POR DIAGNÓSTICO** | falta só o degradê (= M-h) |
 | **M-g** | bateria | ícone colorido | glifo monocromático | PROVÁVEL | bitmap + M4 |
 | **M-h** | degradê da faixa | 19 linhas, `nanoclone.json` | faixa lisa | **CONFIRMADO** | rotina nova |
@@ -208,13 +208,42 @@ idêntico** — o desvio já era tomado antes.
 
 A rolagem continua funcionando; some só o indicador.
 
-### M-e — a fonte de ícones é referenciada em 38 pontos
+### M-e — procurei o portão e ele NÃO existe. Medido.
+
+Depois que o M-f (2 bytes numa tabela) e o M-d (1 byte num comparador)
+desmentiram minhas estimativas de "precisa de gancho", procurei o mesmo
+tipo de ponto único aqui. **Não há.** E isso é resultado, não desistência.
+
+**Candidato 1 — a fonte de ícones.** `0x00CA671C` aparece em 38 pools
+literais, espalhados por **37 funções distintas**: uma por página. Não
+existe helper compartilhado que atribua a fonte.
+
+**Candidato 2 — as strings de glifo.** São glifos **diferentes** por
+página: engrenagem `U+F013` no Configurar, e `U+F130` microfone,
+`U+F04A/4C/4E` mídia, `U+F028` volume, `U+F294` bluetooth. Apagar todas
+mataria os ícones de mídia, que **o Marte quer**.
+
+**Candidato 3 — um glifo compartilhado.** `U+F0C9` (`0x00CD3261`) tem 38
+referências, o mesmo número da fonte — parecia promissor. Medido:
 
 ```
-0x00CA671C  em pool literal:  38 pontos
+funcoes que citam a FONTE de icones : 37
+funcoes que citam U+F0C9            : 37
+interseccao                         : 21     <- so 21 das 37
 ```
 
-Não é "um ponto". Ou se mexe em 38, ou se cria um gancho.
+Apagar `U+F0C9` removeria ícone de **21 telas** e deixaria **16** com
+ícone. Inconsistente, e pior do que não fazer.
+
+**Candidato 4 — `0x00D51704`**, chamado por linha (40 chamadas, contra
+39 de `CRIA_LINHA`). É compartilhado, mas recebe **a linha**, não o
+ícone. Esconder um filho dali exige código novo.
+
+### Conclusão honesta
+
+**M-e custa 37 pontos, ou um gancho.** Diferente do M-f e do M-d, aqui a
+busca pelo portão foi feita e deu negativo — o firmware simplesmente não
+centraliza esta decisão.
 
 ### ✅ M-f (a cor) — RESOLVIDO em 2 bytes. Core 1.2
 
