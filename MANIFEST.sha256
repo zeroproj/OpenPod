@@ -14,6 +14,8 @@ a50de792c57185ebc97416df548677c3a05fffd7ad2772e485da85c43aea88e1  ./analysis/rea
 b089ea9b3a03d9ec11e2fce4c994ced719cb74141e56b8a5c8d2593f1e20a90d  ./experiments/DIAGNOSTICO cores 2/diag.bin
 e3674b6a2da9e9a4a0aa2a9cbea2cfdc19743944c606c5fe904a4389264045b8  ./experiments/DIAGNOSTICO cores 2/update.up
 f1031f02a5f96e0982cf4765001ae883389e8f19b8351c4e108e3d4353bc2223  ./experiments/DIAGNOSTICO cores/update.up
+1a05ccbc7b4fb0e5273e49f36d6d9f6374306040d74370e38a87125e9ba9edbf  ./experiments/HOME como linha/exp.bin
+7d3eaed3483063ab3ddbed4e31ce98b24f16f0b8f6f6448be19610c6aeb59718  ./experiments/HOME como linha/update.up
 11007fb84921b509c761e1a87c61afec5f370f1b6fe0ff394f524c650993f490  ./experiments/OpenPod SONDA/OpenPod SONDA.up
 4dfdfb8597ed15256a1e364e7a52f59b51892a745ea71ae9d5e8d3215e1a299a  ./experiments/OpenPod SONDA/OpenPod SONDA_10A000.bin
 8905234994167428843eb2d8d16ee46e0c74d3a7b424a93de87a75f4187279ef  ./experiments/OpenPod SONDA/OpenPod SONDA_1A5000.bin
