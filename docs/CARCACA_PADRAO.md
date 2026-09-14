@@ -215,6 +215,20 @@ ESTRUTURA DO CONFIGURAR — 3 arrays de 10, >= 0x78 = 120 bytes
 **Dois bytes**, e os dois são imediatos de 8 bits — `0x70` = 112, dentro
 do limite de 255 do `movs rX,#imm8`.
 
+> ⚠️ **ISTO DEIXOU DE SER NECESSÁRIO — 2026-09-14, depois da Core 1.4.**
+>
+> Esta conta parte do molde do Configurar, que guarda **três** objetos por
+> item (linha, texto, ícone). **A home do Marte não tem ícone** — o M-e
+> estabeleceu que decoração de linha sai, e foi confirmado na tela.
+>
+> Logo a home nova precisa de **dois** ponteiros por item, e ela **já tem
+> dois arrays**: `+0x00` (hoje o quadro, passa a ser a linha) e `+0x24`
+> (o rótulo, papel inalterado).
+>
+> **`malloc 0x54` FICA. Zero bytes de alocação.** Isso elimina a única
+> classe de risco grave da conversão. Plano completo em
+> `docs/PLANO_HOME.md`.
+
 **O que torna isso barato é o campo `r4` não se mover.** Ele continua em
 `+0x48`, e o array novo entra depois dele. Nenhum outro ponto do código
 precisa ser tocado — os deslocamentos `0x24` espalhados pela home
