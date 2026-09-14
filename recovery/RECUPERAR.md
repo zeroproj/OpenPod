@@ -11,6 +11,11 @@
 
 ## Quando usar
 
+> Se o aparelho **está funcionando** e você quer voltar ao firmware de
+> fábrica de propósito, o roteiro é outro: **`VOLTAR_AO_ORIGINAL.md`**.
+> Lá dá para ler antes e gravar só o que está diferente. Este documento
+> aqui é de emergência.
+
 O aparelho não liga, não mostra imagem, trava no logo, ou ficou sem
 resposta depois de uma gravação.
 

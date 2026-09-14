@@ -10,4 +10,7 @@ else SHA="shasum -a 256 -c"; fi
 echo "conferindo os arquivos do kit..."
 $SHA SHA256SUMS
 echo
-echo "kit INTEGRO. Procedimento em RECUPERAR.md"
+echo "kit INTEGRO."
+echo
+echo "  aparelho funcionando, volta planejada ao original -> VOLTAR_AO_ORIGINAL.md"
+echo "  aparelho sem responder, emergencia                -> RECUPERAR.md"
