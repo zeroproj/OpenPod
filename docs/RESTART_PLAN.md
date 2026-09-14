@@ -5,6 +5,13 @@
 > documento é o resultado da ETAPA 1 à ETAPA 10: análise do que existe,
 > medição do que funciona, e o plano do Core 1.0.
 >
+> **DECISÃO DO MANTENEDOR — 2026-09-14:** a base do OpenPod Core 1.0 é o
+> **firmware ORIGINAL**, o dump feito no início do projeto
+> (`firmware/ORIGINAL/GN438_original.bin`, sha `b7cd5eb9…`). A opção B
+> (partir da 2.4) está descartada. Consequência aceita: o Core 1.0 recua
+> visualmente para a home de fábrica; a linha de interface volta na
+> Core 2.0.
+>
 > Toda afirmação abaixo carrega classe: **CONFIRMADO** (evidência direta
 > nesta sessão ou no hardware), **PROVÁVEL**, **HIPÓTESE**,
 > **DESCONHECIDO**.
@@ -291,9 +298,9 @@ anterior em cada release.
 
 | # | lacuna | classe | proposta |
 |---|---|---|---|
-| **REC-1** | o `.up` de restauração cobre `0..0x1A3038`. As rotinas do OpenPod na **área livre** (`0x1A3038..0x1FC000`) **permanecem gravadas** | CONFIRMADO | inofensivo — a FIRM de fábrica não tem gancho algum para elas. Mas **não é estado de fábrica**. Gerar um `recovery/` que também apague a área livre, e declarar qual dos dois é o oficial |
-| **REC-2** | a ferramenta de recuperação do Mac vive em **`/tmp/smtlink_mac`** | CONFIRMADO (existe agora; `/tmp` é volátil) | mover para `recovery/ferramenta/`, com fonte, e conferir o sha no kit |
-| **REC-3** | `RECUPERAR.md` aponta para `firmware/READBACK/GN438_bricked_dump.bin`, que **não existe** — é o roteiro de um incidente | CONFIRMADO | separar **roteiro de emergência** de **registro de incidente**; o roteiro não deve citar arquivo de um evento específico |
+| **REC-1** | o `.up` de restauração cobre `0..0x1A3038`. As rotinas do OpenPod na **área livre** (`0x1A3038..0x1FC000`) **permanecem gravadas** | CONFIRMADO | **DECIDIDO em 14/09: fica como está, declarado.** Apagar a área livre exigiria um `.up` maior que qualquer um já testado neste aparelho, e a pasta de emergência **não carrega artefato não testado**. Os bytes são inertes (classe **PROVÁVEL**: a FIRM de fábrica sempre rodou com essa área apagada, logo não depende do conteúdo). Se um dia for preciso zerar, é trabalho para `tools/`, com teste próprio |
+| **REC-2** | a ferramenta de recuperação do Mac vive em **`/tmp/smtlink_mac`** | CONFIRMADO (existe agora; `/tmp` é volátil) | ✅ **RESOLVIDO** — `recovery/ferramenta/smtlink_dump_macos_arm64`, ao lado do binário Linux, do `smtlink_dump.c`, do `Makefile` e do `payload/`. Sha no `SHA256SUMS` do kit |
+| **REC-3** | `RECUPERAR.md` aponta para `firmware/READBACK/GN438_bricked_dump.bin`, que **não existe** — é o roteiro de um incidente | CONFIRMADO | ✅ **RESOLVIDO** — `recovery/RECUPERAR.md` é roteiro puro, sem arquivo de evento. O material do incidente continua em `historico/recuperacao/` e em `docs/INCIDENTE_V028.md` |
 
 ### 9.3 Regra de Recovery para o Core
 
@@ -431,12 +438,18 @@ voltar?"* (§32) nem *"qual era a base?"* (§4).
 
 ### Imediatos (não precisam de autorização, não tocam no aparelho)
 
-1. `git init` na pasta OpenPod + `.gitignore` para os binários grandes
-   (`firmware/WORKING/*.bin` são ~200 MB); commit inicial de `docs/`,
-   `tools/`, `marte/`, `assets/` e das pastas de release.
-2. Montar `recovery/` autossuficiente (REC-1, REC-2, REC-3).
-3. Corrigir a contradição `RECEITA` × `FORA` no `build.py` (L4) e a
-   deriva "22 passos" no `ROADMAP.md` (L5).
+1. ✅ **FEITO (14/09)** — `git init` local (sem remote), `.gitignore`,
+   `MANIFEST.sha256` dos 907 binários, commit inicial: 538 arquivos,
+   9,5 MB. O git guarda a **receita**; as **saídas** ficam no disco com
+   sha registrado.
+2. ✅ **FEITO (14/09)** — `recovery/` autossuficiente: ferramenta (macOS
+   + Linux + fonte), `GN438_original.bin`, `restaura_original.up`,
+   `ptable_D000_original.bin`, `RECUPERAR.md`, `SHA256SUMS` e
+   `CONFERIR.sh` (só leitura). REC-2 e REC-3 fechados; REC-1 decidido.
+3. ✅ **FEITO (14/09)** — contradição `RECEITA` × `FORA` removida do
+   `build.py` (L4) e a contagem corrigida nos docs: **26 passos, 23
+   ferramentas fora** (L5). Provado que foi só documental: a imagem
+   reconstruída depois saiu com o mesmo sha `ab98ef39…`.
 4. Reclassificar o CRC da FIRM no `validate_firmware.py` (§3.2).
 5. Escrever `tools/patch_logo.py` com o critério de aceite da §11.3.
 6. Acrescentar ao `build.py` os passos de diff e validação (L1, L3).

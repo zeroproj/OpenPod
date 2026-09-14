@@ -535,7 +535,7 @@ mandamos, nao onde a historia calhou.
 PENDENTE antes de gravar: a imagem do `build.py` **nunca foi testada no
 aparelho**. Ela e equivalente a 2.2 em conteudo, nao as correcoes 2.3/2.4.
 
-### Receita consolidada — 22 passos (2026-09-14)
+### Receita consolidada — 26 passos (2026-09-14, contagem corrigida em 14/09)
 
 Duas decisoes do mantenedor, aplicadas:
 
@@ -564,8 +564,8 @@ convergir, e **falha alto** se nao convergir em 8 voltas.
 
 ESTADO DA RECEITA
 
-    22 passos, do ORIGINAL a imagem final
-    21 ferramentas fora, cada uma com o motivo declarado
+    26 passos, do ORIGINAL a imagem final
+    23 ferramentas fora, cada uma com o motivo declarado
     validate_firmware: 21 OK, 1 falha — a MESMA da v073 que boota
     audita_chrome: sem divergencias
     setor 0x00D000: INTOCADO; menor offset alterado 0x04867C (R1 ok)

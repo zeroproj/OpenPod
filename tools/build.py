@@ -256,8 +256,11 @@ FORA = [
     ("patch_scrollbar.py",        "superado pelo scrollbar3"),
     ("patch_scrollbar2.py",       "superado pelo scrollbar3"),
     ("patch_bar_height.py",       "superado pelo Saturno (altura_faixa)"),
-    ("patch_status_bar.py",       "superado pelo Saturno"),
-    ("fix_status_bar.py",         "corrigia o patch_status_bar, que saiu"),
+    # patch_status_bar / fix_status_bar SAIRAM desta lista em 2026-09-14:
+    # estavam nos DOIS lugares ao mesmo tempo (RECEITA e FORA). A receita
+    # e que esta certa — `afere_fora.py` mostrou que o `patch_status_bar`
+    # grava a string "OpenPod" em 0x1A3038, usada no BOOT e no titulo da
+    # home, e a 3.0 saiu sem as duas coisas por causa desta linha.
     ("patch_raio_selecao.py",     "tentativa falha; ver fix_raio_selecao"),
     ("fix_raio_selecao.py",       "superado pelo Saturno (campo raio)"),
     ("patch_respiro_lista.py",    "superado pelo Saturno (inicio_lista)"),

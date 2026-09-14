@@ -11,7 +11,7 @@
 ```
 OpenPod 3.0        (interno V100)   <- RECONSTRUIDA do ORIGINAL, aguardando teste
                                       primeira imagem gerada por receita declarada
-                                      (tools/build.py, 22 passos). SEM o Extras.
+                                      (tools/build.py, 26 passos). SEM o Extras.
 OpenPod 2.4        (interno V077)   <- gravada; melhor versao testada ate agora
 OpenPod 2.2        (interno V073)   <- gravada antes
 OpenPod 2.1        (interno V070)   <- gravada antes; defeitos 1,2,5,6 seguem abertos
