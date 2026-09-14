@@ -126,9 +126,9 @@ Cada linha carrega classe de confiança, conforme a regra §7 do
 | ~~**M-a**~~ | separador entre itens | **não existe** | ✅ **FEITO — Core 1.1** | **VISTO NA TELA** | 1 byte |
 | **M-b** | home | **lista** | grade 3×3 de fábrica | **CONFIRMADO** | código novo |
 | **M-c** | título na faixa | "Menu", centralizado | faixa vazia, só a bateria | **VISTO NA TELA** | rotina + tabela |
-| **M-d** | barra de rolagem | **não existe** | existe, à direita | **VISTO NA TELA** | 1 ponto |
-| **M-e** | ícones de linha | **não existem** | existem (engrenagens) | **VISTO NA TELA** | 1 ponto |
-| **M-f** | seleção | degradê **AZUL** RGB(41,101,222) | **CIANO chapado** RGB(0,190,213), já de borda a borda | **VISTO NA TELA** | cor + degradê |
+| **M-d** | barra de rolagem | **não existe** | existe, à direita | **VISTO NA TELA** | ⚠️ gancho (§2-bis) |
+| **M-e** | ícones de linha | **não existem** | existem (engrenagens) | **VISTO NA TELA** | ⚠️ 38 pontos ou gancho |
+| **M-f** | seleção | degradê **AZUL** RGB(41,101,222) = RGB565 `0x2B3B` | **CIANO chapado**, já de borda a borda | **VISTO NA TELA** | ⚠️ origem NÃO LOCALIZADA (§2-bis) |
 | **M-g** | bateria | ícone colorido | glifo monocromático | PROVÁVEL | bitmap + M4 |
 | **M-h** | degradê da faixa | 19 linhas, `nanoclone.json` | faixa lisa | **CONFIRMADO** | rotina nova |
 | **M-i** | cores dos 6 campos | ver `nanoclone.json` | tema de fábrica | **A MEDIR** | — |
@@ -155,6 +155,69 @@ objetos diferentes — borda da FAIXA fica, borda da LINHA sai.
 | **M-e** | os ícones de engrenagem estão em toda linha. O nano não tem ícone de linha |
 | **M-c** | a faixa está vazia — só a bateria, à direita. Sem título |
 | **M-j** | tema escuro, como decidido. Sem faixas horizontais — o painel se comporta |
+
+---
+
+## 2-bis. ⚠️ OS CUSTOS DE M-d, M-e E M-f ESTAVAM ERRADOS — medido em 2026-09-14
+
+> A coluna "custo" da tabela herdou estimativas da **linha 2.x**, quando
+> existia infraestrutura de gancho na área livre. Ela foi removida na
+> limpeza. Medido sobre o firmware **de fábrica**, os três custam mais.
+>
+> Registrado aqui em vez de corrigido em silêncio, porque muda a decisão.
+
+### M-d — a barra de rolagem NÃO é configurada pelo firmware
+
+`CRIA_CONTEINER` (`0x00D21690`) termina chamando `0x00D215FA` e
+`0x00D215E0` — desmontados: são **setters de padding**
+(`0xD4D01C/028/034/040/04C/058`), não de rolagem.
+
+**Ninguém desliga a barra.** Ela é o padrão da LVGL (`AUTO`). Existem 14
+pontos que usam `LV_PART_SCROLLBAR` (`0x010000`), mas são páginas
+individuais, não a carcaça.
+
+Para as 59 telas de contêiner, isso exige **inserir uma chamada** em
+`CRIA_CONTEINER` — e a função é justa, sem espaço. Ou seja: **gancho para
+uma rotina na área livre.**
+
+### M-e — a fonte de ícones é referenciada em 38 pontos
+
+```
+0x00CA671C  em pool literal:  38 pontos
+```
+
+Não é "um ponto". Ou se mexe em 38, ou se cria um gancho.
+
+### M-f — a origem do ciano NÃO foi localizada
+
+Eliminados, por medição:
+
+```
+tabela de paletas 0x00CDF078   UNICO leitor e a propria palette_main
+palette_main(7) = CYAN         chamada UMA vez, e e a pagina 0x18
+CRIA_LINHA                     nao seta cor de estado nenhum
+0xD51704 / 0xD516B4            setters de geometria, nao de cor
+os 22 bg_color com estado      FOCUS_KEY/CHECKED, nenhum na carcaca
+```
+
+**Conclusão: o ciano vem do tema interno da LVGL**, aplicado por classe
+de objeto, não por chamada explícita do firmware. Achá-lo é engenharia
+reversa do tema — trabalho de verdade, não um patch.
+
+> **Alvo, para quando for atacado:** azul do Marte RGB(41,101,222) =
+> RGB565 `0x2B3B`, pré-invertido `0x3B2B` (`selecao_base` do
+> `nanoclone.json`). Decidido pelo mantenedor em 14/09.
+
+### O que isso significa para a ordem de trabalho
+
+Os três pedem **código na área livre com gancho** — que é exatamente a
+infraestrutura que a linha 2.x tinha e que foi removida por acoplar tudo.
+
+**Reconstruí-la é decisão do mantenedor, não minha.** Se for reconstruída,
+a regra é: **um gancho por item, independente**, nunca um pré-requisito
+de outro. Foi o encadeamento que matou a 2.x, não o gancho em si.
+
+---
 
 ### A evidência de cada CONFIRMADO
 
