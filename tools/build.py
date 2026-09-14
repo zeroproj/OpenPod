@@ -198,6 +198,10 @@ CORE_1_0 = [
     # LVGL (0x000DF082), nao em codigo. Nao depende do M-a nem de
     # nenhum outro passo, e sair daqui nao quebra nada.
     ("patch_selecao_marte.py", [], "M-f: a selecao ganha o azul do Marte"),
+
+    # Marte M-d. 1 byte no portao do LV_EVENT_DRAW_POST, no tratador de
+    # evento compartilhado do lv_obj. Independente dos anteriores.
+    ("patch_sem_rolagem.py",   [], "M-d: sem barra de rolagem, como o nano"),
 ]
 
 

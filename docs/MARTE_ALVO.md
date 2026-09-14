@@ -126,7 +126,7 @@ Cada linha carrega classe de confiança, conforme a regra §7 do
 | ~~**M-a**~~ | separador entre itens | **não existe** | ✅ **FEITO — Core 1.1** | **VISTO NA TELA** | 1 byte |
 | **M-b** | home | **lista** | grade 3×3 de fábrica | **CONFIRMADO** | código novo |
 | **M-c** | título na faixa | "Menu", centralizado | faixa vazia, só a bateria | **VISTO NA TELA** | rotina + tabela |
-| **M-d** | barra de rolagem | **não existe** | existe, à direita | **VISTO NA TELA** | ⚠️ gancho (§2-bis) |
+| ~~**M-d**~~ | barra de rolagem | **não existe** | ✅ **FEITO — Core 1.3** | — | **1 byte** |
 | **M-e** | ícones de linha | **não existem** | existem (engrenagens) | **VISTO NA TELA** | ⚠️ 38 pontos ou gancho |
 | ~~**M-f**~~ cor | seleção | AZUL RGB(41,101,222) | ✅ **FEITO — Core 1.2**, 2 bytes | **PROVADO POR DIAGNÓSTICO** | falta só o degradê (= M-h) |
 | **M-g** | bateria | ícone colorido | glifo monocromático | PROVÁVEL | bitmap + M4 |
@@ -166,19 +166,47 @@ objetos diferentes — borda da FAIXA fica, borda da LINHA sai.
 >
 > Registrado aqui em vez de corrigido em silêncio, porque muda a decisão.
 
-### M-d — a barra de rolagem NÃO é configurada pelo firmware
+### ✅ M-d — RESOLVIDO em 1 byte. Core 1.3
 
-`CRIA_CONTEINER` (`0x00D21690`) termina chamando `0x00D215FA` e
-`0x00D215E0` — desmontados: são **setters de padding**
-(`0xD4D01C/028/034/040/04C/058`), não de rolagem.
+**Eu havia dito que este item exigia gancho na área livre. Errado de
+novo — e pelo mesmo vício: parei de procurar cedo demais.**
 
-**Ninguém desliga a barra.** Ela é o padrão da LVGL (`AUTO`). Existem 14
-pontos que usam `LV_PART_SCROLLBAR` (`0x010000`), mas são páginas
-individuais, não a carcaça.
+O que estava certo: `CRIA_CONTEINER` (`0x00D21690`) termina em
+`0x00D215FA` e `0x00D215E0`, que são **setters de padding**, não de
+rolagem. Ninguém *configura* a barra.
 
-Para as 59 telas de contêiner, isso exige **inserir uma chamada** em
-`CRIA_CONTEINER` — e a função é justa, sem espaço. Ou seja: **gancho para
-uma rotina na área livre.**
+O que eu não vi: ela não é configurada porque é **desenhada** pelo
+tratador de evento compartilhado do `lv_obj`, no evento
+`LV_EVENT_DRAW_POST` (24 = `0x18`) — como na LVGL v8:
+
+```c
+else if(code == LV_EVENT_DRAW_POST) {
+    draw_scrollbar(obj, draw_ctx);
+}
+```
+
+No binário:
+
+```
+00D4967E  182f      cmp   r7, #0x18     <- o evento
+00D49680  7ff46cae  bne.w 0xD4935C      <- nao e? RETORNA (epilogo)
+00D49684  ...                           <- e? desenha a barra
+```
+
+`0xD4935C` é o **epílogo** (`add sp,#0x48; pop {...,pc}`), e todas as
+leituras de estilo do bloco são de `LV_PART_SCROLLBAR`.
+
+**O conserto:**
+
+```
+0x0014967E   18 -> FF     cmp r7,#0x18  ->  cmp r7,#0xFF
+```
+
+Códigos de evento vão até ~35; `r7` nunca vale `0xFF`. O desvio passa a
+ser sempre tomado. **Para todos os outros eventos o comportamento é
+idêntico** — o desvio já era tomado antes.
+
+A rolagem continua funcionando; some só o indicador.
 
 ### M-e — a fonte de ícones é referenciada em 38 pontos
 
