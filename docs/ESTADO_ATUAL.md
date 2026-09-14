@@ -13,9 +13,16 @@ FIRMWARE DE FABRICA        <- no APARELHO agora
                               recovery validado em hardware 2026-09-14
                               flash identica a de fabrica, PSMP intocada
 
-OpenPod Core 1.0           <- GERADA, aguardando a primeira gravacao
-                              firmware/RELEASE/OpenPod Core 1.0/
-                              EXPERIMENTAL ate ver o aparelho
+OpenPod Core 1.0           <- GRAVADA E TESTADA em 14/09
+                              ligou; menus PT-BR "perfeito"; "Atualizar
+                              por SD" apareceu; nada quebrado
+                              DEFEITOS: fundo da abertura branco com a
+                              logo preta; tela Informacoes sobreposta
+
+OpenPod Core 1.0.1         <- GERADA, corrige os dois
+                              firmware/RELEASE/OpenPod Core 1.0.1/
+                              10 bytes sobre a 1.0, 2 setores
+                              instalar PELO CARTAO (e testa o recurso)
 ```
 
 > **A primeira instalacao da Core 1.0 tem de ser POR CABO**, pelo kit de

@@ -3885,3 +3885,58 @@ A tela Informações só cabe 2 linhas (o prompt pede 4; defeito de layout
 na camada VIEW, não localizado). `patch_versao.py` é a última ferramenta
 que ainda aloca sozinha na área livre. O binary diff e a validação ainda
 não são passos do `build.py`.
+
+---
+
+## OpenPod Core 1.0.1  (2026-09-14)
+
+**Versão de correção. Base: a Core 1.0, gravada e testada no aparelho.**
+
+Relatório: `docs/releases/OpenPod_Core_1.0.1.md`.
+
+```
+Diff contra a 1.0    10 bytes, 2 setores
+     0x122000   2 B  os dois BL da logo -> getter preto
+     0x1A4000   8 B  o texto da tela Informacoes
+.up                  1.724.672 B, CRC 0x67AB
+sha                  36125f5665b8613e0d96215e2ffcf36170d847068d0c72e572167fe506400c1f
+```
+
+### O teste da 1.0 no aparelho
+
+Passou: ligou, menus em português "atualizados perfeito", item "Atualizar
+por SD" apareceu, nada quebrado. **Quatro de seis itens do roteiro, na
+primeira gravação da linha Core.**
+
+Falhou em dois, corrigidos aqui.
+
+### Defeito 1 — retângulo preto na abertura
+
+A logo tem fundo preto, a tela tem fundo claro. As duas funções que
+desenham a logo consultavam o getter de cor **clara**; passam a consultar
+o de **preto**. 2 bytes.
+
+É o patch da V008, de 12/09, que já tinha rodado na tela. A ferramenta
+tinha se perdido quando a construção virou receita — **a mesma história
+do `patch_logo.py`**. Voltou como `tools/patch_fundo_abertura.py`, com
+autoteste contra a V008.
+
+> **O padrão, agora na segunda vez:** conhecimento que existia só na
+> imagem, não na ferramenta, sumiu quando a corrente virou receita. Vale
+> varrer o CHANGELOG antigo atrás de outros patches sem ferramenta.
+
+### Defeito 2 — tela Informações sobreposta
+
+**A causa era uma afirmação minha, errada, nunca verificada.** O
+`patch_versao.py` dizia que o rótulo aceita `\n`. Aceita — num rótulo
+LVGL comum. A tela Informações monta uma **mensagem**
+(`0x00D0D818`), e esse caminho **não quebra linha**: o aparelho desenhou
+os dois textos um sobre o outro.
+
+Medido agora: a tela tem **dois** espaços de texto, o título
+(`get_string(43)`, **um único chamador**) e a linha de baixo, cada um de
+**uma** linha, limite 113 px.
+
+Decisão do mantenedor: voltar a uma linha só, como da 1.4 à 3.0. O
+cabeçalho do `patch_versao.py` foi corrigido — a afirmação errada não
+fica no repositório.

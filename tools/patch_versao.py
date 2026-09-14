@@ -24,15 +24,30 @@ POR QUE REPONTAR E NAO SOBRESCREVER
     e menor (um so referenciador), mas a regra vale igual -- e repontar
     ainda deixa escolher um texto de qualquer tamanho.
 
-DUAS LINHAS
+DUAS LINHAS — NAO. CORRIGIDO EM 2026-09-14
 
-    O rotulo aceita `\\n`: a propria tabela ja tem strings assim (ids 140,
-    154, 161). Entao da para registrar o nome e a base numa string so:
+    Eu escrevia aqui que o rotulo aceita `\n`, porque a tabela de idiomas
+    tem strings assim (ids 140, 154, 161). **Estava errado para ESTA
+    tela.**
 
-        OpenPod 1.0
-        Base: yp3_2.0.43
+    Aqueles ids vao para um rotulo LVGL comum. A tela Informacao nao:
+    `page_info` monta uma MENSAGEM (descritor em 0x008238F0, entregue a
+    0x00D0D818) e esse caminho **nao quebra linha**. Gravada a Core 1.0
+    com "OpenPod Core 1.0\nGN-438", o aparelho desenhou os dois textos
+    **sobrepostos numa linha so**.
 
-    72 px e 95 px -- as duas cabem.
+    CONFIRMADO no aparelho em 14/09/2026.
+
+    A tela tem DOIS espacos de texto que funcionam: o titulo, vindo de
+    `get_string(43)` — que tem **um unico chamador**, este aqui — e a
+    linha de baixo, este literal. Cada um aceita UMA linha.
+
+    Limite de largura: 113 px.
+
+        'OpenPod Core 1.0'     102 px
+        'OpenPod Core 1.0.1'   112 px
+        'Core 1.0 - GN-438'    100 px
+        'OpenPod Core 1.0 GN-438'  148 px   NAO CABE
 
 O QUE E ALTERADO
 

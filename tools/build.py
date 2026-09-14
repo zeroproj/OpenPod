@@ -153,6 +153,11 @@ AREA_INI, AREA_FIM = 0x001A3040, 0x001A8000
 INTERFACE = [
     # --- estrutura da home e dos menus
     ("patch_logo.py",          [], "a logo do OpenPod na tela de abertura"),
+    # ANDA JUNTO com a logo, nao e opcional: a logo tem fundo preto e a
+    # tela de abertura tem fundo claro. Sem isto fica um retangulo escuro
+    # no meio de uma tela branca — relatado no aparelho em 14/09, ao
+    # gravar a Core 1.0.
+    ("patch_fundo_abertura.py", [], "o fundo da abertura fica preto (V008)"),
     ("make_list_home.py",      [], "home deixa de ser grade 3x3 e vira lista"),
     ("patch_home_keys.py",     [], "ramos de navegacao da home: pula 6 -> pula 8"),
     # A FAIXA SUPERIOR vem cedo, e nao e opcional.
@@ -237,6 +242,7 @@ INTERFACE = [
 # ---------------------------------------------------------------------------
 CORE_1_0 = [
     ("patch_logo.py",          [], "a logo do OpenPod na tela de abertura"),
+    ("patch_fundo_abertura.py", [], "o fundo da abertura fica preto (V008)"),
     # A tabela do portugues sai para a area livre ANTES de ser reescrita:
     # a de fabrica emenda direto na do espanhol e nao tem folga.
     ("relocate_lang_table.py", [], "tabela do portugues para a area livre"),
