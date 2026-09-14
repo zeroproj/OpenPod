@@ -472,6 +472,20 @@ linhas que cabem nos 113 px: `OpenPod Core 1.0` (102 px) e `GN-438`
 > última ferramenta fora do MAPA. Corrigir quando o carimbo entrar na
 > receita.
 
+### 11.4-ter ✅ GERADA — 2026-09-14
+
+```
+firmware/RELEASE/OpenPod Core 1.0/     kit completo, 8 setores + .up
+docs/releases/OpenPod_Core_1.0.md      relatorio de versao
+Status                                 EXPERIMENTAL
+sha da imagem carimbada                e42be52362bd0f2298...
+sha do .up                             a299d2344b157d0fd6...
+```
+
+Passos 3 a 7 da §11.5 cumpridos: build, validação, binary diff, `.up`
+verificado, kit de setores, relatório. Falta o 8 (sua revisão) e o 9
+(autorização para gravar).
+
 ### 11.5 Ordem de execução
 
 ```

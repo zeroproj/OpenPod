@@ -66,6 +66,12 @@ def main():
     ap.add_argument("--versao", required=True)
     ap.add_argument("--saida", required=True)
     ap.add_argument("--descricao", default="")
+    ap.add_argument("--texto-info", dest="texto_info", default=None,
+                    help="o que a tela Informacoes mostra. Por padrao e o "
+                         "proprio nome da versao, numa linha. Aceita \\n "
+                         "para duas linhas -- a TERCEIRA se sobrepoe, "
+                         "defeito de layout da camada VIEW ainda nao "
+                         "localizado.")
     ap.add_argument("--sem-carimbo", action="store_true",
                     help="NAO carimbar a versao na tela Informacoes. "
                          "Use so para depuracao — um build publicado sem "
@@ -100,7 +106,8 @@ def main():
         # UMA linha. A tela Informacoes sobrepoe linhas quando ha mais de
         # duas mensagens -- defeito de layout na camada VIEW, ainda nao
         # localizado. Enquanto nao for, menos linhas = mais legivel.
-        texto = a.versao.replace("_", " ")
+        texto = (a.texto_info.replace("\\n", "\n") if a.texto_info
+                 else a.versao.replace("_", " "))
         r = subprocess.run(
             [sys.executable,
              os.path.join(os.path.dirname(os.path.abspath(__file__)),

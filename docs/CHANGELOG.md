@@ -3839,3 +3839,49 @@ Correcoes de registro apuradas no firmware de fabrica:
   `mov.w r0,#-1` no original;
 - os rotulos da faixa em `TOP_LEFT x=40` / `TOP_RIGHT x=-45` sao
   **icones**, nao o contador da Musica.
+
+---
+
+## OpenPod Core 1.0  (2026-09-14)
+
+**A primeira versão da nova linha. Base: o firmware ORIGINAL de fábrica.**
+
+Relatório completo: `docs/releases/OpenPod_Core_1.0.md`.
+
+```
+Status     EXPERIMENTAL — nao testada no aparelho
+Receita    tools/build.py --receita core1.0   (5 passos)
+Diff       8 setores, 9.143 bytes, menor offset 0x048798
+           0x00D000 NAO tocado · nada abaixo de 0x00D000 · PSMP intocada
+Valida     validate_firmware 21 OK + a falha de CRC da R1
+.up        1.724.416 B, CRC 0x69FF conferido
+sha        e42be52362bd0f22980f56def0a67d87f5390b16c799f4a35037648eb1f37f55
+```
+
+O que entrou: logo do OpenPod na abertura, tabela do português na área
+livre, textos revisados em PT-BR, 'Vídeo' com maiúscula, item "Atualizar
+por SD" em Configurar, e a versão na tela Informações.
+
+O que ficou de fora **de propósito**: home em lista, faixa superior,
+título por tela, Saturno inteiro, Extras. Continuam na receita
+`interface` e voltam na Core 2.0.
+
+**O recuo visual é o preço declarado de uma fundação auditável.** A home
+volta à grade 3×3 de fábrica.
+
+### O que esta versão fechou, além dela mesma
+
+- **`tools/patch_logo.py`** — a ferramenta da V007 tinha sumido do
+  repositório, e por isso a 3.0 e a 3.1 bootavam com o logotipo GENAI.
+  A nova reproduz o slot da V007 **byte a byte** (`--autoteste`).
+- **Receitas nomeadas no `build.py`** — `--receita core1.0` e
+  `--receita interface`.
+- **`--texto-info` no `make_install_kit`** — a tela Informações aceita
+  duas linhas; antes era sempre o nome da versão numa linha só.
+
+### Pendências registradas
+
+A tela Informações só cabe 2 linhas (o prompt pede 4; defeito de layout
+na camada VIEW, não localizado). `patch_versao.py` é a última ferramenta
+que ainda aloca sozinha na área livre. O binary diff e a validação ainda
+não são passos do `build.py`.

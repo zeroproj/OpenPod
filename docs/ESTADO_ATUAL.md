@@ -9,9 +9,19 @@
 ## Onde o aparelho está
 
 ```
-FIRMWARE DE FABRICA        <- 2026-09-14, recovery validado em hardware
+FIRMWARE DE FABRICA        <- no APARELHO agora
+                              recovery validado em hardware 2026-09-14
                               flash identica a de fabrica, PSMP intocada
+
+OpenPod Core 1.0           <- GERADA, aguardando a primeira gravacao
+                              firmware/RELEASE/OpenPod Core 1.0/
+                              EXPERIMENTAL ate ver o aparelho
 ```
+
+> **A primeira instalacao da Core 1.0 tem de ser POR CABO**, pelo kit de
+> setores (8 setores, 32 KiB). O firmware de fabrica nao tem caminho de
+> interface para o update por SD — o item "Atualizar por SD" e uma das
+> coisas que a Core 1.0 traz. Da Core 1.0 em diante, o cartao resolve.
 
 **O aparelho voltou ao zero de propósito**, para a linha OpenPod Core
 começar de uma base conhecida. O que ele tinha antes: **OpenPod 3.0** —
