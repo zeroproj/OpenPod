@@ -11,6 +11,8 @@ eeed9a5e2866710e93ed15509c94eb11f7132d3dd7079afb078f497d2d69e8f7  ./analysis/rea
 a50de792c57185ebc97416df548677c3a05fffd7ad2772e485da85c43aea88e1  ./analysis/readbacks/openpod_flash_v004/after.bin
 05b94114cf080960b0a7271ea9d3985f4cd8fa6a7621176fbd1d62ae179f0739  ./analysis/readbacks/openpod_flash_v004/before.bin
 05b94114cf080960b0a7271ea9d3985f4cd8fa6a7621176fbd1d62ae179f0739  ./analysis/readbacks/openpod_flash_v004/precheck/readback.bin
+b089ea9b3a03d9ec11e2fce4c994ced719cb74141e56b8a5c8d2593f1e20a90d  ./experiments/DIAGNOSTICO cores 2/diag.bin
+e3674b6a2da9e9a4a0aa2a9cbea2cfdc19743944c606c5fe904a4389264045b8  ./experiments/DIAGNOSTICO cores 2/update.up
 f1031f02a5f96e0982cf4765001ae883389e8f19b8351c4e108e3d4353bc2223  ./experiments/DIAGNOSTICO cores/update.up
 11007fb84921b509c761e1a87c61afec5f370f1b6fe0ff394f524c650993f490  ./experiments/OpenPod SONDA/OpenPod SONDA.up
 4dfdfb8597ed15256a1e364e7a52f59b51892a745ea71ae9d5e8d3215e1a299a  ./experiments/OpenPod SONDA/OpenPod SONDA_10A000.bin
