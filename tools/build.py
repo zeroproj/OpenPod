@@ -193,6 +193,11 @@ CORE_1_0 = [
     # vem antes, entao pode sair daqui sem quebrar nada. Foi essa
     # propriedade que faltou na linha 2.x.
     ("patch_sem_separador.py", [], "M-a: sem traco entre os itens, como o nano"),
+
+    # Marte M-f. Tambem independente: 2 bytes na TABELA de paletas da
+    # LVGL (0x000DF082), nao em codigo. Nao depende do M-a nem de
+    # nenhum outro passo, e sair daqui nao quebra nada.
+    ("patch_selecao_marte.py", [], "M-f: a selecao ganha o azul do Marte"),
 ]
 
 

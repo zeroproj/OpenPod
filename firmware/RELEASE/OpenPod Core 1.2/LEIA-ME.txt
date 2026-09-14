@@ -1,0 +1,51 @@
+OpenPod Core 1.2 — pacote para o cartao SD
+==========================================
+
+O QUE MUDA, em relacao a Core 1.1
+
+    UMA coisa so: a barra de selecao ganha o AZUL DO MARTE.
+
+        de    RGB( 32,149,246)   azul do Material Design da LVGL
+        para  RGB( 41,101,222)   nanoclone.json, campo selecao_base
+
+    Sao DOIS BYTES, na tabela de paletas da LVGL.
+
+COMO GRAVAR
+
+    1. copie  OpenPod_Core_1.2.up  para a RAIZ do cartao microSD,
+       com o nome exato:   update.up
+    2. no aparelho:  Configurar -> Atualizar por SD -> Sim
+    3. ele reinicia e se atualiza sozinho
+    4. APAGUE o update.up do cartao
+
+O QUE OLHAR NA TELA
+
+    Entre em CONFIGURAR. A barra de selecao deve estar num azul mais
+    FECHADO e mais escuro que antes — menos "aceso", mais proximo do
+    azul do mockup:  marte/mockups/marte_completo.png
+
+    Compare tambem MUSICA, RADIO e PASTAS. Sao NOVE barras de selecao
+    no firmware, e todas devem ter mudado juntas.
+
+    > A HOME **nao muda** — ela nao usa o pintor compartilhado. Isso e
+    > esperado, nao defeito, pelo mesmo motivo da 1.1.
+
+    ATENCAO, e honesto dizer: o alvo do Marte pede a selecao em
+    DEGRADE (de RGB(99,156,227) para RGB(41,101,222)). Esta versao
+    entrega a cor CHAPADA do tom de baixo. O degrade e outro item
+    (M-h) e e rotina nova.
+
+    Se algum OUTRO elemento azul do aparelho tambem tiver mudado de
+    tom, isso e esperado: sao 3 pontos que usavam o mesmo azul e agora
+    usam o novo. Nenhum deles fica de cor errada.
+
+SE ALGO DER ERRADO
+
+    Volte para a 1.1 pelo mesmo caminho, com o .up dela.
+    Recuperacao completa em  recovery/  e  docs/MODO_DOWNLOAD.md
+
+HASHES
+
+    imagem sem carimbo  34cb697f02c08651d7cda6bc649e8a810ec47bb23ff69f95c31899663dab6652
+
+    diff contra a Core 1.1:  2 bytes, em 0x000DF082, setor 0x0DF000

@@ -128,7 +128,7 @@ Cada linha carrega classe de confiança, conforme a regra §7 do
 | **M-c** | título na faixa | "Menu", centralizado | faixa vazia, só a bateria | **VISTO NA TELA** | rotina + tabela |
 | **M-d** | barra de rolagem | **não existe** | existe, à direita | **VISTO NA TELA** | ⚠️ gancho (§2-bis) |
 | **M-e** | ícones de linha | **não existem** | existem (engrenagens) | **VISTO NA TELA** | ⚠️ 38 pontos ou gancho |
-| **M-f** | seleção | degradê **AZUL** RGB(41,101,222) = RGB565 `0x2B3B` | **CIANO chapado**, já de borda a borda | **VISTO NA TELA** | ⚠️ origem NÃO LOCALIZADA (§2-bis) |
+| ~~**M-f**~~ cor | seleção | AZUL RGB(41,101,222) | ✅ **FEITO — Core 1.2**, 2 bytes | — | falta só o degradê (= M-h) |
 | **M-g** | bateria | ícone colorido | glifo monocromático | PROVÁVEL | bitmap + M4 |
 | **M-h** | degradê da faixa | 19 linhas, `nanoclone.json` | faixa lisa | **CONFIRMADO** | rotina nova |
 | **M-i** | cores dos 6 campos | ver `nanoclone.json` | tema de fábrica | **A MEDIR** | — |
@@ -188,25 +188,54 @@ uma rotina na área livre.**
 
 Não é "um ponto". Ou se mexe em 38, ou se cria um gancho.
 
-### M-f — a origem do ciano NÃO foi localizada
+### ✅ M-f (a cor) — RESOLVIDO em 2 bytes. Core 1.2
 
-Eliminados, por medição:
+**Eu havia declarado este item "origem não localizada". Estava errado, e
+por um erro de raciocínio que vale registrar.**
+
+Eliminei candidatos e, ao ver que `palette_main(7)` (CYAN) tinha **uma
+única** chamada, concluí que *"mexer na tabela de paletas não muda a
+seleção"*. Generalizei do índice 7 para a tabela inteira. O índice **5**
+(BLUE) é chamado **12 vezes**.
+
+Também errei a cor: pela foto eu li "ciano". O mantenedor corrigiu —
+*"eu vejo azul"* — e a medição do decil menos estourado da foto,
+`RGB(53,163,240)`, bate com o BLUE da paleta `RGB(32,149,246)`, não com
+o CYAN `RGB(0,190,213)`.
+
+**Quem pinta a seleção:**
 
 ```
-tabela de paletas 0x00CDF078   UNICO leitor e a propria palette_main
-palette_main(7) = CYAN         chamada UMA vez, e e a pagina 0x18
-CRIA_LINHA                     nao seta cor de estado nenhum
-0xD51704 / 0xD516B4            setters de geometria, nao de cor
-os 22 bg_color com estado      FOCUS_KEY/CHECKED, nenhum na carcaca
+0x00D219D4   helper COMPARTILHADO, 10 chamadores
+             um deles, 0x00D3AA94, esta DENTRO do Configurar
+             pinta bg_color no estado FOCUS_KEY com palette_main(5)
+             nos pontos 0x00D21B08 e 0x00D21B92
 ```
 
-**Conclusão: o ciano vem do tema interno da LVGL**, aplicado por classe
-de objeto, não por chamada explícita do firmware. Achá-lo é engenharia
-reversa do tema — trabalho de verdade, não um patch.
+**O conserto — 2 bytes, na tabela, não em código:**
 
-> **Alvo, para quando for atacado:** azul do Marte RGB(41,101,222) =
-> RGB565 `0x2B3B`, pré-invertido `0x3B2B` (`selecao_base` do
-> `nanoclone.json`). Decidido pelo mantenedor em 14/09.
+```
+0x000DF082   24 BE  ->  2B 3B     paleta[5] = LV_PALETTE_BLUE
+
+  0xBE24 invertido = 0x24BE = RGB( 32,149,246)   Material da LVGL
+  0x3B2B invertido = 0x2B3B = RGB( 41,101,222)   Marte, selecao_base
+```
+
+**Alcance medido** — os 12 pontos que usam paleta[5]:
+
+```
+9x  bg_color estado FOCUS_KEY   <- as barras de selecao
+1x  bg_color estado CHECKED
+1x  bg_color estado normal
+1x  consumidor nao identificado
+```
+
+Os três últimos passam a usar o **mesmo** azul. É consistência, não
+regressão.
+
+> **Falta o degradê.** O alvo pede `selecao_topo` RGB(99,156,227) →
+> `selecao_base` RGB(41,101,222). A Core 1.2 entrega o tom de baixo,
+> chapado. O degradê é o M-h, e é rotina nova.
 
 ### O que isso significa para a ordem de trabalho
 
