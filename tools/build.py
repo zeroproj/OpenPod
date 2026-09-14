@@ -152,89 +152,6 @@ AREA_INI, AREA_FIM = 0x001A3040, 0x001A8000
 
 
 # ---------------------------------------------------------------------------
-# A RECEITA. Uma linha por passo: (ferramenta, argumentos extras, por que).
-# A ordem importa: quem cria area livre vem antes de quem a usa; a tabela
-# de tema vem antes dos ganchos que a leem.
-# ---------------------------------------------------------------------------
-INTERFACE = [
-    # --- estrutura da home e dos menus
-    ("patch_logo.py",          [], "a logo do OpenPod na tela de abertura"),
-    # ANDA JUNTO com a logo, nao e opcional: a logo tem fundo preto e a
-    # tela de abertura tem fundo claro. Sem isto fica um retangulo escuro
-    # no meio de uma tela branca — relatado no aparelho em 14/09, ao
-    # gravar a Core 1.0.
-    ("patch_fundo_abertura.py", [], "o fundo da abertura fica preto (V008)"),
-    ("make_list_home.py",      [], "home deixa de ser grade 3x3 e vira lista"),
-    ("patch_home_keys.py",     [], "ramos de navegacao da home: pula 6 -> pula 8"),
-    # A FAIXA SUPERIOR vem cedo, e nao e opcional.
-    #
-    # Eu havia excluido estes dois como "superados pelo Saturno". Erro:
-    # o Saturno substitui a APARENCIA da faixa, mas quem grava a string
-    # "OpenPod" em 0x001A3038 e o `patch_status_bar` — e ela e usada no
-    # BOOT e no titulo da home. A 3.0 saiu sem as duas coisas.
-    #
-    # Medido por `tools/afere_fora.py`, nao suposto.
-    ("patch_status_bar.py",    [], "faixa superior + a string 'OpenPod' em 0x1A3038"),
-    ("fix_status_bar.py",      [], "corrige os dois defeitos do V016 na faixa"),
-
-    # MEDIDAS, nao supostas: `tools/afere_fora.py` mostrou que estas tres
-    # estao APLICADAS na 2.4 (recusam la, porque ja la estao) e faltavam
-    # aqui. Eu as tinha classificado como "superadas" ou "experimento"
-    # lendo a descricao. A 3.0 saiu com os chevrons grandes de fabrica
-    # por causa disso.
-    ("patch_barra_selecao.py", [], "a selecao da home vira BARRA"),
-    ("patch_scrollbar3.py",    [], "esconde a barra de rolagem no conteiner"),
-
-    # A tabela e realocada ANTES do submenu: o `make_extras_menu`
-    # acrescenta o id 216 ("Extras"), e se a realocacao vier depois o
-    # ponteiro dele fica para tras.
-    # `--add Extras` cria o id 216. A tabela do portugues tem 216 ids
-    # (0..215) e EMENDA direto na do espanhol — sem realocar, um id 216
-    # leria "Español". Por isso o submenu exigiu mover a tabela primeiro.
-    ("relocate_lang_table.py", ["--add", "Extras"],
-     "tabela do portugues para a area livre, + id 216 'Extras'"),
-    ("make_extras_menu.py",    [], "home com 4 itens + submenu Extras com 6"),
-
-    # --- textos
-    ("aplica_textos.py",       [], "textos revisados em portugues"),
-    # DEPOIS do `aplica_textos`: ele reescreve a tabela inteira a partir
-    # da revisao e reverteria o id 3 para 'vídeo' minusculo.
-    ("patch_menu_text.py", ["--set", "pt:3=Vídeo"],
-     "'Vídeo' com maiuscula (o original e minusculo)"),
-    ("patch_update_sd.py",     [], "item 'Atualizar por SD' em Configurar"),
-
-    # O titulo vem ANTES do chrome: ele exige 4 KiB virgens a partir de
-    # 0x001A5000, e o Saturno ocupa parte dessa faixa. Historicamente foi
-    # a 1.5, antes do 1.9/2.0 — a ordem nao e preferencia, e requisito.
-    ("patch_titulos.py",       [], "titulo na faixa de 37 telas"),
-
-    # --- chrome e Saturno
-    #
-    # DESCOBERTA DO PIPELINE: o `patch_saturno` NAO cria as rotinas do
-    # zero — ele reescreve os thunks que o `patch_chrome_padrao` (2.0)
-    # deixou em 0x1A5300..0x1A5344. Eu tinha marcado o chrome_padrao como
-    # "superado pelo Saturno"; e o contrario: ele e PRE-REQUISITO.
-    # Numa 3.0 limpa os dois deveriam virar um passo so.
-    ("patch_cor_selecao.py",   [], "1.9: cor de selecao das listas (rotina em 0x1A3518)"),
-    ("patch_cor_texto_lista.py", [], "1.9: cria a rotina de cor da linha em 0x1A5200"),
-    ("patch_chrome_padrao.py", [], "2.0: cria as rotinas de chrome na area livre"),
-    ("patch_saturno.py",       [], "S1+S2: poe uma tabela de tema por tras delas"),
-    ("patch_saturno_s3.py",    [], "S3: a carcaca pinta tudo explicitamente"),
-    ("patch_saturno_s4.py",    [], "S4: a home entra na carcaca"),
-    ("patch_saturno_s5.py",    [], "S5: a folha de imagem sai do caminho"),
-    ("patch_saturno_s6.py",    [], "S6: fecha os pontos deixados pelo S3"),
-    ("patch_saturno_s7.py",    [], "S7: icones das listas viram campo da tabela"),
-    ("patch_saturno_s8.py",    [], "S8: o recuo do texto vem da tabela"),
-    ("patch_saturno_s9.py",    [], "S9: as 14 telas com faixa e sem lista"),
-    ("patch_saturno_s10.py",   [], "S10: a cor do texto vem da tabela"),
-    ("patch_saturno_s11.py",   [], "S11: a altura da linha vem da tabela"),
-    ("patch_saturno_s12.py",   [], "S12: fundo lido do campo de fundo"),
-
-    # --- titulo e roteamento
-]
-
-
-# ---------------------------------------------------------------------------
 # OPENPOD CORE 1.0 — deliberadamente pequena.
 #
 # Esta receita produz a **OpenPod Core 1.0.1**, declarada STABLE pelo
@@ -270,148 +187,28 @@ CORE_1_0 = [
 
 
 # ---------------------------------------------------------------------------
-# CORE 2.0 — a carcaca da interface.
+# AS RECEITAS 2.x FORAM REMOVIDAS — 2026-09-14, a pedido do mantenedor.
 #
-# E a receita `interface` MENOS o submenu Extras. Motivo medido, nao
-# preferencia: o `make_extras_menu` esconde 6 itens da home atras da
-# pagina 0x53, e quem faz o Enter dela rotear e o `patch_extras` — que
-# esta FORA porque nao funcionou no aparelho. Com um e sem o outro, os
-# seis itens ficariam so de enfeite, e a pagina 0x53 e uma lista MORTA de
-# 3 itens no firmware de fabrica.
+# Estavam aqui: `interface`, `core2.0`, `core2.1`, `core2.2`, `marte` e
+# `carcaca`. Sairam junto com as 25 ferramentas que so elas usavam.
 #
-# Sem o submenu, a home vira lista com TODOS os itens: nada se esconde,
-# nada deixa de abrir. Menos parecido com o nano, e honesto.
+# Motivo, nas palavras dele: "pedi para voce mudar so o menu, voce veio
+# com um update 2.4 com alteracao da barra superior que nao pedi".
+#
+# A causa era ESTRUTURAL, nao desatencao. Aquelas receitas encadeavam ate
+# 31 passos em que o `patch_chrome_padrao` — a barra superior — era
+# PRE-REQUISITO declarado dos doze passos do Saturno. Mexer em qualquer
+# item da lista arrastava a barra junto, porque a receita nao permitia
+# separar. O acoplamento foi criado aqui, nao no firmware.
+#
+# Nada se perdeu: esta tudo no git, no commit anterior a este.
+#
+# REGRA para quem retomar: volta um passo por vez, testado no aparelho, e
+# NUNCA empacotado com algo que nao foi pedido.
 # ---------------------------------------------------------------------------
-CORE_2_0 = [p for p in INTERFACE
-            if p[0] not in ("make_extras_menu.py",)]
-# O `--add Extras` do `relocate_lang_table` FICA. Tentei tirar junto, e o
-# `patch_titulos` recusou: "id 216 (pagina 0x53) aponta fora da imagem".
-# Ele usa esse id como TITULO da pagina 0x53. Medido, nao suposto.
-
-# ---------------------------------------------------------------------------
-# CORE 2.1 — Marte M1. A carcaca da 2.0 mais doze bytes de cor.
-#
-# Sai separada da 2.0 de proposito: juntas, um defeito na tela nao diria
-# se foi a carcaca ou a paleta. Separada, e reversivel em 12 bytes e
-# responde uma pergunta so — o tema claro do nano agrada neste aparelho?
-# ---------------------------------------------------------------------------
-CORE_2_1 = CORE_2_0 + [
-    # Entra JUNTO com a paleta, e nao numa 2.2, por um motivo: sem ele a
-    # home mostra DUAS selecoes — o item pintado na criacao fica com cor
-    # de letra, e a barra anda sem limpa-lo. Com o tema claro esse item
-    # ficaria azul sobre branco, contaminando justamente a pergunta que a
-    # 2.1 existe para fazer. A 2.1 nao chegou a ser gravada.
-    ("fix_barra_selecao_criacao.py", [], "a segunda selecao da home, 4 B"),
-    ("patch_marte_paleta.py", [], "Marte M1: o tema claro do iPod nano"),
-    # Descoberto na tela, com a 2.1 gravada: os rotulos das listas sumiam.
-    # Os dois criadores compartilhados pintavam fundo com PRETO FIXO, e a
-    # tabela tinha o campo `cor_tela` praticamente morto. Enquanto o tema
-    # era escuro os dois davam no mesmo; o Marte separou.
-    ("patch_fundo_lista.py", [], "o fundo do conteiner e da linha vem da tabela"),
-]
-
-# ---------------------------------------------------------------------------
-# CORE 2.2 — chegar ao alvo: marte/mockups/marte_completo.png
-#
-# A lista do nano e branca e LIMPA: sem traco entre os itens. O traco de
-# 1 px EMBAIXO da faixa fica — sao objetos diferentes, e a ferramenta
-# confere os dois.
-# ---------------------------------------------------------------------------
-CORE_2_2_MARTE = CORE_2_1 + [
-    ("patch_sem_separador.py", [], "sem traco entre os itens, como o nano"),
-    # O diagnostico de cores mostrou: ha texto com BRANCO FIXO no codigo,
-    # que some no tema claro. Censo: 8 pontos, todos com r1. Nao e o
-    # relogio — esse vem de um dos 24 de origem nao identificada.
-    ("patch_texto_branco_fixo.py", [], "8 pontos de branco fixo passam a ler a tabela"),
-]
-
-# ---------------------------------------------------------------------------
-# CORE 2.2 — O CAMINHO PADRAO.
-#
-# Decisao do mantenedor em 2026-09-14, depois de ver a segunda selecao na
-# tela: "nao quero herdar nada da criacao anterior que esta bugado. A
-# base e o Marte, vamos usar o padrao e nos adaptar."
-#
-# Entao esta receita NAO leva nenhum remendo da home. Ficam de fora, e
-# nao por acaso — sao exatamente os que existem para consertar o desenho
-# PROPRIO da home, que e a causa da classe de defeito:
-#
-#     make_list_home              a home vira lista, por tabela de coords
-#     patch_home_keys             ramos de navegacao da home
-#     patch_barra_selecao         a selecao da home vira barra
-#     fix_barra_selecao_criacao   o ponto gemeo que ficou para tras
-#     patch_status_bar/fix_       a faixa pintada na folha da home
-#     patch_saturno_s4/s5         a home entra na carcaca; a folha sai
-#
-# O que fica: o caminho que o firmware JA usa em 36 telas — CRIA_FAIXA,
-# CRIA_CONTEINER, CRIA_LINHA — mais a tabela de tema e a paleta do nano.
-#
-# Consequencia aceita: a HOME continua a grade 3x3 de fabrica, escura,
-# enquanto as 36 telas ficam claras. Feio e temporario. O passo seguinte
-# e levar a home para o MESMO caminho — o molde esta no proprio firmware,
-# em `page_home_menu_event_cb` (pagina 0x53), que monta a lista dela com
-# os tres helpers.
-#
-# MEDIDO: dos 16 passos do caminho padrao, 14 aplicam sobre a Core 1.0.1
-# sem tocar na home. As duas recusas foram
-#   patch_titulos      exige o id 216 -> resolvido com `--add Extras`
-#   patch_saturno_s5   mexe na folha da home -> e home, sai daqui
-# ---------------------------------------------------------------------------
-CORE_2_2 = [
-    ("patch_logo.py",           [], "a logo do OpenPod na tela de abertura"),
-    ("patch_fundo_abertura.py", [], "o fundo da abertura fica preto (V008)"),
-    ("relocate_lang_table.py",  ["--add", "Extras"],
-     "tabela do portugues para a area livre, + id 216 (titulo da 0x53)"),
-    ("aplica_textos.py",        [], "textos revisados em portugues do Brasil"),
-    ("patch_menu_text.py", ["--set", "pt:3=Vídeo"], "'Vídeo' com maiuscula"),
-    ("patch_update_sd.py",      [], "item 'Atualizar por SD' em Configurar"),
-    # --- daqui para baixo, o CAMINHO PADRAO
-    ("patch_scrollbar3.py",     [], "esconde a barra de rolagem no conteiner"),
-    ("patch_titulos.py",        [], "titulo na faixa de 37 telas"),
-    ("patch_cor_selecao.py",    [], "cor de selecao das listas"),
-    ("patch_cor_texto_lista.py",[], "cor do texto das listas"),
-    ("patch_chrome_padrao.py",  [], "as rotinas de chrome na area livre"),
-    ("patch_saturno.py",        [], "S1+S2: a tabela de tema por tras delas"),
-    ("patch_saturno_s3.py",     [], "S3: a carcaca pinta tudo explicitamente"),
-    ("patch_saturno_s6.py",     [], "S6: fecha os pontos deixados pelo S3"),
-    ("patch_saturno_s7.py",     [], "S7: icones das listas viram campo da tabela"),
-    ("patch_saturno_s8.py",     [], "S8: o recuo do texto vem da tabela"),
-    ("patch_saturno_s9.py",     [], "S9: as 14 telas com faixa e sem lista"),
-    ("patch_saturno_s10.py",    [], "S10: a cor do texto vem da tabela"),
-    ("patch_saturno_s11.py",    [], "S11: a altura da linha vem da tabela"),
-    ("patch_saturno_s12.py",    [], "S12: fundo lido do campo de fundo"),
-    ("patch_marte_paleta.py",   [], "Marte M1: o tema claro do iPod nano"),
-]
-
-# ---------------------------------------------------------------------------
-# CARCACA ESCURA — 2026-09-14.
-#
-# Decisao do mantenedor depois do teste em hardware: o tema CLARO nao
-# serve NESTE PAINEL (docs/MARTE_ALVO.md §0-bis — as faixas sao do LCD,
-# isoladas por eliminacao). Mas a CARCACA e independente da paleta.
-#
-# Esta receita e a `marte` MENOS os dez bytes de cor. Fica tudo o que foi
-# validado no aparelho e nao depende de claro/escuro:
-#
-#     fix_barra_selecao_criacao   a "segunda selecao" — defeito real
-#     patch_fundo_lista           fundo da linha e do conteiner pela tabela
-#     patch_sem_separador         sem traco entre itens, como o nano
-#     patch_texto_branco_fixo     8 pontos de branco fixo lendo a tabela
-#
-# A tabela nasce com altura_linha = 16 px, que e a medida do nano — um
-# byte governa 38 pontos em 28 telas (S11). Era isso que o mantenedor
-# pediu: definir a altura em UM lugar, sem retrabalho tela a tela.
-# ---------------------------------------------------------------------------
-CARCACA = [p for p in CORE_2_2_MARTE if p[0] != "patch_marte_paleta.py"]
 
 RECEITAS = {
-    "interface": INTERFACE,
-    "core1.0":   CORE_1_0,
-    "core2.0":   CORE_2_0,
-    "core2.1":   CORE_2_1,
-    "core2.2":   CORE_2_2,
-    "marte":     CORE_2_2_MARTE,
-    "carcaca":   CARCACA,
+    "core1.0": CORE_1_0,
 }
 
 # Patches deliberadamente FORA da receita, e por que.
@@ -567,7 +364,7 @@ def main():
                          "(padrao: o ORIGINAL)")
     ap.add_argument("--sem-validar", action="store_true",
                     help="nao roda validacao nem diff ao final")
-    ap.add_argument("--receita", default="interface",
+    ap.add_argument("--receita", default="core1.0",
                     choices=sorted(RECEITAS),
                     help="qual receita construir (padrao: interface)")
     a = ap.parse_args()
