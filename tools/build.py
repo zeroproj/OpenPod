@@ -383,6 +383,27 @@ CORE_2_2 = [
     ("patch_marte_paleta.py",   [], "Marte M1: o tema claro do iPod nano"),
 ]
 
+# ---------------------------------------------------------------------------
+# CARCACA ESCURA — 2026-09-14.
+#
+# Decisao do mantenedor depois do teste em hardware: o tema CLARO nao
+# serve NESTE PAINEL (docs/MARTE_ALVO.md §0-bis — as faixas sao do LCD,
+# isoladas por eliminacao). Mas a CARCACA e independente da paleta.
+#
+# Esta receita e a `marte` MENOS os dez bytes de cor. Fica tudo o que foi
+# validado no aparelho e nao depende de claro/escuro:
+#
+#     fix_barra_selecao_criacao   a "segunda selecao" — defeito real
+#     patch_fundo_lista           fundo da linha e do conteiner pela tabela
+#     patch_sem_separador         sem traco entre itens, como o nano
+#     patch_texto_branco_fixo     8 pontos de branco fixo lendo a tabela
+#
+# A tabela nasce com altura_linha = 16 px, que e a medida do nano — um
+# byte governa 38 pontos em 28 telas (S11). Era isso que o mantenedor
+# pediu: definir a altura em UM lugar, sem retrabalho tela a tela.
+# ---------------------------------------------------------------------------
+CARCACA = [p for p in CORE_2_2_MARTE if p[0] != "patch_marte_paleta.py"]
+
 RECEITAS = {
     "interface": INTERFACE,
     "core1.0":   CORE_1_0,
@@ -390,6 +411,7 @@ RECEITAS = {
     "core2.1":   CORE_2_1,
     "core2.2":   CORE_2_2,
     "marte":     CORE_2_2_MARTE,
+    "carcaca":   CARCACA,
 }
 
 # Patches deliberadamente FORA da receita, e por que.

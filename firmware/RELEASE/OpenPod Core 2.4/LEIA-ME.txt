@@ -1,0 +1,226 @@
+OpenPod_Install — OpenPod Core 2.4
+======================================
+
+A carcaca: um lugar so para altura, cor e geometria. Tema escuro.
+
+GERADO por tools/make_install_kit.py. Nao edite a mao.
+Requisitos: Linux, python3, lsusb, smtlink_dump.
+
+
+A REGRA QUE NASCEU DE UM ERRO REAL
+----------------------------------
+  O write_flash grava A PARTIR DO OFFSET 0 DO ARQUIVO.
+  O 2o argumento NAO e o offset dentro do arquivo.
+
+  ERRADO  write_flash 0xD000 0xD000 0x1000 imagem_2MiB.bin
+  CERTO   write_flash 0xD000 0      0x1000 setor_D000.bin
+
+  Por isso: um arquivo POR SETOR, sempre 0 no 2o argumento.
+  Detalhe em docs/WRITE_FLASH_SEMANTICS.md.
+
+
+CONTEUDO
+--------
+  flash_OpenPod_Core_2.4.sh      grava (39 setores, 156 KiB)
+  diag.sh                diagnostico          (SO LEITURA)
+  recovery_check_linux.sh  confere a ferramenta (SO LEITURA)
+
+  SETORES A GRAVAR (4096 B cada)
+    OpenPod_Core_2.4_48000.bin 0x048000  a45303734ee0fc80530bbe803f6603505f36b133fa770f1b17f662c596068edc
+    OpenPod_Core_2.4_CD000.bin 0x0CD000  f51cf984cf9e75ed6f112b3c0111a98db1b4dd2e9b3690e574d46cc5e7e37426
+    OpenPod_Core_2.4_CE000.bin 0x0CE000  268612f901bf76ee02d81839387067e7c729759a82bbf3ffd7a11907419d3ae3
+    OpenPod_Core_2.4_CF000.bin 0x0CF000  6765c47e8934259006fa526a0e42ea8faf274c28758451d940539d1c28d38982
+    OpenPod_Core_2.4_D0000.bin 0x0D0000  6765c47e8934259006fa526a0e42ea8faf274c28758451d940539d1c28d38982
+    OpenPod_Core_2.4_D1000.bin 0x0D1000  6765c47e8934259006fa526a0e42ea8faf274c28758451d940539d1c28d38982
+    OpenPod_Core_2.4_D2000.bin 0x0D2000  6765c47e8934259006fa526a0e42ea8faf274c28758451d940539d1c28d38982
+    OpenPod_Core_2.4_10A000.bin 0x10A000  8c35d232644fbcec0e57519558b61e1d3f0a7b0d269bbadde0c4eae6ba5316d3
+    OpenPod_Core_2.4_121000.bin 0x121000  36a53ea5ea3136036b03e029896623b40ad8afdd247955923ca9408f1817a6bc
+    OpenPod_Core_2.4_122000.bin 0x122000  468fa023f05059785f071b183afcc255a81626ba54896b2d460aa2cd7f37559f
+    OpenPod_Core_2.4_123000.bin 0x123000  8f3d59d57f7a91d2d1b9370454c26d4bcb993c48ddd7822fa14676d269dbf282
+    OpenPod_Core_2.4_126000.bin 0x126000  f64787945149cab69de6c35d5cf9962170d23bcca2ad984d226dadfb96934fa8
+    OpenPod_Core_2.4_127000.bin 0x127000  1c235dc2ba59303641cefe6ac64409d0b4bc0815d4c4cabc55b430795af17c78
+    OpenPod_Core_2.4_128000.bin 0x128000  421decb869645cbe46c307c48b67fa51242b14f7dc45d76b5b534cbf633db325
+    OpenPod_Core_2.4_129000.bin 0x129000  e05b6c3408132f0c03e7dbd13612f9bde06f793a7c15bbcc592485d59cd37a32
+    OpenPod_Core_2.4_12A000.bin 0x12A000  6e260ae5a7ca61b72d4d90e9fe3b72dc728d183a50dbec587c66aa534766803e
+    OpenPod_Core_2.4_12B000.bin 0x12B000  9d9077fed5570dd05581cde677adac049f9463e9a22f8d25f2677e8444451edf
+    OpenPod_Core_2.4_12C000.bin 0x12C000  18320484779cc6fb338904a1e1edf9638dab71dd39315f66811faeeb5afcc22a
+    OpenPod_Core_2.4_12D000.bin 0x12D000  d1c0cdd6a07456c411b905bcbef76969639fedab9c185e3d31ea3cb991e675b7
+    OpenPod_Core_2.4_12E000.bin 0x12E000  de27d9691ff12768bd2c4ee7b11259dd56ae472cbce6d099875720a5d6b0e380
+    OpenPod_Core_2.4_12F000.bin 0x12F000  fbcdb265734294c844b4a89b3c666b2d412fd21fbaea26336824143562dae492
+    OpenPod_Core_2.4_130000.bin 0x130000  761c66a590f555a92e655960e90b3a5ab4f5ed728c965c765da309b526dce613
+    OpenPod_Core_2.4_131000.bin 0x131000  5b749e6d71982125ec99df57766260450ace31af5f31559f900455afd17e410b
+    OpenPod_Core_2.4_132000.bin 0x132000  df140c90cd0dd2f2bc4b4c0322b0631be402fbf7027c5342fca2ecc48471a605
+    OpenPod_Core_2.4_133000.bin 0x133000  73d1019ddc88c7e4b46d79bfd2f0e442b9bf20291cef50ac7d11635977e91a48
+    OpenPod_Core_2.4_134000.bin 0x134000  be92e3c32a6fa4232ef6915a926a0cf3ec4bcad399481c97396db99fb82837de
+    OpenPod_Core_2.4_135000.bin 0x135000  943a4bc523784f3645162eff8071ce8832c6404bf581a9c2dc39821fbe012cb4
+    OpenPod_Core_2.4_136000.bin 0x136000  f8b2c6a08f548005ec064e1a98d7b34dbb58fcab276f201fa21ac8c3e7066a87
+    OpenPod_Core_2.4_137000.bin 0x137000  4b3c256dca2dc15e4fc6150c05bc95671a4964892970e5d0049bbee250a53bd5
+    OpenPod_Core_2.4_138000.bin 0x138000  3746fcf5d0c9536e4ed6f0b90ef9b90acb60d787bce1e30c7bd8bf00cacd534a
+    OpenPod_Core_2.4_139000.bin 0x139000  f34cdfef6e1ad9b00c1651af0dff296be2693c39b8a6d526215f2211555a8da7
+    OpenPod_Core_2.4_13A000.bin 0x13A000  f380204929cecc60b37cde55ff6f4c24ea9b02fb67640da9e821d6803730aa92
+    OpenPod_Core_2.4_13B000.bin 0x13B000  4149ec06285a44fd806acec271cbe34beaf6d8b271d9efa972e83004d8930090
+    OpenPod_Core_2.4_13C000.bin 0x13C000  ce42171c262ea6868b36ec29fb314996966ea637440c91ae5aac6a11d4102221
+    OpenPod_Core_2.4_13D000.bin 0x13D000  f3d20028d9fe994e7a335fa9df8cae4a2dd0ccd7b08d420c313c609ca8827f85
+    OpenPod_Core_2.4_1A3000.bin 0x1A3000  d0008a84d9e70fdb69574635372731a8d4b5d8ff6116036f5e8161076890ef67
+    OpenPod_Core_2.4_1A4000.bin 0x1A4000  a19236142d4375d786714e1f898472f86033a1f36f89b62178221d0c08228403
+    OpenPod_Core_2.4_1A5000.bin 0x1A5000  0fe0d3f4359e92a39d854d76e860084f6595f73f9911a15017a0cfc512594fe3
+    OpenPod_Core_2.4_1A6000.bin 0x1A6000  edcd49beba5a7c576e8bd94b5d5779667a61dd1b67a86b55c4923e7b7805af63
+
+  SETORES DE REVERSAO -> ESTADO ANTERIOR (a base deste kit)
+    base_48000.bin   0x048000  41308534ac9a54ca3960d82de64dcef4959c85b9278d2a1c82eac5c1ed5afd5b
+    base_CD000.bin   0x0CD000  99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
+    base_CE000.bin   0x0CE000  f46bdf8b56e3b463e8461ea5b35bfae201cafda178ac8296a5c2d8bc19cbf175
+    base_CF000.bin   0x0CF000  cb87b8bb4828c63b87c36788f17d54049cf1b4c21e5757e0204a5e693fecf683
+    base_D0000.bin   0x0D0000  0d7deca9d471b627b9eaede3872d233da2b9b643006476fe654f3d504713a8cf
+    base_D1000.bin   0x0D1000  0d7ab5dc9d9ad6d369103ebd1db42c77e31d4969bece99fdb25943bd1df1db41
+    base_D2000.bin   0x0D2000  a0e9f30c578c5f06f9d0428b53eb181e1097ad5a6342f3837e4f6646c0a1f3fe
+    base_10A000.bin  0x10A000  59c1e2e2b2a76131daeb2dbe1fe19d9f362903a36c45fa2782fdb0b1b223c856
+    base_121000.bin  0x121000  5a210420e87bf0f9da73338e0f0ddac91018e0715207660cbeda881e02828c90
+    base_122000.bin  0x122000  23d44d20cd914ab860eedd25f938eece99af4a059e8e229b3a33e6195fef06ac
+    base_123000.bin  0x123000  fdd9e6ef0752425d429d354bc74652402039880f251c0a390b42b60c087a5805
+    base_126000.bin  0x126000  cc31a3d9cea495315d60f231c08705f2396ddd1eb70dcc962853aff1b346da35
+    base_127000.bin  0x127000  0318cc59765edcc893008ee976b24ace551a27ce8b3212837f5d072f2f186b27
+    base_128000.bin  0x128000  4393a597215fa98b88eaee6ef9855b6b12f9401d4e2e506029fa91b6c4450b6d
+    base_129000.bin  0x129000  c0b55f64c4bbd7536bb7ce506fa03a5fabb47335d80022d742be31791440d6d6
+    base_12A000.bin  0x12A000  aa94827f67ae6f0c2b57f83c1806b79e7759329c4a975efd3ad7781621447dda
+    base_12B000.bin  0x12B000  aa3358950b8cd2d6b8c65702c33d2efda29516144b3c69d7a0a74f770826b5cd
+    base_12C000.bin  0x12C000  ccc11583d6490eebb0b292115bb32c139c984ef40d3d39286bd86c00c6fb0356
+    base_12D000.bin  0x12D000  84bf9e4e0c04ea9352d343e34e5603d64876e192d3556f5341bc970810f94c85
+    base_12E000.bin  0x12E000  e135e686ad0de20f085fc204494b51873731b520ad24930487896b63b29109cc
+    base_12F000.bin  0x12F000  d882556ecd8e1f18038733b1befaa656f9a49034c5dc1305031114176f8064d3
+    base_130000.bin  0x130000  2a2d6c1641e5c2ca12fac749062fcfd45beb944fabeb3c8729de03b61e504b2d
+    base_131000.bin  0x131000  93a71390d6fc97d25914e309237068a629084dd7ecece96a005469c1720e465c
+    base_132000.bin  0x132000  fa5a5bba47c3517b8aabda238496f2a9b0f407516f89d96f4f4fbf07f2203536
+    base_133000.bin  0x133000  3cddc24926e15507b9e3592ee80616d7d38df8f9b7bf0fd3b6b4907aabef377c
+    base_134000.bin  0x134000  eb3d37a83e74423e0d1db56b0891c3889acee08ac9f501fc3067e6578fdb4826
+    base_135000.bin  0x135000  4eecf7a661e1ca9f41a8b8d4b4fffe37cf4c9bd50091d245c22763092b12f78f
+    base_136000.bin  0x136000  35ee889edf0de18419e8e3af91852f7527336250937affee022d5af8bd1e7594
+    base_137000.bin  0x137000  c53024a5371196563c6ba5b50a88d190b75f958523bb7aa893144560f5775558
+    base_138000.bin  0x138000  f236f6919146873d8ca237a7b699ff2f1db3c88690a9c5f25e5d3d97adeaa1d5
+    base_139000.bin  0x139000  c663ab140ea8f16b5eccd26b11317c931f23f339ca171ec133423871b4bf6cda
+    base_13A000.bin  0x13A000  867fc7c28b75e651f73086c36d49c6eebf891d47ad5f36957043baa5ca22ceda
+    base_13B000.bin  0x13B000  bab42fa2f1aa4db37450e353783a262129d0852f17d53f7f2c93c05de0d95ddb
+    base_13C000.bin  0x13C000  bf4146959ee1417989cb85d2fc5f1573ba8a731e8d59e0ca04bfcbbbcf8ca8b2
+    base_13D000.bin  0x13D000  990c996fc6c868ad50ca5b3e09f60c4b7ae9f6ac7998e362e7d55b383091adf8
+    base_1A3000.bin  0x1A3000  a8d62682b5a02eb5a2287e58a4754385d579a16e05b2c23de5821b458dad074f
+    base_1A4000.bin  0x1A4000  1e9d3b128b55dbada2d51ce0ce01365fd23126f5be34629626825d333cffdec0
+    base_1A5000.bin  0x1A5000  f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
+    base_1A6000.bin  0x1A6000  f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
+
+
+COMO RODAR
+----------
+  sha256sum *.bin          # conferir a transferencia
+
+  sudo sh diag.sh /opt/smartlink_flash        # so leitura
+  sudo sh flash_OpenPod_Core_2.4.sh /opt/smartlink_flash
+
+ORDEM RECOMENDADA (a que se mostrou mais confiavel):
+  1. plugue o aparelho, com o cartao, e espere o raio na tela
+  2. espere mais ~10 segundos
+  3. SO ENTAO rode o script
+
+O script tambem aceita a ordem inversa — se o aparelho nao estiver
+conectado ele espera e avisa a hora de plugar. Mas por esse caminho
+o aparelho costuma RE-ENUMERAR logo depois de detectado (observado
+em 2026-09-12: Device 094 na espera, Device 098 segundos depois).
+
+Por que a folga importa: o aparelho precisa de alguns segundos
+entre plugar e o primeiro comando, senao cai do modo card reader no
+meio da operacao. Era por isso que o recovery_check_linux.sh
+'funcionava melhor' — ele gastava tempo compilando antes de falar
+com o aparelho. Agora essa folga e explicita.
+
+O script para e pede GRAVAR digitado. Ate ai, so houve leitura.
+
+
+SE DER ERRADO
+-------------
+NAO DESLIGUE O APARELHO. Enquanto ele enumera, tem conserto.
+
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x48000 0 0x1000 base_48000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCD000 0 0x1000 base_CD000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCE000 0 0x1000 base_CE000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCF000 0 0x1000 base_CF000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xD0000 0 0x1000 base_D0000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xD1000 0 0x1000 base_D1000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xD2000 0 0x1000 base_D2000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x10A000 0 0x1000 base_10A000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x121000 0 0x1000 base_121000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x122000 0 0x1000 base_122000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x123000 0 0x1000 base_123000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x126000 0 0x1000 base_126000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x127000 0 0x1000 base_127000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x128000 0 0x1000 base_128000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x129000 0 0x1000 base_129000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12A000 0 0x1000 base_12A000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12B000 0 0x1000 base_12B000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12C000 0 0x1000 base_12C000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12D000 0 0x1000 base_12D000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12E000 0 0x1000 base_12E000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12F000 0 0x1000 base_12F000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x130000 0 0x1000 base_130000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x131000 0 0x1000 base_131000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x132000 0 0x1000 base_132000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x133000 0 0x1000 base_133000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x134000 0 0x1000 base_134000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x135000 0 0x1000 base_135000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x136000 0 0x1000 base_136000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x137000 0 0x1000 base_137000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x138000 0 0x1000 base_138000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x139000 0 0x1000 base_139000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x13A000 0 0x1000 base_13A000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x13B000 0 0x1000 base_13B000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x13C000 0 0x1000 base_13C000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x13D000 0 0x1000 base_13D000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1A3000 0 0x1000 base_1A3000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1A4000 0 0x1000 base_1A4000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1A5000 0 0x1000 base_1A5000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1A6000 0 0x1000 base_1A6000.bin
+
+Isso devolve o aparelho ao estado ANTERIOR — o mesmo que ele tinha
+antes deste kit, ja verificado e ja testado bootando.
+
+NAO use setores de fabrica para reverter um patch parcial: o resto
+da flash continuaria no estado da base e a FIRM ficaria misturada,
+com o CRC da tabela de particoes sem bater. Para voltar de fato ao
+ORIGINAL DE FABRICA, use o procedimento completo de recuperacao.

@@ -9,6 +9,11 @@
 ## Onde o aparelho está
 
 ```
+OpenPod Core 2.4     <- GERADA. A CARCACA em tema escuro.
+                        altura_linha 16 px (o padrao do nano) governando
+                        38 pontos em 28 telas, por UM byte.
+                        firmware/RELEASE/OpenPod Core 2.4/
+
 OpenPod Core 1.0.1   <- NO APARELHO (2026-09-14). E a STABLE.
                         O mantenedor voltou a ela depois de concluir que
                         o tema claro nao serve neste painel.
