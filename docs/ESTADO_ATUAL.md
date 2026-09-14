@@ -19,7 +19,11 @@ OpenPod Core 1.0           <- GRAVADA E TESTADA em 14/09
                               DEFEITOS: fundo da abertura branco com a
                               logo preta; tela Informacoes sobreposta
 
-OpenPod Core 2.1.1         <- GERADA. 8 bytes: o fundo do conteiner e
+OpenPod Core 2.2           <- GERADA. 1 byte: sem traco entre os itens,
+                              como o mockup do Marte manda
+
+OpenPod Core 2.1.1         <- GRAVADA. Os rotulos VOLTARAM; tema claro
+                              de pe; selecao com texto branco. Antes: 8 bytes: o fundo do conteiner e
                               da linha passa a vir de `cor_tela`.
                               Sem ela as listas ficam ILEGIVEIS no tema
                               claro — texto preto sobre linha preta

@@ -310,6 +310,17 @@ CORE_2_1 = CORE_2_0 + [
 ]
 
 # ---------------------------------------------------------------------------
+# CORE 2.2 — chegar ao alvo: marte/mockups/marte_completo.png
+#
+# A lista do nano e branca e LIMPA: sem traco entre os itens. O traco de
+# 1 px EMBAIXO da faixa fica — sao objetos diferentes, e a ferramenta
+# confere os dois.
+# ---------------------------------------------------------------------------
+CORE_2_2_MARTE = CORE_2_1 + [
+    ("patch_sem_separador.py", [], "sem traco entre os itens, como o nano"),
+]
+
+# ---------------------------------------------------------------------------
 # CORE 2.2 — O CAMINHO PADRAO.
 #
 # Decisao do mantenedor em 2026-09-14, depois de ver a segunda selecao na
@@ -373,6 +384,7 @@ RECEITAS = {
     "core2.0":   CORE_2_0,
     "core2.1":   CORE_2_1,
     "core2.2":   CORE_2_2,
+    "marte":     CORE_2_2_MARTE,
 }
 
 # Patches deliberadamente FORA da receita, e por que.
