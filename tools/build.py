@@ -304,11 +304,70 @@ CORE_2_1 = CORE_2_0 + [
     ("patch_marte_paleta.py", [], "Marte M1: o tema claro do iPod nano"),
 ]
 
+# ---------------------------------------------------------------------------
+# CORE 2.2 — O CAMINHO PADRAO.
+#
+# Decisao do mantenedor em 2026-09-14, depois de ver a segunda selecao na
+# tela: "nao quero herdar nada da criacao anterior que esta bugado. A
+# base e o Marte, vamos usar o padrao e nos adaptar."
+#
+# Entao esta receita NAO leva nenhum remendo da home. Ficam de fora, e
+# nao por acaso — sao exatamente os que existem para consertar o desenho
+# PROPRIO da home, que e a causa da classe de defeito:
+#
+#     make_list_home              a home vira lista, por tabela de coords
+#     patch_home_keys             ramos de navegacao da home
+#     patch_barra_selecao         a selecao da home vira barra
+#     fix_barra_selecao_criacao   o ponto gemeo que ficou para tras
+#     patch_status_bar/fix_       a faixa pintada na folha da home
+#     patch_saturno_s4/s5         a home entra na carcaca; a folha sai
+#
+# O que fica: o caminho que o firmware JA usa em 36 telas — CRIA_FAIXA,
+# CRIA_CONTEINER, CRIA_LINHA — mais a tabela de tema e a paleta do nano.
+#
+# Consequencia aceita: a HOME continua a grade 3x3 de fabrica, escura,
+# enquanto as 36 telas ficam claras. Feio e temporario. O passo seguinte
+# e levar a home para o MESMO caminho — o molde esta no proprio firmware,
+# em `page_home_menu_event_cb` (pagina 0x53), que monta a lista dela com
+# os tres helpers.
+#
+# MEDIDO: dos 16 passos do caminho padrao, 14 aplicam sobre a Core 1.0.1
+# sem tocar na home. As duas recusas foram
+#   patch_titulos      exige o id 216 -> resolvido com `--add Extras`
+#   patch_saturno_s5   mexe na folha da home -> e home, sai daqui
+# ---------------------------------------------------------------------------
+CORE_2_2 = [
+    ("patch_logo.py",           [], "a logo do OpenPod na tela de abertura"),
+    ("patch_fundo_abertura.py", [], "o fundo da abertura fica preto (V008)"),
+    ("relocate_lang_table.py",  ["--add", "Extras"],
+     "tabela do portugues para a area livre, + id 216 (titulo da 0x53)"),
+    ("aplica_textos.py",        [], "textos revisados em portugues do Brasil"),
+    ("patch_menu_text.py", ["--set", "pt:3=Vídeo"], "'Vídeo' com maiuscula"),
+    ("patch_update_sd.py",      [], "item 'Atualizar por SD' em Configurar"),
+    # --- daqui para baixo, o CAMINHO PADRAO
+    ("patch_scrollbar3.py",     [], "esconde a barra de rolagem no conteiner"),
+    ("patch_titulos.py",        [], "titulo na faixa de 37 telas"),
+    ("patch_cor_selecao.py",    [], "cor de selecao das listas"),
+    ("patch_cor_texto_lista.py",[], "cor do texto das listas"),
+    ("patch_chrome_padrao.py",  [], "as rotinas de chrome na area livre"),
+    ("patch_saturno.py",        [], "S1+S2: a tabela de tema por tras delas"),
+    ("patch_saturno_s3.py",     [], "S3: a carcaca pinta tudo explicitamente"),
+    ("patch_saturno_s6.py",     [], "S6: fecha os pontos deixados pelo S3"),
+    ("patch_saturno_s7.py",     [], "S7: icones das listas viram campo da tabela"),
+    ("patch_saturno_s8.py",     [], "S8: o recuo do texto vem da tabela"),
+    ("patch_saturno_s9.py",     [], "S9: as 14 telas com faixa e sem lista"),
+    ("patch_saturno_s10.py",    [], "S10: a cor do texto vem da tabela"),
+    ("patch_saturno_s11.py",    [], "S11: a altura da linha vem da tabela"),
+    ("patch_saturno_s12.py",    [], "S12: fundo lido do campo de fundo"),
+    ("patch_marte_paleta.py",   [], "Marte M1: o tema claro do iPod nano"),
+]
+
 RECEITAS = {
     "interface": INTERFACE,
     "core1.0":   CORE_1_0,
     "core2.0":   CORE_2_0,
     "core2.1":   CORE_2_1,
+    "core2.2":   CORE_2_2,
 }
 
 # Patches deliberadamente FORA da receita, e por que.
