@@ -225,10 +225,39 @@ aparelho, sem modo download.
 
 ---
 
+## 7-bis. Nota de reprodutibilidade — leia antes de regerar
+
+A 1.0.1 publicada foi gerada **antes** de o carimbo de versão ganhar
+endereço fixo (pendência 2 desta lista, fechada logo depois). Naquela
+build o `patch_versao.py` alocou sozinho, caindo em `0x001A4928`; a
+partir da 1.1 ele mora sempre em `0x001A4F00`.
+
+**Consequência:** regerar a 1.0.1 com as ferramentas de hoje **não**
+reproduz a imagem publicada.
+
+```
+imagem carimbada publicada (a que esta no aparelho)
+    36125f5665b8613e0d96215e2ffcf36170d847068d0c72e572167fe506400c1f
+
+a mesma receita hoje, com o carimbo em 0x1A4F00
+    6ff2716d6d7796305181cd82783b88e002633e0716cfc45a6ac52401add2ee92
+
+    diferenca: 40 bytes em 2 setores (0x10A000 e 0x1A4000) — o texto
+    mudou de lugar e o literal que aponta para ele acompanhou. Nenhuma
+    mudanca de comportamento.
+```
+
+A **imagem sem carimbo continua reproduzível byte a byte**:
+`tools/build.py --receita core1.0` sai sempre em `7312fbd066b1a31e...`.
+
+Os artefatos publicados **não foram regerados**: são o que foi gravado e
+testado, e reescrevê-los apagaria o que eles de fato foram. A correção
+vale da 1.1 em diante.
+
 ## 8. Pendências
 
 | # | pendência |
 |---|---|
 | 1 | a camada de **mensagem** (`0x00D0D818`) não quebra linha; mostrar nome e modelo em linhas separadas exige entendê-la. Aberto para a 1.1 |
-| 2 | `patch_versao.py` ainda aloca sozinho na área livre |
-| 3 | binary diff e validação ainda não são passos do `build.py` |
+| 2 | ~~`patch_versao.py` aloca sozinho~~ ✅ **fechada** — endereço fixo `0x001A4F00`, declarado no MAPA. Vale da 1.1 em diante (ver §7-bis) |
+| 3 | ~~binary diff e validação fora do `build.py`~~ ✅ **fechada** — os dois são passos do pipeline agora, com teste negativo |

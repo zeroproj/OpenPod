@@ -138,6 +138,11 @@ MAPA = {
     "patch_cor_selecao.py":    (0x001A3518, 0x00E8),
     "relocate_lang_table.py":  (0x001A3600, 0x0700),
     "aplica_textos.py":        (0x001A3D00, 0x1200),
+    # 0x001A4F00..0x001A5000 e do CARIMBO DE VERSAO (`patch_versao.py`,
+    # aplicado pelo `make_install_kit`, regra R7). Ele nao roda nesta
+    # receita, mas o slot fica reservado aqui para nao ser dado a
+    # ninguem: a constante vive em make_install_kit.EM_VERSAO.
+    #
     # 0x001A5000..0x001A6000 e reservado: o `patch_titulos` exige esses
     # 4 KiB virgens. O que nao cabe antes vai para depois dele.
     "make_extras_menu.py":     (0x001A6000, 0x0400),
@@ -327,6 +332,85 @@ def sha(p):
     return hashlib.sha256(open(p, "rb").read()).hexdigest()
 
 
+def valida(img):
+    """validate_firmware.py, com a falha de CRC da R1 reclassificada.
+
+    A FIRM tem um campo de CRC na tabela de particoes, e a regra R1 manda
+    NUNCA regravar esse setor — entao o campo fica desatualizado de
+    proposito, e o validador acusa. Confirmado no aparelho em 13/09: ele
+    boota com a tabela de fabrica sobre uma FIRM diferente.
+
+    Um validador que grita FALHA no caso normal ensina a ignorar falhas.
+    Aqui essa linha vira ESPERADO, e qualquer OUTRA falha e falha mesmo.
+    """
+    print("\n  VALIDACAO ESTRUTURAL")
+    r = subprocess.run([sys.executable,
+                        os.path.join(RAIZ, "tools/validate_firmware.py"), img],
+                       capture_output=True, text=True, cwd=RAIZ)
+    reais = []
+    for ln in r.stdout.splitlines():
+        if "[FALHA]" not in ln:
+            continue
+        if "particao FIRM: CRC" in ln:
+            print("    ESPERADO  CRC da FIRM desatualizado (regra R1)")
+        else:
+            reais.append(ln.strip())
+    ok = [ln for ln in r.stdout.splitlines() if "RESULTADO" in ln]
+    if ok:
+        print("    " + ok[0].strip())
+    if reais:
+        print("\n  FALHAS REAIS:")
+        for ln in reais:
+            print("    " + ln)
+        return False
+    print("    nenhuma falha alem da esperada   OK")
+    return True
+
+
+def diferenca(img, base, receita):
+    """binary diff contra a base, com as guardas do projeto.
+
+    Nao e enfeite: §12 do prompt-mestre exige que toda versao seja
+    comparada com sua base, e que alteracao inesperada PARE o processo.
+    As tres guardas abaixo sao as que ja custaram aparelho ou versao.
+    """
+    print(f"\n  BINARY DIFF contra {os.path.basename(base)}")
+    A = open(os.path.join(RAIZ, base), "rb").read()
+    B = open(img, "rb").read()
+    if len(A) != len(B):
+        print(f"    PARE: tamanhos diferentes, {len(A)} e {len(B)}")
+        return False
+    dif = [i for i in range(len(A)) if A[i] != B[i]]
+    if not dif:
+        print("    nenhuma diferenca — a receita nao mudou nada?")
+        return True
+    secs = {}
+    for i in dif:
+        secs[i // 0x1000 * 0x1000] = secs.get(i // 0x1000 * 0x1000, 0) + 1
+    print(f"    {len(dif)} bytes em {len(secs)} setores, "
+          f"menor offset 0x{min(dif):06X}")
+    for s in sorted(secs):
+        print(f"      0x{s:06X}  {secs[s]:6d} B")
+
+    guardas = [
+        ("nada abaixo de 0x00D000 (bootloader)", min(dif) >= 0x00D000),
+        ("setor 0x00D000 intocado (regra R1)",
+         not any(0xD000 <= i < 0xE000 for i in dif)),
+        ("PSMP intocada (0x1FC000+)",
+         not any(i >= 0x1FC000 for i in dif)),
+    ]
+    print()
+    falhou = False
+    for texto, passou in guardas:
+        print(f"    {'OK  ' if passou else 'PARE'}  {texto}")
+        falhou |= not passou
+    if falhou:
+        print("\n    PARE: a receita tocou onde nao devia. Investigue "
+              "antes de seguir.")
+        return False
+    return True
+
+
 def main():
     ap = argparse.ArgumentParser(description="constroi o OpenPod do ORIGINAL")
     ap.add_argument("--saida", default="firmware/WORKING/GN438_build.bin")
@@ -336,6 +420,11 @@ def main():
                     help="compara a saida com uma imagem de referencia")
     ap.add_argument("--ate", metavar="FERRAMENTA",
                     help="para depois deste passo")
+    ap.add_argument("--base", metavar="IMAGEM",
+                    help="imagem de referencia do binary diff "
+                         "(padrao: o ORIGINAL)")
+    ap.add_argument("--sem-validar", action="store_true",
+                    help="nao roda validacao nem diff ao final")
     ap.add_argument("--receita", default="interface",
                     choices=sorted(RECEITAS),
                     help="qual receita construir (padrao: interface)")
@@ -407,6 +496,12 @@ def main():
     shutil.copy(atual, dst)
     print(f"\n  gravado: {a.saida}")
     print(f"  sha256 : {sha(dst)}")
+
+    if not a.sem_validar:
+        if not valida(dst):
+            return 1
+        if not diferenca(dst, a.base or ORIGINAL, RECEITA):
+            return 1
 
     if a.verificar:
         ref = os.path.join(RAIZ, a.verificar)

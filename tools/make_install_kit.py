@@ -39,6 +39,9 @@ import subprocess, hashlib, os, sys
 SETOR = 0x1000
 LIMITE_BOOTLOADER = 0x00D000
 
+# O carimbo de versao mora AQUI, sempre. Ver o MAPA em tools/build.py.
+EM_VERSAO = 0x001A4F00
+
 REGIOES = [
     ("bootloader", 0,       51532),
     ("ptable",     53248,   64),
@@ -114,7 +117,15 @@ def main():
             [sys.executable,
              os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           "patch_versao.py"),
-             "--in", a.alvo, "--out", carimbado, "--texto", texto],
+             "--in", a.alvo, "--out", carimbado, "--texto", texto,
+             # Endereco FIXO. Sem `--em` a ferramenta alocava logo depois
+             # do ultimo byte ocupado — e o endereco do carimbo passava a
+             # depender de tudo que rodou antes, que e exatamente o
+             # alocador incremental que o MAPA do build.py aboliu. Este
+             # slot (0x1A4F00..0x1A5000) fica entre o lote do
+             # `aplica_textos` e os 4 KiB que o `patch_titulos` exige
+             # virgens a partir de 0x1A5000.
+             "--em", hex(EM_VERSAO)],
             capture_output=True, text=True)
         if r.returncode:
             sys.exit("ERRO ao carimbar a versao:\n" + r.stdout + r.stderr)
