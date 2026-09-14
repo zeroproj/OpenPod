@@ -123,16 +123,21 @@ mexeu nas 39 telas.
 
 ### 4.1 As estruturas têm larguras diferentes
 
-```
-CONFIGURAR   3 arrays de ponteiro, 10 itens cada
-  [r8+0x04]! = r4   LINHA
-  [r8+0x28]  = sb   texto        espacamento 0x28 = 10 x 4
-  [r8+0x50]  = fp   icone
+As instruções são pré-indexadas, então o **encoding** e o **offset real
+do array** não são o mesmo número. Resolvido:
 
-HOME         2 arrays de ponteiro, 9 itens cada
-  [sl+0x04]! = sb                espacamento 0x24 = 9 x 4
-  [sl+0x24]  = r6
-                                 NAO EXISTE TERCEIRO ARRAY
+```
+CONFIGURAR   base r6 ;  r8 = r6 - 4 ;  no laco  r8 = r6 + 4*i
+
+  str   r4,[r8,#0x04]!   ->  r6 + 4i         array A  a LINHA
+  str.w sb,[r8,#0x28]    ->  r6 + 4i + 0x28  array B  o texto
+  str.w fp,[r8,#0x50]    ->  r6 + 4i + 0x50  array C  o icone
+
+HOME         base r8 ;  sl = r8 - 4 ;  no laco  sl = r8 + 4*i
+
+  str   sb,[sl,#0x04]!   ->  r8 + 4i         array A
+  str.w r6,[sl,#0x24]    ->  r8 + 4i + 0x24  array B
+                                             NAO HA TERCEIRO ARRAY
 ```
 
 A home guarda **dois** ponteiros por item. O molde produz **três** — a
@@ -166,17 +171,60 @@ pós-gravação**, porque corrupção de heap não muda os bytes gravados.
 2. **O firmware já confere a falha de alocação** e sai limpo, registrando
    no log. Não é um `malloc` cego.
 
+### 4.3 A estrutura, mapeada campo a campo — CONFIRMADO
+
+> Medição feita em 2026-09-14, logo depois do M-a. Era o pré-requisito
+> declarado, e está fechado. Varredura das funções da home
+> (`0x00D2E950`…`0x00D2F460`) atrás de escrita e leitura em cada offset.
+
 ```
-0x54 =  84 = 2 arrays x 9 x 4  (72)  +  12 de outros campos
-0x78 = 120 = 3 arrays x 9 x 4  (108) +  12
+ESTRUTURA DA HOME — 0x54 = 84 bytes
+
+  +0x00 .. +0x23   array A   9 ponteiros   o objeto 1 (quadro/icone)
+  +0x24 .. +0x47   array B   9 ponteiros   o objeto 2 (rotulo)
+  +0x48 .. +0x4B   campo     r4, o objeto principal   (0x00D2EDD4)
+  +0x4C .. +0x53   8 BYTES   nao escritos, nao lidos  <- FOLGA
 ```
 
-> **Isto é HIPÓTESE, não CONFIRMADO.** Os 12 bytes restantes precisam ser
-> mapeados campo a campo antes de mexer no tamanho — se algum campo mora
-> *depois* dos arrays, mover o terceiro array para o fim não basta, e os
-> deslocamentos `0x24` espalhados pelo código teriam de mudar junto.
->
-> **Essa medição é pré-requisito do trabalho na home.**
+**Eram 8 bytes de folga, não 12** — eu havia estimado errado, por não ter
+contado o campo `r4` em `+0x48`. E, melhor ainda: **a folga está no FIM
+da estrutura**, que era exatamente a dúvida que travava o passo.
+
+```
+ESTRUTURA DO CONFIGURAR — 3 arrays de 10, >= 0x78 = 120 bytes
+
+  +0x00 .. +0x27   array A  10 ponteiros   a LINHA
+  +0x28 .. +0x4F   array B  10 ponteiros   o texto
+  +0x50 .. +0x77   array C  10 ponteiros   o icone
+```
+
+### 4.4 O que a conversão custa, agora que está medido
+
+```
+  +0x00 .. +0x23   array A   a LINHA    (array existente, novo papel)
+  +0x24 .. +0x47   array B   o texto    (FICA ONDE ESTA)
+  +0x48 .. +0x4B   campo r4             (FICA ONDE ESTA)
+  +0x4C .. +0x6F   array C   o icone    (NOVO — ocupa a folga + 0x1C)
+                   ----
+                   0x70 = 112 bytes
+
+  malloc   movs r0,#0x54 -> #0x70    0x00D2EBBC
+  memset   movs r2,#0x54 -> #0x70    0x00D2EBDA
+```
+
+**Dois bytes**, e os dois são imediatos de 8 bits — `0x70` = 112, dentro
+do limite de 255 do `movs rX,#imm8`.
+
+**O que torna isso barato é o campo `r4` não se mover.** Ele continua em
+`+0x48`, e o array novo entra depois dele. Nenhum outro ponto do código
+precisa ser tocado — os deslocamentos `0x24` espalhados pela home
+continuam válidos.
+
+> **Ainda em aberto, e é decisão de projeto, não medição:** o Configurar
+> guarda o ponteiro da linha porque o tratador de evento precisa dele.
+> Falta decidir se a home nova também precisa guardar — se não precisar,
+> a conversão pode nem mexer no tamanho. Isso se resolve escrevendo o
+> laço, não medindo mais.
 
 ---
 
@@ -220,7 +268,7 @@ passa a vir de `(tela_h/7) * indice`.
 | passo | o que | por quê | custo |
 |---|---|---|---|
 | **1** | **M-a** — separador some | mexe DENTRO de `CRIA_LINHA`: uma mudança, 39 telas. É a carcaça provando que funciona | **1 byte** |
-| **2** | mapear os 12 bytes restantes de `0x54` | pré-requisito medido do passo 3. Sem isso, mexer no tamanho é chute | medição |
+| **2** | ~~mapear os bytes restantes de `0x54`~~ | ✅ **FECHADO** em 14/09 — §4.3. Eram 8 bytes de folga, no FIM da estrutura | feito |
 | **3** | home sobre o molde | o marco: a home deixa de ser exceção | código novo + 2 bytes de alocação |
 
 **O passo 1 é também a validação da tese.** Se um byte dentro de

@@ -1,0 +1,48 @@
+OpenPod Core 1.1 — pacote para o cartao SD
+==========================================
+
+O QUE MUDA, em relacao a Core 1.0.1
+
+    UMA coisa so: o traco de 1 px entre os itens das listas SOME.
+
+    E isso. Nada mais foi tocado.
+
+COMO GRAVAR
+
+    1. copie  OpenPod_Core_1.1.up  para a RAIZ do cartao microSD,
+       com o nome exato:   update.up
+    2. no aparelho:  Configurar -> Atualizar por SD -> Sim
+    3. ele reinicia e se atualiza sozinho
+    4. APAGUE o update.up do cartao
+
+O QUE OLHAR NA TELA
+
+    Entre em CONFIGURAR. Os itens devem estar SEM o traco que os
+    separava. Compare com o alvo:  marte/mockups/marte_completo.png
+
+    Confira tambem MUSICA, RADIO e PASTAS — sao 39 telas de lista, e
+    todas devem ter mudado JUNTAS, com o mesmo byte.
+
+    > Se as 39 mudarem juntas, isso PROVA na pratica a tese da carcaca:
+    > existe um molde compartilhado no firmware, e mexer nele muda tudo
+    > de uma vez. E o que destrava o trabalho na home.
+
+    A HOME **nao muda** — ela nao usa o molde compartilhado. Isso e
+    esperado, nao defeito. E justamente o proximo trabalho.
+
+    Em Configurar -> Informacoes deve aparecer:  OpenPod Core 1.1
+
+SE ALGO DER ERRADO
+
+    Volte para a 1.0.1 pelo mesmo caminho, com o .up dela:
+    firmware/RELEASE/OpenPod Core 1.0.1/OpenPod_Core_1.0.1.up
+
+    Recuperacao completa em  recovery/  e  docs/MODO_DOWNLOAD.md
+    (USB conectado -> segure VOLUME BAIXO -> aperte RESET)
+
+HASHES
+
+    imagem sem carimbo  f365e1fdd8a40bbdb38f3f0100cf3644250feb15ad1ebb2bcc969cd98c2d8d69
+    pacote .up          1.724.672 B,  CRC do payload 0x4011
+
+    diff contra a Core 1.0.1:  1 byte, em 0x0012179E, setor 0x121000
