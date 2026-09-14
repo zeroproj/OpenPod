@@ -128,7 +128,7 @@ Cada linha carrega classe de confiança, conforme a regra §7 do
 | **M-c** | título na faixa | "Menu", centralizado | faixa vazia, só a bateria | **VISTO NA TELA** | rotina + tabela |
 | **M-d** | barra de rolagem | **não existe** | existe, à direita | **VISTO NA TELA** | ⚠️ gancho (§2-bis) |
 | **M-e** | ícones de linha | **não existem** | existem (engrenagens) | **VISTO NA TELA** | ⚠️ 38 pontos ou gancho |
-| ~~**M-f**~~ cor | seleção | AZUL RGB(41,101,222) | ✅ **FEITO — Core 1.2**, 2 bytes | — | falta só o degradê (= M-h) |
+| ~~**M-f**~~ cor | seleção | AZUL RGB(41,101,222) | ✅ **FEITO — Core 1.2**, 2 bytes | **PROVADO POR DIAGNÓSTICO** | falta só o degradê (= M-h) |
 | **M-g** | bateria | ícone colorido | glifo monocromático | PROVÁVEL | bitmap + M4 |
 | **M-h** | degradê da faixa | 19 linhas, `nanoclone.json` | faixa lisa | **CONFIRMADO** | rotina nova |
 | **M-i** | cores dos 6 campos | ver `nanoclone.json` | tema de fábrica | **A MEDIR** | — |
@@ -236,6 +236,38 @@ regressão.
 > **Falta o degradê.** O alvo pede `selecao_topo` RGB(99,156,227) →
 > `selecao_base` RGB(41,101,222). A Core 1.2 entrega o tom de baixo,
 > chapado. O degradê é o M-h, e é rotina nova.
+
+### Como isto foi PROVADO — e os dois erros meus no caminho
+
+A Core 1.2 foi gravada e a tela pareceu não mudar. Daí vieram dois
+enganos meus, em sequência:
+
+**Erro 1 — identifiquei a função errada.** Apontei `0x00D219D4` como
+"pintor de seleção compartilhado". Ela é `view_mbox_create` — o nome
+está no próprio log de erro dela. Cria **caixas de mensagem**.
+
+**Erro 2, e foi o pior — a super-correção.** Do erro 1 eu concluí que
+`paleta[5]` não governava a seleção, e cheguei a dizer que a Core 1.2
+não tinha efeito. **Errado.** `view_mbox_create` é mesmo um criador de
+caixas, mas a seleção é pintada por **outro** dos pontos que usam
+`paleta[5]` — e paleta[5] governa a barra, sim.
+
+**O diagnóstico que encerrou a discussão:** `paleta[5]` → vermelho puro
+(`0xF800`), gravado no aparelho. **A barra ficou vermelha.**
+
+```
+foto medida: 21.016 pixels vermelhos, RGB(227,123,101)
+```
+
+> **A lição de método, e ela custou duas gravações:** eu tratei foto
+> sobre-exposta como medida, duas vezes. Uma diferença sutil de cor não
+> se julga por foto — **cor inconfundível resolve em uma gravação** o que
+> a discussão não resolvia. Era o método que este projeto já tinha usado
+> em `§0-bis`, e eu demorei a lembrar.
+>
+> E: quando o aparelho contraria a previsão, a primeira hipótese a
+> testar é **erro meu**, não defeito de hardware. O mantenedor chegou a
+> suspeitar do LCD por causa da minha confusão.
 
 ### O que isso significa para a ordem de trabalho
 
