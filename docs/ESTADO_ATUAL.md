@@ -11,11 +11,15 @@
 ## 1. Onde o aparelho está
 
 ```
-OpenPod Core 1.1     <- NO APARELHO. Confirmada na tela em 14/09
-                        firmware/RELEASE/OpenPod Core 1.1/
-                        imagem     f365e1fdd8a40bbdb38f3f0100cf3644...
-                        carimbada  843577e2f9026e6171ee5401f7136479...
-                        diff contra a 1.0.1: UM byte
+OpenPod Core 1.4     <- NO APARELHO. Confirmada na tela em 14/09
+                        firmware/RELEASE/OpenPod Core 1.4/
+                        imagem  45780be578edb173ba9150bcc832f310...
+
+   a linha 1.1 -> 1.4, SEIS bytes ao todo, cada um testado na tela:
+     1.1  M-a  sem separador entre itens        1 byte
+     1.2  M-f  selecao no azul do Marte         2 bytes
+     1.3  M-d  sem barra de rolagem             1 byte
+     1.4  M-e  sem icone decorativo nas linhas  2 bytes
 
 OpenPod Core 1.0.1   <- a BASELINE declarada STABLE
                         firmware/RELEASE/OpenPod Core 1.0.1/
@@ -206,13 +210,13 @@ com classe de confiança e evidência citada. A ordem de trabalho está na
 Resumo da distância, hoje:
 
 ```
-M-a  separador entre itens    FEITO na Core 1.1, visto na tela
+M-a  separador entre itens    FEITO  Core 1.1, visto na tela
 M-b  home                     grade 3x3, deveria ser LISTA        codigo novo
 M-c  titulo na faixa          nao existe                          rotina
 M-d  barra de rolagem         existe, deveria sumir               1 ponto
 M-e  icones de linha          existem, deveriam sumir             1 ponto
-M-f  selecao                  geometria JA CERTA; falta a cor
-                              e ciano RGB(0,190,213), alvo azul RGB(41,101,222)
+M-f  selecao                  FEITO  Core 1.2, 2 bytes (cor)
+                              falta so o DEGRADE, que e o M-h
 M-g  bateria                  glifo mono, deveria ser colorida    bitmap
 M-h  degrade da faixa         faixa lisa                          rotina
 M-i  as 6 cores               A MEDIR

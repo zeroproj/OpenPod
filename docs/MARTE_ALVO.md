@@ -278,10 +278,24 @@ Conferido: **nenhum ponteiro aponta para o meio** de nenhuma das duas.
 > números certos e a conclusão errada por tentar decidir sozinho uma
 > pergunta de produto.
 
-**Em aberto, e só a tela responde:** se o texto encosta na esquerda ou
-fica um buraco onde estava o ícone. `lv_flex.c` está compilado, o que
-sugere que encosta. Se ficar buraco, é outro patch, sobre a posição do
-rótulo.
+### ✅ Confirmado no aparelho — 2026-09-14
+
+Mantenedor, depois de gravar a 1.4: *"Deu tudo certo os três pontos
+estão corretos"*.
+
+```
+engrenagens e tracinhos sumiram              OK
+o texto ENCOSTOU NA ESQUERDA, sem buraco     OK   <- a duvida em aberto
+o tique continua marcando o idioma ativo     OK
+```
+
+**A dúvida em aberto está fechada: a linha usa LAYOUT FLEX.** Ao ficar
+com texto vazio, o rótulo do ícone colapsa e os irmãos encostam sozinhos.
+Não foi preciso patch de posição.
+
+> Isso é conhecimento reaproveitável, e vale além deste item: **filhos de
+> uma linha da carcaça se reorganizam sozinhos**. Qualquer item futuro que
+> remova ou acrescente um filho não precisa mexer em coordenada.
 
 ### ✅ M-f (a cor) — RESOLVIDO em 2 bytes. Core 1.2
 
