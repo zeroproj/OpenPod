@@ -372,11 +372,17 @@ foi exercitada: a 3.1 é a saída dela.
   exatamente em `0x0CC7C4..0x0CDD50` (5.322 B, dos quais 2 são o CRC em
   `0x00D01C`, que **não** deve ser copiado).
 
-> **Tarefa do Core 1.0:** escrever `tools/patch_logo.py`, que converte
-> um PNG 128×35 para `INDEXED_8` no formato do slot e recebe `--em`.
-> Critério de aceite: aplicado sobre o ORIGINAL, produz em
-> `0x0CC7C4..0x0CDD50` **os mesmos bytes da v007** (ou uma conversão
-> declaradamente melhor, com o erro por canal medido).
+> ✅ **RESOLVIDO em 14/09** — `tools/patch_logo.py`. O critério de aceite
+> foi cumprido na forma forte: `--autoteste` aplica a ferramenta sobre o
+> ORIGINAL e o slot `0x0CC7C4..0x0CDD50` sai **byte a byte igual ao da
+> V007**, que rodou no aparelho. Não é coincidência — a conversão da V007
+> era mediana-corte do Pillow, a mesma daqui: 247 cores, erro médio
+> **0,070** por canal contra o PNG de origem, máximo 6.
+>
+> A ferramenta **recusa** PNG de outro tamanho em vez de redimensionar
+> (redimensionar é decisão de design, não de ferramenta), confere o
+> cabeçalho `lv_img_dsc` antes de escrever, e aborta se tocar em qualquer
+> byte fora do slot.
 
 ### 11.4 O que fica FORA do Core 1.0
 
@@ -395,6 +401,47 @@ pequeno o bastante para que um defeito tenha causa óbvia.
 > Visualmente é um **recuo** em relação à 2.4. Isso é o preço declarado
 > de uma fundação auditável. Se o mantenedor preferir não recuar, a
 > alternativa honesta está em §13.
+
+### 11.4-bis A receita do Core 1.0 — construída e medida (14/09)
+
+`tools/build.py` passou a ter **receitas nomeadas**
+(`--receita interface` | `--receita core1.0`; o padrão continua sendo a
+`interface`, então nada do que existia mudou de comportamento).
+
+```
+  RECEITA DO OPENPOD — core1.0
+   1. patch_logo.py           a logo do OpenPod na tela de abertura
+   2. relocate_lang_table.py  tabela do portugues para a area livre
+   3. aplica_textos.py        textos revisados em portugues do Brasil
+   4. patch_menu_text.py      'Vídeo' com maiuscula
+   5. patch_update_sd.py      item 'Atualizar por SD' em Configurar
+```
+
+Resultado medido, do ORIGINAL:
+
+| | Core 1.0 | linha `interface` (a 3.1) |
+|---|---|---|
+| passos | **5** | 26 |
+| setores alterados | **7** | 41 |
+| bytes alterados | **9.116** | 12.370 |
+| menor offset tocado | **0x048798** | 0x048798 |
+| `validate_firmware` | 21 OK, 1 (o CRC da FIRM, R1) | idem |
+| tabela de partições | **intocada** | intocada |
+| `.up` gerado | 1.724.416 B, CRC `0x69FF`, confere | — |
+
+A tela **Informações** recebe, pelo carimbo do gerador de kit (R7), duas
+linhas que cabem nos 113 px: `OpenPod Core 1.0` (102 px) e `GN-438`
+(43 px).
+
+> **Nada disso foi empacotado como release.** A regra de processo vale:
+> nenhuma versão é gerada sem o mantenedor pedir. Os artefatos acima
+> existem como **prova de que a receita fecha**, no diretório temporário.
+
+> **Dívida achada de passagem:** `patch_versao.py` (o carimbo) ainda usa
+> o alocador incremental — na Core 1.0 ele caiu em `0x1A4928`, dentro do
+> lote declarado do `aplica_textos`. Não há colisão hoje, mas ele é a
+> última ferramenta fora do MAPA. Corrigir quando o carimbo entrar na
+> receita.
 
 ### 11.5 Ordem de execução
 
@@ -451,8 +498,13 @@ voltar?"* (§32) nem *"qual era a base?"* (§4).
    ferramentas fora** (L5). Provado que foi só documental: a imagem
    reconstruída depois saiu com o mesmo sha `ab98ef39…`.
 4. Reclassificar o CRC da FIRM no `validate_firmware.py` (§3.2).
-5. Escrever `tools/patch_logo.py` com o critério de aceite da §11.3.
+5. ✅ **FEITO (14/09)** — `tools/patch_logo.py`, com o critério de aceite
+   da §11.3 cumprido byte a byte, e a receita `core1.0` no `build.py`
+   (§11.4-bis). Construída, validada, diferenciada e empacotada em `.up`
+   — **sem gerar release**.
 6. Acrescentar ao `build.py` os passos de diff e validação (L1, L3).
+7. Levar o carimbo de versão (`patch_versao.py`) para dentro do MAPA da
+   área livre — a última ferramenta que ainda aloca por conta própria.
 
 ### Decisão que só o mantenedor toma
 

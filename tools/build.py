@@ -150,8 +150,9 @@ AREA_INI, AREA_FIM = 0x001A3040, 0x001A8000
 # A ordem importa: quem cria area livre vem antes de quem a usa; a tabela
 # de tema vem antes dos ganchos que a leem.
 # ---------------------------------------------------------------------------
-RECEITA = [
+INTERFACE = [
     # --- estrutura da home e dos menus
+    ("patch_logo.py",          [], "a logo do OpenPod na tela de abertura"),
     ("make_list_home.py",      [], "home deixa de ser grade 3x3 e vira lista"),
     ("patch_home_keys.py",     [], "ramos de navegacao da home: pula 6 -> pula 8"),
     # A FAIXA SUPERIOR vem cedo, e nao e opcional.
@@ -220,6 +221,35 @@ RECEITA = [
 
     # --- titulo e roteamento
 ]
+
+
+# ---------------------------------------------------------------------------
+# OPENPOD CORE 1.0 — deliberadamente pequena.
+#
+# Base decidida pelo mantenedor em 2026-09-14: o firmware ORIGINAL.
+#
+# O objetivo desta versao nao e parecer melhor: e ser uma fundacao em que
+# um defeito tenha causa obvia. Por isso NAO entram home em lista, faixa
+# superior, titulos, Saturno, Extras, cor de selecao — tudo isso continua
+# na receita `interface`, inteiro, e volta na Core 2.0.
+#
+# Consequencia aceita: a Core 1.0 tem a home em grade 3x3 de fabrica.
+# ---------------------------------------------------------------------------
+CORE_1_0 = [
+    ("patch_logo.py",          [], "a logo do OpenPod na tela de abertura"),
+    # A tabela do portugues sai para a area livre ANTES de ser reescrita:
+    # a de fabrica emenda direto na do espanhol e nao tem folga.
+    ("relocate_lang_table.py", [], "tabela do portugues para a area livre"),
+    ("aplica_textos.py",       [], "textos revisados em portugues do Brasil"),
+    ("patch_menu_text.py", ["--set", "pt:3=Vídeo"],
+     "'Vídeo' com maiuscula (o original e minusculo)"),
+    ("patch_update_sd.py",     [], "item 'Atualizar por SD' em Configurar"),
+]
+
+RECEITAS = {
+    "interface": INTERFACE,
+    "core1.0":   CORE_1_0,
+}
 
 # Patches deliberadamente FORA da receita, e por que.
 FORA = [
@@ -290,10 +320,15 @@ def main():
                     help="compara a saida com uma imagem de referencia")
     ap.add_argument("--ate", metavar="FERRAMENTA",
                     help="para depois deste passo")
+    ap.add_argument("--receita", default="interface",
+                    choices=sorted(RECEITAS),
+                    help="qual receita construir (padrao: interface)")
     a = ap.parse_args()
 
+    RECEITA = RECEITAS[a.receita]
+
     print()
-    print("  RECEITA DO OPENPOD")
+    print(f"  RECEITA DO OPENPOD — {a.receita}")
     print()
     for i, (t, extra, por) in enumerate(RECEITA, 1):
         print(f"   {i:2d}. {t:26s} {por}")
