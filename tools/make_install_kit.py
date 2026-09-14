@@ -90,6 +90,8 @@ def main():
 
     V = a.versao
 
+    VF = V.replace(" ", "_")
+
     # CARIMBO DE VERSAO — obrigatorio, nao opcional.
     #
     # Regra do mantenedor (2026-09-13): *"toda vez que tiver uma coisa
@@ -158,7 +160,10 @@ def main():
     # verificado e que ja bootou. Ver docs/ROLLBACK_POLICY.md.
     arquivos = []   # (endereco, nome_alvo, sha_alvo, nome_base, sha_base_f, sha_base)
     for s in setores:
-        na, no = "%s_%X.bin" % (V, s), "base_%X.bin" % s
+        # VF, nao V: "OpenPod Core 1.0" vira "OpenPod_Core_1.0". Nome de
+        # arquivo com espaco quebra o script gerado — e quebrou, na Core
+        # 1.0, em 14/09. O nome bonito continua nos textos e no log.
+        na, no = "%s_%X.bin" % (VF, s), "base_%X.bin" % s
         ba, bo = alvo[s:s + SETOR], base[s:s + SETOR]
         open(os.path.join(a.saida, na), "wb").write(ba)
         open(os.path.join(a.saida, no), "wb").write(bo)
@@ -179,7 +184,7 @@ def main():
     # Reescreve a imagem inteira, entao funciona a partir de qualquer
     # versao. Nao ha como gravar o kit errado.
     if not a.sem_up:
-        up = os.path.join(a.saida, "%s.up" % V)
+        up = os.path.join(a.saida, "%s.up" % VF)
         r = subprocess.run(
             [sys.executable,
              os.path.join(os.path.dirname(os.path.abspath(__file__)), "gera_up.py"),
@@ -192,7 +197,7 @@ def main():
                 print("  " + ln.strip())
 
     kib = len(setores) * SETOR // 1024
-    script = os.path.join(a.saida, "flash_%s.sh" % V)
+    script = os.path.join(a.saida, "flash_%s.sh" % VF)
     with open(script, "w") as f:
         f.write(gerar_script(V, a.descricao, arquivos, reg_antes, reg_depois, kib))
     os.chmod(script, 0o755)
@@ -220,10 +225,11 @@ def main():
 
 
 def gerar_script(V, desc, arquivos, antes, depois, kib):
+    VF = V.replace(" ", "_")
     L = []
     w = L.append
     w("#!/bin/sh")
-    w("# flash_%s.sh — OpenPod. GERADO por tools/make_install_kit.py." % V)
+    w("# flash_%s.sh — OpenPod. GERADO por tools/make_install_kit.py." % VF)
     w("# NAO EDITE A MAO: as constantes sao calculadas a partir das imagens.")
     w("#")
     if desc:
@@ -233,7 +239,7 @@ def gerar_script(V, desc, arquivos, antes, depois, kib):
     w("# nao e endereçado. write_flash sempre com 0 no 2o argumento, a")
     w("# partir de um arquivo por setor (docs/WRITE_FLASH_SEMANTICS.md).")
     w("#")
-    w("# USO   sudo sh flash_%s.sh [/opt/smartlink_flash]" % V)
+    w("# USO   sudo sh flash_%s.sh [/opt/smartlink_flash]" % VF)
     w("")
     w("set -eu")
     w("export LC_ALL=C")
@@ -241,8 +247,14 @@ def gerar_script(V, desc, arquivos, antes, depois, kib):
     w('TOOLDIR=${1:-/opt/smartlink_flash}')
     w('TOOL="$TOOLDIR/smtlink_dump"')
     w("DEV=301a:2801")
-    w('WORK=$(pwd)/openpod_flash_%s' % V)
-    w('LOG="$WORK/flash_%s.log"' % V)
+    # O nome da versao pode ter ESPACO ("OpenPod Core 1.0"). Sem aspas,
+    # `WORK=$(pwd)/openpod_flash_OpenPod Core 1.0` faz o shell tentar
+    # executar `Core` — foi o que aconteceu na Core 1.0, em 14/09. Todo
+    # kit gerado desde a 1.4 carregava esta falha, latente porque as
+    # versoes com espaco eram instaladas pelo cartao.
+    w('VERSAO="%s"' % VF)
+    w('WORK="$(pwd)/openpod_flash_$VERSAO"')
+    w('LOG="$WORK/flash_$VERSAO.log"')
     w("WROTE=0")
     w("")
     w('mkdir -p "$WORK"; : > "$LOG"; exec 3>&1')
@@ -289,9 +301,9 @@ def gerar_script(V, desc, arquivos, antes, depois, kib):
     w('    log "        OK   $1"')
     w("}")
     for s, na, ha, no, ho, hb in arquivos:
-        w("ck_file %s %s" % (na, ha))
+        w('ck_file "%s" %s' % (na, ha))
     for s, na, ha, no, ho, hb in arquivos:
-        w("ck_file %s %s" % (no, ho))
+        w('ck_file "%s" %s' % (no, ho))
     w("")
     w('log "[2/6] procurando o aparelho..."')
     w(bloco_aguardar())
@@ -368,7 +380,7 @@ def gerar_script(V, desc, arquivos, antes, depois, kib):
     w('    log "        OK — setor confere"')
     w("}")
     for k, (s, na, ha, no, ho, hb) in enumerate(arquivos, 1):
-        w('wr "4/6 %d/%d" 0x%X %s %s' % (k, len(arquivos), s, na, ha))
+        w('wr "4/6 %d/%d" 0x%X "%s" %s' % (k, len(arquivos), s, na, ha))
     w('rm -f "$WORK/sec.bin"')
     w("")
     w('log "[5/6] lendo a flash inteira e conferindo o estado DEPOIS..."')
@@ -399,12 +411,13 @@ def gerar_script(V, desc, arquivos, antes, depois, kib):
     w("fi")
     w('log "======================================================================"')
     w('log ""')
-    w('log "  leve de volta: before.bin  after.bin  flash_%s.log"' % V)
+    w('log "  leve de volta: before.bin  after.bin  flash_$VERSAO.log"')
     w('log ""')
     return "\n".join(L) + "\n"
 
 
 def gerar_leiame(V, desc, arquivos, kib):
+    VF = V.replace(" ", "_")
     L = []
     w = L.append
     w("OpenPod_Install — %s" % V)
@@ -431,7 +444,7 @@ def gerar_leiame(V, desc, arquivos, kib):
     w("")
     w("CONTEUDO")
     w("--------")
-    w("  flash_%s.sh      grava (%d setores, %d KiB)" % (V, len(arquivos), kib))
+    w("  flash_%s.sh      grava (%d setores, %d KiB)" % (VF, len(arquivos), kib))
     w("  diag.sh                diagnostico          (SO LEITURA)")
     w("  recovery_check_linux.sh  confere a ferramenta (SO LEITURA)")
     w("")
@@ -449,7 +462,7 @@ def gerar_leiame(V, desc, arquivos, kib):
     w("  sha256sum *.bin          # conferir a transferencia")
     w("")
     w("  sudo sh diag.sh /opt/smartlink_flash        # so leitura")
-    w("  sudo sh flash_%s.sh /opt/smartlink_flash" % V)
+    w("  sudo sh flash_%s.sh /opt/smartlink_flash" % VF)
     w("")
     w("ORDEM RECOMENDADA (a que se mostrou mais confiavel):")
     w("  1. plugue o aparelho, com o cartao, e espere o raio na tela")

@@ -360,15 +360,15 @@ c7ebd237e44ae52fa0f0ae12e1045498a3e89be89932c2fcabc09876e51af533  ./firmware/REL
 01290b9215002a96349d3af13bbab56d0c97e4cab32e8dffed6c6e8e91cfed4d  ./firmware/RELEASE/OpenPod 3.1/base_1A5000.bin
 f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6  ./firmware/RELEASE/OpenPod 3.1/base_1A6000.bin
 ab039386aa645f414a0580730cc4b62ca7831c9d4d8dff7b01c80f9b7be16f5f  ./firmware/RELEASE/OpenPod 3.1/base_CD000.bin
-a299d2344b157d0fd604ce27c09a56178ef62e169d4e55601ae85d915666230c  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod Core 1.0.up
-3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod Core 1.0_109000.bin
-59c1e2e2b2a76131daeb2dbe1fe19d9f362903a36c45fa2782fdb0b1b223c856  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod Core 1.0_10A000.bin
-5a210420e87bf0f9da73338e0f0ddac91018e0715207660cbeda881e02828c90  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod Core 1.0_121000.bin
-a8d62682b5a02eb5a2287e58a4754385d579a16e05b2c23de5821b458dad074f  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod Core 1.0_1A3000.bin
-eaa94bfe5d728697d74a3cff501b1068db3fe7fdbc8af02a50c6370d14ca82f7  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod Core 1.0_1A4000.bin
-41308534ac9a54ca3960d82de64dcef4959c85b9278d2a1c82eac5c1ed5afd5b  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod Core 1.0_48000.bin
-ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod Core 1.0_CC000.bin
-99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod Core 1.0_CD000.bin
+a299d2344b157d0fd604ce27c09a56178ef62e169d4e55601ae85d915666230c  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod_Core_1.0.up
+3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod_Core_1.0_109000.bin
+59c1e2e2b2a76131daeb2dbe1fe19d9f362903a36c45fa2782fdb0b1b223c856  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod_Core_1.0_10A000.bin
+5a210420e87bf0f9da73338e0f0ddac91018e0715207660cbeda881e02828c90  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod_Core_1.0_121000.bin
+a8d62682b5a02eb5a2287e58a4754385d579a16e05b2c23de5821b458dad074f  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod_Core_1.0_1A3000.bin
+eaa94bfe5d728697d74a3cff501b1068db3fe7fdbc8af02a50c6370d14ca82f7  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod_Core_1.0_1A4000.bin
+41308534ac9a54ca3960d82de64dcef4959c85b9278d2a1c82eac5c1ed5afd5b  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod_Core_1.0_48000.bin
+ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod_Core_1.0_CC000.bin
+99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e  ./firmware/RELEASE/OpenPod Core 1.0/OpenPod_Core_1.0_CD000.bin
 40e5a7786b3a7c82c786da0effb5036c6da0c234462dfaa5c435581cf5f03411  ./firmware/RELEASE/OpenPod Core 1.0/base_109000.bin
 ad962e28861a9a9914ef70e26cfc50283fa51daee636051a4907db930839dd6a  ./firmware/RELEASE/OpenPod Core 1.0/base_10A000.bin
 dbea2b9d18646cad64d3a5ea402a2a633bb0c4036fca689ad997ecb2545ba9ac  ./firmware/RELEASE/OpenPod Core 1.0/base_121000.bin

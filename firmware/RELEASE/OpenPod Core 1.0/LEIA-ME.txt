@@ -21,19 +21,19 @@ A REGRA QUE NASCEU DE UM ERRO REAL
 
 CONTEUDO
 --------
-  flash_OpenPod Core 1.0.sh      grava (8 setores, 32 KiB)
+  flash_OpenPod_Core_1.0.sh      grava (8 setores, 32 KiB)
   diag.sh                diagnostico          (SO LEITURA)
   recovery_check_linux.sh  confere a ferramenta (SO LEITURA)
 
   SETORES A GRAVAR (4096 B cada)
-    OpenPod Core 1.0_48000.bin 0x048000  41308534ac9a54ca3960d82de64dcef4959c85b9278d2a1c82eac5c1ed5afd5b
-    OpenPod Core 1.0_CC000.bin 0x0CC000  ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
-    OpenPod Core 1.0_CD000.bin 0x0CD000  99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
-    OpenPod Core 1.0_109000.bin 0x109000  3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
-    OpenPod Core 1.0_10A000.bin 0x10A000  59c1e2e2b2a76131daeb2dbe1fe19d9f362903a36c45fa2782fdb0b1b223c856
-    OpenPod Core 1.0_121000.bin 0x121000  5a210420e87bf0f9da73338e0f0ddac91018e0715207660cbeda881e02828c90
-    OpenPod Core 1.0_1A3000.bin 0x1A3000  a8d62682b5a02eb5a2287e58a4754385d579a16e05b2c23de5821b458dad074f
-    OpenPod Core 1.0_1A4000.bin 0x1A4000  eaa94bfe5d728697d74a3cff501b1068db3fe7fdbc8af02a50c6370d14ca82f7
+    OpenPod_Core_1.0_48000.bin 0x048000  41308534ac9a54ca3960d82de64dcef4959c85b9278d2a1c82eac5c1ed5afd5b
+    OpenPod_Core_1.0_CC000.bin 0x0CC000  ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
+    OpenPod_Core_1.0_CD000.bin 0x0CD000  99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
+    OpenPod_Core_1.0_109000.bin 0x109000  3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
+    OpenPod_Core_1.0_10A000.bin 0x10A000  59c1e2e2b2a76131daeb2dbe1fe19d9f362903a36c45fa2782fdb0b1b223c856
+    OpenPod_Core_1.0_121000.bin 0x121000  5a210420e87bf0f9da73338e0f0ddac91018e0715207660cbeda881e02828c90
+    OpenPod_Core_1.0_1A3000.bin 0x1A3000  a8d62682b5a02eb5a2287e58a4754385d579a16e05b2c23de5821b458dad074f
+    OpenPod_Core_1.0_1A4000.bin 0x1A4000  eaa94bfe5d728697d74a3cff501b1068db3fe7fdbc8af02a50c6370d14ca82f7
 
   SETORES DE REVERSAO -> ESTADO ANTERIOR (a base deste kit)
     base_48000.bin   0x048000  cd43df9cf6f193ab32cd4c0963555f95e95e7ecb02b836bc720c2d1873dcbc01
@@ -51,7 +51,7 @@ COMO RODAR
   sha256sum *.bin          # conferir a transferencia
 
   sudo sh diag.sh /opt/smartlink_flash        # so leitura
-  sudo sh flash_OpenPod Core 1.0.sh /opt/smartlink_flash
+  sudo sh flash_OpenPod_Core_1.0.sh /opt/smartlink_flash
 
 ORDEM RECOMENDADA (a que se mostrou mais confiavel):
   1. plugue o aparelho, com o cartao, e espere o raio na tela

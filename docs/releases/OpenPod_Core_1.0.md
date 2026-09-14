@@ -167,7 +167,7 @@ Os `base_*.bin` do kit são os mesmos setores **no firmware de fábrica** —
 **Pelo cartão SD** — o caminho oficial:
 
 ```
-1. copie  firmware/RELEASE/OpenPod Core 1.0/OpenPod Core 1.0.up
+1. copie  firmware/RELEASE/OpenPod Core 1.0/OpenPod_Core_1.0.up
    para a RAIZ do cartao, com o nome  update.up
 2. no aparelho: Configurar -> Atualizar por SD -> Sim
 3. ele reinicia e se atualiza
@@ -187,8 +187,14 @@ partir de qualquer versão.
 > setores — 8 setores, 32 KiB:
 >
 > ```
-> sudo sh "flash_OpenPod Core 1.0.sh" /opt/smartlink_flash
+> cd "firmware/RELEASE/OpenPod Core 1.0"
+> sudo sh flash_OpenPod_Core_1.0.sh /opt/smartlink_flash
 > ```
+>
+> O script confere o sha de cada arquivo antes, grava setor a setor e
+> **relê cada setor** comparando o hash antes de passar ao próximo
+> (regra R3). Se algum não conferir, ele para e imprime a linha de
+> reversão.
 >
 > Da Core 1.0 em diante, o cartão resolve.
 
@@ -216,6 +222,29 @@ estática não responde:
 Se algo falhar, o kit tem os `base_*.bin` e o recovery está pronto.
 
 ---
+
+## 7-bis. Um bug que esta versão pegou no gerador de kit
+
+O primeiro kit não rodou:
+
+```
+flash_OpenPod Core 1.0.sh: 19: Core: not found
+```
+
+O gerador escrevia `WORK=$(pwd)/openpod_flash_OpenPod Core 1.0` **sem
+aspas** — o shell tentava executar `Core`. E os nomes de setor
+(`OpenPod Core 1.0_48000.bin`) chegavam sem aspas no `ck_file` e no `wr`.
+
+**Todo kit gerado desde a 1.4 carregava essa falha**, latente porque as
+versões com espaço no nome sempre foram instaladas pelo cartão SD, e a
+única instalada por cabo (`v044`) não tinha espaço.
+
+Corrigido em duas frentes, em `tools/make_install_kit.py`:
+
+- os **nomes de arquivo** passam a usar `VF` — `OpenPod_Core_1.0` —
+  enquanto o nome bonito continua nos textos e no log;
+- toda interpolação em posição de argumento de shell passou a ser
+  **citada**, como segunda linha de defesa.
 
 ## 8. Pendências que esta versão deixa registradas
 

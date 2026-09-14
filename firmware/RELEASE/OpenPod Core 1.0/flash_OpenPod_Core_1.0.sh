@@ -1,5 +1,5 @@
 #!/bin/sh
-# flash_OpenPod Core 1.0.sh — OpenPod. GERADO por tools/make_install_kit.py.
+# flash_OpenPod_Core_1.0.sh — OpenPod. GERADO por tools/make_install_kit.py.
 # NAO EDITE A MAO: as constantes sao calculadas a partir das imagens.
 #
 # Fundacao da linha Core: logo, portugues do Brasil, update por SD. Base: firmware ORIGINAL de fabrica.
@@ -8,7 +8,7 @@
 # nao e endereçado. write_flash sempre com 0 no 2o argumento, a
 # partir de um arquivo por setor (docs/WRITE_FLASH_SEMANTICS.md).
 #
-# USO   sudo sh flash_OpenPod Core 1.0.sh [/opt/smartlink_flash]
+# USO   sudo sh flash_OpenPod_Core_1.0.sh [/opt/smartlink_flash]
 
 set -eu
 export LC_ALL=C
@@ -16,8 +16,9 @@ export LC_ALL=C
 TOOLDIR=${1:-/opt/smartlink_flash}
 TOOL="$TOOLDIR/smtlink_dump"
 DEV=301a:2801
-WORK=$(pwd)/openpod_flash_OpenPod Core 1.0
-LOG="$WORK/flash_OpenPod Core 1.0.log"
+VERSAO="OpenPod_Core_1.0"
+WORK="$(pwd)/openpod_flash_$VERSAO"
+LOG="$WORK/flash_$VERSAO.log"
 WROTE=0
 
 mkdir -p "$WORK"; : > "$LOG"; exec 3>&1
@@ -48,14 +49,14 @@ rsha() { python3 -c "import hashlib,sys;d=open(sys.argv[1],'rb').read()[int(sys.
 
 log "======================================================================"
 log " OpenPod — gravacao do OPENPOD CORE 1.0   (8 setores, 32 KiB)"
-log " 0x048000 +0x1000   <- OpenPod Core 1.0_48000.bin"
-log " 0x0CC000 +0x1000   <- OpenPod Core 1.0_CC000.bin"
-log " 0x0CD000 +0x1000   <- OpenPod Core 1.0_CD000.bin"
-log " 0x109000 +0x1000   <- OpenPod Core 1.0_109000.bin"
-log " 0x10A000 +0x1000   <- OpenPod Core 1.0_10A000.bin"
-log " 0x121000 +0x1000   <- OpenPod Core 1.0_121000.bin"
-log " 0x1A3000 +0x1000   <- OpenPod Core 1.0_1A3000.bin"
-log " 0x1A4000 +0x1000   <- OpenPod Core 1.0_1A4000.bin"
+log " 0x048000 +0x1000   <- OpenPod_Core_1.0_48000.bin"
+log " 0x0CC000 +0x1000   <- OpenPod_Core_1.0_CC000.bin"
+log " 0x0CD000 +0x1000   <- OpenPod_Core_1.0_CD000.bin"
+log " 0x109000 +0x1000   <- OpenPod_Core_1.0_109000.bin"
+log " 0x10A000 +0x1000   <- OpenPod_Core_1.0_10A000.bin"
+log " 0x121000 +0x1000   <- OpenPod_Core_1.0_121000.bin"
+log " 0x1A3000 +0x1000   <- OpenPod_Core_1.0_1A3000.bin"
+log " 0x1A4000 +0x1000   <- OpenPod_Core_1.0_1A4000.bin"
 log " bootloader (0x0..0xD000): NAO ENDERECADO"
 log "======================================================================"
 log ""
@@ -75,22 +76,22 @@ ck_file() {
     obtido   $g"
     log "        OK   $1"
 }
-ck_file OpenPod Core 1.0_48000.bin 41308534ac9a54ca3960d82de64dcef4959c85b9278d2a1c82eac5c1ed5afd5b
-ck_file OpenPod Core 1.0_CC000.bin ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
-ck_file OpenPod Core 1.0_CD000.bin 99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
-ck_file OpenPod Core 1.0_109000.bin 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
-ck_file OpenPod Core 1.0_10A000.bin 59c1e2e2b2a76131daeb2dbe1fe19d9f362903a36c45fa2782fdb0b1b223c856
-ck_file OpenPod Core 1.0_121000.bin 5a210420e87bf0f9da73338e0f0ddac91018e0715207660cbeda881e02828c90
-ck_file OpenPod Core 1.0_1A3000.bin a8d62682b5a02eb5a2287e58a4754385d579a16e05b2c23de5821b458dad074f
-ck_file OpenPod Core 1.0_1A4000.bin eaa94bfe5d728697d74a3cff501b1068db3fe7fdbc8af02a50c6370d14ca82f7
-ck_file base_48000.bin cd43df9cf6f193ab32cd4c0963555f95e95e7ecb02b836bc720c2d1873dcbc01
-ck_file base_CC000.bin 83597203bed419cc2f76f1b8c942194d07a4b23c34f67e2e7834864361dd6688
-ck_file base_CD000.bin ab039386aa645f414a0580730cc4b62ca7831c9d4d8dff7b01c80f9b7be16f5f
-ck_file base_109000.bin 40e5a7786b3a7c82c786da0effb5036c6da0c234462dfaa5c435581cf5f03411
-ck_file base_10A000.bin ad962e28861a9a9914ef70e26cfc50283fa51daee636051a4907db930839dd6a
-ck_file base_121000.bin dbea2b9d18646cad64d3a5ea402a2a633bb0c4036fca689ad997ecb2545ba9ac
-ck_file base_1A3000.bin 6f4ef0b382a9fa4d2792e8446613308544b251e2d512ea1b5d3b83ce8f1d10e4
-ck_file base_1A4000.bin f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
+ck_file "OpenPod_Core_1.0_48000.bin" 41308534ac9a54ca3960d82de64dcef4959c85b9278d2a1c82eac5c1ed5afd5b
+ck_file "OpenPod_Core_1.0_CC000.bin" ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
+ck_file "OpenPod_Core_1.0_CD000.bin" 99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
+ck_file "OpenPod_Core_1.0_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
+ck_file "OpenPod_Core_1.0_10A000.bin" 59c1e2e2b2a76131daeb2dbe1fe19d9f362903a36c45fa2782fdb0b1b223c856
+ck_file "OpenPod_Core_1.0_121000.bin" 5a210420e87bf0f9da73338e0f0ddac91018e0715207660cbeda881e02828c90
+ck_file "OpenPod_Core_1.0_1A3000.bin" a8d62682b5a02eb5a2287e58a4754385d579a16e05b2c23de5821b458dad074f
+ck_file "OpenPod_Core_1.0_1A4000.bin" eaa94bfe5d728697d74a3cff501b1068db3fe7fdbc8af02a50c6370d14ca82f7
+ck_file "base_48000.bin" cd43df9cf6f193ab32cd4c0963555f95e95e7ecb02b836bc720c2d1873dcbc01
+ck_file "base_CC000.bin" 83597203bed419cc2f76f1b8c942194d07a4b23c34f67e2e7834864361dd6688
+ck_file "base_CD000.bin" ab039386aa645f414a0580730cc4b62ca7831c9d4d8dff7b01c80f9b7be16f5f
+ck_file "base_109000.bin" 40e5a7786b3a7c82c786da0effb5036c6da0c234462dfaa5c435581cf5f03411
+ck_file "base_10A000.bin" ad962e28861a9a9914ef70e26cfc50283fa51daee636051a4907db930839dd6a
+ck_file "base_121000.bin" dbea2b9d18646cad64d3a5ea402a2a633bb0c4036fca689ad997ecb2545ba9ac
+ck_file "base_1A3000.bin" 6f4ef0b382a9fa4d2792e8446613308544b251e2d512ea1b5d3b83ce8f1d10e4
+ck_file "base_1A4000.bin" f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
 
 log "[2/6] procurando o aparelho..."
 # --- espera ativa pelo aparelho ---------------------------------
@@ -204,14 +205,14 @@ wr() {
     obtido   $g"
     log "        OK — setor confere"
 }
-wr "4/6 1/8" 0x48000 OpenPod Core 1.0_48000.bin 41308534ac9a54ca3960d82de64dcef4959c85b9278d2a1c82eac5c1ed5afd5b
-wr "4/6 2/8" 0xCC000 OpenPod Core 1.0_CC000.bin ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
-wr "4/6 3/8" 0xCD000 OpenPod Core 1.0_CD000.bin 99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
-wr "4/6 4/8" 0x109000 OpenPod Core 1.0_109000.bin 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
-wr "4/6 5/8" 0x10A000 OpenPod Core 1.0_10A000.bin 59c1e2e2b2a76131daeb2dbe1fe19d9f362903a36c45fa2782fdb0b1b223c856
-wr "4/6 6/8" 0x121000 OpenPod Core 1.0_121000.bin 5a210420e87bf0f9da73338e0f0ddac91018e0715207660cbeda881e02828c90
-wr "4/6 7/8" 0x1A3000 OpenPod Core 1.0_1A3000.bin a8d62682b5a02eb5a2287e58a4754385d579a16e05b2c23de5821b458dad074f
-wr "4/6 8/8" 0x1A4000 OpenPod Core 1.0_1A4000.bin eaa94bfe5d728697d74a3cff501b1068db3fe7fdbc8af02a50c6370d14ca82f7
+wr "4/6 1/8" 0x48000 "OpenPod_Core_1.0_48000.bin" 41308534ac9a54ca3960d82de64dcef4959c85b9278d2a1c82eac5c1ed5afd5b
+wr "4/6 2/8" 0xCC000 "OpenPod_Core_1.0_CC000.bin" ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
+wr "4/6 3/8" 0xCD000 "OpenPod_Core_1.0_CD000.bin" 99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
+wr "4/6 4/8" 0x109000 "OpenPod_Core_1.0_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
+wr "4/6 5/8" 0x10A000 "OpenPod_Core_1.0_10A000.bin" 59c1e2e2b2a76131daeb2dbe1fe19d9f362903a36c45fa2782fdb0b1b223c856
+wr "4/6 6/8" 0x121000 "OpenPod_Core_1.0_121000.bin" 5a210420e87bf0f9da73338e0f0ddac91018e0715207660cbeda881e02828c90
+wr "4/6 7/8" 0x1A3000 "OpenPod_Core_1.0_1A3000.bin" a8d62682b5a02eb5a2287e58a4754385d579a16e05b2c23de5821b458dad074f
+wr "4/6 8/8" 0x1A4000 "OpenPod_Core_1.0_1A4000.bin" eaa94bfe5d728697d74a3cff501b1068db3fe7fdbc8af02a50c6370d14ca82f7
 rm -f "$WORK/sec.bin"
 
 log "[5/6] lendo a flash inteira e conferindo o estado DEPOIS..."
@@ -250,5 +251,5 @@ else
 fi
 log "======================================================================"
 log ""
-log "  leve de volta: before.bin  after.bin  flash_OpenPod Core 1.0.log"
+log "  leve de volta: before.bin  after.bin  flash_$VERSAO.log"
 log ""
