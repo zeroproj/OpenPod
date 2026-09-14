@@ -19,6 +19,11 @@ OpenPod Core 1.0           <- GRAVADA E TESTADA em 14/09
                               DEFEITOS: fundo da abertura branco com a
                               logo preta; tela Informacoes sobreposta
 
+OpenPod Core 2.0           <- GERADA, aguardando gravacao
+                              a carcaca: home em lista, faixa com titulo,
+                              tabela de tema. EXPERIMENTAL.
+                              volta em 1 comando: RECOVERY.sh --alvo core
+
 OpenPod Core 1.0.1         <- NO APARELHO, e STABLE
                               instalada PELO CARTAO, funcionou
                               "Tudo funcionou" — mantenedor, 14/09
