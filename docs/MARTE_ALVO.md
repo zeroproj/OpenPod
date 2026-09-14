@@ -108,121 +108,115 @@ area vazia        branca, igual ao resto da lista
 
 ---
 
-## 2. O que já está feito
+## 2. 🎯 A DISTÂNCIA ATÉ O ALVO — a tabela de trabalho
 
-Conferido contra `marte/paleta/nanoclone.json`, campo a campo:
+> **Refeita em 2026-09-14, contra a OpenPod Core 1.0.1.**
+>
+> A versão anterior desta seção comparava o alvo com a **Core 2.1.1** e
+> dizia "seis de seis cores exatas". **Aquela linha foi apagada no mesmo
+> dia** (ver `ESTADO_ATUAL.md` §3). Comparar com ela induziria ao erro que
+> a limpeza existe para acabar. A tabela abaixo é contra o que está **no
+> aparelho**.
 
-| | alvo | Core 2.1.1 |
-|---|---|---|
-| fundo do conteúdo | RGB(255,255,255) | ✅ igual |
-| cor da faixa | RGB(189,198,205) | ✅ igual |
-| separador da faixa | RGB(90,97,106) | ✅ igual |
-| texto | RGB(0,0,0) | ✅ igual |
-| texto selecionado | RGB(255,255,255) | ✅ igual |
-| seleção | RGB(41,101,222) | ✅ igual |
-| sem ícones de linha | — | ✅ (S7) |
-| sem barra de rolagem | — | ✅ |
+Cada linha carrega classe de confiança, conforme a regra §7 do
+`CLAUDE.md`. `CONFIRMADO` quer dizer evidência direta, citada.
 
-**As cores estão exatas. Seis de seis.**
+| # | item do alvo | Marte quer | Core 1.0.1 tem | classe | custo |
+|---|---|---|---|---|---|
+| **M-a** | separador entre itens | **não existe** | existe, 1 px | **CONFIRMADO** | **1 byte** |
+| **M-b** | home | **lista** | grade 3×3 de fábrica | **CONFIRMADO** | código novo |
+| **M-c** | título na faixa | "Menu", centralizado | não existe | **CONFIRMADO** | rotina + tabela |
+| **M-d** | barra de rolagem | **não existe** | existe | **CONFIRMADO** | 1 ponto |
+| **M-e** | ícones de linha | **não existem** | existem | **CONFIRMADO** | 1 ponto |
+| **M-f** | seleção | barra de borda a borda, degradê azul | a de fábrica | **A MEDIR** | — |
+| **M-g** | bateria | ícone colorido | glifo monocromático | PROVÁVEL | bitmap + M4 |
+| **M-h** | degradê da faixa | 19 linhas, `nanoclone.json` | faixa lisa | **CONFIRMADO** | rotina nova |
+| **M-i** | cores dos 6 campos | ver `nanoclone.json` | tema de fábrica | **A MEDIR** | — |
+| **M-j** | luminância | claro | escuro | **DESVIO ACEITO** | — não fazer |
+
+### A evidência de cada CONFIRMADO
+
+**M-a — o separador.** Desmontado no ORIGINAL, dentro de `CRIA_LINHA`
+(`0x00D21764`, usada por **39 telas**):
+
+```
+00D2179E  0121      movs  r1, #1        <- a LARGURA da borda
+00D217A0  2bf0a8fc  bl    0xD4D0F4      <- set_style_border_width (prop 50)
+00D217A4  2046      mov   r0, r4
+00D217A6  0022      movs  r2, #0
+00D217A8  0121      movs  r1, #1
+00D217AA  2bf0a9fc  bl    0xD4D100      <- set_style_border_side  (prop 51)
+```
+
+Patch: arquivo `0x0012179E`, `01` → `00`.
+
+> ⚠️ **Não confundir com o traço da faixa.** O `faixa_separador` do
+> `nanoclone.json` (y=17) é a borda da **FAIXA** e **FICA**. São objetos
+> diferentes. Este item mexe só na borda da **LINHA**.
+
+**M-b — a home é grade.** Declarado no relatório da versão: *"Consequência
+aceita: a Core 1.0 tem a home em grade 3×3 de fábrica."*
+(`docs/releases/OpenPod_Core_1.0.1.md`). O laço que a desenha está
+decodificado em `GUI_ANALYSIS.md` PARTE IV §20.
+
+**M-c, M-d, M-e — por construção.** As ferramentas que produziam título
+(`patch_titulos`), escondiam a rolagem (`patch_scrollbar3`) e tiravam os
+ícones de linha (Saturno S7) foram **removidas** em 14/09. Logo o
+firmware voltou ao comportamento de fábrica nesses três pontos. O molde
+de fábrica em `page_home_menu_event_cb` mostra o ícone sendo criado
+explicitamente (`GUI_ANALYSIS.md` PARTE IV §21), o que confirma M-e.
+
+**M-h — a faixa é lisa.** O degradê nunca esteve no firmware de fábrica;
+veio do `nanoclone.json`, linha a linha, e dos pixels já cortados em
+`marte/adaptado/faixa_128x18.png`.
+
+**M-j — o desvio.** Registrado em §0-bis: as faixas horizontais do tema
+claro são do **painel**, isoladas por eliminação. **Não revisitar** sem
+antes resolver no nível do driver do LCD.
 
 ---
 
-## 3. O que falta, com o custo medido
+## 3. Ordem de trabalho — e por que esta ordem
 
-### 3.1 Texto do item selecionado, na home — ✗
+> A ordem sugerida antes (a→e) foi escrita quando existia a tabela de tema
+> do Saturno. **Ela não vale mais**: três daqueles passos eram baratos
+> *porque* a infraestrutura existia, e ela foi removida. Esta é a ordem
+> refeita sobre o que o firmware de fábrica oferece.
 
-No mockup, "Extras" é **branco** sobre o azul. Nas fotos do aparelho:
+| passo | item | por que agora | custo |
+|---|---|---|---|
+| **1** | **M-a** separador | único item do alvo que mexe em código **de fábrica** — não dependia de nada que foi apagado. Verificável na tela em segundos | **1 byte** |
+| **2** | **M-d** + **M-e** rolagem e ícones de linha | mesma classe: tirar coisa, não criar. Um ponto cada | 2 pontos |
+| **3** | **M-f** + **M-i** medir a seleção e as 6 cores de fábrica | não dá para mirar sem saber de onde se parte. É medição, não patch | — |
+| **4** | **M-b** a home vira lista | **o marco de verdade** — é o que faz o aparelho *parecer* o Marte | código novo |
+| **5** | **M-c** título na faixa | depende da faixa estar resolvida | rotina + tabela |
+| **6** | **M-h** degradê | deixou de ser aposta: as 19 cores e os pixels já existem | rotina nova |
+| **7** | **M-g** bateria colorida | primeiro pixel do NanoClone no firmware → **obriga o crédito na tela Sobre** | bitmap |
 
-```
-Configurar   "Despertador", "Tempo de tela"   BRANCO   correto
-home         "Musica"                         ESCURO   errado
-```
+### O que destrava o passo 4, e já está medido
 
-As listas leem `cor_texto_sel` (a rotina `0x00DA598C`, gancho do
-`patch_cor_selecao` dentro de `CRIA_LINHA`). **A home não** — ela pinta
-o próprio realce.
-
-Sétima ocorrência do mesmo padrão. Custo: um ponto na home, do mesmo
-feitio dos anteriores.
-
-### 3.2 Separadores entre os itens — ✗
-
-O nano **não tem**. Nós temos, e a origem está medida:
-
-```
-00D2178A   movs r0, #0x12
-00D2178C   bl   palette_main       <- a cor vem da PALETA da LVGL
-00D21796   bl   set_style_border_color
-00D2179E   movs r1, #1
-00D217A0   bl   set_style_border_width      <- largura 1
-```
-
-A cor da borda da linha **não vem da nossa tabela** — vem de
-`palette_main(0x12)`. Oitava ocorrência.
-
-Para chegar ao alvo, a largura vai a **zero**: `0x0012179E`, o imediato
-`#1` → `#0`. **Um byte.**
-
-> **Não confundir com o traço da faixa.** O `faixa_separador` do
-> `nanoclone.json` é a linha **y=17**, embaixo da barra — e essa
-> **fica**. São objetos diferentes: a borda da FAIXA e a borda da LINHA.
-> Eu estava usando `cor_separador` para a coisa errada.
-
-### 3.3 Degradê da faixa e da seleção — ✗
-
-E aqui o alvo **barateia** o que eu tinha marcado como incerto.
-
-`marte/paleta/nanoclone.json` traz o degradê **linha a linha**: as 19
-cores, de `y=0` a `y=18`. E `marte/adaptado/` já tem os pixels **na nossa
-largura**:
+Converter a home era adiado por medo de aritmética de alocação, por
+analogia com o `make_extras_menu`. **Medido, e o argumento caiu:**
 
 ```
-faixa_128x18.png      o degrade da faixa, 128x18
-selecao_128x16.png    o degrade da selecao, 128x16
+page_home_event_cb        NENHUMA chamada de alocacao
+page_home_menu_event_cb   NENHUMA chamada de alocacao
 ```
 
-**Logo o M2/M3 não dependem de o nosso LVGL honrar `BG_GRAD_DIR`** — a
-incerteza registrada em `PROJETO_MARTE.md` §4.1 como "PROVÁVEL, só o
-aparelho responde". Dá para pintar 17 linhas de 1 px, ou usar o bitmap
-pronto.
+O `make_extras_menu` precisou de ponteiro porque **mudou a quantidade de
+itens** (3 → 6), e o buffer é dimensionado pela contagem. A home já tem
+nove itens e já tem o espaço deles. Detalhe em `GUI_ANALYSIS.md`
+PARTE IV §22.
 
-**O degradê deixou de ser aposta.** Continua sendo código novo — mas de
-risco conhecido, não de viabilidade duvidosa.
+### A regra que vale para todos os passos
 
-### 3.4 Título centralizado — ✗
-
-Alvo: "Menu", centralizado. Hoje: `09:30 OpenPod`, à esquerda, com o
-relógio.
-
-Decisão de produto pendente: manter o relógio (útil) ou seguir o nano
-(limpo). O mockup diz nano.
-
-### 3.5 Bateria colorida — ✗
-
-Alvo: ícone verde, desenhado. Hoje: glifo monocromático da fonte de
-ícones. `marte/adaptado/icones/battery_00..09.png` já estão em 21×13.
-
-É M4, e é onde o share-alike do CC BY-SA entra de verdade — o primeiro
-pixel do NanoClone dentro do firmware.
+**Um passo por vez, gravado e visto na tela, sem nada de carona.** Se um
+passo parecer exigir outro, isso é dito e o mantenedor decide — não se
+empacota os dois. Ver `ESTADO_ATUAL.md` §3.
 
 ---
 
-## 4. Ordem sugerida
-
-| passo | o que | custo |
-|---|---|---|
-| **a** | separadores somem | **1 byte** |
-| **b** | texto selecionado branco na home | 1 ponto |
-| **c** | degradê da faixa e da seleção | rotina nova, sem `BG_GRAD` |
-| **d** | título centralizado | decisão + posição |
-| **e** | bateria colorida | M4, primeiro bitmap do nano |
-
-**a** e **b** chegam muito perto do mockup por dois pontos de código. Só
-depois vale abrir o **c**.
-
----
-
-## 5. Correções que este documento faz a estudos anteriores
+## 4. Correções que este documento faz a estudos anteriores
 
 1. **`cor_separador` não é o traço entre as linhas.** É o traço de 1 px
    embaixo da faixa (`y=17` no JSON). O traço entre linhas vem de
@@ -231,3 +225,7 @@ depois vale abrir o **c**.
    as cores linha a linha e o `adaptado/` traz os pixels prontos.
 3. **O alvo do produto é `marte_completo.png`**, e não a descrição em
    prosa espalhada pelos documentos.
+4. **A comparação "seis de seis cores exatas" era contra a Core 2.1.1**,
+   removida em 2026-09-14. A §2 agora compara com a **Core 1.0.1**, que é
+   o que está no aparelho. Nenhuma afirmação sobre distância até o alvo
+   deve citar uma versão que não existe.

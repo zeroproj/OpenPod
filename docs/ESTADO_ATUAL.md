@@ -183,7 +183,42 @@ MARTE_ALVO.md          a especificacao visual do produto
 
 ---
 
-## 7. Investigações em aberto
+## 7. O próximo passo — a tabela de trabalho do Marte
+
+**A base visual é o `marte/`**, e o alvo concreto é
+`marte/mockups/marte_completo.png`.
+
+A distância entre o que está no aparelho e esse alvo está medida item a
+item em **`docs/MARTE_ALVO.md` §2**, na tabela **M-a … M-j**, cada linha
+com classe de confiança e evidência citada. A ordem de trabalho está na
+**§3**.
+
+Resumo da distância, hoje:
+
+```
+M-a  separador entre itens    existe, deveria sumir     1 BYTE   0x0012179E
+M-b  home                     grade 3x3, deveria ser LISTA        codigo novo
+M-c  titulo na faixa          nao existe                          rotina
+M-d  barra de rolagem         existe, deveria sumir               1 ponto
+M-e  icones de linha          existem, deveriam sumir             1 ponto
+M-f  selecao                  A MEDIR
+M-g  bateria                  glifo mono, deveria ser colorida    bitmap
+M-h  degrade da faixa         faixa lisa                          rotina
+M-i  as 6 cores               A MEDIR
+M-j  luminancia               DESVIO ACEITO — nao fazer (§0-bis)
+```
+
+**O passo 1 é o M-a**: um byte, em código de fábrica, verificável na tela
+em segundos. É o único item do alvo que não dependia da infraestrutura
+removida na limpeza.
+
+**O marco de verdade é o M-b** — a home virar lista é o que faz o
+aparelho *parecer* o Marte. E o que travava esse passo caiu por medição:
+converter a home **não encosta em alocação**.
+
+---
+
+## 8. Investigações em aberto
 
 Nenhuma delas bloqueia a 1.0.1. São conhecimento que falta.
 
@@ -198,7 +233,7 @@ Nenhuma delas bloqueia a 1.0.1. São conhecimento que falta.
 
 ---
 
-## 8. As regras que custaram versão
+## 9. As regras que custaram versão
 
 Estão em `PROTOCOLO_GRAVACAO.md` (R0–R7) e em
 `OpenPod_Design_System.md` (R-L1 a R-L3). As que mais se repetiram:
