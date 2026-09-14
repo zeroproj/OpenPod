@@ -207,6 +207,11 @@ CORE_1_0 = [
     # (U+F0C9 e U+F013). Os icones FUNCIONAIS — tique, volume,
     # bluetooth, telefone — ficam. Independente dos anteriores.
     ("patch_sem_icone_linha.py", [], "M-e: sem icone decorativo nas linhas"),
+
+    # Marte M-b, ETAPA 1 — o marco. A home deixa de ser grade 3x3 e vira
+    # lista, pela carcaca. Reescreve 0x12EC42..0x12ED8F no lugar; nao
+    # aloca, nao usa area livre. Plano em docs/PLANO_HOME.md.
+    ("patch_home_lista.py",    [], "M-b: a home vira LISTA, pela carcaca"),
 ]
 
 
