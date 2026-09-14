@@ -1,0 +1,30 @@
+DIAGNOSTICO DE CORES — nao e uma versao
+
+Esta imagem e a OpenPod 2.1 com QUATRO bytes da tabela de tema trocados
+por cores inconfundiveis. Serve para uma coisa so: descobrir QUAL campo
+desenha a faixa clara vazia.
+
+   cor_tela        -> VERMELHO
+   cor_faixa       -> VERDE
+   cor_separador   -> AMARELO
+   cor_selecao     -> MAGENTA
+
+COMO USAR
+
+   1. copie  update.up  para a raiz do cartao
+   2. Configurar -> Atualizar por SD -> Sim
+   3. abra a tela DESPERTADOR e fotografe
+   4. APAGUE o update.up do cartao
+   5. regrave a OpenPod 2.1 depois
+
+O QUE A FOTO VAI DIZER
+
+   faixa clara ficou MAGENTA  -> e pintada com cor_selecao
+   faixa clara ficou VERMELHA -> e o fundo da tela / do conteiner
+   faixa clara ficou VERDE    -> e a faixa superior, maior do que parece
+   faixa clara ficou AMARELA  -> e o separador, grosso demais
+   faixa clara NAO mudou      -> nao vem da tabela: e objeto que a
+                                 carcaca nao controla  <- o mais util
+
+O aparelho vai ficar feio. E de proposito: cada cor tem de ser
+impossivel de confundir com as outras.

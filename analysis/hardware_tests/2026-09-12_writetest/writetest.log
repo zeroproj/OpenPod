@@ -1,0 +1,57 @@
+======================================================================
+ OpenPod — teste de ESCRITA na area livre
+ alvo FIXO: 0x1D0000 .. +0x1000   (area livre, nao usada pelo firmware)
+======================================================================
+
+aparelho: Bus 003 Device 067: ID 301a:2801 SmartlinkTechnology USB2.0 Device
+
+[1/8] lendo a flash inteira (antes)...
+flash_id: 0x14851485
+dump_flash: 0x00000000, target: 0x200000, read: 0x200000
+      conferindo as 4 regioes criticas...
+        OK   bootloader
+        OK   ptable
+        OK   FIRM
+        OK   TONE
+[2/8] conferindo que o setor alvo esta todo 0xFF...
+        OK — 4096 bytes de 0xFF
+
+======================================================================
+ Tudo conferido. A proxima etapa ESCREVE na flash.
+   endereco : 0x1D0000   (area livre, 180 KiB depois da TONE)
+   tamanho  : 0x1000 (4 KiB, um setor)
+   reversivel: sim — o setor e apagado ao final
+======================================================================
+operador confirmou
+
+[3/8] gerando o padrao de 4 KiB...
+        sha256: cc4bf50286ac787f295a706a20d41e578bd838b7dc13000859123572fef13cc9
+[4/8] ESCREVENDO...
+        comando concluido
+[5/8] relendo o setor e comparando...
+dump_flash: 0x001d0000, target: 0x1000, read: 0x1000
+        OK — escrita conferiu byte a byte
+[6/8] apagando o setor...
+[7/8] conferindo que voltou a 0xFF...
+dump_flash: 0x001d0000, target: 0x1000, read: 0x1000
+        OK — setor voltou EXATAMENTE ao estado anterior (4096 x 0xFF)
+[8/8] lendo a flash inteira (depois) e reconferindo...
+dump_flash: 0x00000000, target: 0x200000, read: 0x200000
+        OK   bootloader
+        OK   ptable
+        OK   FIRM
+        OK   TONE
+
+======================================================================
+ RESULTADO
+======================================================================
+  escrita conferiu       : SIM
+  apagamento conferiu    : SIM
+  regioes criticas intactas: SIM
+
+  >>> CAMINHO DE ESCRITA POR USB CONFIRMADO.
+  >>> A recuperacao e viavel. O teste do V001 fica liberado.
+
+  leve de volta: before.bin  after.bin  writetest.log
+                 target_written.bin  target_erased.bin  pattern.bin
+

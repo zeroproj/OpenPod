@@ -1,0 +1,72 @@
+OpenPod_Install — v008
+==========================
+
+fundo da tela de abertura passa a preto, para o logo se fundir
+
+GERADO por tools/make_install_kit.py. Nao edite a mao.
+Requisitos: Linux, python3, lsusb, smtlink_dump.
+
+
+A REGRA QUE NASCEU DE UM ERRO REAL
+----------------------------------
+  O write_flash grava A PARTIR DO OFFSET 0 DO ARQUIVO.
+  O 2o argumento NAO e o offset dentro do arquivo.
+
+  ERRADO  write_flash 0xD000 0xD000 0x1000 imagem_2MiB.bin
+  CERTO   write_flash 0xD000 0      0x1000 setor_D000.bin
+
+  Por isso: um arquivo POR SETOR, sempre 0 no 2o argumento.
+  Detalhe em docs/WRITE_FLASH_SEMANTICS.md.
+
+
+CONTEUDO
+--------
+  flash_v008.sh      grava (2 setores, 8 KiB)
+  diag.sh                diagnostico          (SO LEITURA)
+  recovery_check_linux.sh  confere a ferramenta (SO LEITURA)
+
+  SETORES A GRAVAR (4096 B cada)
+    v008_D000.bin    0x00D000  bdb36efaef38fcd748c8dd0f85f0376a9097700133c87a4189a4a4b1a19c6b28
+    v008_122000.bin  0x122000  23d44d20cd914ab860eedd25f938eece99af4a059e8e229b3a33e6195fef06ac
+
+  SETORES DE RESTAURACAO -> ORIGINAL DE FABRICA
+    orig_D000.bin    0x00D000  c3d16a15b7df6a8feac96169d93da82a5562ae3d17a94bf8906c2d24fc507091
+    orig_122000.bin  0x122000  dc3b6a4a0150763564474047400cebac7b4e331820901505eacf3644083c7c48
+
+
+COMO RODAR
+----------
+  sha256sum *.bin          # conferir a transferencia
+
+  sudo sh diag.sh /opt/smartlink_flash        # so leitura
+  sudo sh flash_v008.sh /opt/smartlink_flash
+
+ORDEM RECOMENDADA (a que se mostrou mais confiavel):
+  1. plugue o aparelho, com o cartao, e espere o raio na tela
+  2. espere mais ~10 segundos
+  3. SO ENTAO rode o script
+
+O script tambem aceita a ordem inversa — se o aparelho nao estiver
+conectado ele espera e avisa a hora de plugar. Mas por esse caminho
+o aparelho costuma RE-ENUMERAR logo depois de detectado (observado
+em 2026-09-12: Device 094 na espera, Device 098 segundos depois).
+
+Por que a folga importa: o aparelho precisa de alguns segundos
+entre plugar e o primeiro comando, senao cai do modo card reader no
+meio da operacao. Era por isso que o recovery_check_linux.sh
+'funcionava melhor' — ele gastava tempo compilando antes de falar
+com o aparelho. Agora essa folga e explicita.
+
+O script para e pede GRAVAR digitado. Ate ai, so houve leitura.
+
+
+SE DER ERRADO
+-------------
+NAO DESLIGUE O APARELHO. Enquanto ele enumera, tem conserto.
+
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xD000 0 0x1000 orig_D000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x122000 0 0x1000 orig_122000.bin
+
+Isso devolve o aparelho ao ORIGINAL DE FABRICA.

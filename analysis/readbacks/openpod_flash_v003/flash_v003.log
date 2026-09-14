@@ -1,0 +1,56 @@
+======================================================================
+ OpenPod — gravacao do V003   (3 setores, 12 KiB)
+ 0x00D000 +0x1000   <- v003_D000.bin
+ 0x0CD000 +0x1000   <- v003_CD000.bin
+ 0x0CE000 +0x1000   <- v003_CE000.bin
+ bootloader (0x0..0xD000): NAO ENDERECADO
+======================================================================
+
+[1/6] conferindo os arquivos de setor...
+        OK   v003_D000.bin
+        OK   v003_CD000.bin
+        OK   v003_CE000.bin
+        OK   orig_D000.bin
+        OK   orig_CD000.bin
+        OK   orig_CE000.bin
+[2/6] procurando o aparelho...
+        Bus 003 Device 086: ID 301a:2801 SmartlinkTechnology USB2.0 Device
+[3/6] lendo a flash e conferindo o estado ANTES...
+dump_flash: 0x00000000, target: 0x200000, read: 0x200000
+        OK   bootloader
+        OK   ptable
+        OK   FIRM
+        OK   TONE
+
+======================================================================
+ Tudo conferido. A proxima etapa MODIFICA o firmware do aparelho.
+   grava  : 12 KiB em 3 setores
+   muda   : calibra a luminosidade dos icones: o display renderiza mais claro que o preview
+   NAO toca: bootloader, TONE, PSMP
+======================================================================
+operador confirmou
+
+[4/6 1/3] gravando 0xD000 a partir de v003_D000.bin...
+dump_flash: 0x0000d000, target: 0x1000, read: 0x1000
+        OK — setor confere
+[4/6 2/3] gravando 0xCD000 a partir de v003_CD000.bin...
+dump_flash: 0x000cd000, target: 0x1000, read: 0x1000
+        OK — setor confere
+[4/6 3/3] gravando 0xCE000 a partir de v003_CE000.bin...
+dump_flash: 0x000ce000, target: 0x1000, read: 0x1000
+        OK — setor confere
+[5/6] lendo a flash inteira e conferindo o estado DEPOIS...
+dump_flash: 0x00000000, target: 0x200000, read: 0x200000
+        OK   bootloader
+        OK   ptable
+        OK   FIRM
+        OK   TONE
+
+======================================================================
+ [6/6] RESULTADO: V003 GRAVADO E VERIFICADO
+
+   Desconecte e abra o menu principal.
+======================================================================
+
+  leve de volta: before.bin  after.bin  flash_v003.log
+

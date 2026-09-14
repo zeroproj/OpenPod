@@ -1,0 +1,132 @@
+OpenPod_Install — kit de gravacao do GN-438
+===========================================
+
+Pasta autocontida. Leve ela inteira para a maquina Linux que fala com o
+aparelho. Nao depende do resto do projeto.
+
+Requisitos: Linux, python3, lsusb, e o smtlink_dump compilado.
+
+
+CONTEUDO
+--------
+  SCRIPTS
+    diag.sh              diagnostico do estado atual   (SO LEITURA)
+    flash_v001.sh        grava o V001                  (ESCREVE)
+    restaura_ptable.sh   volta a tabela de particoes   (ESCREVE)
+
+  SETORES A GRAVAR  (4096 B cada; offset 0 = conteudo de destino)
+    v001_D000.bin    c2124ab4b1c6eebd4b13a3156e9b1482f79385aa855276929ff2ef79dd6a9686
+    v001_CE000.bin   7121e4487603daa536e8ed6eaf1928a9e3dca49662fe815beaf6c1e1858b288f
+    v001_CF000.bin   c77537695339f7b0aa27d29435cdc0f90d8f93b7856a027dddf5cfc0e6f10492
+
+  SETORES DE RESTAURACAO  (4096 B cada)
+    orig_D000.bin    c3d16a15b7df6a8feac96169d93da82a5562ae3d17a94bf8906c2d24fc507091
+    orig_CE000.bin   f46bdf8b56e3b463e8461ea5b35bfae201cafda178ac8296a5c2d8bc19cbf175
+    orig_CF000.bin   cb87b8bb4828c63b87c36788f17d54049cf1b4c21e5757e0204a5e693fecf683
+
+  Todos os setores tem 4096 B de proposito: e exatamente o tamanho ja
+  provado em hardware. Nenhum tamanho novo e exercitado.
+
+  IMAGENS COMPLETAS  (referencia e diagnostico; NAO se grava direto)
+    GN438_openpod_v001.bin   2 MiB  9dc755eef24e3e09c8939d90c89d9a241e0c6edd75b377c1792e743ccc79215c
+    GN438_original.bin       2 MiB  b7cd5eb952be5328cbaa926099cf8d88168633c1fab6d0f31f3a283c9e24b36f
+
+
+########################################################################
+#  REGRA QUE NASCEU DE UM ERRO REAL — LEIA ANTES DE QUALQUER COISA     #
+########################################################################
+
+  O write_flash grava A PARTIR DO OFFSET 0 DO ARQUIVO.
+  O segundo argumento NAO e o offset dentro do arquivo.
+
+  ERRADO  write_flash 0xD000 0xD000 0x1000 imagem_2MiB.bin
+          -> grava os 4096 bytes INICIAIS do .bin (cabecalho HLKJ)
+
+  CERTO   write_flash 0xD000 0 0x1000 v001_D000.bin
+          -> grava o conteudo correto
+
+  Em 2026-09-12 a forma errada corrompeu a tabela de particoes. Foi
+  detectada pela conferencia e restaurada. Detalhe completo em
+  docs/WRITE_FLASH_SEMANTICS.md.
+
+  POR ISSO: sempre um arquivo POR SETOR, sempre 0 no 2o argumento.
+  NUNCA passe uma imagem de 2 MiB para o write_flash.
+
+########################################################################
+
+
+ANTES DE RODAR QUALQUER COISA
+-----------------------------
+Transferencia corrompe em silencio. Confira:
+
+  sha256sum *.bin
+
+Todos os 6 hashes tem que bater com a lista acima. Se algum nao bater,
+copie de novo. NAO rode nada com arquivo divergente.
+
+Conecte o aparelho em modo card reader, COM O CARTAO INSERIDO. Ele deve
+mostrar a tela com o simbolo de raio. Confirme:
+
+  lsusb | grep 301a:2801
+
+
+1) DIAGNOSTICO — sempre comece por aqui
+---------------------------------------
+  sudo sh diag.sh /opt/smartlink_flash
+
+So leitura. Diz, regiao por regiao, se o aparelho esta ORIGINAL, V001 ou
+em estado desconhecido. Salva diag.bin.
+
+
+2) GRAVAR O V001
+----------------
+  sudo sh flash_v001.sh /opt/smartlink_flash
+
+Grava 12 KiB em 3 setores, um a um, 4096 B cada:
+  0x00D000   tabela de particoes (2 bytes: o CRC da FIRM)
+  0x0CE000   pixels do icone Musica
+  0x0CF000   pixels do icone Musica   (716 bytes alterados no total)
+
+O bootloader (0x0..0xD000) NAO e endereçado. E ele que mantem o modo
+card reader vivo — e portanto a recuperacao possivel.
+
+O script le a flash inteira, confere 4 regioes, e PARA pedindo que voce
+digite GRAVAR. Ate esse ponto so houve leitura.
+
+
+3) SE DER ERRADO
+----------------
+NAO DESLIGUE O APARELHO. Enquanto ele enumera, tem conserto.
+
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xD000  0 0x1000 orig_D000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCE000 0 0x1000 orig_CE000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCF000 0 0x1000 orig_CF000.bin
+
+Para so a tabela de particoes, ha o script com conferencia:
+
+  sudo sh restaura_ptable.sh /opt/smartlink_flash
+
+Depois rode diag.sh de novo e confirme antes de desligar.
+
+
+4) TRAZER DE VOLTA
+------------------
+  openpod_flash_v001/before.bin
+  openpod_flash_v001/after.bin
+  openpod_flash_v001/flash_v001.log
+  diag.bin
+
+
+NOTA — coreutils em Rust
+------------------------
+Distros recentes usam uutils. O pipeline
+
+  tail -c +N arquivo | head -c M
+
+aborta com "panicked ... BrokenPipe" e "core dumped". O hash ainda sai
+correto, mas o ruido mascara erro real. Todos os scripts daqui usam
+python3 e nao tem esse problema. Se voce vir esse panic, o script e
+antigo — pegue a versao atual.

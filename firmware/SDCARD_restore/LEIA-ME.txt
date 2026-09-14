@@ -1,0 +1,12 @@
+OpenPod — pacote de RESTAURACAO (firmware original)
+
+Use este se o V001 nao agradar ou nao funcionar, E o aparelho ainda ligar.
+Copie  update.up  desta pasta para a RAIZ do cartao microSD.
+NAO renomeie.
+
+Conteudo : GN438_original.bin  (firmware de fabrica, intocado)
+SHA-256  : 82f0ae8c71a604f900c8d4aa235c046b91250f346e9623835daf8aecb29c35c8
+
+ATENCAO: se o aparelho NAO ligar mais, este arquivo nao ajuda — o
+sdupdate depende da aplicacao ligar o flag do PMU. Nesse caso use a
+recuperacao por USB (docs/FLASH_POLICY.md secao 3).

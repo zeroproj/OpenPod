@@ -1,0 +1,150 @@
+==============================================================================
+ARQUIVO
+==============================================================================
+  path      : firmware/WORKING/GN438_analysis.bin
+  size      : 2097152 bytes (0x200000)
+  sha256    : b7cd5eb952be5328cbaa926099cf8d88168633c1fab6d0f31f3a283c9e24b36f
+  entropia  : 5.9351 bits/byte (global)
+
+==============================================================================
+HISTOGRAMA — 12 bytes mais frequentes
+==============================================================================
+  0xFF     419483   20.00%
+  0x00     382542   18.24%
+  0x01      47847    2.28%
+  0x20      43061    2.05%
+  0x46      28630    1.37%
+  0x40      24917    1.19%
+  0xF0      24864    1.19%
+  0xF8      24404    1.16%
+  0x0C      19580    0.93%
+  0x80      19331    0.92%
+  0x02      17940    0.86%
+  0x10      16960    0.81%
+
+==============================================================================
+REGIOES DE PREENCHIMENTO (runs >= 1024 bytes)
+==============================================================================
+  byte 0x00: 6 run(s), 146848 bytes (7.00%)
+      0x00018A8E .. 0x0003946F  (133602 bytes)
+      0x0000D03A .. 0x0000DFFF  (4038 bytes)
+      0x000472FB .. 0x0004802F  (3381 bytes)
+      0x001A0570 .. 0x001A0FFF  (2704 bytes)
+      0x0000C949 .. 0x0000CFFF  (1719 bytes)
+      0x000CC8E4 .. 0x000CCE5F  (1404 bytes)
+  byte 0xFF: 2 run(s), 378777 bytes (18.06%)
+      0x001A3038 .. 0x001FBFFF  (364488 bytes)
+      0x001FC82F .. 0x001FFFFF  (14289 bytes)
+
+==============================================================================
+MAGIC NUMBERS CANDIDATOS
+==============================================================================
+  boot signature (fraco)          80x  0x000D9A96, 0x000E7D34, 0x000E7D57, 0x0014FBAD, 0x0016C776, 0x001A1CB8, 0x001A29DE, 0x001FC000 ... (+72)
+  LZMA (fraco)                    63x  0x0000A349, 0x0000FB93, 0x000414B2, 0x000414D4, 0x0008B6C5, 0x0008B6D5, 0x0008B6E5, 0x0008B6F5 ... (+55)
+  BMP (fraco: 2 bytes)            25x  0x00007E5F, 0x0003CC45, 0x00095794, 0x000CA765, 0x000EA213, 0x000EA4F8, 0x000EA5BA, 0x000EA5D1 ... (+17)
+  ID3 tag (MP3)                    4x  0x000EAE01, 0x000EAE31, 0x000EAE52, 0x001A1400
+  RIFF (WAV/AVI)                   3x  0x000EBBFC, 0x000FB9C0, 0x001120FC
+  JPEG SOI                         1x  0x000DF11C
+  Ogg                              1x  0x000E429C
+
+==============================================================================
+TAGS ASCII DE 4 BYTES ALINHADAS (candidatas a header proprietario)
+==============================================================================
+  page        161x
+  roce        128x
+  oces        121x
+  cess        104x
+  proc         99x
+  tatu         71x
+  stat         66x
+  even         60x
+  rror         57x
+  vent         55x
+  atus         54x
+  xxxx         53x
+  time         48x
+  erro         44x
+  cord         41x
+  onne         41x
+  iled         40x
+  pstr         38x
+  tion         35x
+  fail         35x
+  nect         34x
+  reco         33x
+  ecor         33x
+  DDDD         33x
+  eate         31x
+  aile         30x
+  crea         27x
+  usic         27x
+  read         26x
+  conn         26x
+  alar         26x
+  file         25x
+  open         25x
+  inde         25x
+  larm         24x
+  musi         24x
+  code         24x
+  imer         23x
+  allo         22x
+  reat         22x
+
+==============================================================================
+MAPA DE ENTROPIA (blocos de 4096 bytes, agrupado por classe)
+==============================================================================
+  0x00000000 .. 0x00000FFF      4096 bytes  ent~5.78  media
+  0x00001000 .. 0x00008FFF     32768 bytes  ent~6.90  alta
+  0x00009000 .. 0x0000AFFF      8192 bytes  ent~6.18  media
+  0x0000B000 .. 0x0000CFFF      8192 bytes  ent~3.74  baixa
+  0x0000D000 .. 0x0000DFFF      4096 bytes  ent~0.09  quase-vazio
+  0x0000E000 .. 0x0000FFFF      8192 bytes  ent~6.11  media
+  0x00010000 .. 0x00017FFF     32768 bytes  ent~6.84  alta
+  0x00018000 .. 0x00018FFF      4096 bytes  ent~5.18  media
+  0x00019000 .. 0x00038FFF    131072 bytes  ent~0.00  FILL 0x00
+  0x00039000 .. 0x00039FFF      4096 bytes  ent~5.58  media
+  0x0003A000 .. 0x00043FFF     40960 bytes  ent~7.01  alta
+  0x00044000 .. 0x00044FFF      4096 bytes  ent~6.25  media
+  0x00045000 .. 0x00045FFF      4096 bytes  ent~7.06  alta
+  0x00046000 .. 0x00046FFF      4096 bytes  ent~5.04  media
+  0x00047000 .. 0x00047FFF      4096 bytes  ent~0.93  quase-vazio
+  0x00048000 .. 0x00086FFF    258048 bytes  ent~5.30  media
+  0x00087000 .. 0x000A1FFF    110592 bytes  ent~2.59  baixa
+  0x000A2000 .. 0x000A2FFF      4096 bytes  ent~5.28  media
+  0x000A3000 .. 0x000A5FFF     12288 bytes  ent~7.02  alta
+  0x000A6000 .. 0x000ABFFF     24576 bytes  ent~2.79  baixa
+  0x000AC000 .. 0x000ACFFF      4096 bytes  ent~4.64  media
+  0x000AD000 .. 0x000ADFFF      4096 bytes  ent~3.91  baixa
+  0x000AE000 .. 0x000AEFFF      4096 bytes  ent~4.18  media
+  0x000AF000 .. 0x000B0FFF      8192 bytes  ent~3.06  baixa
+  0x000B1000 .. 0x000BDFFF     53248 bytes  ent~5.00  media
+  0x000BE000 .. 0x000C0FFF     12288 bytes  ent~3.23  baixa
+  0x000C1000 .. 0x000C4FFF     16384 bytes  ent~4.48  media
+  0x000C5000 .. 0x000C6FFF      8192 bytes  ent~3.75  baixa
+  0x000C7000 .. 0x000C8FFF      8192 bytes  ent~6.12  media
+  0x000C9000 .. 0x000CAFFF      8192 bytes  ent~6.85  alta
+  0x000CB000 .. 0x000CCFFF      8192 bytes  ent~5.19  media
+  0x000CD000 .. 0x000CFFFF     12288 bytes  ent~3.26  baixa
+  0x000D0000 .. 0x000D0FFF      4096 bytes  ent~4.04  media
+  0x000D1000 .. 0x000D2FFF      8192 bytes  ent~2.40  baixa
+  0x000D3000 .. 0x000DBFFF     36864 bytes  ent~5.10  media
+  0x000DC000 .. 0x000DDFFF      8192 bytes  ent~3.65  baixa
+  0x000DE000 .. 0x000E0FFF     12288 bytes  ent~5.20  media
+  0x000E1000 .. 0x000E1FFF      4096 bytes  ent~3.82  baixa
+  0x000E2000 .. 0x000F3FFF     73728 bytes  ent~5.12  media
+  0x000F4000 .. 0x00124FFF    200704 bytes  ent~6.96  alta
+  0x00125000 .. 0x00125FFF      4096 bytes  ent~6.21  media
+  0x00126000 .. 0x0016CFFF    290816 bytes  ent~6.93  alta
+  0x0016D000 .. 0x0016DFFF      4096 bytes  ent~6.31  media
+  0x0016E000 .. 0x0017DFFF     65536 bytes  ent~6.94  alta
+  0x0017E000 .. 0x0017EFFF      4096 bytes  ent~6.49  media
+  0x0017F000 .. 0x0019FFFF    135168 bytes  ent~7.00  alta
+  0x001A0000 .. 0x001A0FFF      4096 bytes  ent~3.11  baixa
+  0x001A1000 .. 0x001A1FFF      4096 bytes  ent~6.37  media
+  0x001A2000 .. 0x001A2FFF      4096 bytes  ent~7.86  muito alta
+  0x001A3000 .. 0x001A3FFF      4096 bytes  ent~0.14  quase-vazio
+  0x001A4000 .. 0x001FBFFF    360448 bytes  ent~0.00  FILL 0xFF
+  0x001FC000 .. 0x001FCFFF      4096 bytes  ent~3.45  baixa
+  0x001FD000 .. 0x001FFFFF     12288 bytes  ent~0.00  FILL 0xFF
+

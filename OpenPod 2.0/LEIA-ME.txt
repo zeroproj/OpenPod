@@ -1,0 +1,174 @@
+OpenPod_Install — OpenPod 2.0
+=================================
+
+Chrome padrao da home em 36 telas de lista
+
+GERADO por tools/make_install_kit.py. Nao edite a mao.
+Requisitos: Linux, python3, lsusb, smtlink_dump.
+
+
+A REGRA QUE NASCEU DE UM ERRO REAL
+----------------------------------
+  O write_flash grava A PARTIR DO OFFSET 0 DO ARQUIVO.
+  O 2o argumento NAO e o offset dentro do arquivo.
+
+  ERRADO  write_flash 0xD000 0xD000 0x1000 imagem_2MiB.bin
+  CERTO   write_flash 0xD000 0      0x1000 setor_D000.bin
+
+  Por isso: um arquivo POR SETOR, sempre 0 no 2o argumento.
+  Detalhe em docs/WRITE_FLASH_SEMANTICS.md.
+
+
+CONTEUDO
+--------
+  flash_OpenPod 2.0.sh      grava (26 setores, 104 KiB)
+  diag.sh                diagnostico          (SO LEITURA)
+  recovery_check_linux.sh  confere a ferramenta (SO LEITURA)
+
+  SETORES A GRAVAR (4096 B cada)
+    OpenPod 2.0_1A5000.bin 0x1A5000  007e6ebe35a4e2e2f4745626792db0c05b27bd62cf4f29ccdf1263f4f5a85a47
+    OpenPod 2.0_10A000.bin 0x10A000  db44efbe6e65ec3d35ee9670f411f174a455174afddd49bce7bc4df8d32a5034
+    OpenPod 2.0_121000.bin 0x121000  d3885627432303167cc88f25fee677f5d720626a149e0deb5b77574ab8272490
+    OpenPod 2.0_126000.bin 0x126000  0435a61f8ba0cb26d6126c561ac7c2ce2bedea8b7bbbbba0bae62d35501799cd
+    OpenPod 2.0_127000.bin 0x127000  5c81b5ae3a51fc2aa640301f27ead9e2a3da9a1675660c2b32c0f0bfe4e4f2a5
+    OpenPod 2.0_128000.bin 0x128000  721c077d8f1a92eded8403c5c0e87648a991f34dc1f2daae5973791fbe188ec4
+    OpenPod 2.0_12A000.bin 0x12A000  f142a6ac098e44618bb6ae13991006ea6134fe7ff15b0953a6339dc0a37d4f55
+    OpenPod 2.0_12B000.bin 0x12B000  8ce8ab07b06bc752e03ba32da841fe78b98a4d407ab0fa0e2c7cebf50b0d4b57
+    OpenPod 2.0_12C000.bin 0x12C000  fc2fec034f5ddb1bacf7dfdaecf58ae3f07bdc01f3dcb03732618dd1dd7b5355
+    OpenPod 2.0_12D000.bin 0x12D000  44059e4d33be5a14b8e32deff0b663f575ed421fbe75f55a8afc59f8bcd81a83
+    OpenPod 2.0_12E000.bin 0x12E000  146424205cd63809e89bd7b10c78b90f5a7b732afb972b144b7380ced9cca2ef
+    OpenPod 2.0_12F000.bin 0x12F000  2159bede1ac246002b94fd5329daacb5f6deacad742c675c4c12c6dea0e52196
+    OpenPod 2.0_130000.bin 0x130000  80e3059c19b337df03c3c470d73e8ed3cf67fb314f9616213cd1b7a4b3675837
+    OpenPod 2.0_131000.bin 0x131000  05f990f4e511cea71a3bbcc4317d125f18a2fde26ce37223870c7cc120a1fdaf
+    OpenPod 2.0_132000.bin 0x132000  90439556a858992f4e92f4198482e567a3ddd23d51cc8a7f4ca57a3f322a42aa
+    OpenPod 2.0_133000.bin 0x133000  443e703b424e03c79c689ae1303b084ab8476c43f496abad7648f8b2ba65d8ed
+    OpenPod 2.0_134000.bin 0x134000  1652a285a90556753cb6208876c57796f5bba2c6d31b4c50b07b38e90a6155cf
+    OpenPod 2.0_135000.bin 0x135000  559d22b127f8e07a32db49f28752ef44d331a80bb939744e5a7a99f1c1322306
+    OpenPod 2.0_136000.bin 0x136000  70bb0f6eeb358f691939c2bc70806b5a6d7951d5a5bfff5ceb3f81911813464c
+    OpenPod 2.0_137000.bin 0x137000  b50d972620d6f8a78380c2a04c528f1e5e50bf8639e94539f0cb39c7b061a614
+    OpenPod 2.0_138000.bin 0x138000  ef9bf3151e978142e5c6be8da977ba5e51763515f1016af8c21794a71eab9879
+    OpenPod 2.0_139000.bin 0x139000  2db155b2344c822b0bd351bacf2f5067287b1aef080e53c73cab2184c1968d06
+    OpenPod 2.0_13A000.bin 0x13A000  9552dcdae61ccda6b92740f7b32a74e68cf88db5fa581711c6eb16f2a87f9643
+    OpenPod 2.0_13B000.bin 0x13B000  3b024e966649c0ae4bb25d817eb04e4568e93bb741fb1ade010a136aae036aa2
+    OpenPod 2.0_13C000.bin 0x13C000  23019da31eae49aa7872c342cbc4093a723681dae473d8eb7b392811e482b4d6
+    OpenPod 2.0_13D000.bin 0x13D000  456a1f25f81683a8099da921793eae67f4ac0b823f869048e833ebe4f529a666
+
+  SETORES DE REVERSAO -> ESTADO ANTERIOR (a base deste kit)
+    base_1A5000.bin  0x1A5000  3ebab7028a497f355f330cb49ce4d060f7612a84cbdff7a52afa4420d4455acf
+    base_10A000.bin  0x10A000  7b43b61a034b566e9af5321434b542d36e8336e451f184ef56f19ed8c8d92767
+    base_121000.bin  0x121000  6a86e47e0a38da870cdd7acf125a388c40b7e464720dc29bf8b32858eb0ce5be
+    base_126000.bin  0x126000  9a1332383b4b92fbb7c85dd9422023b6533cf65e1dc463dadff7672bd4db7006
+    base_127000.bin  0x127000  1769ddc290989e25fe224f7d4b0332de3d7f5002edbeb0700f90141e9a3de600
+    base_128000.bin  0x128000  9c619940389eadf55e07c027d3b63fb00dc150ad798d49ba86822587c0a2813d
+    base_12A000.bin  0x12A000  6203f49c248a4891bc4a034a286350da079c07f65a72449f797845b756d5bc86
+    base_12B000.bin  0x12B000  d5fd51005833137b9cd99f072ebb5699b90a0f2c4e85d0cbdeed440cc9f898eb
+    base_12C000.bin  0x12C000  74c66fdccfc36aad610341e3ee0de4c829805bad4f353e09bca8a37dd2089512
+    base_12D000.bin  0x12D000  c2f0803e87f2519d91e23106874ab52b98388e7fb74b763d3c8d3b3baf388ae5
+    base_12E000.bin  0x12E000  2e9ebe303f47f437476087d65046002259696940dea07591c9e5af21f042e863
+    base_12F000.bin  0x12F000  94cd3f3973619879d713651818c80911e57d33ab53f1d3369677505489879778
+    base_130000.bin  0x130000  f1ba015f283fc081c41f422c5554eb8efa5d49084bde9a428d01cfffe6be0d4e
+    base_131000.bin  0x131000  996fe84660f3962f40131f7c2f2841ee19e31233cb753751cba8398e9a032031
+    base_132000.bin  0x132000  e4b4b52687ad2b31593141e27d997ae31cf291a3da51b4f058540181947b57cd
+    base_133000.bin  0x133000  e2ac50c43956ad206d67da291e58d80daea5f8909929c3ab3851053748edca82
+    base_134000.bin  0x134000  7210b822569cd80053ff6d0c51fed3e59469e503c519ca28ed075f6cd860a0e0
+    base_135000.bin  0x135000  30d3ffbb8e5760725d34cdabd2bb013878227d3f9e61fc0dcfedb8ded6692c10
+    base_136000.bin  0x136000  8ff5e9dc8d96564aaad2ad56a6a8e99d2d6ba4f1117b447aa72468954d214c31
+    base_137000.bin  0x137000  c169e1f7ef13ba4fa53ce9329226afa8f829a037a1eab0f3b20677190423df05
+    base_138000.bin  0x138000  959f55983781c2b0a11fa80b7f36114be9da631af3eb71bf4f32feb77f1acbb2
+    base_139000.bin  0x139000  db9b4c3917fbd7534858ab0cdc07e3b782a0d0fd32c893a68e2c1ca32ec37572
+    base_13A000.bin  0x13A000  5d8673e59d52ca034b15a73a819c33f3b6c2d52b2461ff67d71f66e5fab016fb
+    base_13B000.bin  0x13B000  48e67d459c807d5f072204e2009eef7d24a1b85221d9c51fff07cf942daefaef
+    base_13C000.bin  0x13C000  76e61f3785a17206819ecef9abaf3c8be5887e341f4fa4aa9f6fe7437519ec78
+    base_13D000.bin  0x13D000  58683ef08ff6e8c2544596c5c44073af8827edcfd4db0c8bd063dc88e4b10570
+
+
+COMO RODAR
+----------
+  sha256sum *.bin          # conferir a transferencia
+
+  sudo sh diag.sh /opt/smartlink_flash        # so leitura
+  sudo sh flash_OpenPod 2.0.sh /opt/smartlink_flash
+
+ORDEM RECOMENDADA (a que se mostrou mais confiavel):
+  1. plugue o aparelho, com o cartao, e espere o raio na tela
+  2. espere mais ~10 segundos
+  3. SO ENTAO rode o script
+
+O script tambem aceita a ordem inversa — se o aparelho nao estiver
+conectado ele espera e avisa a hora de plugar. Mas por esse caminho
+o aparelho costuma RE-ENUMERAR logo depois de detectado (observado
+em 2026-09-12: Device 094 na espera, Device 098 segundos depois).
+
+Por que a folga importa: o aparelho precisa de alguns segundos
+entre plugar e o primeiro comando, senao cai do modo card reader no
+meio da operacao. Era por isso que o recovery_check_linux.sh
+'funcionava melhor' — ele gastava tempo compilando antes de falar
+com o aparelho. Agora essa folga e explicita.
+
+O script para e pede GRAVAR digitado. Ate ai, so houve leitura.
+
+
+SE DER ERRADO
+-------------
+NAO DESLIGUE O APARELHO. Enquanto ele enumera, tem conserto.
+
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1A5000 0 0x1000 base_1A5000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x10A000 0 0x1000 base_10A000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x121000 0 0x1000 base_121000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x126000 0 0x1000 base_126000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x127000 0 0x1000 base_127000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x128000 0 0x1000 base_128000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12A000 0 0x1000 base_12A000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12B000 0 0x1000 base_12B000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12C000 0 0x1000 base_12C000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12D000 0 0x1000 base_12D000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12E000 0 0x1000 base_12E000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12F000 0 0x1000 base_12F000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x130000 0 0x1000 base_130000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x131000 0 0x1000 base_131000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x132000 0 0x1000 base_132000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x133000 0 0x1000 base_133000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x134000 0 0x1000 base_134000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x135000 0 0x1000 base_135000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x136000 0 0x1000 base_136000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x137000 0 0x1000 base_137000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x138000 0 0x1000 base_138000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x139000 0 0x1000 base_139000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x13A000 0 0x1000 base_13A000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x13B000 0 0x1000 base_13B000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x13C000 0 0x1000 base_13C000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x13D000 0 0x1000 base_13D000.bin
+
+Isso devolve o aparelho ao estado ANTERIOR — o mesmo que ele tinha
+antes deste kit, ja verificado e ja testado bootando.
+
+NAO use setores de fabrica para reverter um patch parcial: o resto
+da flash continuaria no estado da base e a FIRM ficaria misturada,
+com o CRC da tabela de particoes sem bater. Para voltar de fato ao
+ORIGINAL DE FABRICA, use o procedimento completo de recuperacao.

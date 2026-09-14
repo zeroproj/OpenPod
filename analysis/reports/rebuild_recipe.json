@@ -1,0 +1,56 @@
+{
+  "header": {
+    "load_to_ram": 8518592,
+    "run_from_ram": 8519681,
+    "header_len": 96,
+    "load_length": 51436,
+    "load_crc": 30109,
+    "header_crc": 13531,
+    "unk_18": 9,
+    "unk_1c": 1024,
+    "unk_2c": 1,
+    "ptable_off": 53248
+  },
+  "partitions": [
+    {
+      "name": "FIRM",
+      "offset": 57344,
+      "size": 1647984,
+      "crc": 18854
+    },
+    {
+      "name": "TONE",
+      "offset": 1708032,
+      "size": 8248,
+      "crc": 37239
+    },
+    {
+      "name": "PSMP",
+      "offset": 2080768,
+      "size": 16384,
+      "crc": 0
+    }
+  ],
+  "gaps": [
+    {
+      "offset": 51532,
+      "length": 1716,
+      "fill": 0
+    },
+    {
+      "offset": 53312,
+      "length": 4032,
+      "fill": 0
+    },
+    {
+      "offset": 1705328,
+      "length": 2704,
+      "fill": 0
+    },
+    {
+      "offset": 1716280,
+      "length": 364488,
+      "fill": 255
+    }
+  ]
+}

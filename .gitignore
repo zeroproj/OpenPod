@@ -1,0 +1,48 @@
+# ---------------------------------------------------------------------------
+# O que o git guarda: a RECEITA e o que a explica.
+# O que ele NAO guarda: as SAIDAS da receita.
+#
+# Motivo: 881 arquivos .bin e 26 .up somam 331 MB, e quase todos sao
+# deriváveis de `tools/build.py` + `firmware/ORIGINAL/GN438_original.bin`.
+# O que nao e derivavel continua no disco e tem o sha registrado em
+# MANIFEST.sha256, versionado. Assim o historico prova O QUE a imagem era,
+# sem carregar a imagem.
+#
+# EXCECAO: firmware/ORIGINAL/ e versionado. E a ancora do projeto (§24) e
+# custa 2 MiB.
+# ---------------------------------------------------------------------------
+
+# saidas da construcao
+firmware/WORKING/*.bin
+firmware/READBACK/*.bin
+firmware/VENDOR/*.zip
+
+# kits e releases: os binarios saem, os LEIA-ME e scripts ficam
+OpenPod*/*.bin
+OpenPod*/*.up
+DIAGNOSTICO*/*.up
+firmware/SDCARD*/*.up
+firmware/WORKING/*.up
+historico/kits/**/*.bin
+historico/kits/*.zip
+historico/releases/**/*.bin
+historico/releases/**/*.up
+historico/releases/*.zip
+historico/recuperacao/*.zip
+historico/recuperacao/**/*.bin
+historico/recuperacao/**/*.up
+
+# material extraido e analise pesada (reproduzivel pelas ferramentas)
+extracted/
+analysis/**/*.bin
+analysis/**/*.png
+assets/referencia/*.zip
+
+# lixo do sistema
+.DS_Store
+**/.DS_Store
+__pycache__/
+*.pyc
+
+# clone de terceiro (upstream smartlink_flash), nao e nosso codigo
+analysis/readbacks/**/smartlink_flash/

@@ -1,0 +1,57 @@
+======================================================================
+ OpenPod — gravacao do V001   (3 setores, 12 KiB)   [v2]
+ 0x00D000 +0x1000   tabela de particoes     <- v001_D000.bin
+ 0x0CE000 +0x1000   pixels do icone Musica  <- v001_CE000.bin
+ 0x0CF000 +0x1000   pixels do icone Musica  <- v001_CF000.bin
+ bootloader (0x0..0xD000): NAO ENDERECADO
+======================================================================
+
+[1/7] conferindo os arquivos de setor...
+        OK   v001_D000.bin  (4096 bytes)
+        OK   v001_CE000.bin  (4096 bytes)
+        OK   v001_CF000.bin  (4096 bytes)
+        OK   orig_D000.bin  (4096 bytes)
+        OK   orig_CE000.bin  (4096 bytes)
+        OK   orig_CF000.bin  (4096 bytes)
+[2/7] procurando o aparelho...
+        Bus 003 Device 078: ID 301a:2801 SmartlinkTechnology USB2.0 Device
+[3/7] lendo a flash e conferindo o estado ANTES...
+dump_flash: 0x00000000, target: 0x200000, read: 0x200000
+        OK   bootloader
+        OK   ptable
+        OK   FIRM
+        OK   TONE
+
+======================================================================
+ Tudo conferido. A proxima etapa MODIFICA o firmware do aparelho.
+   grava  : 12 KiB em 3 setores
+   muda   : o icone Musica do menu principal (prata -> azul)
+   NAO toca: bootloader, TONE, PSMP, resto da FIRM
+======================================================================
+operador confirmou
+
+[4/7] gravando 0xD000 (+0x1000) a partir de v001_D000.bin...
+dump_flash: 0x0000d000, target: 0x1000, read: 0x1000
+        OK — setor confere
+[5/7] gravando 0xCE000 (+0x1000) a partir de v001_CE000.bin...
+dump_flash: 0x000ce000, target: 0x1000, read: 0x1000
+        OK — setor confere
+[6/7] gravando 0xCF000 (+0x1000) a partir de v001_CF000.bin...
+dump_flash: 0x000cf000, target: 0x1000, read: 0x1000
+        OK — setor confere
+[6/7] lendo a flash inteira e conferindo o estado DEPOIS...
+dump_flash: 0x00000000, target: 0x200000, read: 0x200000
+        OK   bootloader (deve estar INTACTO)
+        OK   ptable     (deve ter MUDADO)
+        OK   FIRM       (deve ter MUDADO)
+        OK   TONE       (deve estar INTACTA)
+
+======================================================================
+ [7/7] RESULTADO: V001 GRAVADO E VERIFICADO
+
+   Desconecte e abra o menu principal.
+   O icone de Musica (disco, canto superior esquerdo) deve estar AZUL.
+======================================================================
+
+  leve de volta: before.bin  after.bin  flash_v001.log
+

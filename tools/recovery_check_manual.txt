@@ -1,0 +1,38 @@
+# OpenPod — verificação da recuperação por USB
+# Para quem JÁ tem o smartlink_flash instalado e funcionando.
+# SOMENTE LEITURA. Nenhuma escrita no aparelho.
+#
+# Rode na pasta do seu smartlink_flash. Copie e cole o bloco inteiro.
+
+# ── 1. registrar QUAL versão é a sua (para o projeto saber) ────────────
+echo "=== procedencia da ferramenta ===" | tee readback.log
+git log -1 --format='commit: %H%ndata:   %ad%nassunto: %s' --date=iso 2>/dev/null | tee -a readback.log \
+  || echo "(nao e um clone git)" | tee -a readback.log
+sha256sum smtlink_dump.c 2>/dev/null | tee -a readback.log
+uname -a | tee -a readback.log
+echo | tee -a readback.log
+
+# ── 2. o aparelho enumera? ────────────────────────────────────────────
+echo "=== enumeracao ===" | tee -a readback.log
+lsusb | grep -i 301a | tee -a readback.log
+# esperado: ID 301a:2801  (card reader, com o cartao inserido)
+#           ou 301a:2800  (bootloader)
+
+# ── 3. identificar a flash — LEITURA ──────────────────────────────────
+echo "=== flash_id ===" | tee -a readback.log
+sudo ./smtlink_dump --id 301a:2801 flash_id 2>&1 | tee -a readback.log
+# esperado: flash_id: 0x14851485
+
+# ── 4. ler a flash inteira — LEITURA ──────────────────────────────────
+echo "=== read_flash ===" | tee -a readback.log
+sudo ./smtlink_dump --id 301a:2801 flash_id read_flash 0 2M readback.bin 2>&1 | tee -a readback.log
+
+# ── 5. resultado ──────────────────────────────────────────────────────
+echo "=== resultado ===" | tee -a readback.log
+ls -l readback.bin | tee -a readback.log
+sha256sum readback.bin | tee -a readback.log
+echo | tee -a readback.log
+echo "original do projeto:" | tee -a readback.log
+echo "b7cd5eb952be5328cbaa926099cf8d88168633c1fab6d0f31f3a283c9e24b36f" | tee -a readback.log
+
+# Traga de volta: readback.bin  e  readback.log

@@ -1,0 +1,62 @@
+OpenPod_Install — v002
+==========================
+
+os 9 icones do menu principal passam a grafite com glifo branco (recolorido pela paleta)
+
+GERADO por tools/make_install_kit.py. Nao edite a mao.
+Requisitos: Linux, python3, lsusb, smtlink_dump.
+
+
+A REGRA QUE NASCEU DE UM ERRO REAL
+----------------------------------
+  O write_flash grava A PARTIR DO OFFSET 0 DO ARQUIVO.
+  O 2o argumento NAO e o offset dentro do arquivo.
+
+  ERRADO  write_flash 0xD000 0xD000 0x1000 imagem_2MiB.bin
+  CERTO   write_flash 0xD000 0      0x1000 setor_D000.bin
+
+  Por isso: um arquivo POR SETOR, sempre 0 no 2o argumento.
+  Detalhe em docs/WRITE_FLASH_SEMANTICS.md.
+
+
+CONTEUDO
+--------
+  flash_v002.sh      grava (4 setores, 16 KiB)
+
+  SETORES A GRAVAR (4096 B cada)
+    v002_D000.bin    0x00D000  b5632a2bc3ee1905f9027a3983ea78cfd767e01f810a33148e74d1fbfd0a646e
+    v002_CD000.bin   0x0CD000  b2448c6bf18a23b1911bdad1f5a950ad411bab82433a3efa5ead11f266b46b5c
+    v002_CE000.bin   0x0CE000  27a9084db21161075d0e7ec72cb9c602534edff484d2a4776b18c90a3d8236c8
+    v002_CF000.bin   0x0CF000  cb87b8bb4828c63b87c36788f17d54049cf1b4c21e5757e0204a5e693fecf683
+
+  SETORES DE RESTAURACAO -> ORIGINAL DE FABRICA
+    orig_D000.bin    0x00D000  c3d16a15b7df6a8feac96169d93da82a5562ae3d17a94bf8906c2d24fc507091
+    orig_CD000.bin   0x0CD000  ab039386aa645f414a0580730cc4b62ca7831c9d4d8dff7b01c80f9b7be16f5f
+    orig_CE000.bin   0x0CE000  f46bdf8b56e3b463e8461ea5b35bfae201cafda178ac8296a5c2d8bc19cbf175
+    orig_CF000.bin   0x0CF000  cb87b8bb4828c63b87c36788f17d54049cf1b4c21e5757e0204a5e693fecf683
+
+
+COMO RODAR
+----------
+  sha256sum *.bin          # conferir a transferencia
+  lsusb | grep 301a:2801   # aparelho em card reader, com cartao
+  sudo sh diag.sh /opt/smartlink_flash        # opcional, so leitura
+  sudo sh flash_v002.sh /opt/smartlink_flash
+
+O script para e pede GRAVAR digitado. Ate ai, so houve leitura.
+
+
+SE DER ERRADO
+-------------
+NAO DESLIGUE O APARELHO. Enquanto ele enumera, tem conserto.
+
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xD000 0 0x1000 orig_D000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCD000 0 0x1000 orig_CD000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCE000 0 0x1000 orig_CE000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCF000 0 0x1000 orig_CF000.bin
+
+Isso devolve o aparelho ao ORIGINAL DE FABRICA.

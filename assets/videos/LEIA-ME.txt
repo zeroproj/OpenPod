@@ -1,0 +1,10 @@
+Coloque aqui os videos gravados do aparelho.
+
+Eu extraio os quadros com ffmpeg e analiso. Nao preciso do video inteiro
+em alta qualidade — o que ajuda e:
+
+  - filmar de perto, com a tela ocupando a maior parte do enquadramento
+  - ir devagar entre as telas, dando ~1 segundo em cada
+  - falar ou nao, tanto faz: eu so olho a imagem
+
+Formatos: mp4, mov, avi — qualquer um que o ffmpeg leia.

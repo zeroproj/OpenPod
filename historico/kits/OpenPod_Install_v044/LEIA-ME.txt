@@ -1,0 +1,98 @@
+OpenPod_Install — v044
+==========================
+
+Home no padrao borda a borda + versao OpenPod na tela Informacao
+
+GERADO por tools/make_install_kit.py. Nao edite a mao.
+Requisitos: Linux, python3, lsusb, smtlink_dump.
+
+
+A REGRA QUE NASCEU DE UM ERRO REAL
+----------------------------------
+  O write_flash grava A PARTIR DO OFFSET 0 DO ARQUIVO.
+  O 2o argumento NAO e o offset dentro do arquivo.
+
+  ERRADO  write_flash 0xD000 0xD000 0x1000 imagem_2MiB.bin
+  CERTO   write_flash 0xD000 0      0x1000 setor_D000.bin
+
+  Por isso: um arquivo POR SETOR, sempre 0 no 2o argumento.
+  Detalhe em docs/WRITE_FLASH_SEMANTICS.md.
+
+
+CONTEUDO
+--------
+  flash_v044.sh      grava (7 setores, 28 KiB)
+  diag.sh                diagnostico          (SO LEITURA)
+  recovery_check_linux.sh  confere a ferramenta (SO LEITURA)
+
+  SETORES A GRAVAR (4096 B cada)
+    v044_1A3000.bin  0x1A3000  e874a4c7f0f2d53f6bdd4a440cf32968cac301f46c3532b03c80e92400d1bc30
+    v044_48000.bin   0x048000  de2dcc3d2e9dce53f640f23edc030dc04910a562e6e60a981af1342988df9233
+    v044_CE000.bin   0x0CE000  719e073c97507d92824536e965b0b0377b1a8b951af3b90efbec4b567ccc8234
+    v044_CF000.bin   0x0CF000  3431383721510cf1c211de027cf958c183e16db5fabb6b230eb284c85e196aa9
+    v044_D0000.bin   0x0D0000  3431383721510cf1c211de027cf958c183e16db5fabb6b230eb284c85e196aa9
+    v044_10A000.bin  0x10A000  b3a62ac8945aa089e9fcd8c63cc76a38804e21cc78e48e3c123ed0ecb82513f2
+    v044_12E000.bin  0x12E000  2e9ebe303f47f437476087d65046002259696940dea07591c9e5af21f042e863
+
+  SETORES DE REVERSAO -> ESTADO ANTERIOR (a base deste kit)
+    base_1A3000.bin  0x1A3000  cb28783690b8a9b7421160db7f67f6f36e9084b8afe4085cb54abc41f0c3c80d
+    base_48000.bin   0x048000  0a1b511164cb6db2fd8a33e97fb8a5af0bedc383a92072e64c9a444578248294
+    base_CE000.bin   0x0CE000  89b2779769649cec6878f09032af14b1148073fe7e4f4de5b2055a685b820a45
+    base_CF000.bin   0x0CF000  444a33b06a3f04df497f9697a00856292e761d758029f9c33e981586b8fccef8
+    base_D0000.bin   0x0D0000  9c0b0b4382c9bd79daa6b0085bcdfeef1a97736c65853e70a00f24012f9b883f
+    base_10A000.bin  0x10A000  ad962e28861a9a9914ef70e26cfc50283fa51daee636051a4907db930839dd6a
+    base_12E000.bin  0x12E000  989c59233ece7cdf59fde1af68f9f33ae600be487ceab3e08bd9b8df2ca1149f
+
+
+COMO RODAR
+----------
+  sha256sum *.bin          # conferir a transferencia
+
+  sudo sh diag.sh /opt/smartlink_flash        # so leitura
+  sudo sh flash_v044.sh /opt/smartlink_flash
+
+ORDEM RECOMENDADA (a que se mostrou mais confiavel):
+  1. plugue o aparelho, com o cartao, e espere o raio na tela
+  2. espere mais ~10 segundos
+  3. SO ENTAO rode o script
+
+O script tambem aceita a ordem inversa — se o aparelho nao estiver
+conectado ele espera e avisa a hora de plugar. Mas por esse caminho
+o aparelho costuma RE-ENUMERAR logo depois de detectado (observado
+em 2026-09-12: Device 094 na espera, Device 098 segundos depois).
+
+Por que a folga importa: o aparelho precisa de alguns segundos
+entre plugar e o primeiro comando, senao cai do modo card reader no
+meio da operacao. Era por isso que o recovery_check_linux.sh
+'funcionava melhor' — ele gastava tempo compilando antes de falar
+com o aparelho. Agora essa folga e explicita.
+
+O script para e pede GRAVAR digitado. Ate ai, so houve leitura.
+
+
+SE DER ERRADO
+-------------
+NAO DESLIGUE O APARELHO. Enquanto ele enumera, tem conserto.
+
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1A3000 0 0x1000 base_1A3000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x48000 0 0x1000 base_48000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCE000 0 0x1000 base_CE000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCF000 0 0x1000 base_CF000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xD0000 0 0x1000 base_D0000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x10A000 0 0x1000 base_10A000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12E000 0 0x1000 base_12E000.bin
+
+Isso devolve o aparelho ao estado ANTERIOR — o mesmo que ele tinha
+antes deste kit, ja verificado e ja testado bootando.
+
+NAO use setores de fabrica para reverter um patch parcial: o resto
+da flash continuaria no estado da base e a FIRM ficaria misturada,
+com o CRC da tabela de particoes sem bater. Para voltar de fato ao
+ORIGINAL DE FABRICA, use o procedimento completo de recuperacao.
