@@ -83,20 +83,58 @@ Esperado: `flash_id: 0x14851485`, e 1 a 2 minutos de leitura.
 
 ---
 
-## Passo 3 — GRAVAR o firmware de fábrica
+## Passo 3 — GRAVAR
+
+> ⚠️ **NUNCA passe o `.up` para o `write_flash`.** Versões antigas deste
+> roteiro traziam a linha
+> `write_flash 0 0 0x1A3038 ... restaura_original.up`, e ela está
+> **ERRADA**. O `.up` tem 0x100 bytes de cabeçalho `CONFIG`; o
+> `write_flash` grava **a partir do byte 0 do arquivo**, então esse
+> cabeçalho cairia em cima do `HLKJ` do bootloader e tudo ficaria 256
+> bytes adiantado. Seria um brick novo, pior que o original.
+>
+> Verificado no código-fonte (`ferramenta/smtlink_dump.c`): a função
+> `write_flash` calcula o tamanho com o 2º argumento mas indexa o arquivo
+> com `mem[i + j]` — o deslocamento **nunca** chega ao ponteiro de dados.
+>
+> **O `.up` serve para o outro caminho**, o do cartão SD, em que é o
+> próprio bootloader que lê e interpreta o cabeçalho.
+
+**A regra:** o arquivo passado ao `write_flash` tem de conter, **já no
+byte 0**, exatamente o que vai para o endereço de destino. E o 2º
+argumento é sempre `0`.
+
+### 3a — o caminho preferido: só o que está diferente
+
+Mande a `leitura_antes.bin` do Passo 2 para quem estiver acompanhando o
+caso. Comparando com `imagens/GN438_original.bin`, sai um kit com **um
+arquivo por setor divergente**, na ordem certa — tabela de partições por
+último, e releitura conferida depois de cada escrita.
+
+É o caminho que de fato recuperou o aparelho em 13/09: naquele caso um
+único setor precisou voltar.
 
 ```
-sudo ./ferramenta/smtlink_dump_macos_arm64 init write_flash 0 0 0x1A3038 ./imagens/restaura_original.up
+sudo ./ferramenta/smtlink_dump_macos_arm64 init write_flash 0xD000 0 0x1000 ptable_D000_original.bin
 ```
 
-(No Linux, troque o nome da ferramenta.)
+(esse é o exemplo real; o setor e o arquivo dependem do que a leitura
+mostrar)
 
-**A regra que nasceu de um erro real:** o `write_flash` grava **a partir
-do offset 0 do arquivo**. O 2º argumento **não** é o deslocamento dentro
-do arquivo — é sempre `0`. Foi a leitura errada disso que corrompeu a
-tabela de partições e matou o primeiro aparelho.
+### 3b — o caminho completo, quando não dá para analisar
 
----
+Grava tudo de fábrica, do endereço 0 até o fim da TONE, **direto da
+imagem de 2 MiB** — onde o byte 0 do arquivo já é o byte 0 da flash,
+que é o que torna a linha correta:
+
+```
+sudo ./ferramenta/smtlink_dump_macos_arm64 init write_flash 0 0 0x1A3038 ./imagens/GN438_original.bin
+```
+
+Isto **reescreve também o bootloader**. É aceitável porque o modo
+download vive na ROM de máscara, no silício — ele continua respondendo
+mesmo que essa escrita falhe no meio. Mas é mais escrita do que o
+necessário: prefira o 3a sempre que der.
 
 ## Passo 4 — conferir e ligar
 

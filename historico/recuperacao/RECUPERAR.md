@@ -1,5 +1,11 @@
 # Recuperar o GN-438 — passo a passo
 
+> ⛔ **DOCUMENTO OBSOLETO E PERIGOSO — não siga o Passo 3.**
+> Em 2026-09-14 foi verificado no codigo-fonte do `smtlink_dump` que o
+> comando `write_flash 0 0 0x1A3038 ... .up` grava o cabecalho CONFIG do
+> `.up` em cima do `HLKJ` do bootloader. Nunca foi executado.
+> **Use `recovery/RECUPERAR.md`.** Este arquivo fica como registro.
+
 Abra o **Terminal.app** (não o Claude Code) e siga na ordem.
 
 ---

@@ -134,7 +134,57 @@ somar, sem `tail`/`head`.
 | Afirmação | Classe |
 |---|---|
 | `write_flash` grava a partir do offset 0 do arquivo | **CONFIRMADO** (SHA-256 exato + bytes `0x1C–0x1D`) |
-| O 2º argumento é ignorado | **PROVÁVEL** — pode ter outro significado não identificado |
+| O 2º argumento é ignorado como posição no arquivo | **CONFIRMADO no código-fonte em 2026-09-14** — ver §8 |
 | Passar `0` é seguro nas duas interpretações | **CONFIRMADO** por construção |
 | `write_flash` apaga o setor antes de gravar | **PROVÁVEL** — a gravação substituiu o conteúdo, não fez AND |
 | Granularidade de erase | **NÃO DETERMINADO** — o bootloader ficou intacto ao gravar em `0xD000`, o que descarta erase de 64 KiB alinhado em `0x0` |
+
+
+---
+
+## 8. Confirmação no código-fonte (2026-09-14)
+
+Até aqui a semântica era **CONFIRMADA por hardware** e o papel do 2º
+argumento ficava **PROVÁVEL**. Lendo `smtlink_dump.c`, função
+`write_flash`, o mecanismo aparece inteiro:
+
+```c
+size -= src_offs;                  // o offset entra AQUI...
+if (src_size) { ... size = src_size; }
+
+for (i = 0; i < size; ) {
+    ...
+    int old = buf[n2 + j], new = mem[i + j];   // ...mas nunca AQUI
+```
+
+`src_offs` participa só do cálculo do tamanho. O ponteiro de dados é
+`mem[i + j]`, com `i` começando em zero — **o arquivo é sempre lido do
+byte 0**. Não é "ignorado" no sentido de inerte: ele *encurta* a
+gravação, o que torna o erro ainda mais traiçoeiro, porque o tamanho
+bate e o conteúdo não.
+
+### O que isso pegou
+
+Uma linha que estava no roteiro de recuperação do Mac desde 13/09:
+
+```
+write_flash 0 0 0x1A3038  update_restore_original.up      <- ERRADA
+```
+
+O `.up` tem 0x100 bytes de cabeçalho. Essa linha gravaria `CONFIG…` em
+cima do `HLKJ` do bootloader, com tudo 256 bytes adiantado.
+
+```
+no arquivo .up, byte 0:   43 4F 4E 46 49 47   "CONFIG"
+o que deve ir ao end. 0:  48 4C 4B 4A         "HLKJ"
+```
+
+**Nunca foi executada** — o roteiro dizia "não rode por conta própria", e
+a recuperação real de 13/09 usou o caminho certo, um arquivo por setor
+(`ptable_D000_original.bin`). Corrigido em `recovery/RECUPERAR.md`; o
+roteiro antigo ficou marcado como obsoleto.
+
+> **A regra que isso reforça:** `.up` é para o bootloader ler do cartão,
+> onde o cabeçalho é interpretado. Para `write_flash`, só arquivo cujo
+> byte 0 já é o conteúdo do endereço de destino — setor avulso, ou a
+> imagem de 2 MiB gravada a partir do endereço 0.
