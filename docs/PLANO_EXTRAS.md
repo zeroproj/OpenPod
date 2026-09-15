@@ -490,3 +490,90 @@ entrada 2 do TBH.
 **Efeito:** o item "Gravação" da home passa a abrir a lista de seis. O
 rótulo fica errado até a home ser reduzida, e **Gravação continua
 acessível de dentro do Extras**. A versão vira testável.
+
+---
+
+## 10. O ROTEAMENTO INTERNO DO EXTRAS — a camada que faltava
+
+> Medido em 2026-09-15, depois de a Core 3.0.1 rodar no aparelho.
+
+### O que o aparelho mostrou
+
+A lista dos seis apareceu, com os textos certos. Mas ao entrar:
+
+```
+Gravacao   -> Alarme
+Radio      -> Imagem
+Livro      -> Dicionario (vazio)
+Imagem, Bluetooth, Pastas -> NADA
+```
+
+Alarme, Imagens e Dicionário eram **os três destinos originais** da
+página. Ou seja: os **rótulos** mudaram, o **roteamento** não.
+
+### A causa, medida
+
+O enter da página compara o objeto focado contra o array, numa **cadeia
+de três**:
+
+```
+00D2EFF6  ldr r3, [r4]        array A[0] -> 0xD2F01C  (item 0)
+00D2EFFC  ldr r3, [r4, #4]    array A[1] -> 0xD2F020  (item 1)
+00D2F002  ldr r3, [r4, #8]    array A[2] -> 0xD2F008  (item 2)
+00D2F006  bne 0xD2F01A        nenhum     -> pop, NADA
+```
+
+Os itens 3, 4 e 5 caem no "nenhum". Bate exatamente com o relato.
+
+### E o destino não está aqui — está numa camada acima
+
+Os três caminhos convergem:
+
+```
+00D2F00A  movs r3, #4
+00D2F00E  mov  r2, r4         <- o INDICE do item
+00D2F010  movs r0, #0x53      <- a pagina de ORIGEM
+00D2F012  bl 0xD23510         <- o MESMO despachante da home
+```
+
+**A página `0x53` usa o mesmo mecanismo da home**: enfileira uma
+mensagem com o índice, e quem traduz índice → página é um
+`page53_process` com **TBH próprio** — a mesma estrutura do
+`page1_process` medida em §3.
+
+> **A lição:** rótulo e destino são camadas separadas em TODA página
+> deste firmware. Trocar a tabela de ids muda o que se lê; o destino
+> mora no `processo` da página. Eu sabia disso para a home e não
+> apliquei para a `0x53`.
+
+### Duas saídas
+
+**A — estender o `page53_process`**, como se fez a leitura do
+`page1_process`: achar o TBH dele e acrescentar as entradas 3, 4 e 5.
+Mesma técnica, mesma classe de risco, e depende de o TBH ter folga e
+alcance.
+
+**B — trocar a cadeia por uma tabela, no próprio enter.** Em vez de
+comparar objetos e despachar por mensagem, ler o índice e abrir a página
+direto:
+
+```
+ldrb r3, [indice]        ; 0..5
+ldrb r3, [tabela, r3]    ; a pagina destino
+movs r2, #0 ; movs r1, #2 ; movs r0, #0x53
+bl   0xD0DAE0            ; a troca de pagina
+pop  {r4,r5,r6,pc}
+```
+
+A cadeia ocupa ~44 bytes (`0xD2EFF6`..`0xD2F022`), e o código novo cabe.
+**B não depende de folga no TBH de outra função**, e a tabela de
+destinos vira dado — igual ao que tornou barato o M-a e o M-f.
+
+**Recomendação: B.** Menos camadas, dado em vez de código, e o destino
+de cada item passa a ser um byte que se troca.
+
+### O que ainda falta medir para o B
+
+O número de página de cada destino: Gravação, Rádio, Livro digital,
+Imagem, Bluetooth, Pastas. Os alvos do TBH do `page1_process` os têm —
+basta ler os `movs r3,#<pagina>` de cada um.
