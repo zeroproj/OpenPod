@@ -326,3 +326,95 @@ Nenhuma das duas é o alvo do nano. São saídas, não o plano.
 O **M-c** (faixa superior da home) é pequeno, não toca em roteamento e
 deixa a home visualmente igual às outras. Vale fazer **antes**, enquanto
 o Extras é medido — assim há entrega segura no meio do caminho.
+
+---
+
+## 8. A RECEITA DO EXTRAS — medida byte a byte, 2026-09-15
+
+> Tudo aqui está **medido**, não estimado. Falta **uma** peça, declarada
+> em §9, e sem ela a versão não é testável.
+
+### 8.1 A tabela de ids — pronta
+
+A home usa `0x00C486C4`, nove entradas:
+
+```
+0 Musica  id 1     3 Radio          id 6     6 Bluetooth  id 9
+1 Video   id 3     4 Livro digital  id 2     7 Configurar id 10
+2 Gravacao id 5    5 Imagem         id 4     8 Pastas     id 8
+```
+
+A tabela do Extras são os índices 2,3,4,5,6,8 — **24 bytes na área livre**:
+
+```
+ids = [5, 6, 2, 4, 9, 8]
+       Gravacao, Radio, Livro digital, Imagem, Bluetooth, Pastas
+```
+
+### 8.2 As nove edições na página `0x53`
+
+| # | onde | de | para | o que é |
+|---|---|---|---|---|
+| 1 | `0x0012F0A4` | `0x28` | `0x4C` | `malloc` |
+| 2 | `0x0012F0C2` | `0x28` | `0x4C` | `memset` |
+| 3 | `0x0012F2DC` | `+0x0C` | `+0x18` | escreve array B |
+| 4 | `0x0012F2FA` | `+0x0C` | `+0x18` | lê array B |
+| 5 | `0x0012F37A` `0x0012F40E` `0x0012F43E` `0x0012F486` | `+0x0C` | `+0x18` | lê array B (4 pontos) |
+| 6 | `0x0012F2E0` | `+0x18` | `+0x30` | escreve array C |
+| 7 | `0x0012F414` | `+0x18` | `+0x30` | lê array C |
+| 8 | `0x0012F2DA` | `cmp r6,#3` | `#6` | limite do laço |
+| 9 | `0x0012F246` | `cmp r6,#2` | `#5` | o último item (borda) |
+| 10 | `0x0012F3E2` `0x0012F406` | `cmp r3,#2` | `#5` | limites de navegação |
+
+**Ordem obrigatória:** o novo offset do array B (`+0x18`) colide com o
+offset antigo do array C. A ferramenta calcula todas as posições
+**antes** de escrever qualquer byte.
+
+### 8.3 A cópia para a pilha — o transbordo, contornado
+
+```
+00D2F0A6  sub sp, #0x1c            28 bytes de pilha
+00D2F20E  ldm.w r3,{r0,r1,r2}      copia TRES ids para sp+0xC
+00D2F2B6  add r3, sp, #0xc         o laco recarrega o ponteiro aqui
+00D2F2B8  ldr.w r0, [r3, r6, lsl #2]
+```
+
+Crescer a cópia para 6 ids transbordaria a pilha. **A saída é melhor:**
+trocar o `add r3,sp,#0xc` por um `ldr` do pool, e apontar o pool para a
+tabela nova. A cópia continua acontecendo, fica inofensiva, e **nada
+transborda**.
+
+```
+0x0012F2B6   03 ab   add r3,sp,#0xc   ->   1b 4b   ldr r3,[pc,#108]
+0x0012F324   o pool: 0x00C486E8       ->   a tabela nova na area livre
+```
+
+Conferido: o pool fica a 108 bytes do `pc` alinhado — dentro dos 1020 do
+`ldr` de 16 bits.
+
+---
+
+## 9. ⚠️ O QUE FALTA, e sem isso a versão NÃO É TESTÁVEL
+
+**A página `0x53` está MORTA no firmware de fábrica.** Nada chega nela.
+Expandir para 6 itens e gravar produziria uma tela que não abre por
+lugar nenhum — e um teste que não testa.
+
+Falta **rotear** algo até ela. O caminho natural, já medido em §3:
+
+```
+a tabela TBH em 0x00D00FBE, 12 halfwords
+  indice 2 (Gravacao) -> 0x00D010F6
+```
+
+Apontar o índice 2 para a página `0x53` tornaria a versão testável de
+imediato: o item "Gravação" da home abriria a lista de seis. O rótulo
+ficaria errado por enquanto — e **Gravação continua acessível, de dentro
+do Extras**.
+
+**O que precisa ser medido antes:** para onde um destino do TBH tem de
+apontar para abrir a página `0x53`. Os alvos da tabela são trechos de
+código dentro do `page1_process`, não endereços de página — é preciso
+ler um deles e entender o que ele faz.
+
+**É a última medição.** Depois dela a receita está completa.
