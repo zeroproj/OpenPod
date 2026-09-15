@@ -1,0 +1,95 @@
+OpenPod Core 3.0 — a tela EXTRAS
+================================
+
+>>> LEIA ANTES DE GRAVAR. ESTA E A MUDANCA MAIS ARRISCADA DA LINHA. <<<
+
+    Esta e a classe de patch que JA FALHOU TRES VEZES neste projeto:
+    patch_extras, _fix e _fix2 — os itens nunca abriram no aparelho.
+
+    A causa: mexer na contagem de itens de uma pagina e ALOCACAO e
+    aritmetica de ponteiro, e corrupcao de heap NAO APARECE na
+    verificacao byte a byte pos-gravacao. E a unica classe de defeito
+    daqui que passa por todos os nossos testes e so quebra na mao.
+
+    O QUE MUDOU, e nao e coragem — e medicao:
+      - a aritmetica esta em 8 pontos, todos localizados
+      - o campo +0x24 da estrutura nao e lido por ninguem: folga real
+      - o TRANSBORDO DE PILHA foi achado ANTES de gravar, e contornado
+      - A PAGINA NAO E A 0x53, E A 0x52. Os tres patches antigos diziam
+        0x53. Medido na tabela do view_page_create.
+
+O QUE MUDA
+
+    A pagina 0x52 (uma lista de 3 itens que estava MORTA de fabrica,
+    sem caminho de acesso) passa a ter SEIS:
+
+        Gravacao   Radio    Livro digital
+        Imagem     Bluetooth   Pastas
+
+    E o item "Gravacao" da HOME passa a ABRIR essa lista.
+
+O ROTULO ESTA ERRADO DE PROPOSITO
+
+    O terceiro item da home continua escrito "Gravacao", mas abre o
+    Extras. Renomear exige mexer na tabela de textos da home, e isso vem
+    junto com a reducao da home para 4 itens — o passo seguinte.
+
+    Gravacao NAO SE PERDEU: ela esta DENTRO do Extras.
+
+COMO GRAVAR
+
+    1. copie  OpenPod_Core_3.0.up  para a RAIZ do cartao, como update.up
+    2. Configurar -> Atualizar por SD -> Sim
+    3. APAGUE o update.up do cartao
+
+    Em Configurar > Informacoes:  OpenPod Core 3.0
+
+O QUE OLHAR — em ordem de importancia
+
+    1. ELE LIGA? Se ficar em tela preta ou reiniciar sozinho, e defeito
+       meu. Volte para a 2.4.
+
+    2. A home abre normal, com os 9 itens de sempre?
+
+    3. Entre no TERCEIRO item ("Gravacao"). Deve abrir uma lista com
+       SEIS itens: Gravacao, Radio, Livro digital, Imagem, Bluetooth,
+       Pastas.
+
+    4. >>> ENTRE EM CADA UM DOS SEIS. <<<
+       Um por um. Cada um deve abrir a tela certa. Este e o teste que
+       as tres tentativas antigas nunca passaram.
+
+    5. Volte de cada um. O "voltar" leva de volta ao Extras?
+
+    6. Navegue a lista inteira, de cima a baixo. So UMA barra azul?
+
+    7. Depois, use o aparelho normalmente por alguns minutos: musica,
+       radio, pastas. Corrupcao de heap costuma aparecer DEPOIS, noutra
+       tela — nao no momento do erro.
+
+SE QUEBRAR
+
+    Volte para a 2.4:
+    firmware/RELEASE/OpenPod Core 2.4/OpenPod_Core_2.4.up
+
+    Se nem ligar: USB -> segure VOLUME BAIXO -> RESET, e siga recovery/
+    O aparelho enumera como 301a:2800 e a flash fica acessivel mesmo com
+    o firmware destruido.
+
+O QUE FOI CONFERIDO ANTES DE CHEGAR AQUI
+
+    malloc e memset = 0x4C                          OK
+    array B nos 6 pontos = +0x18                    OK
+    array C nos 2 pontos = +0x30                    OK
+    limite do laco = 6, borda no item 5             OK
+    os dois limites de navegacao = 5                OK
+    o laco le o pool, nao a pilha (sem transbordo)  OK
+    o pool aponta para a tabela nova                OK
+    a tabela tem os 6 ids certos                    OK
+    o roteamento abre a pagina 0x52                 OK
+    59 bytes, SO nos pontos declarados              OK
+    nada abaixo de 0x00D000                         OK
+
+HASHES
+
+    imagem sem carimbo  1d0a0cddb02f07ad718a868b9f3bad0c362ff3a8bc6d9d6425360b0131516cc6

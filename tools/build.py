@@ -130,6 +130,7 @@ MAPA = {
     # em endereco FIXO na ferramenta. Os lotes comecam depois dela.
     "patch_texto_branco_fixo.py": (0x001A6000, 0x0010),
     "patch_nome_faixa.py":     (0x001A3040, 0x0010),
+    "patch_extras.py":         (0x001A3050, 0x0020),
     "patch_scrollbar3.py":     (0x001A3140, 0x0100),
     "patch_update_sd.py":      (0x001A3240, 0x0100),
     "patch_menu_text.py":      (0x001A3340, 0x00D8),
@@ -235,6 +236,12 @@ CORE_1_0 = [
     # 4 bytes dentro da CRIA_FAIXA: o `bl` do getter preto vira um
     # `movw` com a cor. Independente dos anteriores.
     ("patch_faixa_cinza.py",   [], "a faixa vira CINZA, nas 52 telas"),
+
+    # A tela EXTRAS: a pagina 0x52 passa de 3 para 6 itens, e o indice 2
+    # da home passa a abri-la. E a classe de mudanca que ja falhou tres
+    # vezes aqui — ver o cabecalho da ferramenta e docs/PLANO_EXTRAS.md.
+    ("patch_extras.py", ["--em", "0x1A3050"],
+     "a tela EXTRAS, 6 itens, e o caminho ate ela"),
 ]
 
 
