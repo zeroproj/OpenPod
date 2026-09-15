@@ -125,7 +125,7 @@ Cada linha carrega classe de confiança, conforme a regra §7 do
 |---|---|---|---|---|---|
 | ~~**M-a**~~ | separador entre itens | **não existe** | ✅ **FEITO — Core 1.1** | **VISTO NA TELA** | 1 byte |
 | **M-b** | home | **lista** | grade 3×3 de fábrica | **CONFIRMADO** | código novo |
-| **M-c** | título na faixa | "Menu", centralizado | faixa vazia, só a bateria | **VISTO NA TELA** | rotina + tabela |
+| ~~**M-c**~~ | faixa na home | existe, com traço | ✅ **FEITO — Core 2.3** | — | pela carcaça |
 | ~~**M-d**~~ | barra de rolagem | **não existe** | ✅ **FEITO — Core 1.3** | — | **1 byte** |
 | ~~**M-e**~~ | ícone **decorativo** de linha | não existe | ✅ **FEITO — Core 1.4**, 23 telas | — | **2 bytes** |
 | ~~**M-f**~~ cor | seleção | AZUL RGB(41,101,222) | ✅ **FEITO — Core 1.2**, 2 bytes | **PROVADO POR DIAGNÓSTICO** | falta só o degradê (= M-h) |

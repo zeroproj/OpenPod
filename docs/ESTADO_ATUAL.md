@@ -212,7 +212,7 @@ Resumo da distância, hoje:
 ```
 M-a  separador entre itens    FEITO  Core 1.1, visto na tela
 M-b  home                     grade 3x3, deveria ser LISTA        codigo novo
-M-c  titulo na faixa          nao existe                          rotina
+M-c  faixa na home            FEITO  Core 2.3
 M-d  barra de rolagem         existe, deveria sumir               1 ponto
 M-e  icones de linha          existem, deveriam sumir             1 ponto
 M-f  selecao                  FEITO  Core 1.2, 2 bytes (cor)
