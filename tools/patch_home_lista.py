@@ -263,22 +263,18 @@ def fonte():
     bl    CRIA_CONTEINER
     mov   r7, r0
 
-    @ O conteiner nasce do TAMANHO DA TELA INTEIRA, comecando em y=0 —
-    @ e a barra de status (relogio, bateria) mora ali em cima. Sem isto
-    @ o primeiro item e desenhado POR BAIXO dela. Visto na tela.
+    @ O CONTEINER FICA DO TAMANHO DA TELA INTEIRA, a partir de y=0.
     @
-    @ TOPO = 19 e o `inicio_lista` do Marte (marte/paleta/nanoclone.json).
-    bl    DISP
-    bl    ALTURA
-    subs  r1, r0, #{TOPO}
-    sxth  r1, r1
-    mov   r0, r7
-    bl    SET_HEIGHT
-    movs  r3, #{TOPO}             @ y
-    movs  r2, #0                  @ x
-    movs  r1, #2                  @ alinhamento, como o Configurar usa
-    mov   r0, r7
-    bl    SET_POS
+    @ Na 2.0.1 eu o encolhi para comecar em y=19, para nao sobrepor a
+    @ barra de status. Isso criou defeito PIOR: a faixa y=0..18 ficou
+    @ descoberta, mostrando o fundo do DISPLAY — que e BRANCO
+    @ (lv_disp_drv_register grava 0xFF; ver ARQUITETURA.md §12). E o
+    @ relogio e a bateria sao desenhados em BRANCO, entao sumiram:
+    @ branco sobre branco. Visto na tela.
+    @
+    @ O certo e o conteiner cobrir tudo de preto, e quem comeca em
+    @ TOPO ser a LINHA. Assim o fundo fica preto, a barra de status
+    @ volta a aparecer por cima dele, e nada e sobreposto.
 
     @ --- preparo do laco ------------------------------------------------
     ldr   r6, =0x{IDS:08X}        @ tabela de ids da home
@@ -307,13 +303,18 @@ laco:
     mov   r0, sb
     bl    SET_HEIGHT
 
-    @ y = altura_da_linha * indice, RELATIVO ao conteiner
+    @ y = TOPO + altura_da_linha * indice
+    @
+    @ E a LINHA que desce, nao o conteiner. TOPO = 19 e o `inicio_lista`
+    @ do Marte (marte/paleta/nanoclone.json) — deixa passar a barra de
+    @ status, que continua desenhada por cima do fundo preto.
     bl    DISP
     bl    ALTURA
     subs  r0, r0, #{TOPO}
     movs  r3, #{N_ITENS}
     sdiv  r3, r0, r3
     mul   r3, r3, r5
+    adds  r3, #{TOPO}
     sxth  r3, r3
     movs  r2, #0
     movs  r1, #2
