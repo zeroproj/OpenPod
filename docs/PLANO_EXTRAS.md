@@ -186,6 +186,85 @@ nesta linha, e não depende de achar espaço.
 
 ---
 
+## 3-bis. A página `0x53` medida — o custo real do caminho A
+
+> Medido em 2026-09-15. É a mesma medição que tornou a conversão da home
+> segura, feita agora para a página que virará o Extras.
+
+### A estrutura
+
+```
+page_home_menu_create  0x00D2F0A0
+  00D2F0A4  movs r0, #0x28      aloca 40 bytes
+  00D2F0C2  movs r2, #0x28      memset
+
+  r8 = r7 - 4 ;  no laco  r8 = r7 + 4i
+
+  str   r4, [r8, #0x04]!   -> +0x00   array A  = a LINHA
+  str.w sb, [r8, #0x0C]    -> +0x0C   array B
+  str.w sl, [r8, #0x18]    -> +0x18   array C
+
+  3 arrays x 3 itens x 4 = 0x24        folga: 4 bytes
+  laco: `cmp r6, #3`  em 0x00D2F2DA
+```
+
+**São TRÊS arrays**, não dois: ela guarda ícone além de linha e texto.
+
+### Quem toca nos deslocamentos — só três pontos
+
+```
+0x00D2F2DC  str.w +0x0C   escreve array B
+0x00D2F2E0  str.w +0x18   escreve array C
+0x00D2F2FA  ldr   +0x0C   le array B
+```
+
+Isso é pouco, e é a boa notícia: a aritmética de ponteiro está
+concentrada, não espalhada.
+
+### O custo para 6 itens
+
+| o que | de | para | bytes |
+|---|---|---|---|
+| `malloc` / `memset` | `0x28` | `0x4C` | 2 |
+| array B | `+0x0C` | `+0x18` | 2 pontos |
+| array C | `+0x18` | `+0x30` | 1 ponto |
+| limite do laço | `cmp r6,#3` | `#6` | 1 |
+| tabela de ids | 3 entradas | 6 entradas | nova tabela |
+
+### ⚠️ E o ponto que ainda incomoda — a cópia para a pilha
+
+```
+00D2F0A6  sub sp, #0x1c              28 bytes de pilha
+00D2F20C  ldr r3, =0x00C486E8        a tabela de 3 ids
+00D2F20E  ldm.w r3, {r0, r1, r2}     le TRES palavras
+00D2F214  stm.w r3, {r0, r1, r2}     copia para sp+0xC
+```
+
+Para 6 ids seriam 24 bytes a partir de `sp+0xC` → `sp+0x24`, e a pilha
+só tem `0x1C`. **Transbordaria.**
+
+**Saída limpa, e ela simplifica em vez de complicar:** o laço já lê o id
+com `ldr r0, [r3, r6, lsl #2]`. Basta **apontar `r3` para a própria
+tabela** em vez da cópia na pilha, e a cópia inteira deixa de existir.
+Menos código, não mais.
+
+### Veredito honesto
+
+O caminho A é **tratável e medido**, mas ele **É** aritmética de
+alocação — a classe que quebrou as três tentativas antigas, e a única
+que não aparece na verificação byte a byte.
+
+A diferença em relação àquelas tentativas não é coragem: é que agora
+cada número está medido, a aritmética está em **3 pontos** e não
+espalhada, e a cópia para a pilha — que seria o transbordo silencioso —
+foi **encontrada antes**, não depois de gravar.
+
+**Recomendação:** fazer o Extras numa versão isolada, sem nenhuma outra
+mudança junto, e testar entrando em cada um dos seis itens antes de
+seguir para a home de 4 itens.
+
+---
+
 ## 4. A ORDEM — e errar ela apaga funções do aparelho
 
 ```
