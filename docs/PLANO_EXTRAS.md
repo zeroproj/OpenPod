@@ -131,15 +131,58 @@ inline para remapear** no caminho do enter.
 > reescreva.** Remapear exige editar o switch — o terreno exato onde as
 > três tentativas anteriores morreram.
 
-### O que falta no passo 1
+### ✅ E o switch é `TBH` — o melhor caso
 
-1. onde começa `pstr_page1_process` e como o switch escolhe o literal;
-2. **se é cadeia de `cmp`/`beq` ou `tbb`/`tbh` com tabela de offsets**;
-3. se há folga para acrescentar um ramo novo — o do Extras.
+```
+00D00FB2  ldrh r3, [r4, #0xc]     o indice, vindo da mensagem
+00D00FB4  cmp  r3, #0xb           limite: 12 entradas (0..11)
+00D00FBA  tbh  [pc, r3, lsl #1]
+```
 
-**O item 2 decide o custo do projeto inteiro.** `tbb`/`tbh` tem tabela de
-dados e sai barato; cadeia de `cmp` é editável item a item, mas cresce.
-Só depois disso dá para estimar o Extras com honestidade.
+**A tabela é DADO PURO** — 12 halfwords em `0x00D00FBE`, 24 bytes:
+
+```
+ 0 -> 0x00D00FD6     4 -> 0x00D01162     8 -> 0x00D0128C
+ 1 -> 0x00D01066     5 -> 0x00D011AE     9 -> 0x00D012E2
+ 2 -> 0x00D010F6     6 -> 0x00D012D6    10 -> 0x00D01202
+ 3 -> 0x00D0113C     7 -> 0x00D0123A    11 -> 0x00D012DC
+```
+
+**Trocar o destino de um item é trocar UM HALFWORD.** Sem mexer em
+código, sem mudar tamanho, sem realocar. É o caso mais barato que podia
+sair.
+
+### ⚠️ MAS o TBH tem alcance limitado — e isso molda a solução
+
+```
+destino = pc + 2*halfword,  pc = 0x00D00FBE
+o halfword e SEM SINAL, 16 bits  ->  no maximo +131.070 bytes
+alcance:  0x00D00FBE .. 0x00D20FBC
+
+a AREA LIVRE do projeto:  0x00DA3040     FORA DO ALCANCE
+```
+
+**Uma entrada do TBH não consegue apontar para código novo na área
+livre.** O destino tem de morar nos ~128 KB seguintes à tabela.
+
+### O que isso implica para o Extras — e muda a abordagem
+
+Escrever um `page1_extras_build_cb` novo na área livre e apontar o TBH
+para ele **não funciona**. Sobram dois caminhos:
+
+**A — reaproveitar uma página que já existe.** O `page_home_menu`
+(página `0x53`, `0x00D2F0A0`) já monta uma lista com os helpers da
+carcaça, e já tem despacho próprio. O item "Extras" da home apontaria
+para ela, e o `create` dela seria reescrito com 6 itens — exatamente a
+técnica que funcionou na home (Core 2.0.2), e que **não mexe em
+alocação**.
+
+**B — um trampolim perto da tabela.** Apontar o TBH para um trecho morto
+dentro do alcance, que faz um `b.w` para a área livre. Depende de achar
+espaço morto ali, e acrescenta um salto.
+
+**O caminho A é o recomendado**: usa o que já existe, já foi provado
+nesta linha, e não depende de achar espaço.
 
 ---
 
