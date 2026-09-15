@@ -435,20 +435,41 @@ registradores e caem numa cauda comum:
 `r3 = 0x28`, e `PAGINAS.md` registra que a página **40 = 0x28** é o
 `page_set_menu` — o Configurar. `r3` é o número da página.
 
-### ⚠️ CORREÇÃO — a página NÃO é a `0x53`. É a `0x52`.
+### ⚠️ A página É a `0x53` — e eu "corrigi" isso errado uma vez
 
-Este documento, e os relatórios antigos, vinham dizendo `0x53`. **Está
-errado por um.** Medido na tabela `TBB` do `view_page_create`
-(`0x00D23B34`):
+**Registro de um erro meu, porque a lição vale mais que o byte.**
+
+Eu li a tabela `TBB` do `view_page_create` e concluí que a página era a
+`0x52`, "corrigindo" documentos deste projeto que estavam **certos**.
+Gravei a Core 3.0 assim, e o item abriu "Desligar sozinho".
+
+**O que eu ignorei:**
 
 ```
-pagina 0x51 (81)  -> bl 0x00D3CAA8
-pagina 0x52 (82)  -> bl 0x00D2F0A0    <- page_home_menu_create
-pagina 0x53 (83)  -> 0x00D23B38       outra coisa
+00D23B2C  subs r3, r5, #1      <- o indice e PAGINA - 1
+00D23B34  tbb  [pc, r3]
 ```
 
-**Usar `0x53` abriria a página errada.** Toda referência a "página 0x53"
-neste projeto deve ser lida como **`0x52`**.
+A mesma subtração existe na função de troca de página:
+
+```
+00D0DAFE  add.w r3, r7, #-1
+00D0DB18  tbh   [pc, r3, lsl #1]
+```
+
+Com o deslocamento aplicado:
+
+```
+indice 0x51 -> pagina 0x52 -> page_set_timershut_time   "Desligar sozinho"
+indice 0x52 -> pagina 0x53 -> page_home_menu_create     o EXTRAS
+```
+
+**A página é a `0x53`.** Os documentos antigos estavam certos.
+
+> **Lição:** uma tabela de despacho quase sempre tem deslocamento entre a
+> chave e o índice. **Conferir o `subs`/`add` antes de ler a tabela.**
+> Eu tinha a tabela certa, li o índice como chave, e a confiança de ter
+> "medido" me fez corrigir quem estava certo.
 
 ### A peça que faltava, pronta
 

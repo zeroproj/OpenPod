@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-patch_extras.py — a tela EXTRAS: a pagina 0x52 passa de 3 para 6 itens,
+patch_extras.py — a tela EXTRAS: a pagina 0x53 passa de 3 para 6 itens,
                   e a home ganha um caminho ate ela.
 
 O ALVO
@@ -30,19 +30,36 @@ O ALVO
       - o campo +0x24 da estrutura NAO e lido por ninguem: e folga real;
       - o TRANSBORDO DE PILHA foi achado ANTES de gravar, e contornado
         sem crescer a pilha;
-      - a PAGINA NAO E A 0x53, e a 0x52 — os tres patches antigos diziam
-        0x53. Medido na tabela do view_page_create.
+      - o roteamento ate a tela foi medido e CONFERIDO NA TELA — ver a
+        NOTA abaixo sobre o numero da pagina.
 
-A CORRECAO QUE MAIS IMPORTA — a pagina e a 0x52
+⚠️ NOTA — A PAGINA E A 0x53, E EU ERREI ISSO UMA VEZ
 
-    Tabela TBB do `view_page_create` em 0x00D23B34:
+    Na Core 3.0 eu usei 0x52, e o item abriu a tela de "Desligar
+    sozinho" em vez do Extras. Erro meu, e vale registrar COMO ele
+    aconteceu, porque a licao e maior que o byte.
 
-        pagina 0x51 (81) -> bl 0x00D3CAA8
-        pagina 0x52 (82) -> bl 0x00D2F0A0   <- page_home_menu_create
-        pagina 0x53 (83) -> outra coisa
+    A tabela do `view_page_create` (TBB em 0x00D23B34) e indexada por
+    **PAGINA - 1**:
 
-    Toda referencia a "pagina 0x53" nos documentos antigos deste projeto
-    esta errada por um.
+        00D23B2C  subs r3, r5, #1
+        00D23B34  tbb  [pc, r3]
+
+    Eu li o INDICE como se fosse a pagina, ignorei o `subs`, e com isso
+    "corrigi" documentos deste projeto que estavam CERTOS — eles diziam
+    0x53 desde sempre.
+
+        indice 0x51 -> pagina 0x52 -> page_set_timershut_time
+        indice 0x52 -> pagina 0x53 -> page_home_menu_create   <- o Extras
+
+    A mesma subtracao existe na funcao de troca de pagina:
+
+        00D0DAFE  add.w r3, r7, #-1
+        00D0DB18  tbh   [pc, r3, lsl #1]
+
+    **Licao:** uma tabela de despacho tem quase sempre um deslocamento
+    entre a chave e o indice. Conferir o `subs`/`add` antes de ler a
+    tabela, sempre.
 
 AS DEZ EDICOES NA PAGINA, e por que cada uma
 
@@ -85,7 +102,7 @@ O TRANSBORDO DE PILHA, contornado sem crescer a pilha
 
 O ROTEAMENTO — sem ele a versao NAO SERIA TESTAVEL
 
-    A pagina 0x52 esta MORTA no firmware de fabrica: nada chega nela.
+    A pagina 0x53 esta MORTA no firmware de fabrica: nada chega nela.
     Expandi-la e gravar produziria uma tela que nao abre por lugar
     nenhum — e um teste que nao testa. Foi assim que as tentativas
     antigas se perderam.
@@ -117,7 +134,7 @@ DEPENDENCIAS
 LIMITACOES
     - o item da home ainda se chama "Gravacao". Renomear e o passo
       seguinte, junto com a reducao da home para 4 itens;
-    - a pagina 0x52 nasceu para 3 itens; com 6 ela usa toda a folga da
+    - a pagina 0x53 nasceu para 3 itens; com 6 ela usa toda a folga da
       estrutura. Nao ha espaco para um setimo sem medir de novo.
 """
 
@@ -129,7 +146,7 @@ PROIBIDO = 0x0000D000
 TAMANHO  = 0x200000
 BIAS     = 0x00C00000
 
-PAGINA   = 0x52                 # page_home_menu — MEDIDO, nao 0x53
+PAGINA   = 0x53                 # page_home_menu. Ver a NOTA abaixo.
 N_VELHO, N_NOVO = 3, 6
 IDS      = [5, 6, 2, 4, 9, 8]   # Gravacao, Radio, Livro, Imagem, Bluetooth, Pastas
 TAB_VELHA = 0x00C486E8          # a tabela de 3 ids, de fabrica
@@ -153,7 +170,7 @@ IMEDIATOS = [
 # --- o roteamento -------------------------------------------------------
 ROTA_OFF = 0x001010F6
 ROTA_DE  = bytes.fromhex("fdf70dfb0546")      # bl 0xCFE714 ; mov r5,r0
-ROTA_NOVA = (bytes([0x52, 0x23])              # movs r3, #0x52
+ROTA_NOVA = (bytes([0x53, 0x23])              # movs r3, #0x53
              + bytes([0x00, 0x22])            # movs r2, #0
              + bytes([0x02, 0x21])            # movs r1, #2
              + bytes([0x01, 0x20])            # movs r0, #1
@@ -306,8 +323,8 @@ def autoteste():
     chk("a tabela tem os 6 ids certos",
         [int.from_bytes(d[em + i * 4:em + i * 4 + 4], "little")
          for i in range(6)] == IDS)
-    chk("o roteamento abre a pagina 0x52",
-        bytes(d[ROTA_OFF:ROTA_OFF + 10]) == ROTA_NOVA and d[ROTA_OFF] == 0x52)
+    chk(f"o roteamento abre a pagina 0x{PAGINA:02X}",
+        bytes(d[ROTA_OFF:ROTA_OFF + 10]) == ROTA_NOVA and d[ROTA_OFF] == PAGINA)
 
     # NADA pode ter sido escrito fora dos pontos declarados
     prev = set()
@@ -343,7 +360,7 @@ def autoteste():
 
 def main():
     ap = argparse.ArgumentParser(
-        description="a tela EXTRAS: a pagina 0x52 passa de 3 para 6 itens")
+        description="a tela EXTRAS: a pagina 0x53 passa de 3 para 6 itens")
     ap.add_argument("--in", dest="src")
     ap.add_argument("--out", dest="dst")
     ap.add_argument("--em", type=lambda s: int(s, 0), default=0x001A3050,
@@ -366,7 +383,7 @@ def main():
         return 1
     orig = bytes(d)
 
-    print("\n  A TELA EXTRAS — a pagina 0x52 passa de 3 para 6 itens\n")
+    print(f"\n  A TELA EXTRAS — a pagina 0x{PAGINA:02X} passa de 3 para 6 itens\n")
     ok, msg = aplica(d, a.em)
     if not ok:
         print(f"  ABORTADO: {msg}", file=sys.stderr)
@@ -390,7 +407,7 @@ def main():
     print(f"    0x{POOL:06X}   o pool -> 0x{BIAS+a.em:08X}")
     print()
     print("  O ROTEAMENTO — e o que torna a versao TESTAVEL")
-    print(f"    0x{ROTA_OFF:06X}  10 B  movs r3,#0x52 ... b 0x00D011F2")
+    print(f"    0x{ROTA_OFF:06X}  10 B  movs r3,#0x{PAGINA:02X} ... b 0x00D011F2")
     print(f"    o item 'Gravacao' da home passa a ABRIR A LISTA DE SEIS")
     print()
 
