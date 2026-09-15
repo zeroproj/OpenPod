@@ -104,6 +104,41 @@ def _bl(origem, alvo):
     return bytes([w1 & 0xFF, w1 >> 8, w2 & 0xFF, w2 >> 8])
 
 
+# ---------------------------------------------------------------------------
+# AS QUATRO DESELECOES — e o erro que custou a Core 2.1
+#
+#     A 2.1 tratou UMA deselecao, a de 0x0012EB06. Na tela, cada linha
+#     visitada FICAVA AZUL para tras: a "segunda selecao", que este
+#     projeto ja tinha visto antes.
+#
+#     Medido depois: o getter branco 0x00D2E948 tem CINCO chamadores.
+#
+#         0x00D2E9C0   0x00D2EA1C   0x00D2EAB0   0x00D2EB08   0x00D2ED3C
+#
+#     Quatro sao caminhos de deselecao — um por tecla de direcao — e os
+#     quatro sao IDENTICOS instrucao por instrucao. O quinto
+#     (0x00D2ED3C) cai dentro da regiao que o `patch_home_lista` ja
+#     reescreveu, entao nao existe mais na imagem final.
+#
+#     E exatamente a regra que o proprio projeto registrou depois de
+#     perder versoes com isso, em PROTOCOLO_GRAVACAO e em ESTADO_ATUAL:
+#     "Um caminho corrigido, outro esquecido. Quando um patch muda a
+#     aparencia de um objeto, enumerar TODOS os pontos que criam ou
+#     repintam aquele objeto."
+#
+#     Eu tinha a regra escrita e nao a apliquei: achei um ponto, li o
+#     codigo em volta, e parei. A ferramenta agora enumera, e o
+#     autoteste CONTA — se aparecer um quinto caminho num firmware
+#     diferente, ele recusa em vez de deixar passar.
+# ---------------------------------------------------------------------------
+DESELECOES = [
+    (0x0012E9BE, 0x0012E9C0, 0x0012E9CA, "C1"),
+    (0x0012EA1A, 0x0012EA1C, 0x0012EA26, "C2"),
+    (0x0012EAAE, 0x0012EAB0, 0x0012EABA, "C3"),
+    (0x0012EB06, 0x0012EB08, 0x0012EB12, "C4"),
+]
+
+
 # (offset, bytes esperados, bytes novos, descricao)
 def _pontos():
     p = []
@@ -114,19 +149,52 @@ def _pontos():
     for off, desc in [(0x0012EDB0, "A criacao"), (0x0012EB40, "B selecao")]:
         p.append((off, bytes([0x5E, 0x6A]), bytes([0x1E, 0x68]),
                   f"{desc}: ldr r6,[r3,#0x24] -> [r3]   array B -> array A"))
-    p.append((0x0012EB06, bytes([0x5B, 0x6A]), bytes([0x1B, 0x68]),
-              "C deselecao: ldr r3,[r3,#0x24] -> [r3]   array B -> array A"))
-    p.append((0x0012EB08,
-              _bl(BIAS + 0x0012EB08, GETTER_BRANCO),
-              _bl(BIAS + 0x0012EB08, GETTER_PRETO),
-              "C deselecao: getter BRANCO -> getter PRETO"))
-    for off, desc in [(0x0012EDBC, "A criacao"), (0x0012EB4C, "B selecao"),
-                      (0x0012EB12, "C deselecao")]:
+    for ldr, getter, setter, nome in DESELECOES:
+        p.append((ldr, bytes([0x5B, 0x6A]), bytes([0x1B, 0x68]),
+                  f"{nome} deselecao: ldr r3,[r3,#0x24] -> [r3]"))
+        p.append((getter,
+                  _bl(BIAS + getter, GETTER_BRANCO),
+                  _bl(BIAS + getter, GETTER_PRETO),
+                  f"{nome} deselecao: getter BRANCO -> getter PRETO"))
+        p.append((setter,
+                  _bl(BIAS + setter, SET_TEXT_COLOR),
+                  _bl(BIAS + setter, SET_BG_COLOR),
+                  f"{nome} deselecao: set_text_color -> set_bg_color"))
+    for off, desc in [(0x0012EDBC, "A criacao"), (0x0012EB4C, "B selecao")]:
         p.append((off,
                   _bl(BIAS + off, SET_TEXT_COLOR),
                   _bl(BIAS + off, SET_BG_COLOR),
                   f"{desc}: set_style_text_color -> set_style_bg_color"))
     return p
+
+
+def conta_deselecoes(d):
+    """Conta os chamadores do getter BRANCO que ainda restam fora dos
+    quatro caminhos conhecidos. Se houver algum, ha um caminho de
+    deselecao que esta ferramenta nao trata — e a barra ficaria para tras
+    naquele caminho."""
+    alvo = GETTER_BRANCO
+    conhecidos = {g for _, g, _, _ in DESELECOES}
+    sobrando = []
+    for o in range(0, len(d) - 3, 2):
+        w1 = d[o] | (d[o + 1] << 8)
+        if (w1 & 0xF800) != 0xF000:
+            continue
+        w2 = d[o + 2] | (d[o + 3] << 8)
+        if (w2 & 0xD000) != 0xD000:
+            continue
+        S = (w1 >> 10) & 1
+        j1 = (w2 >> 13) & 1
+        j2 = (w2 >> 11) & 1
+        i1 = (~(j1 ^ S)) & 1
+        i2 = (~(j2 ^ S)) & 1
+        v = (S << 24) | (i1 << 23) | (i2 << 22) | ((w1 & 0x3FF) << 12) \
+            | ((w2 & 0x7FF) << 1)
+        if S:
+            v -= (1 << 25)
+        if BIAS + o + 4 + v == alvo and o not in conhecidos:
+            sobrando.append(BIAS + o)
+    return sobrando
 
 
 PONTOS = _pontos()
@@ -191,27 +259,41 @@ def autoteste():
     if len(dif) > esperado:
         falhas.append("mexeu em mais bytes do que os pontos declarados")
 
-    # os tres `bl` de cor tem de apontar para set_style_bg_color
-    for off, desc in [(0x0012EDBC, "A criacao"), (0x0012EB4C, "B selecao"),
-                      (0x0012EB12, "C deselecao")]:
+    # TODO `bl` de cor tem de apontar para set_style_bg_color
+    alvos = [(0x0012EDBC, "A criacao"), (0x0012EB4C, "B selecao")]
+    alvos += [(s, f"{n} deselecao") for _, _, s, n in DESELECOES]
+    for off, desc in alvos:
         certo = bytes(d[off:off + 4]) == _bl(BIAS + off, SET_BG_COLOR)
         print(f"    {desc:14} -> bg_color  " + ("OK" if certo else "FALHOU"))
         if not certo:
             falhas.append(f"{desc}: bl nao aponta para set_style_bg_color")
 
-    certo = bytes(d[0x0012EB08:0x0012EB0C]) == _bl(BIAS + 0x0012EB08, GETTER_PRETO)
-    print("    C deselecao -> PRETO   " + ("OK" if certo else "FALHOU"))
-    if not certo:
-        falhas.append("a deselecao nao aponta para o getter preto")
+    # TODA deselecao tem de buscar o PRETO
+    for _, g, _, n in DESELECOES:
+        certo = bytes(d[g:g + 4]) == _bl(BIAS + g, GETTER_PRETO)
+        print(f"    {n} deselecao -> PRETO  " + ("OK" if certo else "FALHOU"))
+        if not certo:
+            falhas.append(f"{n}: nao aponta para o getter preto")
 
-    # os tres `ldr` tem de ler o array A (offset 0)
-    for off, desc in [(0x0012EDB0, "A"), (0x0012EB40, "B"), (0x0012EB06, "C")]:
+    # TODO `ldr` tem de ler o array A (offset 0)
+    lidos = [(0x0012EDB0, "A"), (0x0012EB40, "B")]
+    lidos += [(l, n) for l, _, _, n in DESELECOES]
+    for off, desc in lidos:
         hw = d[off] | (d[off + 1] << 8)
         imm = (hw >> 6) & 0x1F
         print(f"    {desc}: ldr offset {imm*4:#04x}    "
               + ("OK" if imm == 0 else "FALHOU"))
         if imm:
             falhas.append(f"{desc}: o ldr ainda le o array B")
+
+    # NENHUM caminho de deselecao pode ter sobrado. Este e o teste que
+    # a Core 2.1 nao tinha, e que teria pego o defeito antes da tela.
+    sobra = [a for a in conta_deselecoes(d) if not (0x0012EC42 <= a - BIAS < 0x0012ED90)]
+    print(f"    nenhuma deselecao sobrando  "
+          + ("OK" if not sobra else f"FALHOU: {[hex(a) for a in sobra]}"))
+    if sobra:
+        falhas.append(f"caminhos de deselecao nao tratados: "
+                      f"{[hex(a) for a in sobra]}")
 
     ok2, _ = aplica(d)
     print("    recusa 2a aplicacao    " + ("OK" if not ok2 else "FALHOU"))
