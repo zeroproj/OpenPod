@@ -156,7 +156,7 @@ SIMB = {
 IDS      = 0x00C486C4          # tabela de ids de texto da home, 9 entradas
 HANDLER  = 0x00D2E951          # page_home_event_cb | 1 (thumb)
 N_ITENS  = 9
-TOPO     = 19          # `inicio_lista` do Marte: onde a lista comeca, abaixo da barra de status
+TOPO     = 16          # com 9 itens de 16 px: 16 + 144 = 160 exatos. 16 px e o `altura_linha` do Marte
 
 
 # ---------------------------------------------------------------------------

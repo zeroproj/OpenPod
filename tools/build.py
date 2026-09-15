@@ -219,6 +219,11 @@ CORE_1_0 = [
     # de icone. E a UNICA dependencia declarada da receita — as outras
     # dez sao independentes entre si.
     ("patch_home_barra.py",    [], "M-b E2: a selecao da home vira BARRA"),
+
+    # Altura de linha IGUAL em todas as telas: 16 px, a medida do nano.
+    # 62 pontos, divisor 7 -> 10. Independente dos anteriores: a home ja
+    # calcula a dela a partir de TOPO, e as duas contas convergem em 16.
+    ("patch_altura_linha.py",  [], "altura de linha: 16 px em TODAS as telas"),
 ]
 
 
