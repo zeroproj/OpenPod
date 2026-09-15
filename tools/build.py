@@ -242,6 +242,11 @@ CORE_1_0 = [
     # vezes aqui — ver o cabecalho da ferramenta e docs/PLANO_EXTRAS.md.
     ("patch_extras.py", ["--em", "0x1A3050"],
      "a tela EXTRAS, 6 itens, e o caminho ate ela"),
+
+    # O roteamento INTERNO do Extras. DEPENDE do passo anterior: e ele
+    # que faz a pagina ter 6 itens. Segunda dependencia declarada da
+    # receita — as outras 14 sao independentes entre si.
+    ("patch_extras_rota.py",  [], "cada item do Extras abre a tela certa"),
 ]
 
 

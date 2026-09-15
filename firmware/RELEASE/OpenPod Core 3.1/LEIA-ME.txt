@@ -1,0 +1,91 @@
+OpenPod Core 3.1 — cada item do Extras abre a tela certa
+========================================================
+
+O DEFEITO DA 3.0.1
+
+    A lista dos seis apareceu, mas ao entrar:
+
+        Gravacao -> Alarme    Radio -> Imagem    Livro -> Dicionario
+        Imagem, Bluetooth, Pastas -> NADA
+
+    Alarme, Imagens e Dicionario eram os TRES destinos ORIGINAIS da
+    pagina. Eu troquei os ROTULOS e deixei o ROTEAMENTO de fabrica.
+
+A CAUSA
+
+    O enter da pagina comparava o objeto focado contra o array, numa
+    CADEIA DE TRES comparacoes fixas. Os itens 3, 4 e 5 caiam no
+    "nenhum" — por isso nao faziam nada.
+
+    Rotulo e destino sao camadas SEPARADAS em toda pagina deste
+    firmware. Eu ja sabia disso para a home, e nao apliquei aqui.
+
+A SOLUCAO — reaproveitar o despacho da HOME
+
+    A pagina ja monta a mesma mensagem que a home usa. Trocando a
+    ORIGEM para a home e o INDICE para o que aquele item tem NA HOME,
+    cada item executa EXATAMENTE a rotina de fabrica dele.
+
+    Isso importa porque varios destinos NAO sao "abrir a pagina N":
+      Gravacao  confere se ha arquivos antes
+      Pastas    registra um construtor proprio
+
+    Redespachar pela home nao pula nenhuma dessas preparacoes.
+
+>>> O "GRAVACAO" DO EXTRAS AINDA NAO FUNCIONA — E E DE PROPOSITO <<<
+
+    O item que ABRE o Extras e o terceiro da home (rotulado
+    "Gravacao"). Se o "Gravacao" de dentro do Extras voltasse para ele,
+    reabriria o proprio Extras — LACO INFINITO.
+
+    Entao ele foi roteado para um indice que o firmware trata como fora
+    de faixa: registra log e volta. NO-OP SEGURO, conferido no codigo.
+
+    Isto se resolve sozinho no passo seguinte, quando a home ganhar um
+    item "Extras" PROPRIO e o terceiro item voltar a ser a Gravacao de
+    verdade.
+
+    NAO E UM DEFEITO ESCONDIDO. E consequencia de o Extras ainda entrar
+    por uma porta emprestada.
+
+COMO GRAVAR
+
+    1. copie  OpenPod_Core_3.1.up  para a RAIZ do cartao, como update.up
+    2. Configurar -> Atualizar por SD -> Sim
+    3. APAGUE o update.up do cartao
+
+    Em Configurar > Informacoes:  OpenPod Core 3.1
+
+O QUE OLHAR
+
+    1. ELE LIGA?
+
+    2. Entre no TERCEIRO item da home. A lista dos seis aparece?
+
+    3. >>> ENTRE EM CINCO DELES: <<<
+         Radio          deve abrir o RADIO
+         Livro digital  deve abrir os LIVROS
+         Imagem         deve abrir as IMAGENS
+         Bluetooth      deve abrir o BLUETOOTH
+         Pastas         deve abrir as PASTAS
+
+       Estes cinco sao o teste. Se cada um abrir a tela certa, o Extras
+       funciona — e e a primeira vez neste projeto.
+
+    4. GRAVACAO: nao deve fazer nada. E o esperado, ver acima.
+
+    5. O "voltar" de cada um leva de volta ao Extras?
+
+    6. Depois, use o aparelho por alguns minutos — musica, radio,
+       pastas. Corrupcao de heap aparece DEPOIS, noutra tela.
+
+SE QUEBRAR
+
+    Volte para a 2.4 (a ultima antes do Extras):
+    firmware/RELEASE/OpenPod Core 2.4/OpenPod_Core_2.4.up
+
+    Se nem ligar: USB -> segure VOLUME BAIXO -> RESET, e siga recovery/
+
+HASHES
+
+    imagem sem carimbo  917f13989ef317e2d97364dd1f3983656a52fca0b90f31773ac8d34ce308b277
