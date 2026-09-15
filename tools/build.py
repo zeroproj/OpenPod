@@ -230,6 +230,11 @@ CORE_1_0 = [
     # aquele rotulo.
     ("patch_nome_faixa.py", ["--em", "0x1A3040"],
      "'OpenPod' no lugar do icone de SD"),
+
+    # A faixa superior deixa de ser preta e vira CINZA, nas 52 telas.
+    # 4 bytes dentro da CRIA_FAIXA: o `bl` do getter preto vira um
+    # `movw` com a cor. Independente dos anteriores.
+    ("patch_faixa_cinza.py",   [], "a faixa vira CINZA, nas 52 telas"),
 ]
 
 
