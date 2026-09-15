@@ -417,4 +417,55 @@ apontar para abrir a página `0x53`. Os alvos da tabela são trechos de
 código dentro do `page1_process`, não endereços de página — é preciso
 ler um deles e entender o que ele faz.
 
-**É a última medição.** Depois dela a receita está completa.
+### ✅ MEDIDO — e a receita está completa
+
+**Como um destino do TBH abre uma página.** Os destinos curtos setam
+registradores e caem numa cauda comum:
+
+```
+00D011EA  movs r3, #0x15        <- O NUMERO DA PAGINA
+00D011EC  movs r2, #0
+00D011EE  movs r1, #2
+00D011F0  movs r0, #1
+00D011F2  pop.w {r4,r5,r6,r7,r8,lr}
+00D011F6  b.w  0xD0DAE0         <- a troca de pagina
+```
+
+**Confirmação cruzada:** o destino do índice **7** (Configurar) seta
+`r3 = 0x28`, e `PAGINAS.md` registra que a página **40 = 0x28** é o
+`page_set_menu` — o Configurar. `r3` é o número da página.
+
+### ⚠️ CORREÇÃO — a página NÃO é a `0x53`. É a `0x52`.
+
+Este documento, e os relatórios antigos, vinham dizendo `0x53`. **Está
+errado por um.** Medido na tabela `TBB` do `view_page_create`
+(`0x00D23B34`):
+
+```
+pagina 0x51 (81)  -> bl 0x00D3CAA8
+pagina 0x52 (82)  -> bl 0x00D2F0A0    <- page_home_menu_create
+pagina 0x53 (83)  -> 0x00D23B38       outra coisa
+```
+
+**Usar `0x53` abriria a página errada.** Toda referência a "página 0x53"
+neste projeto deve ser lida como **`0x52`**.
+
+### A peça que faltava, pronta
+
+Reescrever o começo do destino do índice 2 (hoje Gravação,
+`0x00D010F6`) com 10 bytes:
+
+```
+0x001010F6  52 23   movs r3, #0x52      a pagina do Extras
+0x001010F8  00 22   movs r2, #0
+0x001010FA  02 21   movs r1, #2
+0x001010FC  01 20   movs r0, #1
+0x001010FE  78 E0   b 0x00D011F2        a cauda comum
+```
+
+O resto do destino antigo vira código morto — só era alcançável pela
+entrada 2 do TBH.
+
+**Efeito:** o item "Gravação" da home passa a abrir a lista de seis. O
+rótulo fica errado até a home ser reduzida, e **Gravação continua
+acessível de dentro do Extras**. A versão vira testável.
