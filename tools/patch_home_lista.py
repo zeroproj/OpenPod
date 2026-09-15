@@ -140,6 +140,7 @@ assert BASE % 4 == 0, "a base do codigo montado tem de ser multipla de 4"
 SIMB = {
     "ADD_FLAG":       0x00D49204,   # lv_obj_add_flag(obj, flag)
     "CRIA_CONTEINER": 0x00D21690,   # a carcaca
+    "CRIA_FAIXA":     0x00D216F0,   # a carcaca — 52 telas usam
     "CRIA_LINHA":     0x00D21764,   # a carcaca — 39 telas usam
     "CRIA_ROTULO":    0x00D5E2E8,
     "ADD_EVENT_CB":   0x00D47064,
@@ -275,6 +276,22 @@ def fonte():
     @ O certo e o conteiner cobrir tudo de preto, e quem comeca em
     @ TOPO ser a LINHA. Assim o fundo fica preto, a barra de status
     @ volta a aparecer por cima dele, e nada e sobreposto.
+
+    @ --- a FAIXA, pela carcaca  (Marte M-c) -----------------------------
+    @
+    @ Vem DEPOIS do conteiner de proposito: irmao criado depois e
+    @ desenhado POR CIMA. O conteiner cobre a tela de preto; a faixa
+    @ fica sobre ele, e a barra de status (relogio, bateria) e criada
+    @ depois pelo chrome, entao fica por cima dos dois.
+    @
+    @ CRIA_FAIXA pinta PRETO e poe borda CINZA de 1 px embaixo
+    @ (palette(0x12), medido em 0x00D21736..0x00D2174C). O fundo preto
+    @ ja existe — o que ela ACRESCENTA na home e esse traco, o mesmo
+    @ que as outras 39 telas tem sob a barra de status.
+    mov   r0, r5                  @ a tela
+    bl    CRIA_FAIXA
+    movs  r1, #{TOPO}             @ mesma altura do topo da lista
+    bl    SET_HEIGHT
 
     @ --- preparo do laco ------------------------------------------------
     ldr   r6, =0x{IDS:08X}        @ tabela de ids da home

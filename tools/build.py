@@ -129,7 +129,7 @@ MAPA = {
     # 0x001A3038..0x001A3040 e a string "OpenPod" do patch_status_bar,
     # em endereco FIXO na ferramenta. Os lotes comecam depois dela.
     "patch_texto_branco_fixo.py": (0x001A6000, 0x0010),
-    "patch_barra_selecao.py":  (0x001A3040, 0x0100),
+    "patch_nome_faixa.py":     (0x001A3040, 0x0010),
     "patch_scrollbar3.py":     (0x001A3140, 0x0100),
     "patch_update_sd.py":      (0x001A3240, 0x0100),
     "patch_menu_text.py":      (0x001A3340, 0x00D8),
@@ -224,6 +224,12 @@ CORE_1_0 = [
     # 62 pontos, divisor 7 -> 10. Independente dos anteriores: a home ja
     # calcula a dela a partir de TOPO, e as duas contas convergem em 16.
     ("patch_altura_linha.py",  [], "altura de linha: 16 px em TODAS as telas"),
+
+    # O nome "OpenPod" no lugar do icone de cartao SD, na faixa.
+    # Independente: mexe numa rotina propria (0x00D226AC) que so cria
+    # aquele rotulo.
+    ("patch_nome_faixa.py", ["--em", "0x1A3040"],
+     "'OpenPod' no lugar do icone de SD"),
 ]
 
 
