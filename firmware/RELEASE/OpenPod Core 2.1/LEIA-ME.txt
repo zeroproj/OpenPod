@@ -1,0 +1,72 @@
+OpenPod Core 2.1 — a selecao da home vira BARRA
+===============================================
+
+A 2.0.2 FECHOU A ETAPA 1
+
+    Relogio, SD e bateria de volta, sem faixa branca, nove itens
+    cabendo, e a navegacao funcionando. A home e uma lista montada
+    pela carcaca do firmware.
+
+O QUE A 2.1 MUDA
+
+    A selecao deixa de ser COR DE TEXTO e vira BARRA — igual as
+    outras 38 telas de lista.
+
+        antes     o item escolhido ficava AMARELO
+        depois    fundo da LINHA em AZUL, texto branco por cima
+
+    O texto nunca mais muda de cor: fica branco sempre. Branco sobre
+    azul quando selecionado, branco sobre preto quando nao.
+
+    O azul e o AZUL DO MARTE, RGB(41,101,222) — ja estava na paleta 5
+    desde a Core 1.2. A barra da home nasce com a cor certa.
+
+POR QUE SO AGORA
+
+    A Etapa 1 fez a home guardar A LINHA no array de ponteiros, no
+    lugar do antigo quadro de icone. Sem esse objeto nao havia o que
+    pintar de fundo.
+
+    As duas etapas foram mantidas SEPARADAS de proposito: juntar seria
+    repetir o acoplamento que afundou a linha 2.x.
+
+COMO GRAVAR
+
+    1. copie  OpenPod_Core_2.1.up  para a RAIZ do cartao, como update.up
+    2. Configurar -> Atualizar por SD -> Sim
+    3. APAGUE o update.up do cartao
+
+    Em Configurar > Informacoes:  OpenPod Core 2.1
+
+O QUE OLHAR
+
+    1. A selecao e uma BARRA AZUL de borda a borda, com texto branco?
+
+    2. >>> SO UMA barra por vez? <<<
+       Ande pela lista inteira, de cima a baixo e de volta. NENHUMA
+       linha visitada pode ficar azul para tras.
+
+       Pergunto porque este projeto ja teve exatamente esse defeito
+       antes ("a segunda selecao"): o ponto que PINTA foi corrigido e o
+       que DESPINTA ficou. Desta vez os dois foram tratados, mais o
+       terceiro (o da criacao da tela), mas e a tela que confirma.
+
+    3. Ao ENTRAR numa tela e VOLTAR, a barra esta no item certo,
+       e so nele?
+
+    4. Compare com CONFIGURAR. Devem estar parecidas agora — mesma
+       barra, mesmo texto branco. A diferenca que sobra e a FAIXA
+       superior com degrade, que o Configurar tem e a home nao.
+       Essa e o M-c, e e o proximo item.
+
+SE QUEBRAR
+
+    Volte para a 2.0.2:
+    firmware/RELEASE/OpenPod Core 2.0.2/OpenPod_Core_2.0.2.up
+
+    Se nem ligar: USB -> segure VOLUME BAIXO -> RESET, e siga recovery/
+
+HASHES
+
+    imagem sem carimbo  1599befa860d2fc8a49aad6fd5c8f29a5f6931aa2766271eec6368535ebed639
+    diff contra a 2.0.2:  14 bytes, em 3 lugares

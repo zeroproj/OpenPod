@@ -212,6 +212,13 @@ CORE_1_0 = [
     # lista, pela carcaca. Reescreve 0x12EC42..0x12ED8F no lugar; nao
     # aloca, nao usa area livre. Plano em docs/PLANO_HOME.md.
     ("patch_home_lista.py",    [], "M-b: a home vira LISTA, pela carcaca"),
+
+    # Marte M-b, ETAPA 2. DEPENDE do passo anterior: e ele que poe a
+    # LINHA no array A (+0x00), e esta etapa pinta o FUNDO dessa linha.
+    # Sem ele, os tres `ldr` leriam um array que ainda guarda o quadro
+    # de icone. E a UNICA dependencia declarada da receita — as outras
+    # dez sao independentes entre si.
+    ("patch_home_barra.py",    [], "M-b E2: a selecao da home vira BARRA"),
 ]
 
 
