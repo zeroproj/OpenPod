@@ -97,11 +97,49 @@ vive na região BAIXA da flash (fora do XIP). As tentativas antigas
 registraram endereços dessa área (`0x00100F66`, `0x00100FB2`,
 `0x00101036`) e descreveram um `tbh` — tabela de desvio.
 
-> ⚠️ **Isto ainda NÃO foi medido nesta linha.** Os endereços vêm dos
-> relatórios das tentativas antigas, não de medição minha. O mapa `boot`
-> do `disasm.py` usa outra base e eu não completei a leitura.
->
-> **Medir essa tabela é o passo 1, e é pré-requisito de tudo.**
+### ✅ Passo 1, PARCIAL — medido em 2026-09-15
+
+**Primeiro: os endereços dos relatórios antigos NÃO BATEM com mapa
+nenhum.** `0x00100F66` está abaixo da base do mapa `boot` (`0x0081FB60`)
+e fora do XIP (`0x00C00000`). Não há como localizá-los. Bom que o plano
+os marcou como não medidos — construir em cima deles teria sido chute.
+
+**O despacho NÃO é chamada direta: é uma FILA.**
+
+```
+0x00D23510   monta a mensagem na pilha, com o INDICE em sp+0x08
+0x00D234AC   pega um buffer (0x00D6AE38) e ENFILEIRA
+```
+
+A mensagem é consumida depois, noutro contexto. Logo **não existe tabela
+inline para remapear** no caminho do enter.
+
+**Quem consome é o `page1_process`, e os destinos têm nome próprio:**
+
+```
+0x00D00D6C  page1_build_cb          0x00D00E28  page1_music_build_cb
+0x00D00DA0  page1_record_build_cb   0x00D00E84  page1_video_build_cb
+0x00D00DE0  page1_folder_build_cb   0x00D00EE0  page1_ebook_build_cb
+```
+
+**Cada um aparece exatamente UMA vez, e sempre em POOL LITERAL**
+(`0x00D01250`…`0x00D01308`) — nunca como `bl` direto.
+
+> **Consequência, e é a que decide o custo:** o mapeamento índice →
+> destino está no **CÓDIGO** de `page1_process`, como um switch que
+> carrega o ponteiro certo por literal. **Não é tabela de dados que se
+> reescreva.** Remapear exige editar o switch — o terreno exato onde as
+> três tentativas anteriores morreram.
+
+### O que falta no passo 1
+
+1. onde começa `pstr_page1_process` e como o switch escolhe o literal;
+2. **se é cadeia de `cmp`/`beq` ou `tbb`/`tbh` com tabela de offsets**;
+3. se há folga para acrescentar um ramo novo — o do Extras.
+
+**O item 2 decide o custo do projeto inteiro.** `tbb`/`tbh` tem tabela de
+dados e sai barato; cadeia de `cmp` é editável item a item, mas cresce.
+Só depois disso dá para estimar o Extras com honestidade.
 
 ---
 
