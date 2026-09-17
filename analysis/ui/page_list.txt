@@ -1,0 +1,869 @@
+# Lista de páginas da UI do GN-438
+# Total de strings relacionadas a page_: 460
+# Bases únicas: 249
+
+page_alarm_btn_play_process
+  0x0d33b2  page_alarm_btn_play_process
+
+page_alarm_cycle
+  0x0d3172  page_alarm_cycle_event_cb
+  0x0d318c  page_alarm_cycle_create
+  0x0d31a4  page_alarm_cycle_scr_process
+
+page_alarm_cycle_btn_process
+  0x0d31c1  page_alarm_cycle_btn_process
+
+page_alarm_cycle_event_reply
+  0x0d31fd  page_alarm_cycle_event_reply
+
+page_alarm_cycle_label_process
+  0x0d31de  page_alarm_cycle_label_process
+
+page_alarm_menu
+  0x0d32c3  page_alarm_menu_event_cb
+  0x0d32dc  page_alarm_menu_create
+  0x0d32f3  page_alarm_menu_scr_process
+
+page_alarm_menu_btn_process
+  0x0d330f  page_alarm_menu_btn_process
+
+page_alarm_menu_event_reply
+  0x0d3366  page_alarm_menu_event_reply
+
+page_alarm_menu_label_process
+  0x0d332b  page_alarm_menu_label_process
+
+page_alarm_menu_mbox_process
+  0x0d3349  page_alarm_menu_mbox_process
+
+page_alarm_play
+  0x0d3382  page_alarm_play_event_cb
+  0x0d339b  page_alarm_play_create
+
+page_alarm_play_event_reply
+  0x0d33ce  page_alarm_play_event_reply
+
+page_alarm_time
+  0x0d340e  page_alarm_time_event_cb
+  0x0d3427  page_alarm_time_create
+  0x0d343e  page_alarm_time_scr_process
+
+page_alarm_time_btn_process
+  0x0d345a  page_alarm_time_btn_process
+
+page_alarm_time_event_reply
+  0x0d3494  page_alarm_time_event_reply
+
+page_alarm_time_label_process
+  0x0d3476  page_alarm_time_label_process
+
+page_bt_menu
+  0x0d357c  page_bt_menu_event_cb
+  0x0d35c7  page_bt_menu_create
+  0x0d35db  page_bt_menu_scr_process
+
+page_bt_menu_anim_process
+  0x0d366a  page_bt_menu_anim_process
+
+page_bt_menu_btn_process
+  0x0d35f4  page_bt_menu_btn_process
+
+page_bt_menu_event_reply
+  0x0d369e  page_bt_menu_event_reply
+
+page_bt_menu_label_process
+  0x0d360d  page_bt_menu_label_process
+
+page_bt_menu_mbox_process
+  0x0d3684  page_bt_menu_mbox_process
+
+page_bt_menu_option
+  0x0d35aa  page_bt_menu_option_event_cb
+
+page_bt_menu_option_del
+  0x0d3592  page_bt_menu_option_del
+
+page_bt_menu_paired_list_process
+  0x0d3628  page_bt_menu_paired_list_process
+
+page_bt_menu_search_list_process
+  0x0d3649  page_bt_menu_search_list_process
+
+page_call_come_btn_process
+  0x0d4f85  page_call_come_btn_process
+
+page_call_come_event_reply
+  0x0d4fbd  page_call_come_event_reply
+
+page_call_come_label_process
+  0x0d4fa0  page_call_come_label_process
+
+page_call_on_btn_process
+  0x0d4fe7  page_call_on_btn_process
+
+page_call_on_event_reply
+  0x0d501b  page_call_on_event_reply
+
+page_call_on_label_process
+  0x0d5000  page_call_on_label_process
+
+page_date_time
+  0x0d540a  page_date_time_event_cb
+  0x0d5422  page_date_time_create
+  0x0d5438  page_date_time_scr_process
+
+page_date_time_btn_process
+  0x0d5453  page_date_time_btn_process
+
+page_date_time_event_reply
+  0x0d548b  page_date_time_event_reply
+
+page_date_time_label_process
+  0x0d546e  page_date_time_label_process
+
+page_device_info
+  0x0d54a6  page_device_info_event_cb
+  0x0d54c0  page_device_info_create
+  0x0d54d8  page_device_info_scr_process
+
+page_device_info_btn_process
+  0x0d54f5  page_device_info_btn_process
+
+page_device_info_event_reply
+  0x0d5531  page_device_info_event_reply
+
+page_device_info_label_process
+  0x0d5512  page_device_info_label_process
+
+page_dict_input
+  0x0d377e  page_dict_input_event_cb
+  0x0d3797  page_dict_input_create
+  0x0d37cb  page_dict_input_scr_process
+
+page_dict_input_btnm_process
+  0x0d37ae  page_dict_input_btnm_process
+
+page_dict_input_event_reply
+  0x0d37e7  page_dict_input_event_reply
+
+page_dict_play
+  0x0d384f  page_dict_play_event_cb
+  0x0d3867  page_dict_play_create
+  0x0d389a  page_dict_play_scr_process
+
+page_dict_play_event_reply
+  0x0d38b5  page_dict_play_event_reply
+
+page_dict_play_label_process
+  0x0d387d  page_dict_play_label_process
+
+page_ebook_bg
+  0x0d38d0  page_ebook_bg_event_cb
+  0x0d38e7  page_ebook_bg_create
+  0x0d38fc  page_ebook_bg_scr_process
+
+page_ebook_bg_btn_process
+  0x0d3916  page_ebook_bg_btn_process
+
+page_ebook_bg_event_reply
+  0x0d394c  page_ebook_bg_event_reply
+
+page_ebook_bg_label_process
+  0x0d3930  page_ebook_bg_label_process
+
+page_ebook_input
+  0x0d3966  page_ebook_input_event_cb
+  0x0d3980  page_ebook_input_create
+  0x0d3998  page_ebook_input_scr_process
+
+page_ebook_input_btnm_process
+  0x0d39b5  page_ebook_input_btnm_process
+
+page_ebook_input_event_reply
+  0x0d39d3  page_ebook_input_event_reply
+
+page_ebook_list
+  0x0d3a63  page_ebook_list_event_cb
+  0x0d3a7c  page_ebook_list_create
+  0x0d3a93  page_ebook_list_scr_process
+
+page_ebook_list_btn_process
+  0x0d3aaf  page_ebook_list_btn_process
+
+page_ebook_list_event_reply
+  0x0d3ae9  page_ebook_list_event_reply
+
+page_ebook_list_label_process
+  0x0d3acb  page_ebook_list_label_process
+
+page_ebook_mark
+  0x0d3b7a  page_ebook_mark_event_cb
+  0x0d3b93  page_ebook_mark_create
+  0x0d3baa  page_ebook_mark_scr_process
+
+page_ebook_mark_btn_process
+  0x0d3bc6  page_ebook_mark_btn_process
+
+page_ebook_mark_event_reply
+  0x0d3c1d  page_ebook_mark_event_reply
+
+page_ebook_mark_label_process
+  0x0d3be2  page_ebook_mark_label_process
+
+page_ebook_mark_mbox_process
+  0x0d3c00  page_ebook_mark_mbox_process
+
+page_ebook_read
+  0x0d3c6c  page_ebook_read_event_cb
+  0x0d3c85  page_ebook_read_create
+  0x0d3c9c  page_ebook_read_scr_process
+
+page_ebook_read_anim_process
+  0x0d3cd6  page_ebook_read_anim_process
+
+page_ebook_read_event_reply
+  0x0d3cf3  page_ebook_read_event_reply
+
+page_ebook_read_label_process
+  0x0d3cb8  page_ebook_read_label_process
+
+page_ebook_set
+  0x0d3d47  page_ebook_set_event_cb
+  0x0d3d5f  page_ebook_set_create
+  0x0d3d75  page_ebook_set_scr_process
+
+page_ebook_set_btn_process
+  0x0d3d90  page_ebook_set_btn_process
+
+page_ebook_set_event_reply
+  0x0d3dc8  page_ebook_set_event_reply
+
+page_ebook_set_label_process
+  0x0d3dab  page_ebook_set_label_process
+
+page_ebook_time
+  0x0d3dfa  page_ebook_time_event_cb
+  0x0d3e13  page_ebook_time_create
+  0x0d3e2a  page_ebook_time_scr_process
+
+page_ebook_time_btn_process
+  0x0d3e46  page_ebook_time_btn_process
+
+page_ebook_time_event_reply
+  0x0d3e80  page_ebook_time_event_reply
+
+page_ebook_time_label_process
+  0x0d3e62  page_ebook_time_label_process
+
+page_expand_home
+  0x0d42cf  page_expand_home_event_cb
+  0x0d42e9  page_expand_home_create
+  0x0d4301  page_expand_home_scr_process
+
+page_expand_home_event_reply
+  0x0d435a  page_expand_home_event_reply
+
+page_expand_home_img_process
+  0x0d431e  page_expand_home_img_process
+
+page_expand_home_label_process
+  0x0d433b  page_expand_home_label_process
+
+page_fm_band
+  0x0d3f2e  page_fm_band_event_cb
+  0x0d3f44  page_fm_band_create
+  0x0d3f58  page_fm_band_scr_process
+
+page_fm_band_btn_process
+  0x0d3f71  page_fm_band_btn_process
+
+page_fm_band_event_reply
+  0x0d3f8a  page_fm_band_event_reply
+
+page_fm_play
+  0x0d3fa3  page_fm_play_event_cb
+  0x0d3fb9  page_fm_play_create
+  0x0d3fcd  page_fm_play_scr_process
+
+page_fm_play_event_reply
+  0x0d4001  page_fm_play_event_reply
+
+page_fm_play_label_process
+  0x0d3fe6  page_fm_play_label_process
+
+page_fm_preset
+  0x0d404e  page_fm_preset_event_cb
+  0x0d4066  page_fm_preset_create
+  0x0d407c  page_fm_preset_scr_process
+
+page_fm_preset_btn_process
+  0x0d4097  page_fm_preset_btn_process
+
+page_fm_preset_event_reply
+  0x0d40ce  page_fm_preset_event_reply
+
+page_fm_preset_mbox_process
+  0x0d40b2  page_fm_preset_mbox_process
+
+page_fm_set
+  0x0d4129  page_fm_set_event_cb
+  0x0d413e  page_fm_set_create
+  0x0d4151  page_fm_set_scr_process
+
+page_fm_set_btn_process
+  0x0d4169  page_fm_set_btn_process
+
+page_fm_set_event_reply
+  0x0d419a  page_fm_set_event_reply
+
+page_fm_set_mbox_process
+  0x0d4181  page_fm_set_mbox_process
+
+page_folder_list
+  0x0d41c7  page_folder_list_event_cb
+  0x0d41e1  page_folder_list_create
+  0x0d41f9  page_folder_list_scr_process
+
+page_folder_list_btn_process
+  0x0d4216  page_folder_list_btn_process
+
+page_folder_list_event_reply
+  0x0d4270  page_folder_list_event_reply
+
+page_folder_list_label_process
+  0x0d4233  page_folder_list_label_process
+
+page_folder_list_mbox_process
+  0x0d4252  page_folder_list_mbox_process
+
+page_home
+  0x0d4399  page_home_event_cb
+  0x0d43ac  page_home_create
+  0x0d43bd  page_home_scr_process
+
+page_home_event_reply
+  0x0d4401  page_home_event_reply
+
+page_home_img_process
+  0x0d43d3  page_home_img_process
+
+page_home_label_process
+  0x0d43e9  page_home_label_process
+
+page_home_menu
+  0x0d4417  page_home_menu_event_cb
+  0x0d442f  page_home_menu_create
+  0x0d4445  page_home_menu_scr_process
+
+page_home_menu_btn_process
+  0x0d4460  page_home_menu_btn_process
+
+page_home_menu_event_reply
+  0x0d4498  page_home_menu_event_reply
+
+page_home_menu_label_process
+  0x0d447b  page_home_menu_label_process
+
+page_lang_option
+  0x0d55a3  page_lang_option_event_cb
+  0x0d55bd  page_lang_option_create
+  0x0d55d5  page_lang_option_scr_process
+
+page_lang_option_btn_process
+  0x0d55f2  page_lang_option_btn_process
+
+page_lang_option_event_reply
+  0x0d562e  page_lang_option_event_reply
+
+page_lang_option_label_process
+  0x0d560f  page_lang_option_label_process
+
+page_music_album
+  0x0d44b3  page_music_album_event_cb
+  0x0d44cd  page_music_album_create
+  0x0d44e5  page_music_album_scr_process
+
+page_music_album_btn_process
+  0x0d4502  page_music_album_btn_process
+
+page_music_album_event_reply
+  0x0d453e  page_music_album_event_reply
+
+page_music_album_label_process
+  0x0d451f  page_music_album_label_process
+
+page_music_artist
+  0x0d455f  page_music_artist_event_cb
+  0x0d457a  page_music_artist_create
+  0x0d4593  page_music_artist_scr_process
+
+page_music_artist_btn_process
+  0x0d45b1  page_music_artist_btn_process
+
+page_music_artist_event_reply
+  0x0d45ef  page_music_artist_event_reply
+
+page_music_artist_label_process
+  0x0d45cf  page_music_artist_label_process
+
+page_music_eq
+  0x0d4611  page_music_eq_event_cb
+  0x0d4628  page_music_eq_create
+  0x0d463d  page_music_eq_scr_process
+
+page_music_eq_btn_process
+  0x0d4657  page_music_eq_btn_process
+
+page_music_eq_event_reply
+  0x0d468d  page_music_eq_event_reply
+
+page_music_eq_label_process
+  0x0d4671  page_music_eq_label_process
+
+page_music_loop
+  0x0d46a7  page_music_loop_event_cb
+  0x0d46c0  page_music_loop_create
+  0x0d46d7  page_music_loop_scr_process
+
+page_music_loop_btn_process
+  0x0d46f3  page_music_loop_btn_process
+
+page_music_loop_event_reply
+  0x0d472d  page_music_loop_event_reply
+
+page_music_loop_label_process
+  0x0d470f  page_music_loop_label_process
+
+page_music_mark
+  0x0d4749  page_music_mark_event_cb
+  0x0d4762  page_music_mark_create
+  0x0d4779  page_music_mark_scr_process
+
+page_music_mark_btn_process
+  0x0d4795  page_music_mark_btn_process
+
+page_music_mark_event_reply
+  0x0d47ec  page_music_mark_event_reply
+
+page_music_mark_label_process
+  0x0d47b1  page_music_mark_label_process
+
+page_music_mark_mbox_process
+  0x0d47cf  page_music_mark_mbox_process
+
+page_music_menu
+  0x0d481d  page_music_menu_event_cb
+  0x0d4836  page_music_menu_create
+  0x0d484d  page_music_menu_scr_process
+
+page_music_menu_btn_process
+  0x0d4869  page_music_menu_btn_process
+
+page_music_menu_event_reply
+  0x0d48c0  page_music_menu_event_reply
+
+page_music_menu_label_process
+  0x0d4885  page_music_menu_label_process
+
+page_music_menu_mbox_process
+  0x0d48a3  page_music_menu_mbox_process
+
+page_music_play
+  0x0d48dc  page_music_play_event_cb
+  0x0d48f5  page_music_play_create
+  0x0d490c  page_music_play_scr_process
+
+page_music_play_event_reply
+  0x0d4946  page_music_play_event_reply
+
+page_music_play_label_process
+  0x0d4928  page_music_play_label_process
+
+page_music_set
+  0x0d4c06  page_music_set_event_cb
+  0x0d4c1e  page_music_set_create
+  0x0d4c34  page_music_set_scr_process
+
+page_music_set_btn_process
+  0x0d4c4f  page_music_set_btn_process
+
+page_music_set_event_reply
+  0x0d4ca3  page_music_set_event_reply
+
+page_music_set_label_process
+  0x0d4c6a  page_music_set_label_process
+
+page_music_set_mbox_process
+  0x0d4c87  page_music_set_mbox_process
+
+page_music_song
+  0x0d4cbe  page_music_song_event_cb
+  0x0d4cd7  page_music_song_create
+  0x0d4cee  page_music_song_scr_process
+
+page_music_song_btn_process
+  0x0d4d0a  page_music_song_btn_process
+
+page_music_song_event_reply
+  0x0d4d44  page_music_song_event_reply
+
+page_music_song_label_process
+  0x0d4d26  page_music_song_label_process
+
+page_music_speed
+  0x0d4d60  page_music_speed_event_cb
+  0x0d4d7a  page_music_speed_create
+  0x0d4d92  page_music_speed_scr_process
+
+page_music_speed_btn_process
+  0x0d4daf  page_music_speed_btn_process
+
+page_music_speed_event_reply
+  0x0d4deb  page_music_speed_event_reply
+
+page_music_speed_lable_process
+  0x0d4dcc  page_music_speed_lable_process
+
+page_pass_input
+  0x0d5656  page_pass_input_event_cb
+  0x0d566f  page_pass_input_create
+  0x0d5686  page_pass_input_scr_process
+
+page_pass_input_btn_process
+  0x0d56a2  page_pass_input_btn_process
+
+page_pass_input_event_reply
+  0x0d56dc  page_pass_input_event_reply
+
+page_pass_input_lable_process
+  0x0d56be  page_pass_input_lable_process
+
+page_pass_menu
+  0x0d5788  page_pass_menu_event_cb
+  0x0d57a0  page_pass_menu_create
+  0x0d57b6  page_pass_menu_scr_process
+
+page_pass_menu_btn_process
+  0x0d57d1  page_pass_menu_btn_process
+
+page_pass_menu_event_reply
+  0x0d5809  page_pass_menu_event_reply
+
+page_pass_menu_label_process
+  0x0d57ec  page_pass_menu_label_process
+
+page_pict_list
+  0x0d4e85  page_pict_list_event_cb
+  0x0d4e9d  page_pict_list_create
+  0x0d4eb3  page_pict_list_scr_process
+
+page_pict_list_btn_process
+  0x0d4ece  page_pict_list_btn_process
+
+page_pict_list_event_reply
+  0x0d4f06  page_pict_list_event_reply
+
+page_pict_list_label_process
+  0x0d4ee9  page_pict_list_label_process
+
+page_pict_play
+  0x0d4f21  page_pict_play_event_cb
+  0x0d4f39  page_pict_play_create
+  0x0d4f4f  page_pict_play_scr_process
+
+page_pict_play_event_reply
+  0x0d4f6a  page_pict_play_event_reply
+
+page_record_btn_play_process
+  0x0d531f  page_record_btn_play_process
+
+page_record_menu
+  0x0d5073  page_record_menu_event_cb
+  0x0d508d  page_record_menu_create
+  0x0d50a5  page_record_menu_scr_process
+
+page_record_menu_btn_process
+  0x0d50c2  page_record_menu_btn_process
+
+page_record_menu_event_reply
+  0x0d50fe  page_record_menu_event_reply
+
+page_record_menu_label_process
+  0x0d50df  page_record_menu_label_process
+
+page_record_time
+  0x0d516e  page_record_time_event_cb
+  0x0d51a8  page_record_time_create
+  0x0d51c0  page_record_time_scr_process
+
+page_record_time_btn_process
+  0x0d51dd  page_record_time_btn_process
+
+page_record_time_event_reply
+  0x0d51fa  page_record_time_event_reply
+
+page_record_time_touch
+  0x0d5188  page_record_time_touch_event_cb
+
+page_record_work
+  0x0d52d0  page_record_work_event_cb
+  0x0d52ea  page_record_work_create
+  0x0d5302  page_record_work_scr_process
+
+page_record_work_event_reply
+  0x0d5379  page_record_work_event_reply
+
+page_record_work_label_process
+  0x0d533c  page_record_work_label_process
+
+page_record_work_mbox_process
+  0x0d535b  page_record_work_mbox_process
+
+page_screen_clock
+  0x0d539e  page_screen_clock_event_cb
+  0x0d53d3  page_screen_clock_create
+
+page_screen_clock_release
+  0x0d53b9  page_screen_clock_release
+
+page_scrsaver_time
+  0x0d5824  page_scrsaver_time_event_cb
+  0x0d5840  page_scrsaver_time_create
+  0x0d585a  page_scrsaver_time_scr_process
+
+page_scrsaver_time_btn_process
+  0x0d5879  page_scrsaver_time_btn_process
+
+page_scrsaver_time_event_reply
+  0x0d58b9  page_scrsaver_time_event_reply
+
+page_scrsaver_time_lable_process
+  0x0d5898  page_scrsaver_time_lable_process
+
+page_set_bright
+  0x0d5905  page_set_bright_event_cb
+  0x0d591e  page_set_bright_create
+  0x0d5935  page_set_bright_scr_process
+
+page_set_bright_btn_process
+  0x0d5951  page_set_bright_btn_process
+
+page_set_bright_event_reply
+  0x0d598b  page_set_bright_event_reply
+
+page_set_bright_lable_process
+  0x0d596d  page_set_bright_lable_process
+
+page_set_date
+  0x0d59d1  page_set_date_event_cb
+  0x0d59e8  page_set_date_create
+  0x0d59fd  page_set_date_scr_process
+
+page_set_date_btn_process
+  0x0d5a17  page_set_date_btn_process
+
+page_set_date_event_reply
+  0x0d5a4d  page_set_date_event_reply
+
+page_set_date_label_process
+  0x0d5a31  page_set_date_label_process
+
+page_set_idleshut
+  0x0d5a8f  page_set_idleshut_event_cb
+  0x0d5aaa  page_set_idleshut_create
+  0x0d5ac3  page_set_idleshut_scr_process
+
+page_set_idleshut_btn_process
+  0x0d5ae1  page_set_idleshut_btn_process
+
+page_set_idleshut_event_reply
+  0x0d5b1f  page_set_idleshut_event_reply
+
+page_set_idleshut_label_process
+  0x0d5aff  page_set_idleshut_label_process
+
+page_set_idleshut_time
+  0x0d5b3d  page_set_idleshut_time_event_cb
+  0x0d5b5d  page_set_idleshut_time_create
+  0x0d5b7b  page_set_idleshut_time_scr_process
+
+page_set_idleshut_time_btn_process
+  0x0d5b9e  page_set_idleshut_time_btn_process
+
+page_set_idleshut_time_event_reply
+  0x0d5be6  page_set_idleshut_time_event_reply
+
+page_set_idleshut_time_lable_process
+  0x0d5bc1  page_set_idleshut_time_lable_process
+
+page_set_keylight
+  0x0d5c3a  page_set_keylight_event_cb
+  0x0d5c55  page_set_keylight_create
+  0x0d5c6e  page_set_keylight_scr_process
+
+page_set_keylight_btn_process
+  0x0d5c8c  page_set_keylight_btn_process
+
+page_set_keylight_event_reply
+  0x0d5cca  page_set_keylight_event_reply
+
+page_set_keylight_label_process
+  0x0d5caa  page_set_keylight_label_process
+
+page_set_lang
+  0x0d5ce8  page_set_lang_event_cb
+  0x0d5cff  page_set_lang_create
+  0x0d5d14  page_set_lang_scr_process
+
+page_set_lang_btn_process
+  0x0d5d2e  page_set_lang_btn_process
+
+page_set_lang_event_reply
+  0x0d5d64  page_set_lang_event_reply
+
+page_set_lang_label_process
+  0x0d5d48  page_set_lang_label_process
+
+page_set_menu
+  0x0d5d7e  page_set_menu_event_cb
+  0x0d5d95  page_set_menu_create
+  0x0d5daa  page_set_menu_scr_process
+
+page_set_menu_btn_process
+  0x0d5dc4  page_set_menu_btn_process
+
+page_set_menu_event_reply
+  0x0d5e15  page_set_menu_event_reply
+
+page_set_menu_label_process
+  0x0d5dde  page_set_menu_label_process
+
+page_set_menu_mbox_process
+  0x0d5dfa  page_set_menu_mbox_process
+
+page_set_offscr
+  0x0d5e2f  page_set_offscr_event_cb
+  0x0d5e48  page_set_offscr_create
+  0x0d5e5f  page_set_offscr_scr_process
+
+page_set_offscr_btn_process
+  0x0d5e7b  page_set_offscr_btn_process
+
+page_set_offscr_event_reply
+  0x0d5eb5  page_set_offscr_event_reply
+
+page_set_offscr_label_process
+  0x0d5e97  page_set_offscr_label_process
+
+page_set_offscr_time
+  0x0d5ed1  page_set_offscr_time_event_cb
+  0x0d5eef  page_set_offscr_time_create
+  0x0d5f0b  page_set_offscr_time_scr_process
+
+page_set_offscr_time_btn_process
+  0x0d5f2c  page_set_offscr_time_btn_process
+
+page_set_offscr_time_event_reply
+  0x0d5f70  page_set_offscr_time_event_reply
+
+page_set_offscr_time_lable_process
+  0x0d5f4d  page_set_offscr_time_lable_process
+
+page_set_speaker
+  0x0d5fc0  page_set_speaker_event_cb
+  0x0d5fda  page_set_speaker_create
+  0x0d5ff2  page_set_speaker_scr_process
+
+page_set_speaker_btn_process
+  0x0d600f  page_set_speaker_btn_process
+
+page_set_speaker_event_reply
+  0x0d604b  page_set_speaker_event_reply
+
+page_set_speaker_label_process
+  0x0d602c  page_set_speaker_label_process
+
+page_set_time
+  0x0d6068  page_set_time_event_cb
+  0x0d607f  page_set_time_create
+  0x0d6094  page_set_time_scr_process
+
+page_set_time_btn_process
+  0x0d60ae  page_set_time_btn_process
+
+page_set_time_event_reply
+  0x0d60e4  page_set_time_event_reply
+
+page_set_time_label_process
+  0x0d60c8  page_set_time_label_process
+
+page_set_timershut
+  0x0d6126  page_set_timershut_event_cb
+  0x0d6142  page_set_timershut_create
+  0x0d615c  page_set_timershut_scr_process
+
+page_set_timershut_btn_process
+  0x0d617b  page_set_timershut_btn_process
+
+page_set_timershut_event_reply
+  0x0d61bb  page_set_timershut_event_reply
+
+page_set_timershut_label_process
+  0x0d619a  page_set_timershut_label_process
+
+page_set_timershut_time
+  0x0d61da  page_set_timershut_time_event_cb
+  0x0d61fb  page_set_timershut_time_create
+  0x0d621a  page_set_timershut_time_scr_process
+
+page_set_timershut_time_btn_process
+  0x0d623e  page_set_timershut_time_btn_process
+
+page_set_timershut_time_event_reply
+  0x0d6288  page_set_timershut_time_event_reply
+
+page_set_timershut_time_lable_process
+  0x0d6262  page_set_timershut_time_lable_process
+
+page_storage_info
+  0x0d62de  page_storage_info_event_cb
+  0x0d62f9  page_storage_info_create
+  0x0d6312  page_storage_info_scr_process
+
+page_storage_info_btn_process
+  0x0d6330  page_storage_info_btn_process
+
+page_storage_info_event_reply
+  0x0d636e  page_storage_info_event_reply
+
+page_storage_info_label_process
+  0x0d634e  page_storage_info_label_process
+
+page_sys_layer_event_reply
+  0x05d794  page_sys_layer_event_reply
+
+page_top_layer_event_reply
+  0x05d779  page_top_layer_event_reply
+
+page_video_list
+  0x0d638c  page_video_list_event_cb
+  0x0d63a5  page_video_list_create
+  0x0d63bc  page_video_list_scr_process
+
+page_video_list_btn_process
+  0x0d63d8  page_video_list_btn_process
+
+page_video_list_event_reply
+  0x0d6412  page_video_list_event_reply
+
+page_video_list_label_process
+  0x0d63f4  page_video_list_label_process
+
+page_video_play
+  0x0d642e  page_video_play_event_cb
+  0x0d6447  page_video_play_create
+  0x0d645e  page_video_play_scr_process
+
+page_video_play_event_reply
+  0x0d647a  page_video_play_event_reply
+

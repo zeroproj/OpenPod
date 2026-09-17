@@ -681,3 +681,137 @@ subtelas   M morto, VOL volta
 O mesmo botão (VOL) navega numa tela e volta na outra. Alinhar isso
 exigiria mexer na **home**, não nas subtelas — e aí tiraria dela dois
 botões que hoje funcionam. **Decisão do mantenedor, não minha.**
+
+---
+
+# 10. Rastreamento do `keyad_read` — origem dos códigos `0x81` e `0xA0`
+
+> Atualização de 2026-09-16. As seções anteriores paravam no que a **tela**
+> recebe. Esta seção sobe um nível: de onde vêm os códigos que a tela
+> recebe, e como o firmware os gera.
+
+## 10.1 A cadeia de entrada, agora completa
+
+```text
+Botão físico
+      │
+      ├── /dev/kadc_ch1  ──►  ADC 0x40095000/0x40096000
+      │                          │
+      ├── /dev/key_onoff ──►  GPIO/onoff dedicado
+      │                          │
+      └── /dev/key_io    ──►  GPIO/matriz
+                               │
+                               ▼
+                    callback 0x00CFC7A9
+                               │
+                               ├── watch_key_work_process
+                               │      (decide por estado/ID)
+                               │
+                               └── escreve (key_id, event_type)
+                                    no buffer 0x00823D7A
+                                           │
+                                           ▼
+                                  keyad_read (0x00D21110)
+                                           │
+                                           ▼
+                                  códigos LV_KEY_* / bit-alto
+                                           │
+                                           ▼
+                                  lv_group_send_data (0x00D47654)
+                                           │
+                                           ▼
+                                  callback LV_EVENT_KEY da tela
+```
+
+## 10.2 Dispositivos abertos na inicialização
+
+A função de inicialização em `0x00CFC378` abre três dispositivos de entrada:
+
+| Dispositivo | Configuração | Callback |
+|---|---|---|
+| `/dev/kadc_ch1` | tabela em RAM `0x00819B0C` | `0x00CFC7A9` |
+| `/dev/key_onoff` | IDs `0x37` (onoff), `0x47` (power) | `0x00CFC7A9` |
+| `/dev/key_io` | tabela em RAM `0x00819BCC` | `0x00CFC7A9` |
+
+## 10.3 Buffer de evento
+
+`0x00D21374` é a função que escreve no buffer de três bytes em
+`0x00823D7A`:
+
+| Offset | Conteúdo |
+|---|---|
+| `+0` | `key_id` |
+| `+1` | `event_type` |
+| `+2` | flag "novo evento" (1 = pendente) |
+
+`keyad_read` (`0x00D21110`) consome esse buffer e produz o código que a
+UI recebe.
+
+## 10.4 Eventos reconhecidos
+
+| `event_type` | Significado |
+|---|---|
+| `0x10` | press / short press |
+| `0x30` | short release |
+| `0x40` | long start |
+| `0x50` | long press |
+| `0x60` | long release |
+
+## 10.5 Tabela de conversão do `keyad_read`
+
+| key_id | Nome na string de debug | press `0x10` | release `0x30` | long start `0x40` | long press `0x50` | long release `0x60` |
+|---|---|---|---|---|---|---|
+| `0x20` | down | `0x12` DOWN | `0x12` | `0x99` | `0x9A` | `0x9B` |
+| `0x21` | back | `0x0A` ENTER | `0x0A` | `0x8B` | `0x8C` | `0x8D` |
+| `0x22` | up | `0x11` UP | `0x11` | `0x96` | `0x97` | `0x98` |
+| `0x25` | mode | `0xA0` | `0xA0` | `0xA1` | `0xA2` | `0xA3` |
+| `0x34` | record | `0x92` | `0x92` | `0x93` | `0x94` | `0x95` |
+| `0x42` | left | `0x14` LEFT | `0x14` | `0x85` | `0x86` | `0x87` |
+| `0x43` | right | `0x81` | `0x81` | `0x88` | `0x89` | `0x8A` |
+| `0x45` | *(usa string right)* | `0x81` | `0x81` | `0x82` | `0x83` | `0x84` |
+
+## 10.6 Reconciliação com a observação no aparelho
+
+`BUTTON_ANALYSIS.md` §8 confirmou que o aparelho emite:
+
+- `0x81` = VOL
+- `0xA0` = M
+
+A tabela do `keyad_read` mostra que:
+
+- `0xA0` pode ser gerado pelo `key_id 0x25` (mode).
+- `0x81` pode ser gerado pelo `key_id 0x43` (right no `keyad_read`) ou
+  `0x45`.
+
+No entanto, no `watch_key_work_process` (`0x00CFC7A8`), os mesmos
+`key_id` têm nomes diferentes:
+
+| key_id | Nome no `watch_key_work_process` |
+|---|---|
+| `0x21` | enter key |
+| `0x24` | volume_up key |
+| `0x34` | record key |
+| `0x37` | onoff key |
+| `0x42` | left key |
+| `0x43` | **volume_down key** |
+| `0x45` | **back key** |
+| `0x47` | power key |
+
+Isso indica que **os key_ids não são globais**. O `keyad_read` provavelmente
+processa eventos do `/dev/kadc_ch1`, enquanto o `watch_key_work_process`
+processa eventos de todos os dispositivos e usa namespaces diferentes para
+identificar a origem.
+
+## 10.7 O que ainda falta
+
+Ainda não sabemos:
+
+1. Qual botão físico do GN-438 está conectado a qual canal ADC ou GPIO.
+2. Os limiares de tensão que distinguem os botões no `/dev/kadc_ch1`
+   (tabela em RAM `0x00819B0C`, não acessível estaticamente).
+3. Se `/dev/kadc_ch0`..`/dev/kadc_ch5` são usados além de `ch1`.
+4. O papel exato dos códigos bit-alto (`0x80`–`0xA3`).
+
+> **Consequência:** não é possível, por análise estática, trocar o
+> significado de um botão físico. Qualquer patch de entrada precisaria
+> ser validado no aparelho, como foi feito nas versões V014–V057.

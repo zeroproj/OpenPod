@@ -920,3 +920,146 @@ Achar o caminho de desenho do descanso de tela é investigação aberta.
 mensagem (descritor em `0x008238F0`, entregue a `0x00D0D818`), e esse
 caminho ignora `\n` — ao contrário de um rótulo LVGL comum. Confirmado na
 tela. Limite de largura medido: **113 px** por espaço de texto.
+
+---
+
+# PARTE V — Por que páginas de menu novas ficam inacessíveis
+
+> Levantado em 2026-09-15 durante a análise contínua do firmware original.
+> O problema relatado pelo mantenedor — *"criou uma nova página de menu,
+> os itens aparecem, mas ficam inacessíveis"* — tem uma causa estrutural
+> identificável no binário.
+
+## 25. Arquitetura de registro e navegação de páginas — CONFIRMADO
+
+### 25.1 Cada página exporta dois pontos de entrada
+
+Toda tela nomeada segue o padrão:
+
+```text
+page_<nome>_create        ; construtor da tela
+page_<nome>_scr_process   ; processador de eventos de tela
+page_<nome>_event_cb      ; callback de eventos LVGL (quando usado)
+```
+
+Exemplo medido para `page_home`:
+
+| Símbolo | String em | Função real em |
+|---|---|---|
+| `page_home_create` | `0x0D43AC` | `0x00D2EE0C` |
+| `page_home_scr_process` | `0x0D43BD` | `0x00D2E951` |
+| `page_home_menu_create` | `0x0D442F` | `0x00D2EF5C` |
+| `page_home_menu_event_cb` | `0x0D4453` | `0x00D2F540` |
+
+A string e a função não são contíguas. O linker deixa a string no pool de
+nomes e a função no texto; o nome serve para depuração e, em alguns casos,
+para identificação interna.
+
+### 25.2 O menu `page_home_menu_create` é uma lista de botões LVGL
+
+`page_home_menu_create` (endereço efetivo `0x00D2F794`) aloca uma
+estrutura de controle de `0x54` bytes e cria **6 itens de lista** em
+laço. Cada iteração:
+
+1. Cria uma linha (`CRIA_LINHA`, `0x00D21764`).
+2. Adiciona um event callback (`lv_obj_add_event_cb`, `0x00D47064`).
+3. Cria um rótulo para o ícone (fonte de símbolos, `0x00CA671C`).
+4. Cria um rótulo para o texto, resolvendo o ID pelo idioma ativo
+   (`get_string`, `0x00D2108C`).
+
+O callback registrado é `page_home_menu_event_cb` (`0x00D2F540`).
+
+### 25.3 O callback de evento não abre a página diretamente
+
+Quando um item é clicado (`LV_EVENT_SHORT_CLICKED`, código `0x0A`), o
+handler faz:
+
+```text
+objeto_clicado = lv_event_get_target()
+user_data      = lv_obj_get_user_data(objeto_clicado)
+
+for i = 0 .. 5:
+    if tabela_de_botoes[i] == objeto_clicado:
+        envia mensagem(7, 4, 4, i)
+```
+
+A função de envio (`0x00D23510`) monta uma mensagem de 0x1C bytes na
+stack e chama `0x00D234AC` (post para a fila da `MgrTask`).
+
+Campos observados na mensagem:
+
+| Offset | Valor | Significado provável |
+|---|---|---|
+| `+0x00` | `1` | sinalizador |
+| `+0x02` | `7` | tipo / destino da mensagem |
+| `+0x04` | `7` | página de origem (`0x53` = Extras/Home menu) |
+| `+0x06` | `?` | |
+| `+0x08` | `4` | comando |
+| `+0x0A` | `4` | sub-comando |
+| `+0x0C` | `i` | índice do item selecionado (0..5) |
+
+### 25.4 O despachante central é a `ViewTask` (correção)
+
+> **Correção importante (2026-09-16):** a análise anterior identificou
+> erroneamente a `MgrTask` como consumidora das mensagens de navegação.
+> O disassembly completo mostra que as mensagens enviadas por
+> `0x00D23510` são postadas na fila da **ViewTask** (task id 3), não da
+> `MgrTask` (task id 9).
+>
+> A `MgrTask` (`0x00D3FF8C`) é responsável por eventos de hardware:
+> USB/PMU/timers (`0x00D460F4`).
+>
+> A `ViewTask` (`0x00CF8210`) é a task de UI: recebe mensagens da fila,
+> chama `0x00CFE708` para processar a navegação e mantém o estado das
+> páginas. Ver `analysis/ui/UI_TASK_ARCHITECTURE.md`.
+
+A função `0x00D23510` monta uma mensagem de 0x1C bytes e chama
+`0x00D234AC`, que posta na fila da task id 3 (`ViewTask`).
+
+### 25.5 Por que uma página nova fica inacessível
+
+Criar apenas `page_nova_create` e adicionar um botão que a desenha **não
+basta**. Para a nova página ser acessível a partir de um menu, três
+condições precisam ser satisfeitas simultaneamente:
+
+1. **A página deve estar registrada no sistema de páginas.**
+   O firmware precisa saber que o índice `i` do menu corresponde à
+   função `page_nova_create`. Isso é feito por uma tabela indireta
+   consultada pela `MgrTask` (não a simples lista de strings de nome).
+
+2. **O event callback do menu deve enviar a mensagem correta.**
+   O botão novo precisa ter `user_data` ou posição na tabela de botões
+   de forma que, ao ser clicado, o handler chame `msg(7, 4, 4, i)` com
+   `i` mapeado para a nova página.
+
+3. **O dispatcher da `MgrTask` deve interpretar o comando.**
+   O estado atual e o comando `4/4` precisam cair num ramo que carregue
+   a página de destino, não num ramo de erro.
+
+Se qualquer uma dessas três peças falhar, o sintoma é exatamente o
+relatado: o item aparece na tela, mas apertar o botão de "entrar" não
+faz nada.
+
+### 25.6 Implicação prática para o OpenPod
+
+- **Mudanças visuais simples** (trocar ícones, cores, textos, papel de
+  parede) não exigem tocar nesse mecanismo — são os patches de menor
+  risco.
+- **Adicionar uma página de menu nova** exige modificação em três
+  lugares (construtor, registro no dispatcher e handler do menu) e,
+  portanto, é **alto risco** para a Fase 1.
+- A alternativa mais segura é **reescrever o conteúdo de uma página
+  existente** (por exemplo, substituir o conteúdo de uma das 61 páginas
+  já registradas) em vez de criar uma página nova.
+
+### 25.7 Classificação
+
+| Afirmação | Classe |
+|---|---|
+| Cada página tem `create` + `scr_process` + `event_cb` | **CONFIRMADO** |
+| `page_home_menu_create` cria 6 itens de lista | **CONFIRMADO** |
+| Clique no item envia mensagem `msg(7, 4, 4, i)` | **CONFIRMADO** (disassembly do callback) |
+| `MgrTask` consome a fila e despacha por estado | **CONFIRMADO** (mas de USB/PMU, não de UI) |
+| `ViewTask` consome mensagens de navegação de UI | **CONFIRMADO** |
+| Existe tabela indireta índice → `page_*_create` | **HIPÓTESE** — local exato não determinado |
+| Adicionar página nova exige 3 pontos de modificação | **PROVÁVEL** |
