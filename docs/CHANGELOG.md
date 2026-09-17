@@ -7,6 +7,557 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-17 — OpenPod Core 3.4 — os seis destinos, na camada APP
+
+**94 bytes** sobre a 3.3. Setores `0x10A000`, `0x10C000`, `0x1A6000`.
+Segunda e última metade do conserto do Extras.
+
+### A 3.3 foi confirmada no aparelho
+
+O mantenedor gravou e testou: itens 1 a 3 continuaram indo para os
+destinos de fábrica, itens 4 a 6 não fizeram nada, **e nada travou**.
+Era exatamente o previsto. O lado LVGL está provado.
+
+### O limite estava explícito
+
+No handler da página `0x53` da camada APP:
+
+```asm
+0x00D0CC7C  ldrh r2, [r4, #0xc]     ; índice do item
+0x00D0CC7E  cmp  r2, #2
+0x00D0CC80  bhi  #0x00D0CD6E        ; > 2 -> retorno limpo
+```
+
+### A convenção, medida e não suposta
+
+O caso do índice 0 (`0x00D0CCAC`) abre a página assim:
+
+```asm
+movs r3, #0x1e          ; página destino — o ALARME
+movs r2, #0             ; sub
+ldrh r1, [r4, #0xa]     ; r1 vem DA MENSAGEM, não é literal
+ldrh r0, [r4, #8]       ; r0 = página corrente, DA MENSAGEM
+pop.w {r4,r5,r6,r7,r8,lr}
+b.w  #0x00D0DAE0
+```
+
+Página `0x1E` é o Alarme — **exatamente o que o mantenedor viu** ao
+entrar no primeiro item do Extras. A medição e a observação fecharam.
+
+> Note a diferença para a Core 3.2: aqui `r0` e `r1` vêm da mensagem, e
+> a chamada acontece dentro do handler da APP — a task certa.
+
+### O patch
+
+- 4 bytes em `0x00D0CC7E` (`cmp r2,#2` + `bhi`) -> `b.w 0x00DA6200`.
+- 72 bytes de despacho de seis na área livre, com a mesma convenção,
+  a checagem de cartão (`0x00CFE714`) e a mensagem de "sem cartão" de
+  fábrica (`0x00D0CCC2`) reaproveitadas.
+
+| Extras | página | view | checa cartão |
+|---|---|---|---|
+| Gravação | `0x18` | `page_record_menu` | sim |
+| Rádio | `0x1A` | `page_fm_play` | não |
+| Livro digital | `0x0C` | `page_ebook_list` | sim |
+| Imagem | `0x15` | `page_pict_list` | sim |
+| Bluetooth | `0x23` | `page_bt_menu_option` | não |
+| Pastas | `0x22` | `page_folder_list` | sim |
+
+### Preservado
+
+```text
+check_branch_targets --baseline 3.3   APROVADO
+bootloader / 0xD000 / PSMP            intactos
+page1_process                         intacta
+0x00D0CCC2 e 0x00D0CD6E               intactos (reusados)
+```
+
+Arquivos:
+
+- `firmware/WORKING/GN438_core_3.4_carimbado.bin`
+- `firmware/RELEASE/OpenPod Core 3.4/OpenPod_Core_3.4.up`
+- hash: `ce5cca6b6327110476fe95c22793a827037f0df76beca39e815d6b39c358843b`
+
+Ferramenta criada: `tools/patch_extras_app.py`.
+
+### ✅ CONFIRMADA NO APARELHO — 2026-09-17
+
+Gravada e testada pelo mantenedor: **"Deu certo"**.
+
+Os seis itens do Extras abrem as seis telas certas.
+
+> Este é o patch que falhou **três vezes** antes (`patch_extras`,
+> `patch_extras_fix`, `patch_extras_fix2`, em 2026-09-13), e mais três
+> nesta linha (3.1, 3.1.1, 3.1.2), e mais uma que travou o aparelho
+> (3.2). Sete tentativas.
+>
+> O que mudou na oitava não foi esperteza: foi **partir em duas metades
+> testáveis** e medir a convenção de cada camada em vez de supor.
+
+**Ponto estável do projeto: passa da 3.0.1 para a 3.4.**
+
+---
+
+## 2026-09-17 — OpenPod Core 3.3 — a cadeia de 3 elos vira 6, e só isso
+
+**66 bytes**, sobre a Core 3.0.1. Três setores: `0x10A000`, `0x12E000`,
+`0x1A6000`.
+
+Esta versão é **metade** do conserto do Extras, de propósito. Ela faz o
+lado LVGL e **não decide destino nenhum**.
+
+### O que mudou
+
+O roteador na área livre acha o índice do item em foco num laço de seis
+posições e **posta a mensagem**, byte a byte igual ao handler de fábrica:
+
+```asm
+movs r0, #0x53     ; página corrente
+movs r1, #4
+movs r3, #4
+bl   #0x00D23510   ; monta msg 0x1C B e posta na fila
+strb indice, [0x00823D84]
+```
+
+A única diferença para a fábrica é a origem do índice: um laço de 6 em
+vez de três comparações desenroladas.
+
+### O que esperar no aparelho
+
+Os seis itens passam a postar mensagem com índice 0 a 5. O handler da
+camada APP (`0x00D0CC0C`) **ainda só entende 3 índices**, então:
+
+```text
+itens 1 a 3  -> continuam indo para os destinos de fábrica (errados)
+itens 4 a 6  -> a mensagem é postada e ignorada: NADA ACONTECE
+travamento   -> NENHUM. É o que esta versão vai provar.
+```
+
+**O sucesso desta versão é não travar.** Se os itens 4, 5 e 6 não
+fizerem nada e o aparelho continuar estável, o lado LVGL está provado e
+só falta a camada APP.
+
+### O que NÃO foi tocado
+
+```text
+page1_process                intacta
+0x00D0CC0C (handler da APP)  intacto
+0x00D2F01A (o pop)           intacto
+bootloader / 0xD000 / PSMP   intactos
+check_branch_targets         APROVADO
+```
+
+Arquivos:
+
+- `firmware/WORKING/GN438_core_3.3_carimbado.bin`
+- `firmware/RELEASE/OpenPod Core 3.3/OpenPod_Core_3.3.up`
+- hash: `ff3c58eead236cf8f18fd723e5db8f13e877022c083a522c654fe98399d9aed4`
+
+**Não testada no aparelho.**
+
+---
+
+## 2026-09-17 — ⚠️ Core 3.2 OBSOLETA — travou o aparelho
+
+Gravada e testada. Resultado do mantenedor: *"Nada funcionou, inclusive
+alguns travaram o sistema e outro ficou fazendo um barulho."*
+
+### A causa
+
+O roteador chamava a primitiva de abrir página (`0x00D0DAE0`)
+**diretamente, de dentro do callback do LVGL**.
+
+`0x00D23510` — o que o handler de fábrica usa — monta uma mensagem de
+`0x1C` bytes e chama `0x00D234AC`, que **posta na fila da ViewTask**. O
+firmware nunca chama a navegação de dentro de um callback do LVGL: ele
+posta, e a camada APP consome **noutra task**.
+
+Chamar direto executa a abertura de página na task errada, com o lock do
+LVGL segurado. Daí os travamentos; o ruído era uma página de áudio
+(Rádio ou Gravação) inicializando o hardware fora de contexto.
+
+### A lição, e ela é desconfortável
+
+O laudo da 3.1.2 criticou as versões anteriores por *"brigarem com a
+guarda `msg->page == página corrente` em vez de chamar direto"*.
+
+**Estava errado. A guarda existe porque a navegação é assíncrona.** A
+3.1 e a 3.1.2 acertaram a arquitetura e erraram os detalhes; a 3.2
+errou a arquitetura, que é pior.
+
+A receita `(r0,r1,r2,r3) -> 0x00D0DAE0` foi medida **dentro de
+`page1_process`**, que já roda na task certa. Que ela pudesse ser
+invocada de fora nunca foi medido — foi suposto, e apresentado como
+CONFIRMADO.
+
+> `check_branch_targets.py` aprovou a 3.2. E a 3.2 travou o aparelho.
+> A ferramenta responde "o patch destruiu alvo de desvio?" — não
+> responde "o patch roda na task certa?". Nenhuma verificação estática
+> responde isso.
+
+**Não gravar a 3.2.** Substituída pela 3.3.
+
+---
+
+## 2026-09-17 — OpenPod Core 3.2 — o Extras abre as seis telas
+
+**114 bytes**, sobre a Core 3.0.1. Três setores: `0x10A000`, `0x12E000`,
+`0x1A6000`. Plano em `docs/PLANO_EXTRAS_V2.md`.
+
+### A causa, medida no aparelho
+
+O mantenedor gravou a 3.0.1 e testou item a item. Resultado:
+
+```text
+Gravacao       -> abriu ALARME
+Radio          -> abriu DICIONARIO ("sem dados do dicionario")
+demais quatro  -> nada
+```
+
+Isso fechou o diagnóstico. O handler de clique do Extras (`0x00D2EF60`)
+é o de fábrica e tem uma cadeia de comparação **desenrolada com três
+elos** (`[r4]`, `[r4,#4]`, `[r4,#8]`). A página de fábrica tinha 3
+itens; a 3.0.1 desenha 6. Os itens 3, 4 e 5 não casam com ponteiro
+nenhum e a função retorna pelo `bne #0x00D2F01A`.
+
+Os três primeiros casavam e iam para os destinos **de fábrica** do
+Extras antigo — Alarme e Dicionário.
+
+> Não era corrupção de heap, não era a guarda de página, não era a
+> tabela de remap. As três tentativas anteriores foram atrás da camada
+> de mensagens, que nunca foi o problema.
+
+### A correção
+
+- **4 bytes** em `0x00D2EFF6`: `b.w 0x00DA6000`.
+- **92 bytes** de roteador na área livre (`0x001A6000`, setor virgem):
+  laço de 6 posições, verificação de cartão, e chamada direta à
+  primitiva de abrir página.
+- **18 bytes** para a versão na tela Informações.
+
+Mapeamento (ids de `docs/PAGINAS.md` + tabela mestra `0x00D0DB1C`):
+
+| Extras | página | view | checa cartão |
+|---|---|---|---|
+| Gravação | `0x18` | `page_record_menu` | sim |
+| Rádio | `0x1A` | `page_fm_play` | não |
+| Livro digital | `0x0C` | `page_ebook_list` | sim |
+| Imagem | `0x15` | `page_pict_list` | sim |
+| Bluetooth | `0x23` | `page_bt_menu_option` | não |
+| Pastas | `0x22` | `page_folder_list` | sim |
+
+### Uma correção de desenho, achada antes de escrever
+
+O plano original mandava saltar para o trampolim `0x00D011F2`. Ele faz
+`pop.w {r4,r5,r6,r7,r8,lr}` — **seis** registradores. O handler do
+Extras empilhou **quatro** (`push {r4,r5,r6,lr}`). O salto teria
+desalinhado a pilha. O roteador chama `0x00D0DAE0` com `bl` e sai pelo
+`pop` original.
+
+### O que foi preservado
+
+```text
+check_branch_targets.py --baseline 3.0.1   APROVADO
+bootloader 0x0-0xD000                      intacto
+setor 0xD000 (tabela de particoes)         intacto
+PSMP                                       intacta
+page1_process                              intacta
+0x00D2F01A (o pop)                         intacto
+```
+
+Arquivos:
+
+- `firmware/WORKING/GN438_core_3.2_carimbado.bin`
+- `firmware/RELEASE/OpenPod Core 3.2/OpenPod_Core_3.2.up`
+- hash: `3587037eb79dcd23e63b546e47a63437a457f0e6d0722a8d3df21950fc8aa842`
+
+Ferramenta criada: `tools/patch_extras_router.py`.
+
+**Não testada no aparelho.**
+
+---
+
+## 2026-09-17 — INCIDENTE: a 3.1.2 não abre nada no Extras
+
+**Sem modificação de firmware.** O mantenedor relatou, com a **3.1.2
+gravada no aparelho**: *"nada abre no extra"*. Diagnóstico fechado por
+desmontagem comparada. Laudo completo: `docs/INCIDENTE_3.1.2.md`.
+
+Três defeitos confirmados, dois deles em código sem relação com o Extras:
+
+1. **Cinco destinos de desvio apagados** (3.1.2). A faixa
+   `0x00D012E2`–`0x00D01301`, descrita no CHANGELOG da 3.1.2 como "o
+   slot 9 da home (vago)", era o corpo de cinco casos de um switch.
+   `page1_process` desvia para lá em `0x00D00F46`, `0x00D00F66`,
+   `0x00D00FA6`, `0x00D00FAE` e `0x00D00FB6` — incluindo as duas saídas
+   de falha de guarda e o caso default. Todos viraram `nop`.
+2. **O índice do item é sempre 0** (3.1.2). O global `0x00823D84` é lido
+   em 2 pontos e escrito em **nenhum**: o único `strb` que o escrevia,
+   em `0x00D2F016`, foi sobrescrito pelo patch. Os seis itens do Extras
+   despacham para `tabela[0] = 0x09`.
+3. **A saída do handler virou nop** (3.1). `0x00D2F01A` era o
+   `pop {r4,r5,r6,pc}`; dois `bne` apontam para ele.
+
+PROVÁVEL: `current_page` nunca vira `0x53`, porque o único ponto que a
+grava (`0x00D0CDC4`) está dentro de `0xD0CC0C` — a função que a 3.1.2
+desconectou. A guarda `msg->page == current_page` falharia sempre, e o
+desvio de falha é um dos que viraram `nop`. Descreve o sintoma exato.
+
+**A 3.1.2 não é consertável com um patch pequeno.**
+
+Ferramenta criada: `tools/check_branch_targets.py`. Responde o que o
+diff, o CRC e a releitura do aparelho não respondem — se algum desvio do
+original aponta para dentro de uma faixa sobrescrita. Rodada versão a
+versão, isola as duas culpadas sozinha:
+
+```text
+2.4    vs 2.3     -> 0 desvios novos   APROVADO
+3.0    vs 2.4     -> 0 desvios novos   APROVADO
+3.1    vs 2.4     -> 2 desvios novos   REPROVADO
+3.1.1  vs 3.1     -> 0 desvios novos   APROVADO
+3.1.2  vs 3.1.1   -> 5 desvios novos   REPROVADO
+```
+
+Se existisse, a 3.1 não teria chegado ao cartão.
+
+**A regra que fica:** nenhum patch escreve por cima de código sem antes
+listar todos os desvios que apontam para aquela faixa. Em Thumb-2 com
+switch compilado, os casos ficam **depois** do fim aparente da função.
+
+Recomendação: voltar para a **Core 2.4** e refazer o Extras uma vez só.
+
+---
+
+## 2026-09-16 — UI — arquitetura ViewTask / MgrTask / navegação
+
+**Sem modificação de firmware.** Aprofundamento na arquitetura de UI do
+firmware original.
+
+Descobertas:
+
+- Listadas **249 páginas** da UI em `analysis/ui/page_list.txt`.
+- Identificada a **ViewTask** (task id 3) como a task responsável pela
+  navegação de telas. Sua função principal está em `0x00CF8210`.
+- Corrigida análise anterior: a `MgrTask` (task id 9) trata USB/PMU/timers
+  (`0x00D460F4`), não navegação de UI.
+- A função `0x00D23510` monta mensagens e `0x00D234AC` posta na fila da
+  ViewTask.
+- Mapeamento provável dos campos da mensagem de navegação: `src`, `dir`,
+  `cmd`, `sub_cmd`, `len`, `payload`.
+- Disassembly salvo em:
+  - `analysis/disassembly/view_task.asm`
+  - `analysis/disassembly/page_home_menu_event_cb.asm`
+- Documento criado: `analysis/ui/UI_TASK_ARCHITECTURE.md`.
+- Documento atualizado: `docs/GUI_ANALYSIS.md` §25.4 e §25.7.
+
+---
+
+## 2026-09-16 — ANDROMEDA — offsets SDIO/PWM e debug de PLL
+
+**Sem modificação de firmware.** Continuação do mapeamento de periféricos
+SL6801 a partir de análise estática.
+
+Descobertas:
+
+- Offsets do SDIO mapeados para `0x40020000`, `0x40030000` e `0x40038000`.
+  - `0x40030000 + 0x2B0` é o offset mais referenciado (12 vezes, 4 funções).
+  - `0x40038000` acessado apenas em `+0x000` (possível DMA/config).
+- Offsets de timer/PWM mapeados para `0x40010000`, `0x40010100`, `0x40010200`
+  e `0x40011000`.
+  - Blocos `0x40010x00` têm registrares espaçados a cada 0x100 bytes.
+  - Bloco `0x40011000` tem registradores densos a cada 0x04–0x08 bytes,
+    sugerindo PWM dedicado.
+- Função de debug de clock localizada em `0x00D65840`:
+  - Imprime `core pll:%u, cpu pll:%u, cpu0:%u, cpu1:%u, ahb:%u, norf:%u`.
+  - Usa helper `0x008051E0` para acessar registradores de clock/SCU.
+  - Usa `0x0080D6CC` e `0x00CF7294` para leitura/conversão de PLL
+    (parte do código reside em RAM, invisível estaticamente).
+- Headers C provisórios criados:
+  - `andromeda/headers/sl6801_sdio.h`
+  - `andromeda/headers/sl6801_pwm.h`
+- Script `tools/peripheral_offsets.py` criado para mapear offsets dentro de
+  uma base de periférico.
+- Documentos atualizados:
+  - `andromeda/PERIPHERAL_REGISTER_SCAN.md` §5.5, §5.6, §5.7, §7, §8.
+  - `andromeda/PROMPT_RETOMADA.md`.
+
+---
+
+## 2026-09-16 — ANDROMEDA — rastreamento de `keyad_read` e offsets GPIO/clock/LCDC
+
+**Sem modificação de firmware.** Continuação da engenharia reversa do
+subsistema de entrada e do mapeamento de periféricos do SoC SL6801.
+
+Descobertas:
+
+- `keyad_read` localizada em `0x00D21110`.
+- Buffer de evento de tecla mapeado em `0x00823D7A` (escritor `0x00D21374`).
+- Callback de tecla registrado na inicialização `0x00CFC378`:
+  `0x00CFC7A9` para `/dev/kadc_ch1`, `/dev/key_onoff` e `/dev/key_io`.
+- Tabela de conversão `(key_id, event_type)` → código LVGL documentada em
+  `andromeda/INPUT.md` §7.4 e `docs/BUTTON_ANALYSIS.md` §10.
+- Eventos de tecla reconhecidos: `0x10` (press), `0x30` (release),
+  `0x40` (long start), `0x50` (long press), `0x60` (long release).
+- Drivers de ADC localizados:
+  - `0x00D7C660` usa base `0x40095000`.
+  - `0x00D7C564` usa base `0x40096000`.
+- Offsets específicos mapeados para GPIO (`0x40085000`), clock/reset
+  (`0x40080000`, `0x40081000`) e LCDC (`0x400D0000`, `0x400D1000`).
+- Headers C provisórios criados em `andromeda/headers/`:
+  `sl6801_gpio.h`, `sl6801_clock.h`, `sl6801_lcdc.h`, `sl6801_adc.h`.
+- Documentos atualizados:
+  - `andromeda/INPUT.md`
+  - `docs/BUTTON_ANALYSIS.md`
+  - `andromeda/PERIPHERAL_REGISTER_SCAN.md`
+
+Ainda não resolvido:
+
+- Mapeamento físico botão → GPIO/ADC (limiares em RAM só acessíveis em
+  runtime).
+- Offsets internos do ADC (acessos via cópia de estrutura).
+- Headers provisórios para SDIO e PWM.
+
+---
+
+## 2026-09-16 — ANDROMEDA — scan de registradores de periféricos
+
+**Sem modificação de firmware.** Trabalho de engenharia reversa contínuo
+para mapear o SoC SL6801.
+
+Descobertas:
+
+- Criado `andromeda/PERIPHERAL_REGISTER_SCAN.md` com mapeamento automatizado
+  de acessos a periféricos via `LDR [PC, #imm]`.
+- Confirmados registradores internos Cortex-M: `0xE000ED88` (CPACR),
+  `0xE000E010` (SysTick), `0xE000E100` (NVIC), `0xE000ED00` (SCB/CPUID),
+  `0xE000ED04` (ICSR), `0xE000ED14` (CCR).
+- CPACR habilita CP10/CP11 → FPU VFP ativa → núcleo **provavelmente
+  Cortex-M4F**.
+- Identificadas bases prováveis:
+  - GPIO/pinmux: `0x40085000`
+  - Clock/Reset: `0x40080000`, `0x40081000`
+  - PMU/System Control: `0x40070000`
+  - SDIO: `0x40020000`, `0x40030000`, `0x40038000`
+  - LCDC: `0x400D0000`, `0x400D1000`
+  - ADC (teclas): `0x40095000`, `0x40096000`
+  - PWM: `0x40010000`..`0x40011000`
+  - USB device: `0x40A00000`, `0x40C00000`
+  - USB host/otg: `0x41100000`
+  - Audio I2S/DAC: `0x40090000`, `0x40240000`, `0x40300000`
+  - SPI Flash controller: `0x40027000`
+- Atualizados `andromeda/CPU.md`, `andromeda/MEMORY.md`,
+  `andromeda/DISPLAY.md` e `andromeda/INPUT.md` com os novos candidatos.
+
+Próximos passos: confirmar offsets dentro de cada base e cruzar com
+strings de driver (`/dev/uart*`, `/dev/kadc*`, `/dev/pwm*`, etc.).
+
+---
+
+## 2026-09-15 — OpenPod Core 3.1.2 — Extras abre os apps corretamente
+
+**Correção real do despacho do Extras.** A 3.1.1 trocava só a tabela de
+remap (`0x00D2F00C`), mas o problema estava mais fundo: o firmware entrega
+mensagens pelo **número da página corrente**, não pela página que a
+mensagem diz. Com o Extras na tela (página `0x53`), uma mensagem dizendo
+"página 1" nunca chegava ao `page1_process` da home.
+
+Mudanças:
+
+- Handler de clique do Extras (`0x00D2F004`) envia agora `page = 0x53`,
+  mantendo `grp = 2` e o índice remapeado pela tabela.
+- Novo módulo na área livre (`0x00DA5920`) trata o Enter da página
+  `0x53` e repassa para `page1_process` (`0x00D00F3C`). A guarda
+  `msg->page == página corrente` passa, e cada item executa a rotina
+  original de fabrica, com as verificações de cartão/volume.
+- Handler da **Gravação** refeito no slot 9 da home (`0x00D012E2`):
+  o handler original havia sido destruído pela 3.1, então o slot 9
+  recebeu um mini-handler que abre a página do Gravador (0x18)
+  diretamente. As verificações de cartão/volume do handler original
+  não foram restauradas nesta versão.
+
+Mapeamento confirmado (ordem na tela: Gravação, Rádio, Livro digital,
+Imagem, Bluetooth, Pastas):
+
+| Extras | destino | slot da home |
+|---|---|---|
+| Gravação | Gravador | 9 (mini-handler, sem verificações) |
+| Rádio | Rádio FM | 3 |
+| Livro digital | eBook | 4 |
+| Imagem | Imagens | 5 |
+| Bluetooth | Bluetooth | 6 |
+| Pastas | Arquivos | 8 |
+
+Versão na tela Informações: `OpenPod Core 3.1.2` (`0x001A5930`).
+CRC da partição FIRM recalculado e validado.
+
+Arquivos:
+
+- `firmware/WORKING/GN438_core_3.1.2.bin`
+- `firmware/RELEASE/OpenPod Core 3.1.2/OpenPod_Core_3.1.2.up`
+- hash: `be653ea8a811dcd329959a95bbfadb0491f3165573e0efaf13593432f330f505`
+
+---
+
+## 2026-09-15 — OpenPod Core 3.1.1 — correção do remap do Extras
+
+**Seis bytes.** Tabela de remapeamento do clique no Extras
+(`0x00D2F00C..0x00D2F011`):
+
+- `09 03 04 05 06 08` → `03 04 05 06 08 02`
+
+Isso corrige:
+
+1. **Rádio ia para índice 9 (inválido)** → agora vai para índice 3 (FM).
+2. **Demais itens deslocados em +6 posições** → cada um agora abre a
+   tela correspondente na home:
+   - Livro digital → eBook
+   - Imagem → Imagens/Galeria
+   - Bluetooth → Bluetooth
+   - Pastas → Arquivos
+   - Gravação → Gravador
+
+A mensagem de redespacho continua sendo `msg(1, 2, index, 4)`, igual ao
+clique da home. A correção está somente nos índices enviados.
+
+Também atualizada a string da tela Informações para
+`OpenPod Core 3.1.1` (na área livre, 0x001A4F20).
+
+CRC da partição FIRM recalculado e validado.
+
+Arquivos:
+
+- `firmware/WORKING/GN438_core_3.1.1.bin`
+- `firmware/RELEASE/OpenPod Core 3.1.1/OpenPod_Core_3.1.1.up`
+- hash: `23168420d4a5739113e5b61057182bfaadb23dc84e36b365bcb4cd2dbc823684`
+
+---
+
+## 2026-09-15 — Análise: por que páginas de menu novas ficam inacessíveis
+
+Sem alteração de firmware. Descobertas da análise contínua do
+`GN438_original.bin`:
+
+- Mapeados os pontos de entrada de todas as páginas nomeadas
+  (`page_<nome>_create`, `page_<nome>_scr_process`,
+  `page_<nome>_event_cb`).
+- Decodificado `page_home_menu_create` (`0x00D2F794`): cria 6 itens de
+  lista usando `CRIA_LINHA`, `lv_obj_add_event_cb` e dois rótulos por
+  item.
+- Decodificado `page_home_menu_event_cb` (`0x00D2F540`): ao clicar num
+  item, ele itera pela tabela de botões e envia uma mensagem
+  `msg(7, 4, 4, i)` para a fila da `MgrTask`.
+- Identificado o dispatcher da `MgrTask` (`0x00D3FF8C` → `0x00D460F4`)
+  como o ponto que interpreta o comando e transiciona de estado/página.
+
+**Conclusão:** criar uma página nova e desenhar um botão para ela não é
+suficiente. É preciso também registrar a página no sistema de páginas e
+garantir que o dispatcher da `MgrTask` saiba carregá-la. Isso explica o
+sintoma relatado de itens de menu inacessíveis.
+
+Documentado em `docs/GUI_ANALYSIS.md` §25.
+
+---
+
 ## 2026-09-14 — OpenPod Core 1.1 — ✅ CONFIRMADA NA TELA
 
 **Um byte.** `0x0012179E`, `01` → `00`, dentro de `CRIA_LINHA`

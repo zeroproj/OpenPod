@@ -1,6 +1,6 @@
 # Estado atual — leia isto primeiro
 
-> Atualizado em **2026-09-14**, depois da limpeza que removeu a linha 2.x.
+> Atualizado em **2026-09-17**, depois do incidente da 3.1.2.
 >
 > **Este é o documento de entrada.** Depois dele: `CLAUDE.md` (regras do
 > projeto), `PROTOCOLO_GRAVACAO.md` (como gravar), `MODO_DOWNLOAD.md`
@@ -11,51 +11,51 @@
 ## 1. Onde o aparelho está
 
 ```
-OpenPod Core 1.4     <- NO APARELHO. Confirmada na tela em 14/09
-                        firmware/RELEASE/OpenPod Core 1.4/
-                        imagem  45780be578edb173ba9150bcc832f310...
+OpenPod Core 3.4     <- NO APARELHO, e ESTAVEL.
+                        Os seis itens do Extras abrem as telas certas.
+                        Confirmada na tela em 17/09.
+                        firmware/RELEASE/OpenPod Core 3.4/
 
-   a linha 1.1 -> 1.4, SEIS bytes ao todo, cada um testado na tela:
-     1.1  M-a  sem separador entre itens        1 byte
-     1.2  M-f  selecao no azul do Marte         2 bytes
-     1.3  M-d  sem barra de rolagem             1 byte
-     1.4  M-e  sem icone decorativo nas linhas  2 bytes
+OpenPod Core 3.3     <- metade LVGL, tambem confirmada. O passo atras.
 
-OpenPod Core 1.0.1   <- a BASELINE declarada STABLE
-                        firmware/RELEASE/OpenPod Core 1.0.1/
-                        imagem     7312fbd066b1a31e508a51c9c44c5e20...
+OpenPod Core 3.0.1   <- a base sa de onde a 3.3/3.4 sairam.
+
+OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
+                        tools/build.py --receita core1.0
+                        sha 7312fbd066b1a31e508a51c9c44c5e20...
 ```
 
-A 1.0.1 foi confirmada em 14/09 (*"Tudo funcionou"*). A **1.1** entrou no
-mesmo dia, pelo cartão, e o mantenedor confirmou pela foto da tela
-Configurar: **sem traço entre os itens, e o traço da faixa preservado.**
+### O estado de cada linha
 
-> **Isso provou a tese da carcaça em hardware:** um byte dentro de
-> `CRIA_LINHA` mudou a tela inteira. Ver `docs/CARCACA_PADRAO.md`.
+| Versão | Confirmada na tela | Observação |
+|---|---|---|
+| 1.0.1 | ✅ | baseline, única receita que existe |
+| 1.1 | ✅ | *"Excelente"* |
+| 1.4 | ✅ | fim da linha Marte (M-a…M-e) |
+| 2.0 – 2.2 | — | sem registro de teste |
+| 2.3 | ⚠️ em parte | só a faixa com "OpenPod" |
+| **2.4** | — | **declarada a última estável** (LEIA-ME da 3.1.2) |
+| 3.0 / 3.0.1 | — | primeira tela Extras |
+| 3.1 | ❌ | apagou a saída do handler (`0x00D2F01A`) |
+| 3.1.1 | ❌ | só trocou 6 bytes de tabela; não corrigiu |
+| 3.1.2 | ❌ | apagou 5 destinos de desvio |
+| **3.2** | ❌ | **TRAVOU o aparelho.** Chamava navegação do callback do LVGL. OBSOLETA |
+| **3.3** | ✅ | metade LVGL. Confirmada: nada travou, itens 4-6 inertes |
+| **3.4** | ✅ | **NO APARELHO. Os seis itens do Extras abrem.** ESTÁVEL |
 
-**Não existe nenhuma outra versão viva.** Se você encontrar referência a
-uma Core 2.x, a uma OpenPod 1.4–3.1 ou a um kit `V0xx`, é referência
-morta: foi tudo removido em 14/09 e não deve ser usado como base.
+> ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
+> remendos em cima do mesmo código danificado. Volte para a 2.4.
 
-### Como reconstruir a 1.0.1 do zero
+### Antes de empacotar qualquer imagem nova
 
 ```
-tools/build.py --receita core1.0
+python3 tools/check_branch_targets.py \
+    firmware/ORIGINAL/GN438_original.bin \
+    firmware/WORKING/<nova>.bin \
+    --baseline firmware/WORKING/GN438_core_2.4.bin
 ```
 
-É a única receita que existe. **Seis passos**, partindo do ORIGINAL:
-
-```
-1. patch_logo.py              a logo do OpenPod na tela de abertura
-2. patch_fundo_abertura.py    o fundo da abertura fica preto
-3. relocate_lang_table.py     tabela do portugues para a area livre
-4. aplica_textos.py           textos revisados em portugues do Brasil
-5. patch_menu_text.py         'Video' com maiuscula
-6. patch_update_sd.py         item 'Atualizar por SD' em Configurar
-```
-
-A imagem **sem carimbo** é reproduzível byte a byte. A carimbada não —
-ver `docs/releases/OpenPod_Core_1.0.1.md` §7-bis.
+Tem que sair **APROVADO**. Essa checagem teria barrado a 3.1 e a 3.1.2.
 
 ---
 
@@ -76,6 +76,13 @@ a 1.0 existe para ser uma fundação em que um defeito tenha causa óbvia.
 ---
 
 ## 3. Por que a linha 2.x foi removida — 2026-09-14
+
+> ⚠️ **Esta seção é histórica.** A linha 2.x foi removida em 14/09 e
+> **reconstruída depois**, do zero, sem o acoplamento da barra superior.
+> A Core 2.0–2.4 que existe hoje em `firmware/RELEASE/` é a linha nova, e
+> a 2.4 é a última estável. O que segue explica por que a linha *velha*
+> morreu — a lição continua valendo, o veredito sobre as versões não.
+
 
 Pedido do mantenedor, nas palavras dele:
 
