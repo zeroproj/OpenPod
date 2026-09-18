@@ -3,9 +3,12 @@
 > Medido em 2026-09-18, ao tentar fazer o voltar de um item do Extras
 > retornar ao Extras em vez da tela inicial.
 >
-> **O defeito continua ABERTO.** Este documento é o que está medido, e
-> o que falta. Ele existe para que a próxima tentativa comece de uma
-> medição e não de uma teoria.
+> **RESOLVIDO na Core 4.6**, em 2026-09-18, depois de cinco
+> diagnósticos na tela. Ver `docs/CHANGELOG.md`.
+>
+> Este documento foi escrito quando o defeito estava aberto. O
+> mecanismo descrito abaixo está confirmado; a seção 2 registra a
+> tentativa que falhou e por quê.
 
 ---
 
@@ -121,4 +124,6 @@ mecanismo que `patch_versao.py` usa para a tela Informações.
 | `0x00D0D9E8` empilha, `0x00D0DA64` desempilha | CONFIRMADO |
 | O push tem um único chamador (`0x00D0DC1A`) | CONFIRMADO |
 | Empilhar `0x53` no despacho resolve | **REFUTADO** (Core 4.4) |
-| Por que a pilha chega vazia | **NÃO RESOLVIDO** |
+| As páginas empilham `1` por cima do nosso `0x53` | CONFIRMADO (DIAG 4 e 5) |
+| Não deixar o `1` cobrir o `0x53` resolve | **CONFIRMADO** (Core 4.6) |
+| Por que a pilha chega vazia | resposta: **não chegava vazia** — o topo era `1` |

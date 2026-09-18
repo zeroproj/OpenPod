@@ -59,6 +59,88 @@ falhasse. **Parei.**
 
 ---
 
+## 2026-09-18 — Core 4.6 — ✅ o voltar retorna ao Extras
+
+**Confirmada no aparelho:** *"aparentemente normal, inclusive a volta
+para o Extras"*. **Ponto estável: 4.6.**
+
+4 bytes de código de fábrica. O roteador do Extras é byte a byte o da 4.4.
+
+### O mecanismo, medido por CINCO diagnósticos na tela
+
+O voltar usa uma **pilha de navegação** (`0x00823D05`: entradas de 5 B em
+`+0x0C`, profundidade em `+0x57`). Toda abertura de página empilha a
+origem; o voltar desempilha (`0x00D0DA64`) e abre o que sair.
+
+| | O que mediu | Resultado |
+|---|---|---|
+| DIAG 1 | voltar com pilha vazia → Configurar | caiu na tela inicial ⇒ **a pilha não estava vazia** |
+| DIAG 2 | toda saída do pop → Configurar | caiu em Configurar ⇒ **o voltar usa o desempilhador** |
+| DIAG 3 | traduz topo `0x53` → Configurar | caiu na tela inicial ⇒ **o topo era `1`** |
+| DIAG 4 | o roteador empilha `0x28` | só a **Pastas** obedeceu ⇒ **o push executa**, e as outras cinco empilham por cima |
+| DIAG 5 | toda empilhada vira `0x53` | os seis voltaram ao Extras ⇒ **o valor é o problema** |
+
+A Pastas foi o instrumento de medida: ela é a única que não usa a
+máquina normal de páginas, então não empilha por cima — e por isso
+revelou que o push funcionava.
+
+Confirmação independente do mantenedor: *"antes voltava para dentro de
+Configuração em cima do Despertador"* — a pilha sempre funcionou no
+firmware; o defeito era só o valor empilhado pelos itens do Extras.
+
+### A correção
+
+Uma regra no empilhador `0x00D0D9E8`:
+
+> se a página a empilhar é `1` (a home) e o topo já é `0x53` (o Extras),
+> não empilha.
+
+Mesmo espírito da proteção contra duplicata que o firmware já tem em
+`0x00D0DA12`.
+
+---
+
+## 2026-09-18 — ⚠️ Core 4.5 TRAVOU O APARELHO — pilha desbalanceada
+
+Sintoma: entrar em qualquer item do Extras reiniciava ou congelava.
+*"Quando não reinicia ele não entra e trava a plataforma"* — as duas
+faces do mesmo defeito, conforme o lixo que sobrasse nos registradores.
+
+### A causa
+
+A rotina enxertada é alcançada por `b.w`, então **herda** o frame do
+hospedeiro, que abre com `push {r4,r5,r6,lr}`. Ela saía com:
+
+```asm
+bx lr        ← volta SEM desfazer o push
+```
+
+O empilhador roda em **toda** navegação de página. Daí travar tudo, e
+não só o Extras.
+
+### A classe, e a trava nova
+
+É a segunda vez: a **Core 3.2** foi a mesma família (saltar para um
+trampolim que faz `pop.w` de seis registradores a partir de um frame de
+quatro). Nas duas vezes eu conferi desvio, literal e área proibida — e
+não conferi **pilha**.
+
+`tools/check_pilha.py`: acha os enxertos feitos por `b.w`, sobe até o
+`push` do hospedeiro, e exige que a saída o espelhe.
+
+```text
+4.6  APROVADO      4.2  APROVADO      4.4  APROVADO
+4.5  REPROVADO  ->  0x00DA6A1A  bx lr  — nao desfaz o push do hospedeiro
+```
+
+Ela teria barrado a imagem antes da gravação.
+
+> A própria ferramenta errou na primeira versão: reprovou o epílogo
+> *correto*, porque a regra era "não pode `pop {pc}` sem `push`". O certo
+> é comparar com o prólogo do **hospedeiro**.
+
+---
+
 ## 2026-09-17 — Core 4.2 — ✅ o Extras fechado
 
 **Confirmada no aparelho:** *"imagem funcionou e os outros continuam

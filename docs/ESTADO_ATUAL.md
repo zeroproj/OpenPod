@@ -11,7 +11,10 @@
 ## 1. Onde o aparelho está
 
 ```
-OpenPod Core 4.2     <- O PONTO ESTAVEL. O Extras fechado: os seis
+OpenPod Core 4.6     <- O PONTO ESTAVEL. O voltar retorna ao Extras.
+                        firmware/RELEASE/OpenPod Core 4.6/
+
+OpenPod Core 4.2     <- o ponto estavel anterior. O Extras fechado: os seis
                         itens abrem, o Radio sintoniza, Imagem e Livro
                         digital varrem o cartao, e o item da home se
                         chama "Extras" nos nove idiomas.
@@ -62,7 +65,9 @@ OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
 | **4.1** | ✅ | rótulo "Extras" nos nove idiomas |
 | **4.2** | ✅ | o Extras fechado |
 | **4.3** | ❌ | réplica da Pastas: nem abria. OBSOLETA |
-| **4.4** | ✅ | **NO APARELHO.** = 4.2; o voltar NÃO foi resolvido |
+| **4.4** | ✅ | = 4.2; o voltar não foi resolvido |
+| **4.5** | ❌ | **TRAVOU o aparelho**: `bx lr` sem desfazer o push. OBSOLETA |
+| **4.6** | ✅ | **NO APARELHO. O voltar retorna ao Extras.** ESTÁVEL |
 
 > ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
 > remendos em cima do mesmo código danificado. Volte para a 2.4.
