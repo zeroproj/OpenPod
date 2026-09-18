@@ -1,7 +1,7 @@
-OpenPod_Install — OpenPod_OpenPodDIAGbt
-===========================================
+OpenPod_Install — OpenPod_OpenPodDIAGtudo
+=============================================
 
-OpenPod OpenPod DIAG bt
+OpenPod OpenPod DIAG tudo
 
 GERADO por tools/make_install_kit.py. Nao edite a mao.
 Requisitos: Linux, python3, lsusb, smtlink_dump.
@@ -21,55 +21,55 @@ A REGRA QUE NASCEU DE UM ERRO REAL
 
 CONTEUDO
 --------
-  flash_OpenPod_OpenPodDIAGbt.sh      grava (44 setores, 176 KiB)
+  flash_OpenPod_OpenPodDIAGtudo.sh      grava (44 setores, 176 KiB)
   diag.sh                diagnostico          (SO LEITURA)
   recovery_check_linux.sh  confere a ferramenta (SO LEITURA)
 
   SETORES A GRAVAR (4096 B cada)
-    OpenPod_OpenPodDIAGbt_48000.bin 0x048000  6ea532bf216161b7d65e6fec3857f9f27890899a6e7ccd0cccff654fb471dd12
-    OpenPod_OpenPodDIAGbt_52000.bin 0x052000  3b36d143a96aaab07e0927c9eecf4351f6b0a21c833d0a6f5352fd8226bc5ca3
-    OpenPod_OpenPodDIAGbt_53000.bin 0x053000  a62c6180f15359d58c91eb6b96c087dbbeae1e0403e8b94accc7e00a7b8e8fe8
-    OpenPod_OpenPodDIAGbt_54000.bin 0x054000  a96553f46460656f6a7c1a5d9636c0743f9ca606013b1901cd3ac95df109abb5
-    OpenPod_OpenPodDIAGbt_5D000.bin 0x05D000  7e3402a71dd7d45f80e9d1eb5bc03a5d56a9f9dfb87c5829efcb76e1a5a947c1
-    OpenPod_OpenPodDIAGbt_C7000.bin 0x0C7000  f678974cafcb27f9b636e9713360e6f34a9d03f1b6082f3de9897e1513f3a421
-    OpenPod_OpenPodDIAGbt_CC000.bin 0x0CC000  ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
-    OpenPod_OpenPodDIAGbt_CD000.bin 0x0CD000  99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
-    OpenPod_OpenPodDIAGbt_D3000.bin 0x0D3000  eddeb2ee73066fdef9b81eee7fb5dd74e0710b594c0e0b67090daf9822ac630c
-    OpenPod_OpenPodDIAGbt_DF000.bin 0x0DF000  fd20c126093f6bc74a4068300166e922236d7eb571e87848c9bb0a841872686e
-    OpenPod_OpenPodDIAGbt_101000.bin 0x101000  673da19a6d3d37b673316192ec95fab51e36ae91df6e3d1c0f72e560635d94eb
-    OpenPod_OpenPodDIAGbt_108000.bin 0x108000  850b51b6c1b1ef43eb7b289178027ad22c6a245d0799b1696a53fe468bff7f7e
-    OpenPod_OpenPodDIAGbt_109000.bin 0x109000  3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
-    OpenPod_OpenPodDIAGbt_10A000.bin 0x10A000  5b67962d54acc73a7ad01de367b444d4fb88711ebe763ba9e0496a51117b028c
-    OpenPod_OpenPodDIAGbt_10C000.bin 0x10C000  3b8683d363ba2d88fe25955572dfcb27a2153ec413f40a207ccf012d5e89b4d4
-    OpenPod_OpenPodDIAGbt_10D000.bin 0x10D000  6fe1812c1a69ae6e876e9fc7a63e10e83055850f60e209d3c0ed34a67231f40a
-    OpenPod_OpenPodDIAGbt_121000.bin 0x121000  30ebefbe8d45d7d26c18201cd385b35f67e8e27396f726be0050649f77b1216d
-    OpenPod_OpenPodDIAGbt_122000.bin 0x122000  df9b903aa340d40041a61cffd9082181033811098b832b0e0603b97b09885250
-    OpenPod_OpenPodDIAGbt_123000.bin 0x123000  213ef142bcbd7696faccc4e2139605cffda0d9f6e2bfbf0b368feca2fb2f0e50
-    OpenPod_OpenPodDIAGbt_126000.bin 0x126000  25f7937818203d1f7e320fbd4aeef456aa71927db2a89d6ff14f05ad0d571b9f
-    OpenPod_OpenPodDIAGbt_127000.bin 0x127000  e9d327492dd109c2513cbf07d402e9443eca0acd47193c5de856a9ce03a5a498
-    OpenPod_OpenPodDIAGbt_12B000.bin 0x12B000  27de098786b4fd862aa7f7f852bfad6e73d53cce0fc0ee3fa23b9433406745e9
-    OpenPod_OpenPodDIAGbt_12C000.bin 0x12C000  bd9fd998d33622f70ba6c0ba311f0bd1aabd5200df1296406646530a41a94bb2
-    OpenPod_OpenPodDIAGbt_12D000.bin 0x12D000  6f2c626887db52348a599f6bf544611bedb43cc2751dd4b75104333c1ae3dcba
-    OpenPod_OpenPodDIAGbt_12E000.bin 0x12E000  34338f09581e5aa1c689c188201ddfdebc29d251a0bfe7e1074d58c429be7157
-    OpenPod_OpenPodDIAGbt_12F000.bin 0x12F000  a640a2e36034aed5c4b51653fb7b6cc85d94f5d43eb12224c3b16a74c61ef102
-    OpenPod_OpenPodDIAGbt_130000.bin 0x130000  a209c305d8cc078e6b1947f7e437cda6a8f92d7ae757b986f8d0b4e2fcead5b6
-    OpenPod_OpenPodDIAGbt_131000.bin 0x131000  13cbb12b13d73a421e60cbd298869e9cf68d0ce2eca5548602adf6cf37e2e8c5
-    OpenPod_OpenPodDIAGbt_132000.bin 0x132000  e05828e015b71a8c3f2290b03b843188771855583e7ee886244de7d17bd46f0e
-    OpenPod_OpenPodDIAGbt_133000.bin 0x133000  ffdb8e5ee01d4219eec486d7f3bc60df7e62e30269361daad437835008b513bf
-    OpenPod_OpenPodDIAGbt_134000.bin 0x134000  bdb077624bce3c8b2d508b03393c0608004a53cefbd1ab1c3e1142f5ef0cb6b4
-    OpenPod_OpenPodDIAGbt_135000.bin 0x135000  e52b4f721ab955ce0acc404d7bbffb4dded60b0c0b09d43fcd8b54b04ebfab7e
-    OpenPod_OpenPodDIAGbt_136000.bin 0x136000  37133af6fa7684d462b11159bacebd685f7f5e533830fd2607ce63f0d177d7b8
-    OpenPod_OpenPodDIAGbt_137000.bin 0x137000  9f27ec07c3773ed74cc2702121298b8cdbbcb4ec5815b994d8a430226b9e8bf5
-    OpenPod_OpenPodDIAGbt_138000.bin 0x138000  b4ae75cffaf10da6b7edb44bb19483b627db21dcbfcd9b6388b8f1aa11626863
-    OpenPod_OpenPodDIAGbt_139000.bin 0x139000  0809afdd572786578e9713711d83177fd77ebe5c89734a78cf16d55d90242c8d
-    OpenPod_OpenPodDIAGbt_13A000.bin 0x13A000  72f6bc37de6f618d6528e4411c86c090bdcf45a9e565ed5bcae94ed0d3d7f629
-    OpenPod_OpenPodDIAGbt_13B000.bin 0x13B000  e76fe152ae3b0f4414952f7f658add959f41adf86e0297a5ea657288cafa1a6e
-    OpenPod_OpenPodDIAGbt_13C000.bin 0x13C000  f9b05c7df264e8c210701e056986e0167641e37ed7cf32d8f477f15aa77feb34
-    OpenPod_OpenPodDIAGbt_13D000.bin 0x13D000  e8bb94264408ab85f7e905d3561ed2a4527295409f6b8381c6a154e4d2139120
-    OpenPod_OpenPodDIAGbt_149000.bin 0x149000  47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
-    OpenPod_OpenPodDIAGbt_1A3000.bin 0x1A3000  9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
-    OpenPod_OpenPodDIAGbt_1A4000.bin 0x1A4000  276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
-    OpenPod_OpenPodDIAGbt_1A6000.bin 0x1A6000  b80dd6335fa20c0c38486a022d253750036b2f8001f7ae628d1c818545689d25
+    OpenPod_OpenPodDIAGtudo_48000.bin 0x048000  6ea532bf216161b7d65e6fec3857f9f27890899a6e7ccd0cccff654fb471dd12
+    OpenPod_OpenPodDIAGtudo_52000.bin 0x052000  3b36d143a96aaab07e0927c9eecf4351f6b0a21c833d0a6f5352fd8226bc5ca3
+    OpenPod_OpenPodDIAGtudo_53000.bin 0x053000  a62c6180f15359d58c91eb6b96c087dbbeae1e0403e8b94accc7e00a7b8e8fe8
+    OpenPod_OpenPodDIAGtudo_54000.bin 0x054000  a96553f46460656f6a7c1a5d9636c0743f9ca606013b1901cd3ac95df109abb5
+    OpenPod_OpenPodDIAGtudo_5D000.bin 0x05D000  7e3402a71dd7d45f80e9d1eb5bc03a5d56a9f9dfb87c5829efcb76e1a5a947c1
+    OpenPod_OpenPodDIAGtudo_C7000.bin 0x0C7000  f678974cafcb27f9b636e9713360e6f34a9d03f1b6082f3de9897e1513f3a421
+    OpenPod_OpenPodDIAGtudo_CC000.bin 0x0CC000  ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
+    OpenPod_OpenPodDIAGtudo_CD000.bin 0x0CD000  99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
+    OpenPod_OpenPodDIAGtudo_D3000.bin 0x0D3000  eddeb2ee73066fdef9b81eee7fb5dd74e0710b594c0e0b67090daf9822ac630c
+    OpenPod_OpenPodDIAGtudo_DF000.bin 0x0DF000  fd20c126093f6bc74a4068300166e922236d7eb571e87848c9bb0a841872686e
+    OpenPod_OpenPodDIAGtudo_101000.bin 0x101000  673da19a6d3d37b673316192ec95fab51e36ae91df6e3d1c0f72e560635d94eb
+    OpenPod_OpenPodDIAGtudo_108000.bin 0x108000  6f585b511bbac156970de30b91d52f56f15bdfba2e42137df2ef049098c51da6
+    OpenPod_OpenPodDIAGtudo_109000.bin 0x109000  3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
+    OpenPod_OpenPodDIAGtudo_10A000.bin 0x10A000  5b67962d54acc73a7ad01de367b444d4fb88711ebe763ba9e0496a51117b028c
+    OpenPod_OpenPodDIAGtudo_10C000.bin 0x10C000  3b8683d363ba2d88fe25955572dfcb27a2153ec413f40a207ccf012d5e89b4d4
+    OpenPod_OpenPodDIAGtudo_10D000.bin 0x10D000  6fe1812c1a69ae6e876e9fc7a63e10e83055850f60e209d3c0ed34a67231f40a
+    OpenPod_OpenPodDIAGtudo_121000.bin 0x121000  30ebefbe8d45d7d26c18201cd385b35f67e8e27396f726be0050649f77b1216d
+    OpenPod_OpenPodDIAGtudo_122000.bin 0x122000  df9b903aa340d40041a61cffd9082181033811098b832b0e0603b97b09885250
+    OpenPod_OpenPodDIAGtudo_123000.bin 0x123000  213ef142bcbd7696faccc4e2139605cffda0d9f6e2bfbf0b368feca2fb2f0e50
+    OpenPod_OpenPodDIAGtudo_126000.bin 0x126000  25f7937818203d1f7e320fbd4aeef456aa71927db2a89d6ff14f05ad0d571b9f
+    OpenPod_OpenPodDIAGtudo_127000.bin 0x127000  e9d327492dd109c2513cbf07d402e9443eca0acd47193c5de856a9ce03a5a498
+    OpenPod_OpenPodDIAGtudo_12B000.bin 0x12B000  27de098786b4fd862aa7f7f852bfad6e73d53cce0fc0ee3fa23b9433406745e9
+    OpenPod_OpenPodDIAGtudo_12C000.bin 0x12C000  bd9fd998d33622f70ba6c0ba311f0bd1aabd5200df1296406646530a41a94bb2
+    OpenPod_OpenPodDIAGtudo_12D000.bin 0x12D000  6f2c626887db52348a599f6bf544611bedb43cc2751dd4b75104333c1ae3dcba
+    OpenPod_OpenPodDIAGtudo_12E000.bin 0x12E000  34338f09581e5aa1c689c188201ddfdebc29d251a0bfe7e1074d58c429be7157
+    OpenPod_OpenPodDIAGtudo_12F000.bin 0x12F000  a640a2e36034aed5c4b51653fb7b6cc85d94f5d43eb12224c3b16a74c61ef102
+    OpenPod_OpenPodDIAGtudo_130000.bin 0x130000  a209c305d8cc078e6b1947f7e437cda6a8f92d7ae757b986f8d0b4e2fcead5b6
+    OpenPod_OpenPodDIAGtudo_131000.bin 0x131000  13cbb12b13d73a421e60cbd298869e9cf68d0ce2eca5548602adf6cf37e2e8c5
+    OpenPod_OpenPodDIAGtudo_132000.bin 0x132000  e05828e015b71a8c3f2290b03b843188771855583e7ee886244de7d17bd46f0e
+    OpenPod_OpenPodDIAGtudo_133000.bin 0x133000  ffdb8e5ee01d4219eec486d7f3bc60df7e62e30269361daad437835008b513bf
+    OpenPod_OpenPodDIAGtudo_134000.bin 0x134000  bdb077624bce3c8b2d508b03393c0608004a53cefbd1ab1c3e1142f5ef0cb6b4
+    OpenPod_OpenPodDIAGtudo_135000.bin 0x135000  e52b4f721ab955ce0acc404d7bbffb4dded60b0c0b09d43fcd8b54b04ebfab7e
+    OpenPod_OpenPodDIAGtudo_136000.bin 0x136000  37133af6fa7684d462b11159bacebd685f7f5e533830fd2607ce63f0d177d7b8
+    OpenPod_OpenPodDIAGtudo_137000.bin 0x137000  9f27ec07c3773ed74cc2702121298b8cdbbcb4ec5815b994d8a430226b9e8bf5
+    OpenPod_OpenPodDIAGtudo_138000.bin 0x138000  b4ae75cffaf10da6b7edb44bb19483b627db21dcbfcd9b6388b8f1aa11626863
+    OpenPod_OpenPodDIAGtudo_139000.bin 0x139000  0809afdd572786578e9713711d83177fd77ebe5c89734a78cf16d55d90242c8d
+    OpenPod_OpenPodDIAGtudo_13A000.bin 0x13A000  72f6bc37de6f618d6528e4411c86c090bdcf45a9e565ed5bcae94ed0d3d7f629
+    OpenPod_OpenPodDIAGtudo_13B000.bin 0x13B000  e76fe152ae3b0f4414952f7f658add959f41adf86e0297a5ea657288cafa1a6e
+    OpenPod_OpenPodDIAGtudo_13C000.bin 0x13C000  f9b05c7df264e8c210701e056986e0167641e37ed7cf32d8f477f15aa77feb34
+    OpenPod_OpenPodDIAGtudo_13D000.bin 0x13D000  e8bb94264408ab85f7e905d3561ed2a4527295409f6b8381c6a154e4d2139120
+    OpenPod_OpenPodDIAGtudo_149000.bin 0x149000  47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
+    OpenPod_OpenPodDIAGtudo_1A3000.bin 0x1A3000  9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
+    OpenPod_OpenPodDIAGtudo_1A4000.bin 0x1A4000  276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
+    OpenPod_OpenPodDIAGtudo_1A6000.bin 0x1A6000  476d72151529b50f9f3fe61c03ff361de5ab96e1b28a870c4c5e1299d505c0a0
 
   SETORES DE REVERSAO -> ESTADO ANTERIOR (a base deste kit)
     base_48000.bin   0x048000  cd43df9cf6f193ab32cd4c0963555f95e95e7ecb02b836bc720c2d1873dcbc01
@@ -123,7 +123,7 @@ COMO RODAR
   sha256sum *.bin          # conferir a transferencia
 
   sudo sh diag.sh /opt/smartlink_flash        # so leitura
-  sudo sh flash_OpenPod_OpenPodDIAGbt.sh /opt/smartlink_flash
+  sudo sh flash_OpenPod_OpenPodDIAGtudo.sh /opt/smartlink_flash
 
 ORDEM RECOMENDADA (a que se mostrou mais confiavel):
   1. plugue o aparelho, com o cartao, e espere o raio na tela
