@@ -793,3 +793,58 @@ depois precisa saber que é escolha, não descuido:
 | É o slot do ícone de SD | CONFIRMADO |
 | Separar exige objeto novo | PROVÁVEL (§6) |
 | Comportamento aceito pelo mantenedor | decisão, 2026-09-18 |
+
+
+---
+
+# A altura da faixa — padronizada em 16 px (Core 5.4)
+
+## O defeito, medido em 2026-09-18
+
+As **53 telas** que criam a faixa não concordavam sobre a altura dela:
+
+```text
+divisor 10  ->  160/10 = 16 px      25 telas
+divisor  7  ->  160/7  = 22 px      23 telas   <- o desvio
+altura fixa 16                       1 tela    <- a home (Core 2.0)
+sem divisor identificado              4 telas
+```
+
+A Core 2.2 padronizou as **linhas** de 7 para 10, em 54 pontos, e deixou
+a **faixa** dessas 23 telas no 7.
+
+## Por que isso desalinhava a bateria
+
+A bateria é posicionada **fixa em `y = 0`**:
+
+```asm
+0x00D22612   movs r1, #0x6b      ; x = 107
+0x00D22614   bl   #0x00D4A2D4    ; set_pos(obj, 107, 0)
+```
+
+Numa faixa de 16 px, o glifo de 13 px fica quase centrado. Numa de
+22 px, sobram 9 px embaixo e ele fica colado no topo.
+
+> Mantenedor: *"a barra degradê tá diferente do menu iniciar para o
+> restante das páginas, e no restante das páginas tá muito desalinhado o
+> ícone da bateria. Ou afina tudo igual da home ou coloca a da home
+> igual do restante."*
+
+**Escolhido: afinar tudo para 16 px.** É o que a home já usa, o que o
+resto do sistema calcula, e o mais perto do `faixa_altura_px = 18` do
+`nanoclone.json`.
+
+## A armadilha da medição
+
+A altura chega por **duas** funções diferentes, e procurar só uma dá
+zero resultado:
+
+| | |
+|---|---|
+| `0x00D4A1EA` | `set_height(obj, h)` |
+| `0x00D4A21A` | `set_size(obj, w, h)` ← as telas de faixa usam esta |
+
+E a janela de busca precisa de `0x40` bytes: com `0x24` a chamada de
+`set_size` do Configurar cai **um byte** fora e o sítio some.
+
+`tools/patch_faixa_16px.py` — 23 bytes, 1 por tela. Dado, não código.

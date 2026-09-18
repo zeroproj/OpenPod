@@ -129,7 +129,7 @@ Cada linha carrega classe de confiança, conforme a regra §7 do
 | ~~**M-d**~~ | barra de rolagem | **não existe** | ✅ **FEITO — Core 1.3** | — | **1 byte** |
 | ~~**M-e**~~ | ícone **decorativo** de linha | não existe | ✅ **FEITO — Core 1.4**, 23 telas | — | **2 bytes** |
 | ~~**M-f**~~ cor | seleção | AZUL RGB(41,101,222) | ✅ **FEITO — Core 1.2**, 2 bytes | **PROVADO POR DIAGNÓSTICO** | falta só o degradê (= M-h) |
-| **M-g** | bateria | ícone colorido | glifo monocromático + barra **verde do Marte** (Core 5.2) | **parcial** | o ícone colorido exige objeto de imagem |
+| **M-g** | bateria | ícone colorido | casca **prateada** (5.3) + barra **verde** (5.2), ambas do Marte | **parcial** | o bitmap com degradê exige objeto de imagem |
 | **M-h** | degradê da faixa | 19 linhas, `nanoclone.json` | faixa lisa | **CONFIRMADO** | rotina nova — **confirmado em 18/09**: o firmware não tem wrapper de degradê (ver `GUI_ANALYSIS.md`) |
 | ~~**M-i**~~ | cores dos 6 campos | ver `nanoclone.json` | ✅ **FECHADO em 18/09** — nada a fazer | **MEDIDO** | — |
 | **M-j** | luminância | claro | escuro | **DESVIO ACEITO** | — não fazer |

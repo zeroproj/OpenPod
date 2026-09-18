@@ -1,0 +1,138 @@
+OpenPod_Install — OpenPod_Core_5.4
+======================================
+
+A faixa superior fica com 16 px em todas as telas
+
+GERADO por tools/make_install_kit.py. Nao edite a mao.
+Requisitos: Linux, python3, lsusb, smtlink_dump.
+
+
+A REGRA QUE NASCEU DE UM ERRO REAL
+----------------------------------
+  O write_flash grava A PARTIR DO OFFSET 0 DO ARQUIVO.
+  O 2o argumento NAO e o offset dentro do arquivo.
+
+  ERRADO  write_flash 0xD000 0xD000 0x1000 imagem_2MiB.bin
+  CERTO   write_flash 0xD000 0      0x1000 setor_D000.bin
+
+  Por isso: um arquivo POR SETOR, sempre 0 no 2o argumento.
+  Detalhe em docs/WRITE_FLASH_SEMANTICS.md.
+
+
+CONTEUDO
+--------
+  flash_OpenPod_Core_5.4.sh      grava (17 setores, 68 KiB)
+  diag.sh                diagnostico          (SO LEITURA)
+  recovery_check_linux.sh  confere a ferramenta (SO LEITURA)
+
+  SETORES A GRAVAR (4096 B cada)
+    OpenPod_Core_5.4_127000.bin 0x127000  e9d327492dd109c2513cbf07d402e9443eca0acd47193c5de856a9ce03a5a498
+    OpenPod_Core_5.4_128000.bin 0x128000  34fa1dc3c4fb1832216c8ecac2b3e469f32988dcdad6d6bdf8c7a94cd92a8adc
+    OpenPod_Core_5.4_12E000.bin 0x12E000  34338f09581e5aa1c689c188201ddfdebc29d251a0bfe7e1074d58c429be7157
+    OpenPod_Core_5.4_12F000.bin 0x12F000  a640a2e36034aed5c4b51653fb7b6cc85d94f5d43eb12224c3b16a74c61ef102
+    OpenPod_Core_5.4_130000.bin 0x130000  2dba79928d0639acae56054c764ffcb757ca3d14c75fa3b33607e8b70da36531
+    OpenPod_Core_5.4_132000.bin 0x132000  e05828e015b71a8c3f2290b03b843188771855583e7ee886244de7d17bd46f0e
+    OpenPod_Core_5.4_133000.bin 0x133000  ffdb8e5ee01d4219eec486d7f3bc60df7e62e30269361daad437835008b513bf
+    OpenPod_Core_5.4_134000.bin 0x134000  bdb077624bce3c8b2d508b03393c0608004a53cefbd1ab1c3e1142f5ef0cb6b4
+    OpenPod_Core_5.4_135000.bin 0x135000  e52b4f721ab955ce0acc404d7bbffb4dded60b0c0b09d43fcd8b54b04ebfab7e
+    OpenPod_Core_5.4_136000.bin 0x136000  37133af6fa7684d462b11159bacebd685f7f5e533830fd2607ce63f0d177d7b8
+    OpenPod_Core_5.4_137000.bin 0x137000  9f27ec07c3773ed74cc2702121298b8cdbbcb4ec5815b994d8a430226b9e8bf5
+    OpenPod_Core_5.4_138000.bin 0x138000  69c8b20ae8e76e94436678ef7e3552b665b766e0335584e0b5649736edae6778
+    OpenPod_Core_5.4_139000.bin 0x139000  0809afdd572786578e9713711d83177fd77ebe5c89734a78cf16d55d90242c8d
+    OpenPod_Core_5.4_13A000.bin 0x13A000  26aad81f09b8b23a6b3b1af03f9af0bde7107f59d6078b2e0ec2540d5f8de0aa
+    OpenPod_Core_5.4_13B000.bin 0x13B000  e76fe152ae3b0f4414952f7f658add959f41adf86e0297a5ea657288cafa1a6e
+    OpenPod_Core_5.4_13C000.bin 0x13C000  f9b05c7df264e8c210701e056986e0167641e37ed7cf32d8f477f15aa77feb34
+    OpenPod_Core_5.4_1A6000.bin 0x1A6000  f3374c73f299fe0a136efd52a01b77f4025eb3b7eec759d071bf06a58f2f6f4f
+
+  SETORES DE REVERSAO -> ESTADO ANTERIOR (a base deste kit)
+    base_127000.bin  0x127000  a72494f6d0474e8921d084c7dbdc287e4de6f85ad4e534fe4b6f8d7f3b98cc2b
+    base_128000.bin  0x128000  e3195af0f62cc2555032938b4ed147a4951db9f63301d49447afa8e146288f23
+    base_12E000.bin  0x12E000  f67b84d10aed29637e6be627d6588e6af0bac98b9c4dd52e9ef75d668b79c529
+    base_12F000.bin  0x12F000  bfdecd14bfb43abb02ec40c8adce0a40fd71039c886cdd395e89b4b127c49918
+    base_130000.bin  0x130000  f1ba015f283fc081c41f422c5554eb8efa5d49084bde9a428d01cfffe6be0d4e
+    base_132000.bin  0x132000  53e7b18c837abb3b36b704c27c0581bd24e1533b6afffb701fca4c74b6603aa8
+    base_133000.bin  0x133000  628bab444f257429242533c3f8073fb3f4a5d0e86283fe55f033c21c0f95129b
+    base_134000.bin  0x134000  7210b822569cd80053ff6d0c51fed3e59469e503c519ca28ed075f6cd860a0e0
+    base_135000.bin  0x135000  c97273135f137a9791aa788d15130cc311ceb263d5c834bf9fdffd5a0c66d73e
+    base_136000.bin  0x136000  7a8cc2e71a8f2aa704ba434e824f88d9a9a1410f207f52e96f9dd72d67e73e0a
+    base_137000.bin  0x137000  6bcdf868d93c2ae949167761e7c819cd1bc2ffc5a4e22a89fce427ae555ea169
+    base_138000.bin  0x138000  44715091732627568898584d334cf0bc80ff09440e440d9b80006110fc8d310a
+    base_139000.bin  0x139000  db9b4c3917fbd7534858ab0cdc07e3b782a0d0fd32c893a68e2c1ca32ec37572
+    base_13A000.bin  0x13A000  beecb9996543bb73f983d423ae24dd704dc9067d98c81aa69f6d30a7c3701d99
+    base_13B000.bin  0x13B000  48e67d459c807d5f072204e2009eef7d24a1b85221d9c51fff07cf942daefaef
+    base_13C000.bin  0x13C000  1c7c56e5eda5fcecd4a488dfdfccf93f3795f8971a3b62c73ec36ee51d26b588
+    base_1A6000.bin  0x1A6000  7f9ba1eaa80a0ff8169167cfc32654419febafc5eb3e5431e71465765a07d872
+
+
+COMO RODAR
+----------
+  sha256sum *.bin          # conferir a transferencia
+
+  sudo sh diag.sh /opt/smartlink_flash        # so leitura
+  sudo sh flash_OpenPod_Core_5.4.sh /opt/smartlink_flash
+
+ORDEM RECOMENDADA (a que se mostrou mais confiavel):
+  1. plugue o aparelho, com o cartao, e espere o raio na tela
+  2. espere mais ~10 segundos
+  3. SO ENTAO rode o script
+
+O script tambem aceita a ordem inversa — se o aparelho nao estiver
+conectado ele espera e avisa a hora de plugar. Mas por esse caminho
+o aparelho costuma RE-ENUMERAR logo depois de detectado (observado
+em 2026-09-12: Device 094 na espera, Device 098 segundos depois).
+
+Por que a folga importa: o aparelho precisa de alguns segundos
+entre plugar e o primeiro comando, senao cai do modo card reader no
+meio da operacao. Era por isso que o recovery_check_linux.sh
+'funcionava melhor' — ele gastava tempo compilando antes de falar
+com o aparelho. Agora essa folga e explicita.
+
+O script para e pede GRAVAR digitado. Ate ai, so houve leitura.
+
+
+SE DER ERRADO
+-------------
+NAO DESLIGUE O APARELHO. Enquanto ele enumera, tem conserto.
+
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x127000 0 0x1000 base_127000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x128000 0 0x1000 base_128000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12E000 0 0x1000 base_12E000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x12F000 0 0x1000 base_12F000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x130000 0 0x1000 base_130000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x132000 0 0x1000 base_132000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x133000 0 0x1000 base_133000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x134000 0 0x1000 base_134000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x135000 0 0x1000 base_135000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x136000 0 0x1000 base_136000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x137000 0 0x1000 base_137000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x138000 0 0x1000 base_138000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x139000 0 0x1000 base_139000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x13A000 0 0x1000 base_13A000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x13B000 0 0x1000 base_13B000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x13C000 0 0x1000 base_13C000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1A6000 0 0x1000 base_1A6000.bin
+
+Isso devolve o aparelho ao estado ANTERIOR — o mesmo que ele tinha
+antes deste kit, ja verificado e ja testado bootando.
+
+NAO use setores de fabrica para reverter um patch parcial: o resto
+da flash continuaria no estado da base e a FIRM ficaria misturada,
+com o CRC da tabela de particoes sem bater. Para voltar de fato ao
+ORIGINAL DE FABRICA, use o procedimento completo de recuperacao.
