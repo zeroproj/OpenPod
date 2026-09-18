@@ -40,6 +40,26 @@ gravação fala a mesma língua.*
 
 ---
 
+## What is in here / O que tem aqui
+
+```text
+README.md              you are here / voce esta aqui
+install.sh             Linux / macOS  -> start here / comece aqui
+OpenPod_Beta1.up       the firmware / o firmware
+windows/               Windows -> start here / comece aqui
+  LEIA-ME.txt
+  FlashloaderSL-DEV-6.9.5.exe
+cabo/                  USB cable path, used by install.sh
+  flash_OpenPod_Beta1.sh
+  setores/             88 sector files / arquivos de setor
+```
+
+You do not need to open `cabo/` by hand — `install.sh` does it.
+
+*Nao precisa abrir a pasta `cabo/` na mao — o `install.sh` faz isso.*
+
+---
+
 ## What changes / O que muda
 
 | | Stock / Fábrica | OpenPod |

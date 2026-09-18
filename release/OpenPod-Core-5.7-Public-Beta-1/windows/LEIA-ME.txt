@@ -31,7 +31,10 @@ ANTES DE COMECAR / BEFORE YOU START
 PASSO 1 - INSTALAR O PROGRAMA / INSTALL THE PROGRAM
 ------------------------------------------------------------------
 
-  Rode:  windows\FlashloaderSL-DEV-6.9.5.exe
+  Rode o arquivo que esta nesta mesma pasta:
+  Run the file in this very folder:
+
+         FlashloaderSL-DEV-6.9.5.exe
 
   E o Flashloader SL-DEV 6.9.5, o programa oficial da Shenju,
   fabricante do chip. Nao e nosso. Esta aqui so para facilitar.
@@ -52,10 +55,10 @@ PASSO 2 - ESCOLHER O FIRMWARE / SELECT THE FIRMWARE
      With that box checked it writes to any device that shows up,
      before you get to check the file.
 
-  Clique "Select a firmware file" e escolha:
-  Click "Select a firmware file" and pick:
+  Clique "Select a firmware file" e escolha, na PASTA DE CIMA:
+  Click "Select a firmware file" and pick, in the FOLDER ABOVE:
 
-         OpenPod_Beta1.up
+         ..\OpenPod_Beta1.up
 
   CONFIRA O NOME NA TELA. Tem que dizer OpenPod_Beta1.
   CHECK THE NAME ON SCREEN. It must say OpenPod_Beta1.
@@ -191,7 +194,7 @@ AVISO / WARNING
 ------------------------------------------------------------------
 
   O unico arquivo .up que pode ser gravado neste aparelho e o
-  OpenPod_Beta1.up que veio nesta pasta, ou um gerado a partir de
+  OpenPod_Beta1.up que veio neste pacote, ou um gerado a partir de
   um dump deste mesmo aparelho.
 
   NUNCA grave um .up de outro produto, mesmo que o programa aceite
@@ -199,7 +202,7 @@ AVISO / WARNING
   aparelho exatamente assim.
 
   The only .up you may write to this player is the OpenPod_Beta1.up
-  in this folder, or one built from a dump of this same player.
+  in this package, or one built from a dump of this same player.
 
   NEVER write a .up from another product, even if the tool accepts
   it and even if the player looks identical. People have bricked

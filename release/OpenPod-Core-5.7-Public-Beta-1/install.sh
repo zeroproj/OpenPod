@@ -198,10 +198,10 @@ TXT
     EXPECT=$(t FLASH GRAVAR)
     [ "$R" = "$EXPECT" ] || die "$(t 'cancelled.' 'cancelado.')"
 
-    [ -f "$HERE/flash_OpenPod_Beta1.sh" ] || \
-        die "$(t 'flash_OpenPod_Beta1.sh is missing.' 'falta o flash_OpenPod_Beta1.sh.')"
+    [ -f "$HERE/cabo/flash_OpenPod_Beta1.sh" ] || \
+        die "$(t 'cabo/flash_OpenPod_Beta1.sh is missing.' 'falta o cabo/flash_OpenPod_Beta1.sh.')"
     OPENPOD_LANG="$LANG_SEL" export OPENPOD_LANG
-    sh "$HERE/flash_OpenPod_Beta1.sh" "$(dirname "$TOOL")"
+    sh "$HERE/cabo/flash_OpenPod_Beta1.sh" "$(dirname "$TOOL")"
 }
 
 # ------------------------------------------------------------------ main

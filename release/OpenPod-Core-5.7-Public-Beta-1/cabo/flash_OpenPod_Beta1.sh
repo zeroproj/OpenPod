@@ -17,7 +17,14 @@ TOOLDIR=${1:-/opt/smartlink_flash}
 TOOL="$TOOLDIR/smtlink_dump"
 DEV=301a:2801
 VERSAO="OpenPod_Beta1"
-WORK="$(pwd)/openpod_flash_$VERSAO"
+# Os setores moram ao lado deste script, em setores/. Entramos la
+# para os nomes de arquivo resolverem, mas os logs e os dumps ficam
+# onde o usuario chamou o script -- nao enterrados no pacote.
+ORIGEM="$(pwd)"
+DADOS="$(cd "$(dirname "$0")" && pwd)/setores"
+[ -d "$DADOS" ] || { echo "faltando: $DADOS"; exit 1; }
+cd "$DADOS" || exit 1
+WORK="$ORIGEM/openpod_flash_$VERSAO"
 LOG="$WORK/flash_$VERSAO.log"
 WROTE=0
 
@@ -29,6 +36,7 @@ die() {
     if [ "$WROTE" -ne 0 ]; then
         log "$(m ja_gravou) $WROTE $(m ja_gravou2)"
         log "$(m reversao)"
+        log "***   (de dentro de $DADOS)"
         log "***   sudo $TOOL --id $DEV write_flash 0x48000 0 0x1000 base_48000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x52000 0 0x1000 base_52000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x53000 0 0x1000 base_53000.bin"
