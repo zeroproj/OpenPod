@@ -45,7 +45,7 @@ Serve se o aparelho liga e você chega em Configurar.
 2. `Configurar` → `Atualizar por SD` → `Sim`
 3. Não desligue nem tire o cartão durante o processo
 4. Ao reiniciar, **apague o `update.up`** do cartão
-5. Confira em `Configurar` → `Informações`: deve dizer `OpenPod Core 5.7`
+5. Confira em `Configurar` → `Informações`: deve dizer `OpenPod Beta 1`
 
 ---
 
