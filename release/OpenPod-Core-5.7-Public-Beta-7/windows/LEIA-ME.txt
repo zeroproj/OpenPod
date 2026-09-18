@@ -1,0 +1,212 @@
+OpenPod - Public Beta 7 - INSTALAR NO WINDOWS / INSTALL ON WINDOWS
+==================================================================
+
+  Procedimento TESTADO e confirmado funcionando.
+  Procedure TESTED and confirmed working.
+
+
+------------------------------------------------------------------
+ANTES DE COMECAR / BEFORE YOU START
+------------------------------------------------------------------
+
+  [ ] Notebook NA TOMADA. A gravacao e de 1,7 MB.
+      Laptop ON AC POWER. The write is 1.7 MB.
+
+  [ ] Cabo USB de DADOS, nao de carga. E o erro mais comum.
+      A DATA USB cable, not charge-only. Most common mistake.
+
+  [ ] SO o aparelho que voce quer gravar conectado. O programa grava
+      sozinho em todo aparelho que aparecer.
+      ONLY the player you want to flash connected. The tool writes to
+      every device that shows up.
+
+  >>> SUAS CONFIGURACOES SERAO APAGADAS (volume, EQ, idioma).
+  >>> YOUR SETTINGS WILL BE ERASED (volume, EQ, language).
+      O passo 2 liga "restaurar padrao de fabrica". A musica no
+      cartao nao e tocada. / Step 2 turns on "restore factory
+      settings". Music on the card is not touched.
+
+
+------------------------------------------------------------------
+PASSO 1 - INSTALAR E POR EM INGLES / INSTALL AND SET ENGLISH
+------------------------------------------------------------------
+
+  Rode o arquivo que esta nesta mesma pasta:
+  Run the file in this very folder:
+
+         FlashloaderSL-DEV-6.9.5.exe
+
+  Abre como "Firmware tool 6.9.5", em chines.
+  It opens as "Firmware tool 6.9.5", in Chinese.
+
+  Menu:   setting  ->  Language  ->  English
+
+  E o programa oficial da Shenju, fabricante do chip. Nao e nosso.
+  It is the official tool from Shenju, who makes the chip. Not ours.
+
+
+------------------------------------------------------------------
+PASSO 2 - CONFIGURAR / CONFIGURE
+------------------------------------------------------------------
+
+  Menu:   setting  ->  Develp setting...
+
+  Abre a janela de configuracao. Ela continua em CHINES mesmo com o
+  menu em ingles -- por isso vao os nomes originais aqui.
+  The dialog stays in CHINESE even with the menu in English -- that
+  is why the original labels are listed here.
+
+  MARQUE as TRES PRIMEIRAS, so essas:
+  CHECK the FIRST THREE, only those:
+
+    [x] 1. 自动下载
+           download automatico / auto download
+
+    [x] 2. 烧录完后自动重启
+           reinicia depois de gravar / auto reboot after burning
+
+    [x] 3. 烧录完重启后恢复出厂设置
+           restaura o padrao de fabrica ao reiniciar
+           restore factory settings after reboot
+
+  DEIXE DESMARCADAS / LEAVE UNCHECKED:
+
+    [ ] 4. 仅擦除
+           SO APAGAR -- apaga sem gravar nada de volta
+           ERASE ONLY -- erases without writing anything back
+
+    [ ] 6. 频偏校准（清除PSM变量）
+           calibracao que APAGA as variaveis PSM
+           calibration that ERASES the PSM variables
+
+  NAO MEXA no resto / DO NOT TOUCH the rest:
+
+       Flash size(KB)          deixe como veio / leave as is
+       蓝牙地址递增基数         endereco Bluetooth / BT address
+       蓝牙地址基值             endereco Bluetooth / BT address
+
+  Clique  Save.
+
+
+------------------------------------------------------------------
+PASSO 3 - ESCOLHER O FIRMWARE / SELECT THE FIRMWARE
+------------------------------------------------------------------
+
+  Botao  "Select .up file"  (canto superior direito)
+  Button "Select .up file"  (top right)
+
+  Escolha, na PASTA DE CIMA:
+  Pick, in the FOLDER ABOVE:
+
+         ..\OpenPod_Beta7.up
+
+  CONFIRA O CAMINHO NA BARRA. Tem que terminar em OpenPod_Beta7.up
+  CHECK THE PATH IN THE BAR. It must end in OpenPod_Beta7.up
+
+
+------------------------------------------------------------------
+PASSO 4 - MODO DE GRAVACAO / FLASHING MODE
+------------------------------------------------------------------
+
+  Este modo mora na ROM do chip. Roda antes de qualquer firmware,
+  entao funciona mesmo com o aparelho travado.
+  This mode lives in the chip ROM. It runs before any firmware, so
+  it works even if the player is bricked.
+
+      1. Conecte o cabo USB no computador
+         Connect the USB cable to the computer
+
+      2. SEGURE o botao de VOLUME PARA BAIXO
+         HOLD the VOLUME DOWN button
+
+      3. Sem soltar, aperte RESET (o furinho lateral)
+         While holding it, press RESET (the small side hole)
+
+      4. Solte o VOLUME
+         Release VOLUME
+
+  A tela fica APAGADA. Isso e o esperado.
+  The screen stays DARK. That is expected.
+
+  >>> SE O WINDOWS OFERECER FORMATAR: NAO. Feche a janela.
+  >>> IF WINDOWS OFFERS TO FORMAT: NO. Close the dialog.
+      Formatar escreve na flash. / Formatting writes to the flash.
+
+
+------------------------------------------------------------------
+PASSO 5 - GRAVAR / BURN
+------------------------------------------------------------------
+
+  Clique  Burn.  A barra vai de 0% a 100%.
+  Click   Burn.  The bar goes from 0% to 100%.
+
+  NAO desconecte nada.
+  Do NOT disconnect anything.
+
+  O aparelho reinicia sozinho no fim (passo 2, opcao 2).
+  The player reboots by itself at the end (step 2, option 2).
+
+
+------------------------------------------------------------------
+PASSO 6 - CONFERIR / CHECK
+------------------------------------------------------------------
+
+  Configurar -> Informacoes:   OpenPod 5.7 Beta 7
+  Settings   -> Information :  OpenPod 5.7 Beta 7
+
+
+------------------------------------------------------------------
+DAQUI PARA A FRENTE / FROM NOW ON
+------------------------------------------------------------------
+
+  Voce so precisa do Windows UMA VEZ.
+  You only need Windows ONCE.
+
+  Com o OpenPod instalado, o aparelho passa a ter
+  Configurar -> Atualizar por SD. As proximas versoes entram por
+  cartao: copie o .up para a raiz do cartao com o nome update.up,
+  e use essa opcao. Nao precisa de computador.
+
+  With OpenPod installed, the player gets Settings -> Update via SD.
+  Future versions go in by card: copy the .up to the card root named
+  update.up and use that option. No computer needed.
+
+  Depois que atualizar, APAGUE o update.up do cartao -- senao o
+  aparelho tenta atualizar toda vez que liga.
+  After updating, DELETE update.up from the card -- otherwise the
+  player tries to update on every boot.
+
+
+------------------------------------------------------------------
+SE NAO LIGAR / IF IT WILL NOT BOOT
+------------------------------------------------------------------
+
+  NAO DESLIGUE. Nao entre em panico: o aparelho e recuperavel.
+  DO NOT POWER OFF. Do not panic: the player is recoverable.
+
+  O modo do PASSO 4 roda antes de qualquer firmware e ja foi
+  confirmado funcionando com a flash destruida. Repita o PASSO 4 e
+  grave de novo.
+
+  The mode in STEP 4 runs before any firmware and has been confirmed
+  working with a destroyed flash. Repeat STEP 4 and burn again.
+
+
+------------------------------------------------------------------
+AVISO / WARNING
+------------------------------------------------------------------
+
+  O unico arquivo .up que pode ser gravado neste aparelho e o
+  OpenPod_Beta7.up que veio neste pacote, ou um gerado a partir de
+  um dump deste mesmo aparelho.
+
+  NUNCA grave um .up de outro produto, mesmo que o programa aceite
+  e mesmo que o aparelho pareca igual. Ja teve gente que brickou o
+  aparelho exatamente assim.
+
+  The only .up you may write to this player is the OpenPod_Beta7.up
+  in this package, or one built from a dump of this same player.
+
+  NEVER write a .up from another product, even if the tool accepts
+  it and even if the player looks identical. People have bricked
+  theirs doing exactly that.
