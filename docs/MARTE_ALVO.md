@@ -129,7 +129,7 @@ Cada linha carrega classe de confiança, conforme a regra §7 do
 | ~~**M-d**~~ | barra de rolagem | **não existe** | ✅ **FEITO — Core 1.3** | — | **1 byte** |
 | ~~**M-e**~~ | ícone **decorativo** de linha | não existe | ✅ **FEITO — Core 1.4**, 23 telas | — | **2 bytes** |
 | ~~**M-f**~~ cor | seleção | AZUL RGB(41,101,222) | ✅ **FEITO — Core 1.2**, 2 bytes | **PROVADO POR DIAGNÓSTICO** | falta só o degradê (= M-h) |
-| **M-g** | bateria | ícone colorido | casca **prateada** (5.3) + barra **verde** (5.2), ambas do Marte | **parcial** | o bitmap com degradê exige objeto de imagem |
+| **M-g** | bateria | ícone colorido | casca **prateada** + miolo **verde** `RGB(180,246,131)`, ambos do Marte | ✅ **FEITO — Core 5.7**, confirmado na tela | o degradê em bitmap **não será feito**: ver nota abaixo |
 | **M-h** | degradê da faixa | 19 linhas, `nanoclone.json` | faixa lisa | **CONFIRMADO** | **revisto em 18/09: NÃO é rotina nova** — ver §5 |
 | ~~**M-i**~~ | cores dos 6 campos | ver `nanoclone.json` | ✅ **FECHADO em 18/09** — nada a fazer | **MEDIDO** | — |
 | **M-j** | luminância | claro | escuro | **DESVIO ACEITO** | — não fazer |
@@ -545,7 +545,7 @@ M-d  barra de rolagem    FEITO  Core 1.3
 M-e  icone de linha      FEITO  Core 1.4
 M-f  cor da selecao      FEITO  Core 1.2
 M-i  as 6 cores          FECHADO 18/09 — nada a fazer
-M-g  bateria             PARCIAL — casca e nivel nas cores do Marte
+M-g  bateria             FEITO   Core 5.7 — casca prateada, miolo verde
                                    (Core 5.2/5.3); o bitmap falta
 M-h  degrade da faixa    DESBLOQUEADO — ver docs/IMAGENS.md
 M-j  tema claro          DESVIO ACEITO
@@ -569,9 +569,12 @@ A tabela M-a…M-j fala **só da tela de menu**. A tela Tocando Agora é uma
 frente inteira sem plano — e é onde o aparelho passa a maior parte do
 tempo de uso real.
 
-> **Para concluir o Marte** faltam, em ordem de custo:
-> 1. **M-h** — o degradê da faixa (dado + 1 chamada)
-> 2. **M-g** — a bateria em bitmap (objeto de imagem)
-> 3. **Tocando Agora** — a frente que não tem tabela
+> **Para concluir o Marte** falta:
+> 1. **Tocando Agora** — a frente que não tem tabela
+> 2. **M-h** — o degradê da faixa, se for desejado (ver nota)
 >
-> E, antes de 1 ou 2, a decisão sobre o **crédito CC-BY-SA**.
+> **O M-g está encerrado.** A bateria aparece na tela com a casca
+> prateada e o miolo verde do Marte, confirmado no aparelho em
+> 2026-09-18. O degradê em bitmap seria refinamento cosmético sobre um
+> item que já está certo, custaria o crédito CC-BY-SA, e **não deve ser
+> reaberto** sem alguém pedir explicitamente.

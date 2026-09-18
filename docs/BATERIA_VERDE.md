@@ -65,16 +65,14 @@ Patchar ali quebra o outro caminho. Continua branco, de propósito.
 Não é defeito visível: é um dos estados de nível, e o resultado na tela
 está correto.
 
-## 5. O que sobra do M-g
+## 5. O M-g está encerrado
 
-A cor está feita. O que falta é o **degradê em bitmap** do Marte, que
-exige um objeto de imagem (`lv_img_dsc_t`) — **e esse bloqueio caiu em
-2026-09-18**: o descritor está medido e confirmado em `docs/IMAGENS.md`.
+A cor está na tela e está certa. O que restava na tabela do Marte era
+trocar a bateria desenhada por um **bitmap com degradê** — refinamento
+cosmético sobre um item que já funciona, ao custo do crédito CC-BY-SA.
 
-Continua de pé só a decisão sobre o crédito CC-BY-SA, que o primeiro
-pixel do NanoClone gravado no firmware torna obrigatório.
-
-Ver `docs/MARTE_ALVO.md` §M-g.
+**Não fazer.** Se alguém reabrir isto, que seja por pedido explícito, não
+por item de lista.
 
 ## 6. A lição de método
 
