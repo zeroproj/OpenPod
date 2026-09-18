@@ -112,15 +112,17 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-of
   box-shadow:0 10px 30px rgba(17,21,27,.16);
 }
 .screen{
+  /* O OpenPod segue o Marte em tudo MENOS a luminancia: fundo preto,
+     texto branco. Nao e escolha estetica -- o painel mostra faixas
+     horizontais sobre fundo claro. Ver docs/MARTE_ALVO.md. */
   width:176px; height:132px; transform:scale(var(--s)); transform-origin:top left;
-  background:#fff; color:#000; position:relative;
+  background:#000; color:#fff; position:relative;
   font:600 11px/1 var(--body);
 }
 .band{
   height:16px; display:flex; align-items:center; gap:4px; padding:0 3px;
-  background:linear-gradient(var(--band-top),var(--band-base));
-  border-bottom:1px solid var(--rule);
-  font-size:9px; color:#000;
+  background:#000; border-bottom:1px solid var(--rule);
+  font-size:9px; color:#fff;
 }
 .band .mid{margin-inline:auto; font-weight:600}
 .batt{width:15px; height:8px; border:1px solid #6d7681; border-radius:2px; background:var(--shell); position:relative; display:flex; align-items:center; padding:1px}
@@ -129,9 +131,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-of
 .row{height:16px; display:flex; align-items:center; padding:0 5px; font-size:10px}
 .row.sel{background:linear-gradient(var(--sel-top),var(--sel-base)); color:#fff}
 .grid9{display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:5px}
-.tile{aspect-ratio:1/1; display:grid; place-items:center; border:1px solid #c8cdd3; border-radius:2px; background:#f4f6f8}
-.tile.sel{border-color:var(--sel-base); background:var(--accent-soft)}
-.tile svg{width:13px; height:13px; fill:none; stroke:#3b444e; stroke-width:1.6}
+.tile{aspect-ratio:1/1; display:grid; place-items:center; border:1px solid #3a424c; border-radius:2px; background:#14181d}
+.tile.sel{border-color:var(--sel-top); background:var(--sel-base)}
+.tile svg{width:13px; height:13px; fill:none; stroke:#c3ccd6; stroke-width:1.6}
 
 .caption{font:400 13px/1.5 var(--body); color:var(--ink-3); margin-top:10px; max-width:calc(176px * var(--s))}
 .stage .notes{flex:1 1 240px; min-width:0}
@@ -253,10 +255,12 @@ footer a{color:var(--ink-2)}
             </div>
           </div>
         </div>
-        <p class="caption" data-lang-pt>Reconstrução em CSS a 176×132, a resolução real da tela. As cores
-          são as medidas no firmware, não aproximações.</p>
-        <p class="caption" data-lang-en>CSS reconstruction at 176×132, the real screen resolution. The
-          colours are the ones measured in the firmware, not approximations.</p>
+        <p class="caption" data-lang-pt>Reconstrução em CSS a 176×132, a resolução real da tela, com as
+          cores medidas no firmware. O fundo é preto de propósito: este painel mostra faixas horizontais
+          sobre fundo claro.</p>
+        <p class="caption" data-lang-en>CSS reconstruction at 176×132, the real screen resolution, with
+          the colours measured in the firmware. The background is black on purpose: this panel shows
+          horizontal banding over light backgrounds.</p>
       </div>
 
       <div class="notes">
