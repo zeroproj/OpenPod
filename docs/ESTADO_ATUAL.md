@@ -81,7 +81,9 @@ OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
 | DIAG 6 | 🔍 | índice 3 abre o Extras ⇒ o código executa |
 | DIAG 7 | ✅ | o `sub` era o culpado |
 | **5.0** | ✅ | a tela inicial do OpenPod |
-| **5.1** | ⚠️ | contexto da Pastas — **não resolveu**. Ver `docs/PASTAS_ABERTO.md` |
+| **5.1** | ⚠️ | contexto da Pastas — não resolveu. `docs/PASTAS_ABERTO.md` |
+| 5.2 – 5.6 | ✅ | faixa 16 px, alinhamento, cores da bateria |
+| **5.7** | ✅ | **NO APARELHO = BETA 1.** Miolo da bateria ainda não fica verde: `docs/BATERIA_VERDE_ABERTO.md` |
 
 > ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
 > remendos em cima do mesmo código danificado. Volte para a 2.4.
