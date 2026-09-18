@@ -11,7 +11,10 @@
 ## 1. Onde o aparelho está
 
 ```
-OpenPod Core 4.6     <- O PONTO ESTAVEL. O voltar retorna ao Extras.
+OpenPod Core 4.7     <- A ULTIMA BOA. Extras completo, voltar certo,
+                        M e VOL inertes. firmware/RELEASE/OpenPod Core 4.7/
+
+OpenPod Core 4.6     <- o voltar retorna ao Extras.
                         firmware/RELEASE/OpenPod Core 4.6/
 
 OpenPod Core 4.2     <- o ponto estavel anterior. O Extras fechado: os seis
@@ -67,7 +70,12 @@ OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
 | **4.3** | ❌ | réplica da Pastas: nem abria. OBSOLETA |
 | **4.4** | ✅ | = 4.2; o voltar não foi resolvido |
 | **4.5** | ❌ | **TRAVOU o aparelho**: `bx lr` sem desfazer o push. OBSOLETA |
-| **4.6** | ✅ | **NO APARELHO. O voltar retorna ao Extras.** ESTÁVEL |
+| **4.6** | ✅ | o voltar retorna ao Extras |
+| **4.7** | ✅ | **A ÚLTIMA BOA.** M e VOL inertes na tela inicial |
+| **4.8** | ⚠️ | home com 4 itens, mas **Configurar não abre** |
+| **4.9** | ⚠️ | idem; acrescentou `movs r0,#1`, não resolveu |
+| DIAG 6 | 🔍 | índice 3 abre o Extras ⇒ o código executa |
+| DIAG 7 | ⬜ | página `0x28` com `sub` 0 — **pendente de teste** |
 
 > ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
 > remendos em cima do mesmo código danificado. Volte para a 2.4.

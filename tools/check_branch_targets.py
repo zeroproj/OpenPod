@@ -192,11 +192,20 @@ def main():
             continue
         if classe.get(reg) == "dados":
             continue          # faixa de recurso: desvio decodificado e ruido
+        # O alvo ainda e inicio de instrucao valida na imagem nova?
+        # Se sim, a instrucao foi ALTERADA NO LUGAR -- o desvio continua
+        # pousando certo. Se nao, o alvo foi DESTRUIDO.
+        md1 = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
+        o_alvo = alvo - args.base
+        ins_nova = next(md1.disasm(patch[o_alvo:o_alvo + 4], alvo), None)
+        no_lugar = ins_nova is not None and alvo == reg[0] + args.base
         quebrados.append({
             "origem": addr,
             "instrucao": texto,
             "alvo": alvo,
             "faixa": [reg[0] + args.base, reg[1] + args.base],
+            "no_lugar": no_lugar,
+            "virou": f"{ins_nova.mnemonic} {ins_nova.op_str}" if ins_nova else "?",
         })
 
     # --- linha de base: separa o que e REGRESSAO do que e ruido antigo ---
@@ -216,13 +225,17 @@ def main():
     else:
         novos = quebrados
 
+    # separa os que foram DESTRUIDOS dos que so mudaram de instrucao
+    destruidos = [q for q in novos if not q.get("no_lugar")]
+    no_lugar = [q for q in novos if q.get("no_lugar")]
+
     # --- verificacao 2: desvio que PULA PARA O MEIO da faixa reescrita ---
     # (roda sobre `novos`, ja filtrado pela baseline)
     # Mais util que procurar instrucao partida (que da falso positivo em
     # cima de dados): se alguem desvia para o meio do que voce reescreveu,
     # o patch tem que ter preservado aquele ponto de entrada.
     orfas = []
-    for q in novos:
+    for q in destruidos:
         if q["alvo"] != q["faixa"][0]:
             orfas.append({
                 "desvio_em": q["origem"],
@@ -231,9 +244,10 @@ def main():
             })
 
     if args.json:
-        print(json.dumps({"destinos_quebrados": novos,
+        print(json.dumps({"destinos_quebrados": destruidos,
+                          "alterados_no_lugar": no_lugar,
                           "instrucoes_partidas": orfas}, indent=2))
-        return 1 if (novos or orfas) else 0
+        return 1 if (destruidos or orfas) else 0
 
     print(f"original : {args.original}")
     print(f"patched  : {args.patched}")
@@ -246,16 +260,25 @@ def main():
         print(f"baseline : {args.baseline}")
         print(f"achados herdados da baseline (ignorados): {len(herdados)}\n")
 
-    if novos:
+    if no_lugar:
+        print(f"-- {len(no_lugar)} alvo(s) ALTERADO(S) NO LUGAR (confira, "
+              f"nao reprova)\n")
+        for q in no_lugar:
+            print(f"   {q['origem']:#010x}  {q['instrucao']:<22}"
+                  f" -> {q['alvo']:#010x} virou `{q['virou']}`")
+        print()
+
+    if destruidos:
         etiqueta = "NOVO(S)" if args.baseline else ""
-        print(f"!! {len(novos)} desvio(s) {etiqueta} apontam para faixa sobrescrita\n")
-        for q in novos:
+        print(f"!! {len(destruidos)} desvio(s) {etiqueta} apontam para "
+              f"alvo DESTRUIDO\n")
+        for q in destruidos:
             print(f"   {q['origem']:#010x}  {q['instrucao']:<22}"
                   f" -> destino {q['alvo']:#010x} foi reescrito")
             print(f"       (faixa {q['faixa'][0]:#010x}-{q['faixa'][1]:#010x})")
         print()
     else:
-        print("ok: nenhum desvio novo aponta para faixa sobrescrita\n")
+        print("ok: nenhum desvio novo aponta para alvo destruido\n")
 
     if orfas:
         print(f"!! {len(orfas)} desvio(s) entram no MEIO de uma faixa reescrita\n")
@@ -267,7 +290,7 @@ def main():
     else:
         print("ok: nenhum desvio entra no meio de faixa reescrita\n")
 
-    ruim = bool(novos or orfas)
+    ruim = bool(destruidos or orfas)
     print("REPROVADO" if ruim else "APROVADO")
     return 1 if ruim else 0
 

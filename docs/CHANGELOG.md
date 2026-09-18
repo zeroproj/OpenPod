@@ -59,6 +59,74 @@ falhasse. **Parei.**
 
 ---
 
+## 2026-09-18 — Core 4.7 — ✅ M e VOL ficam inertes na tela inicial
+
+**3 bytes.** O menor patch do projeto.
+
+`M` e `VOL` pulavam três linhas — semântica da grade 3×3 de fábrica, sem
+sentido numa lista. Decisão do mantenedor entre quatro opções: **não
+fazerem nada**.
+
+Os dois despachos passam a cair na saída de "tecla não reconhecida" que
+o firmware já tem (`0x00D2E992`, que faz `pop.w {r4,r5,r6,lr}` e
+retorna):
+
+```asm
+0x00D2E9F2   beq #0x00D2EAEE  ->  beq #0x00D2E992   (key_id 0x81)
+0x00D2EA00   bne #0x00D2E992  ->  b   #0x00D2E992   (key_id 0xA0)
+```
+
+Nenhum ramo foi reescrito: os blocos de ±3 continuam na imagem, só
+ficaram inalcançáveis. E não foi preciso resolver qual tecla é `0xA0` e
+qual é `0x81` — a incógnita que o `BUTTON_ANALYSIS.md` deixou aberta em
+setembro. Com as duas inertes, ela deixou de importar.
+
+---
+
+## 2026-09-18 — Core 4.8 / 4.9 — ⚠️ home com quatro itens, Configurar NÃO ABRE
+
+O alvo do `PLANO_EXTRAS.md`: tirar da home os cinco itens repetidos no
+Extras, deixando **Música · Vídeo · Extras · Configurar**.
+
+Seis pontos acoplados, todos medidos:
+
+| Onde | O quê |
+|---|---|
+| `0x00D2ECFC` | o laço do `create` desenha 9 → 4 |
+| `0x00D2EA4E` | rotação para cima: 0 volta para 3 |
+| `0x00D2EAD6` | rotação para baixo: passou de 3 volta a 0 |
+| `0x00D2EA66` | o *entrar* valida índice ≤ 3 |
+| `0x00C486CC` | rótulo do item 3: Rádio → Configurar |
+| `0x00D0113C` | o índice 3 passa a abrir a página `0x28` |
+
+**A home passou a ter quatro itens, mas Configurar não abre.**
+
+A 4.9 acrescentou `movs r0,#1` (a origem), que o caso de fábrica do
+índice 7 não tinha — ele conta com `r0` já valendo 1. Não resolveu.
+
+### ⚠️ Quebrar Configurar derruba a rede de segurança
+
+A opção **Atualizar por SD mora dentro de Configurar**. Sem ela, só
+resta gravar por cabo. Uma mudança que toca o Configurar tem que ser
+tratada como risco alto, não como mais um patch de menu.
+
+E o kit por cabo precisa ser gerado com `--base` igual ao que está **no
+aparelho** — o script confere `ptable`, `FIRM` e `TONE` antes de
+escrever, e aborta se não bater.
+
+### Diagnósticos
+
+**DIAG 6** (índice 3 abre `0x53` em vez de `0x28`): abriu o Extras ⇒ o
+código do índice 3 **executa**.
+
+> Erro de método meu: a DIAG 6 mudou **duas** variáveis — a página e o
+> `sub` (7 → 0). O resultado não distingue qual importava. É o vício que
+> passei o dia combatendo, e escorreguei nele.
+
+**DIAG 7** (página `0x28`, `sub` 7 → 0): **pendente de teste.**
+
+---
+
 ## 2026-09-18 — Core 4.6 — ✅ o voltar retorna ao Extras
 
 **Confirmada no aparelho:** *"aparentemente normal, inclusive a volta
