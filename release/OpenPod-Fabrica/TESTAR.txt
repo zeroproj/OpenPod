@@ -1,0 +1,42 @@
+FIRMWARE DE FABRICA — yp3_2.0.43
+=================================
+
+Esta NAO e uma versao do OpenPod. E o firmware ORIGINAL do aparelho,
+exatamente como saiu de fabrica.
+
+    SHA-256 do conteudo: b7cd5eb952be5328cbaa926099cf8d88...
+    CRC do pacote: 0x77F5, conferido
+    A area de configuracoes (PSMP) NAO e tocada
+
+SERVE PARA RESPONDER DUAS PERGUNTAS
+------------------------------------
+
+1. BLUETOOTH — entre nas opcoes que reiniciavam.
+
+   reinicia aqui tambem  -> defeito de fabrica, fechado de vez
+   NAO reinicia          -> e nosso, e em algum lugar que eu ainda
+                            nao olhei
+
+2. A FAIXA DE CIMA — olhe o topo da tela com o Bluetooth ligado.
+
+   o icone do Bluetooth pisca sobre o titulo aqui tambem
+       -> a colisao ja existia; nos so a tornamos visivel ao por
+          texto no centro
+   o icone fica em outro lugar
+       -> a colisao e nossa, e eu sei onde procurar
+
+   ATENCAO: de fabrica a tela inicial e uma GRADE de 9 icones, nao
+   uma lista. Pode ser que nao haja titulo no centro da faixa -- se
+   for esse o caso, me diga, porque ja responde a pergunta.
+
+O QUE VOCE PERDE ENQUANTO ESTIVER NELE
+---------------------------------------
+
+Tudo do OpenPod: a tela inicial em lista, o menu Extras, a barra de
+selecao azul, as linhas de 16 px, os tempos em mm:ss, o fundo preto.
+Volta tudo quando voce regravar a Beta 8.
+
+COMO VOLTAR
+------------
+
+Grave o OpenPod_Beta8.up do pacote da Beta 8.
