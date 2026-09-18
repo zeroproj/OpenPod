@@ -167,7 +167,7 @@ DESTINOS = [
     (0x0C, 0, 0x00D01162, "F", "Livro digital"),   # caso de fabrica, home idx 4
     (0x15, 0, "imagem_fab", None, "Imagem"),       # replica com a origem CERTA
     (0x23, 0, None,     None,   "Bluetooth"),
-    (0x22, 1, None,     None,   "Pastas"),
+    (0x22, 1, None,     None,   "Pastas"),         # a replica da 4.3 QUEBROU: nem abria
 ]
 
 CHECA_LISTA = 0x00D45CAC         # a verificacao que faltava
@@ -176,6 +176,26 @@ IMG_E8EC    = 0x00D0E8EC
 IMG_E39C    = 0x00D0E39C
 IMG_EDCC    = 0x00D3EDCC
 IMG_SCAN    = 0x00D0D058         # atualiza a lista de imagens
+
+# --- Pastas: ela NAO abre por pagina ---------------------------------
+# O caso de fabrica (home idx 8, 0x00D0128C) termina assim:
+#     ldr r3,=0x0081BE68 / ldr r0,=0x00C4CA69   ; o caminho "0:"
+#     str.w r0,[r3,#0x100]                       ; guarda o contexto
+#     movs r1,#2 / pop.w {...} / b.w 0x00D3EBAC
+# Abrir a pagina 0x22 pela primitiva deixa o navegador SEM esse
+# ponteiro -- ele funciona, mas o "voltar" nao tem para onde ir.
+# Mantenedor: "consigo fazer tudo mas nao consigo voltar, parece que ele
+# nao sabe o que fazer".
+PAS_CONTA   = 0x00D3EC58         # quantos arquivos faltam varrer
+PAS_CTX     = 0x0081BE68         # +0x100 guarda o caminho
+PAS_PATH    = 0x00C4CA69         # a string do caminho raiz
+PAS_ABRE    = 0x00D3EBAC         # o navegador de arquivos
+EMPILHA     = 0x00D0D9E8         # empilha uma pagina na pilha de navegacao
+PAG_EXTRAS  = 0x53
+REGISTRA    = 0x00D3EDA8         # registra o callback da varredura
+CB_PASTAS   = 0x00D00DE1
+MSG_BOX     = 0x00D0E2F0
+STR_GET     = 0x00D2108C
 
 # rotinas da preparacao do FM, medidas em 0x00D0113C
 FM_STR     = 0x00D2108C          # get_string
@@ -213,6 +233,7 @@ class Bloco:
     """
     def __init__(self, base):
         self.base, self.b, self.rot = base, bytearray(), {}
+        self.pend, self.pend_lit = [], []
     def rotulo(self, nome):
         self.rot[nome] = self.base + len(self.b)
     @property
@@ -226,6 +247,40 @@ class Bloco:
         self.b.extend(bl(self.pos, destino))
     def bw(self, destino):
         self.b.extend(bw(self.pos, destino))
+    def cond(self, op, rotulo):
+        """Desvio condicional curto para um rotulo AINDA nao definido.
+
+        Emite com destino provisorio e corrige em `resolver()`. Existe
+        porque contar o offset a mao ja produziu tres bugs neste
+        arquivo -- um `bhs` na 3.6 e um `ble` na 4.3, os dois caindo no
+        MEIO de outra instrucao.
+        """
+        self.pend.append((len(self.b), self.pos, op, rotulo))
+        self.h(op)
+
+    def lit(self, op, rotulo):
+        """`ldr rX,[pc,#imm]` para um rotulo ainda nao definido.
+
+        Pelo mesmo motivo de `cond`: offset de pool contado a mao quebra
+        toda vez que o codigo acima cresce um byte.
+        """
+        self.pend_lit.append((len(self.b), self.pos, op, rotulo))
+        self.h(op)
+
+    def resolver(self):
+        for pos, addr, op, rot in self.pend_lit:
+            alvo = self.rot[rot]
+            imm = alvo - ((addr + 4) & ~3)
+            assert 0 <= imm <= 0x3FC and imm % 4 == 0, f"{rot}: pool a {imm:#x}"
+            self.b[pos:pos + 2] = (op | (imm // 4)).to_bytes(2, "little")
+        self.pend_lit = []
+        for pos, addr, op, rot in self.pend:
+            alvo = self.rot[rot]
+            off = (alvo - (addr + 4)) // 2
+            assert -128 <= off <= 127, f"{rot}: fora de alcance"
+            self.b[pos:pos + 2] = (op | (off & 0xFF)).to_bytes(2, "little")
+        self.pend = []
+
     def alinha(self, n=4):
         while len(self.b) % n:
             self.h(0xBF00) if len(self.b) % 2 == 0 else self.b.append(0)
@@ -237,42 +292,83 @@ def montar():
 
     k.h(0x89A2)                       # ldrh r2, [r4, #0xc]
     k.h(0x2A06)                       # cmp  r2, #6
-    k.h(0xD219)                       # bhs  FIM
+    k.cond(0xD200, "fim")             # bhs  FIM
     k.h(0x4615)                       # mov  r5, r2
-    k.h(0x4B0D)                       # ldr  r3, [pc,#0x34] -> &TAB_CHK
+    # --- o VOLTAR: empilha o Extras antes de abrir o item ------------
+    # 0x00D0DA64 devolve o destino do voltar desempilhando a pilha de
+    # navegacao em 0x00823D05+0x0C (entradas de 5 B, profundidade em
+    # +0x57). PILHA VAZIA -> devolve 1, a home. Abrir um item pelo
+    # Extras nao empilhava nada, entao o voltar sempre caia na home.
+    k.h(0x2053)                       # movs r0, #0x53
+    k.bl(EMPILHA)                     # bl   0x00D0D9E8   (r5 sobrevive)
+    k.h(0x462A)                       # mov  r2, r5       (o bl clobbra r2)
+    k.lit(0x4B00, "p_chk")            # ldr  r3, -> &TAB_CHK
     k.h(0x5C9B)                       # ldrb r3, [r3, r2]
     k.h(0x2B00)                       # cmp  r3, #0
-    k.h(0xD003)                       # beq  PREP
+    k.cond(0xD000, "prep")            # beq  PREP
     k.bl(CHECA_CART)                  # bl   checa cartao
     k.h(0x2800)                       # cmp  r0, #0
-    k.h(0xD00E)                       # beq  SEMCARTAO
-    k.h(0x4B0A)                       # PREP: ldr r3,[pc,#0x28] -> &TAB_PREP
+    k.cond(0xD000, "semcartao")       # beq  SEMCARTAO
+    k.rotulo("prep"); k.lit(0x4B00, "p_prep")  # ldr r3, -> &TAB_PREP
     k.b.extend(bytes.fromhex("53f82530"))   # ldr.w r3, [r3, r5, lsl #2]
     k.h(0x2B00)                       # cmp  r3, #0
-    k.h(0xD000)                       # beq  ABRE
+    k.cond(0xD000, "abre")            # beq  ABRE
     k.h(0x4798)                       # blx  r3
-    k.h(0x4B08)                       # ABRE: ldr r3,[pc,#0x20] -> &TAB_PAG
+    k.rotulo("abre"); k.lit(0x4B00, "p_pag")   # ldr r3, -> &TAB_PAG
     k.h(0x5D5B)                       # ldrb r3, [r3, r5]
     k.h(0x2200)                       # movs r2, #0
     k.h(0x8961)                       # ldrh r1, [r4, #0xa]
     k.h(0x8920)                       # ldrh r0, [r4, #8]
     k.b.extend(bytes.fromhex("bde8f041"))   # pop.w {r4,r5,r6,r7,r8,lr}
     k.bw(ABRE_PAG)
-    k.bw(SEM_CARTAO)                  # SEMCARTAO
-    k.bw(RETORNO)                     # FIM
+    k.rotulo("semcartao"); k.bw(SEM_CARTAO)
+    k.rotulo("fim"); k.bw(RETORNO)
     k.h(0xBF00)
-    assert k.pos == A + 0x40, hex(k.pos)
-    k.w(A + 0x58); k.w(A + 0x60); k.w(A + 0x78)   # &TAB_CHK, &TAB_PREP, &TAB_PAG
-    k.b.extend(b"\x00" * 0x0C)
-    assert k.pos == A + 0x58
-    k.b.extend(bytes(chk for _, chk, _, _, _ in DESTINOS)); k.b.extend(b"\x00\x00")
-    assert k.pos == A + 0x60
-    tab_prep_em = len(k.b)
-    k.b.extend(b"\x00" * 24)           # TAB_PREP, preenchida no fim
-    assert k.pos == A + 0x78
-    k.b.extend(bytes(pg for pg, _, _, _, _ in DESTINOS)); k.b.extend(b"\x00\x00")
+    k.alinha()
+    k.rotulo("p_chk");  k.w(0)
+    k.rotulo("p_prep"); k.w(0)
+    k.rotulo("p_pag");  k.w(0)
+    k.rotulo("tab_chk")
+    k.b.extend(bytes(chk for _, chk, _, _, _ in DESTINOS)); k.alinha()
+    k.rotulo("tab_prep"); tab_prep_em = len(k.b)
+    k.b.extend(b"\x00" * 24)
+    k.rotulo("tab_pag")
+    k.b.extend(bytes(pg for pg, _, _, _, _ in DESTINOS)); k.alinha()
 
     # ---- sub-rotinas de preparacao, replicadas dos casos de fabrica ----
+    k.rotulo("pastas")                # replica de 0x00D0128C
+    k.bl(CHECA_CART)
+    k.h(0x2800); k.h(0xD101); k.bw(0x00D01138)      # sem cartao
+    k.h(0x2000); k.bl(CHECA_LISTA)
+    k.h(0x2800); k.h(0xD101); k.bw(0x00D011BE)      # sem lista
+    k.bl(PAS_CONTA)
+    k.h(0x1E04)                       # subs r4, r0, #0
+    k.cond(0xDD00, "pastas_abre")     # ble  ABRE
+    k.h(0x209A); k.bl(STR_GET)        # movs r0,#0x9a ; get_string
+    k.h(0x4601); k.h(0x2001); k.bl(MSG_BOX)         # "Lendo arquivos"
+    k.h(0x2000)                       # movs r0, #0
+    p_cb, a_cb = len(k.b), k.pos; k.h(0x4900)       # ldr r1, =CB_PASTAS
+    k.bl(REGISTRA)
+    k.h(0x4620)                       # mov  r0, r4
+    k.bw(0x00D010AE)                  # b.w  a cauda comum
+    k.rotulo("pastas_abre")
+    k.h(0xD101); k.bw(0x00D01302)     # bne -> erro (conta negativa)
+    p_ctx, a_ctx = len(k.b), k.pos; k.h(0x4B00)     # ldr r3, =PAS_CTX
+    p_pa, a_pa = len(k.b), k.pos; k.h(0x4800)       # ldr r0, =PAS_PATH
+    k.b.extend(bytes.fromhex("c3f80001"))           # str.w r0,[r3,#0x100]
+    k.h(0x2102)                       # movs r1, #2
+    k.b.extend(bytes.fromhex("bde8f041"))           # pop.w {r4,r5,r6,r7,r8,lr}
+    k.bw(PAS_ABRE)                    # b.w  0x00D3EBAC
+    k.alinha()
+    lit = k.pos
+    k.w(CB_PASTAS); k.w(PAS_CTX); k.w(PAS_PATH)
+    for pos, addr, op, alvo in ((p_cb, a_cb, 0x4900, lit),
+                                (p_ctx, a_ctx, 0x4B00, lit + 4),
+                                (p_pa, a_pa, 0x4800, lit + 8)):
+        imm = alvo - ((addr + 4) & ~3)
+        assert 0 <= imm <= 0x3FC and imm % 4 == 0, (hex(addr), hex(imm))
+        k.b[pos:pos + 2] = (op | (imm // 4)).to_bytes(2, "little")
+
     k.rotulo("imagem_fab")            # replica de 0x00D011AE, cauda corrigida
     k.bl(CHECA_CART)                  # bl   cartao?
     k.h(0x2800)                       # cmp  r0, #0
@@ -324,6 +420,11 @@ def montar():
 
 
 
+    # os tres ponteiros do pool apontam para as tabelas
+    for rot, dest in (("p_chk","tab_chk"), ("p_prep","tab_prep"), ("p_pag","tab_pag")):
+        q = k.rot[rot] - k.base
+        k.b[q:q+4] = k.rot[dest].to_bytes(4, "little")
+    k.resolver()                      # corrige desvios e pools
     # preenche TAB_PREP agora que os rotulos existem
     for i, (_, _, prep, _, _) in enumerate(DESTINOS):
         if isinstance(prep, int):      # salto direto para caso de fabrica

@@ -60,7 +60,9 @@ OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
 | **3.9** | ✅ | experimento: Livro digital varre. Mecanismo provado |
 | **4.0** | ❌ | Imagem travava tudo depois (origem fixa = home) |
 | **4.1** | ✅ | rótulo "Extras" nos nove idiomas |
-| **4.2** | ✅ | **NO APARELHO. O Extras fechado.** ESTÁVEL |
+| **4.2** | ✅ | o Extras fechado |
+| **4.3** | ❌ | réplica da Pastas: nem abria. OBSOLETA |
+| **4.4** | ✅ | **NO APARELHO.** = 4.2; o voltar NÃO foi resolvido |
 
 > ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
 > remendos em cima do mesmo código danificado. Volte para a 2.4.
