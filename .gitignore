@@ -53,3 +53,7 @@ analysis/readbacks/**/smartlink_flash/
 
 # copia de trabalho paralela (repositorio proprio, 411 MB)
 OpenPod GPT/
+
+# gravador da Shenju: proprietario, 40 MB, e reconstruivel a partir
+# de firmware/VENDOR/B27.zip. Ver docs/TESTE_FLASHLOADER.md.
+release/*/windows/*.exe

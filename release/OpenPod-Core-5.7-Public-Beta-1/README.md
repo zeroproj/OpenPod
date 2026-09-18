@@ -12,6 +12,22 @@ An iPod nano–inspired interface for the **Iigenai GN-438** player
 
 ## Install / Instalar
 
+### Windows
+
+Open **`windows/LEIA-ME.txt`** and follow it. Everything you need is in
+the `windows/` folder, including the manufacturer's flashing tool.
+
+*Abra **`windows/LEIA-ME.txt`** e siga. Está tudo na pasta `windows/`,
+inclusive o gravador do fabricante.*
+
+> ⚠️ **This path has not been tested by us yet.** The firmware file is
+> verified byte for byte; the tool writing it is not. The guide says what
+> to report back.
+>
+> *⚠️ **Este caminho ainda não foi testado por nós.***
+
+### Linux / macOS
+
 ```sh
 sh install.sh
 ```
@@ -53,10 +69,13 @@ works for a player that is already running OpenPod.
 *A Beta 1 instala **por cabo USB**. O caminho do cartão precisa de
 `Configurar → Atualizar por SD`, que o GN-438 de fábrica não tem.*
 
-The cable needs the flashing tool, which is **not bundled**: a separate
-project by **Ilya Kurdyukov**, with no license that allows redistribution.
+**Windows:** nothing to install by hand — the tool is in `windows/`.
 
-*O cabo precisa da ferramenta de gravação, que **não vem junto**.*
+**Linux / macOS:** needs `smtlink_dump`, which is **not bundled**: a
+separate project by **Ilya Kurdyukov**, with no license that allows
+redistribution.
+
+*Linux/macOS: precisa do `smtlink_dump`, que **não vem junto**.*
 
 ```sh
 git clone https://github.com/ilyakurdyukov/smartlink_flash
@@ -92,7 +111,10 @@ firmware.
 
 - **iPod nano** is an Apple trademark. This project uses **no Apple code
   or artwork** — it reproduces interface principles only.
-- Flashing tool: **smartlink_flash**, by **Ilya Kurdyukov**.
+- Flashing tool (Linux/macOS): **smartlink_flash**, by **Ilya Kurdyukov**.
+- Flashing tool (Windows): **Flashloader SL-DEV 6.9.5**, by **Shenju**,
+  the chip maker. Redistributed unmodified, as a convenience. Not ours,
+  and not part of OpenPod.
 - Visual direction references the **NanoClone** theme by **Billy Blair**
   (CC-BY-SA 3.0). Only **measured colour values** were used —
   no pixels were copied.

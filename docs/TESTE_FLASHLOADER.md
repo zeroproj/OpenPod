@@ -69,6 +69,33 @@ bateria nem em cabo ruim.
 
 ---
 
+## Como remontar a pasta `windows/` do pacote
+
+O `.exe` do Flashloader **não está no git** — são 40 MB de software
+proprietário da Shenju, e o `B27.zip` de onde ele sai já estava fora
+(`.gitignore`, regra `*.zip`). Para reconstruir:
+
+```sh
+R="release/OpenPod-Core-5.7-Public-Beta-1"
+mkdir -p "$R/windows"
+unzip -o -j firmware/VENDOR/B27.zip "SetupFlashloaderSL-DEV(6.9.5).exe" -d "$R/windows"
+mv "$R/windows/SetupFlashloaderSL-DEV(6.9.5).exe" "$R/windows/FlashloaderSL-DEV-6.9.5.exe"
+```
+
+SHA-256 do `.exe`:
+
+```text
+7dbb5dcd884af4f4af22e9784f5a0873d939ccdb4c8379cee75ae744d110e168
+```
+
+> ⚠️ Extraia **só o `.exe`**. O `B27.zip` também contém o
+> `B27_251112.up` — firmware de outro produto. Ele não pode acabar na
+> mesma pasta onde o usuário escolhe um `.up`.
+
+O `windows/LEIA-ME.txt`, esse sim, está no git.
+
+---
+
 ## Procedimento
 
 ### 1. Instalar e abrir

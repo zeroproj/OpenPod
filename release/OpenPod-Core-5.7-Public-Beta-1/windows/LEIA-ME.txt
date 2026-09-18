@@ -1,0 +1,206 @@
+OpenPod - Public Beta 1 - INSTALAR NO WINDOWS / INSTALL ON WINDOWS
+==================================================================
+
+  >>> ESTE CAMINHO AINDA NAO FOI TESTADO POR NOS. <<<
+  >>> THIS PATH HAS NOT BEEN TESTED BY US YET.    <<<
+
+  O arquivo de firmware esta conferido byte a byte. O que nao sabemos
+  e se este programa grava ele direito. Voce e quem vai descobrir.
+  No fim deste arquivo tem o que anotar e mandar de volta.
+
+  The firmware file is verified byte for byte. What we do not know is
+  whether this program writes it correctly. You are the one finding
+  out. At the end of this file is what to report back.
+
+
+------------------------------------------------------------------
+ANTES DE COMECAR / BEFORE YOU START
+------------------------------------------------------------------
+
+  [ ] Notebook NA TOMADA. A gravacao e de 1,7 MB.
+      Laptop ON AC POWER. The write is 1.7 MB.
+
+  [ ] Cabo USB de DADOS, nao de carga. E o erro mais comum.
+      A DATA USB cable, not charge-only. Most common mistake.
+
+  [ ] Aparelho com carga.
+      Player charged.
+
+
+------------------------------------------------------------------
+PASSO 1 - INSTALAR O PROGRAMA / INSTALL THE PROGRAM
+------------------------------------------------------------------
+
+  Rode:  windows\FlashloaderSL-DEV-6.9.5.exe
+
+  E o Flashloader SL-DEV 6.9.5, o programa oficial da Shenju,
+  fabricante do chip. Nao e nosso. Esta aqui so para facilitar.
+
+  It is Flashloader SL-DEV 6.9.5, the official tool from Shenju,
+  who makes the chip. It is not ours. It is here for convenience.
+
+
+------------------------------------------------------------------
+PASSO 2 - ESCOLHER O FIRMWARE / SELECT THE FIRMWARE
+------------------------------------------------------------------
+
+  Deixe "automatic download" DESMARCADO.
+  Leave "automatic download" UNCHECKED.
+
+     Com essa caixa marcada o programa grava sozinho em qualquer
+     aparelho que aparecer, antes de voce conferir o arquivo.
+     With that box checked it writes to any device that shows up,
+     before you get to check the file.
+
+  Clique "Select a firmware file" e escolha:
+  Click "Select a firmware file" and pick:
+
+         OpenPod_Beta1.up
+
+  CONFIRA O NOME NA TELA. Tem que dizer OpenPod_Beta1.
+  CHECK THE NAME ON SCREEN. It must say OpenPod_Beta1.
+
+
+------------------------------------------------------------------
+PASSO 3 - MODO DE GRAVACAO / FLASHING MODE
+------------------------------------------------------------------
+
+  Este modo mora na ROM do chip. Roda antes de qualquer firmware,
+  entao funciona mesmo com o aparelho travado.
+  This mode lives in the chip ROM. It runs before any firmware, so
+  it works even if the player is bricked.
+
+      1. Conecte o cabo USB no computador
+         Connect the USB cable to the computer
+
+      2. SEGURE o botao de VOLUME PARA BAIXO
+         HOLD the VOLUME DOWN button
+
+      3. Sem soltar, aperte RESET (o furinho lateral)
+         While holding it, press RESET (the small side hole)
+
+      4. Solte o VOLUME
+         Release VOLUME
+
+  A tela fica APAGADA. Isso e o esperado.
+  The screen stays DARK. That is expected.
+
+  No Windows deve aparecer uma UNIDADE NOVA (uma letra de disco).
+  On Windows a NEW DRIVE should appear (a drive letter).
+
+  >>> SE O WINDOWS OFERECER FORMATAR: NAO. Feche a janela.
+  >>> IF WINDOWS OFFERS TO FORMAT: NO. Close the dialog.
+      Formatar escreve na flash. / Formatting writes to the flash.
+
+
+------------------------------------------------------------------
+PASSO 4 - LER A FLASH ANTES / READ THE FLASH FIRST
+------------------------------------------------------------------
+
+  >>> NAO PULE ESTE PASSO. / DO NOT SKIP THIS STEP. <<<
+
+  Botao DIREITO no dispositivo -> opcao de LEITURA (read).
+  Salve como:  antes.bin
+  RIGHT-CLICK the device -> READ. Save as: antes.bin
+
+  Esse arquivo e o seu caminho de volta. Se algo der errado, e ele
+  que devolve o aparelho ao estado de agora. Sem ele, vira aposta.
+
+  That file is your way back. If anything goes wrong, it is what
+  restores the player to how it is now. Without it, it is a gamble.
+
+  Se a leitura NAO funcionar, PARE e avise. Nao grave sem backup.
+  If the read does NOT work, STOP and say so. Do not write without
+  a backup.
+
+
+------------------------------------------------------------------
+PASSO 5 - GRAVAR / WRITE
+------------------------------------------------------------------
+
+  Botao DIREITO no dispositivo -> BURN.
+  RIGHT-CLICK the device -> BURN.
+
+  NAO desconecte nada. Leva alguns minutos.
+  Do NOT disconnect anything. It takes a few minutes.
+
+
+------------------------------------------------------------------
+PASSO 6 - LER DE NOVO / READ AGAIN
+------------------------------------------------------------------
+
+  Mesma leitura do passo 4. Salve como:  depois.bin
+  Same read as step 4. Save as: depois.bin
+
+
+------------------------------------------------------------------
+PASSO 7 - LIGAR / TURN IT ON
+------------------------------------------------------------------
+
+  Desconecte, aperte RESET, deixe ligar.
+  Disconnect, press RESET, let it boot.
+
+  Confira em  Configurar -> Informacoes:   OpenPod Beta 1
+  Check under Settings   -> Information :  OpenPod Beta 1
+
+
+------------------------------------------------------------------
+SE NAO LIGAR / IF IT WILL NOT BOOT
+------------------------------------------------------------------
+
+  NAO DESLIGUE. Nao entre em panico: o aparelho e recuperavel.
+  DO NOT POWER OFF. Do not panic: the player is recoverable.
+
+  O modo do PASSO 3 roda antes de qualquer firmware e ja foi
+  confirmado funcionando com a flash destruida. Repita o PASSO 3,
+  selecione o  antes.bin  que voce salvou e grave de volta.
+
+  The mode in STEP 3 runs before any firmware and has been confirmed
+  working with a destroyed flash. Repeat STEP 3, select the
+  antes.bin you saved, and write it back.
+
+
+------------------------------------------------------------------
+O QUE MANDAR DE VOLTA / WHAT TO REPORT BACK
+------------------------------------------------------------------
+
+  1. O programa reconheceu o aparelho? Apareceu letra de unidade?
+     Did it recognise the player? Did a drive letter appear?
+
+  2. A leitura funcionou? Quantos bytes saiu o antes.bin?
+     Did the read work? How many bytes is antes.bin?
+
+  3. A gravacao terminou sem erro? Quanto tempo levou?
+     Did the write finish without error? How long did it take?
+
+  4. O aparelho ligou? A tela de Informacoes diz OpenPod Beta 1?
+     Did it boot? Does Information say OpenPod Beta 1?
+
+  5. Suas configuracoes (volume, EQ, idioma) sobreviveram?
+     Did your settings (volume, EQ, language) survive?
+
+  6. Mande os arquivos  antes.bin  e  depois.bin.
+     Send the antes.bin and depois.bin files.
+
+  O item 5 e o que prova que a area de configuracoes ficou de fora.
+  Item 5 is what proves the settings area was left alone.
+
+
+------------------------------------------------------------------
+AVISO / WARNING
+------------------------------------------------------------------
+
+  O unico arquivo .up que pode ser gravado neste aparelho e o
+  OpenPod_Beta1.up que veio nesta pasta, ou um gerado a partir de
+  um dump deste mesmo aparelho.
+
+  NUNCA grave um .up de outro produto, mesmo que o programa aceite
+  e mesmo que o aparelho pareca igual. Ja teve gente que brickou o
+  aparelho exatamente assim.
+
+  The only .up you may write to this player is the OpenPod_Beta1.up
+  in this folder, or one built from a dump of this same player.
+
+  NEVER write a .up from another product, even if the tool accepts
+  it and even if the player looks identical. People have bricked
+  theirs doing exactly that.
