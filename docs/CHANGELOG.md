@@ -7,6 +7,51 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-18 — Public Beta 7 — as linhas de 22 px acabam
+
+Publicada. Junta o que as Betas 4 a 7 acumularam.
+
+| | |
+|---|---|
+| listas | 9 linhas em vez de 6 — 48 px deixam de ser desperdiçados |
+| Bluetooth e Hora e data | linha de 22 px → 16, como o resto |
+| tempos | `00:04:02` → `04:02` |
+| contador da fila | `7/152` → `7 - 152` |
+| fundo da Tocando Agora | preto |
+
+### O erro que custou três tentativas
+
+A altura de linha foi atacada **três vezes**:
+
+```text
+patch_faixa_16px    varreu por VALOR FIXO      achou 23, faltou 1
+patch_bt_linha      varreu por ASSINATURA      achou  1, faltou 5
+patch_linha16_geral varreu por SIGNIFICADO     achou  6, faltou 0
+```
+
+As duas primeiras casaram **forma**. O mantenedor gravou, olhou a tela
+e o Bluetooth continuava grande — duas vezes.
+
+É a mesma falha da bateria verde, onde a varredura por assinatura achou
+4 dos 7 escritores de cor. **Varredura por forma sempre perde alguém e
+não avisa.**
+
+A terceira desmonta o código e procura o padrão — um divisor 7, em
+qualquer registrador, alimentando `set_size` ou `set_height` — e
+**varre de novo depois de gravar**, abortando se sobrar sítio.
+
+### O que mais saiu barato
+
+Os tempos custaram menos do que pareciam: o firmware **já calculava**
+minutos totais e segundos antes de quebrar em horas. Bastou passar o
+que já estava pronto e repontar para `"%02d:%02d"`, que **já existia**
+no binário.
+
+O contador virou `7 - 152` e não `7 de 152` por decisão do mantenedor —
+o travessão não é palavra nenhuma, então serve aos oito idiomas. Melhor
+que a minha proposta.
+
+
 ## 2026-09-18 — Public Beta 3 — o papel de parede sai da frente
 
 **Uma mudança, e ela é de dados, não de código.**
