@@ -16,8 +16,11 @@ An iPod nano–inspired interface for the **Iigenai GN-438** player
 sh install.sh
 ```
 
-It asks for your language, then walks you through it.
-*Ele pergunta o idioma e conduz o resto.*
+It asks for your language first, then walks you through it. The
+flashing script speaks the same language.
+
+*Ele pergunta o idioma antes de tudo e conduz o resto. O script de
+gravação fala a mesma língua.*
 
 ---
 
@@ -42,13 +45,17 @@ de fábrica, não o substitui.*
 
 ## Requirements / Requisitos
 
-**microSD path:** nothing. *Caminho do cartão: nada.*
+Beta 1 installs **by USB cable**. The microSD route needs
+`Settings → Update via SD`, which a stock GN-438 does not have — it only
+works for a player that is already running OpenPod.
 
-**USB cable path:** the flashing tool, which is **not bundled**. It is a
-separate project by **Ilya Kurdyukov** and carries no license that
-allows redistribution.
+*A Beta 1 instala **por cabo USB**. O caminho do cartão precisa de
+`Configurar → Atualizar por SD`, que o GN-438 de fábrica não tem.*
 
-*Caminho do cabo: a ferramenta de gravação, que **não vem junto**.*
+The cable needs the flashing tool, which is **not bundled**: a separate
+project by **Ilya Kurdyukov**, with no license that allows redistribution.
+
+*O cabo precisa da ferramenta de gravação, que **não vem junto**.*
 
 ```sh
 git clone https://github.com/ilyakurdyukov/smartlink_flash

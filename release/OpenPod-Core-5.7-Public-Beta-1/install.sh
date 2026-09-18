@@ -27,11 +27,11 @@ t() { if [ "$LANG_SEL" = en ]; then echo "$1"; else echo "$2"; fi; }
 
 # ---------------------------------------------------------------- card
 by_card() {
-hd "$(t 'PATH 1 - microSD card  (simplest)' 'CAMINHO 1 - cartao microSD  (o mais simples)')"
+hd "$(t 'microSD card' 'cartao microSD')"
 if [ "$LANG_SEL" = en ]; then cat <<'TXT'
 
-  Use this if the player turns on and you can reach Settings.
-  No computer and no extra tool needed.
+  Only for a player that ALREADY has  Settings -> Update via SD .
+  A GN-438 on the stock firmware does not: use the USB cable.
 
   1. Copy  OpenPod_Beta1.up  to the ROOT of the card, renamed to:
 
@@ -51,8 +51,8 @@ if [ "$LANG_SEL" = en ]; then cat <<'TXT'
 TXT
 else cat <<'TXT'
 
-  Use este se o aparelho liga e voce chega em Configurar.
-  Nao precisa de computador nem de ferramenta nenhuma.
+  So para aparelho que JA tem  Configurar -> Atualizar por SD .
+  O GN-438 de fabrica nao tem: use o cabo USB.
 
   1. Copie  OpenPod_Beta1.up  para a RAIZ do cartao, renomeando para:
 
@@ -136,7 +136,7 @@ fi
 }
 
 by_cable() {
-    hd "$(t 'PATH 2 - USB cable' 'CAMINHO 2 - cabo USB')"
+    hd "$(t 'USB cable' 'cabo USB')"
     TOOL=$(find_tool) || { need_tool; exit 1; }
     ok "  $(t 'tool found:' 'ferramenta encontrada:') $TOOL"
 
@@ -200,6 +200,7 @@ TXT
 
     [ -f "$HERE/flash_OpenPod_Beta1.sh" ] || \
         die "$(t 'flash_OpenPod_Beta1.sh is missing.' 'falta o flash_OpenPod_Beta1.sh.')"
+    OPENPOD_LANG="$LANG_SEL" export OPENPOD_LANG
     sh "$HERE/flash_OpenPod_Beta1.sh" "$(dirname "$TOOL")"
 }
 
@@ -213,10 +214,11 @@ if [ "$LANG_SEL" = en ]; then cat <<'TXT'
 
   HOW DO YOU WANT TO INSTALL?
 
-    1) microSD card  - player turns on and you can reach Settings
-                       No computer needed. Recommended.
-    2) USB cable     - player will not boot, is stuck, or is on the
-                       stock firmware
+    1) USB cable     - coming from the stock firmware. This is the
+                       one to use for Beta 1.
+    2) microSD card  - ONLY if the player already shows
+                       Settings -> Update via SD
+                       The stock GN-438 does not offer it.
     3) Quit
 
 TXT
@@ -224,10 +226,11 @@ else cat <<'TXT'
 
   COMO VOCE QUER INSTALAR?
 
-    1) Cartao microSD - o aparelho liga e voce chega em Configurar
-                        Nao precisa de computador. Recomendado.
-    2) Cabo USB       - o aparelho nao liga, travou, ou esta no
-                        firmware de fabrica
+    1) Cabo USB       - vindo do firmware de fabrica. E este o
+                        caminho da Beta 1.
+    2) Cartao microSD - SO se o aparelho ja mostrar
+                        Configurar -> Atualizar por SD
+                        O GN-438 de fabrica nao oferece isso.
     3) Sair
 
 TXT
@@ -235,7 +238,7 @@ fi
 printf '  > '
 read -r OP
 case "$OP" in
-  1) by_card ;;
-  2) by_cable ;;
+  1) by_cable ;;
+  2) by_card ;;
   *) echo; echo "  bye / ate logo."; exit 0 ;;
 esac

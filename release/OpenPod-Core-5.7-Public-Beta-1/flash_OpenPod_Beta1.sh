@@ -27,8 +27,8 @@ die() {
     log ""
     log "*** $*"
     if [ "$WROTE" -ne 0 ]; then
-        log "*** JA HAVIA GRAVADO $WROTE setor(es). NAO DESLIGUE O APARELHO."
-        log "*** REVERSAO para o estado ANTERIOR (a base deste kit):"
+        log "$(m ja_gravou) $WROTE $(m ja_gravou2)"
+        log "$(m reversao)"
         log "***   sudo $TOOL --id $DEV write_flash 0x48000 0 0x1000 base_48000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x52000 0 0x1000 base_52000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x53000 0 0x1000 base_53000.bin"
@@ -73,9 +73,9 @@ die() {
         log "***   sudo $TOOL --id $DEV write_flash 0x1A3000 0 0x1000 base_1A3000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x1A4000 0 0x1000 base_1A4000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x1A6000 0 0x1000 base_1A6000.bin"
-        log "*** Depois rode diag.sh e confira antes de desligar."
+        log "$(m diag)"
     else
-        log "*** Nada foi gravado."
+        log "$(m nada)"
     fi
     exit 1
 }
@@ -83,8 +83,163 @@ sha()  { python3 -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'r
 size() { python3 -c "import os,sys;print(os.path.getsize(sys.argv[1]))" "$1"; }
 rsha() { python3 -c "import hashlib,sys;d=open(sys.argv[1],'rb').read()[int(sys.argv[2]):int(sys.argv[2])+int(sys.argv[3])];print(hashlib.sha256(d).hexdigest())" "$1" "$2" "$3"; }
 
+# ------------------------------------------------------------------ idioma
+# Se o install.sh ja perguntou, ele passa OPENPOD_LANG e nao perguntamos
+# de novo. Rodando este script sozinho, a pergunta vem aqui.
+OPENPOD_LANG=${OPENPOD_LANG:-}
+if [ "$OPENPOD_LANG" != en ] && [ "$OPENPOD_LANG" != pt ]; then
+    printf '\n  1) English     2) Portugues do Brasil\n  > '
+    read -r _IDIOMA
+    case "$_IDIOMA" in 1) OPENPOD_LANG=en ;; *) OPENPOD_LANG=pt ;; esac
+    echo
+fi
+m() {
+    if [ "$OPENPOD_LANG" = en ]; then
+        case "$1" in
+        so_linux) echo "This script is for Linux." ;;
+        tool_falta) echo "smtlink_dump not found in" ;;
+        falta) echo "missing:" ;;
+        p1) echo "[1/6] checking the sector files..." ;;
+        nao_achei) echo "file not found:" ;;
+        tam_err) echo "wrong size, expected 4096 bytes:" ;;
+        sha_err) echo "SHA-256 does not match:" ;;
+        esperado) echo "expected" ;;
+        obtido) echo "got     " ;;
+        p2) echo "[2/6] looking for the player..." ;;
+        ja_conectado) echo "already connected:" ;;
+        conecte1) echo ">>> CONNECT THE GN-438 NOW (with the card inserted)." ;;
+        conecte2) echo ">>> NOTE: the MOST RELIABLE way is the other way round —" ;;
+        conecte3) echo ">>> plug it in, wait ~10s and ONLY THEN run the script." ;;
+        conecte4) echo ">>> Seen on 2026-09-12: connecting now, the player often" ;;
+        conecte5) echo ">>> re-enumerates right after (the Device N changes)." ;;
+        aguardando) echo ">>> Waiting up to" ;;
+        nao_apareceu) echo "the player did not show up in" ;;
+        detectado) echo "detected:" ;;
+        estab1) echo "waiting" ;;
+        estab2) echo "to stabilize..." ;;
+        caiu) echo "the player dropped while stabilizing. Reconnect and run again." ;;
+        continua) echo "still connected — OK" ;;
+        raio) echo "Screen shows the bolt and the player is steady? [y/N] " ;;
+        abortado) echo "aborted by the operator" ;;
+        p2b) echo "[2b/6] checking the tool first (recovery check)..." ;;
+        rc_ask) echo "Run the recovery check now? (checks the tool, reads the flash) [Y/n] " ;;
+        rc_skip) echo "SKIPPED at the operator's request" ;;
+        rc_run) echo "running — may take a while (clone, 15 hashes, build, read 2 MiB)" ;;
+        rc_fail) echo "recovery check FAILED. DO NOT PROCEED. code" ;;
+        rc_ok) echo "recovery check OK" ;;
+        rc_go) echo "Recovery check passed. Go ahead and write? [y/N] " ;;
+        rc_ausente) echo "recovery_check_linux.sh is not in this folder — skipping" ;;
+        p3) echo "[3/6] reading the flash, checking the state BEFORE..." ;;
+        le_ini) echo "initial read failed" ;;
+        incompleto) echo "is incomplete" ;;
+        falha) echo "FAIL " ;;
+        estado_err) echo "the player is NOT in the expected state. DO NOT PROCEED." ;;
+        conf1) echo " All checks passed. The next step MODIFIES the firmware." ;;
+        conf4) echo "   UNTOUCHED: bootloader, TONE, PSMP" ;;
+        palavra) echo "FLASH" ;;
+        digite) echo "Type EXACTLY  FLASH  to continue: " ;;
+        confirmou) echo "operator confirmed" ;;
+        gravando) echo "writing" ;;
+        wf_falhou) echo "write_flash failed at" ;;
+        rel_falhou) echo "re-read failed at" ;;
+        rel_tam) echo "re-read has the wrong size at" ;;
+        setor_err) echo "sector does NOT match after writing:" ;;
+        setor_ok) echo "OK — sector matches" ;;
+        p5) echo "[5/6] reading the whole flash, checking the state AFTER..." ;;
+        le_fim) echo "final read failed" ;;
+        res_ok) echo "RESULT: WRITTEN AND VERIFIED" ;;
+        desconecte) echo "   Disconnect and open the main menu." ;;
+        res_err) echo "RESULT: SOME REGION DOES NOT MATCH" ;;
+        nao_desligue) echo "   DO NOT power off. ROLLBACK to the PREVIOUS state:" ;;
+        leve) echo "  keep these: before.bin  after.bin  flash_" ;;
+        ja_gravou) echo "*** ALREADY WROTE" ;;
+        ja_gravou2) echo "sector(s). DO NOT POWER THE PLAYER OFF." ;;
+        reversao) echo "*** ROLLBACK to the PREVIOUS state (this kit's base):" ;;
+        diag) echo "*** Then run diag.sh and check before powering off." ;;
+        nada) echo "*** Nothing was written." ;;
+        escreve) echo "   writes   :" ;;
+        muda) echo "   changes  :" ;;
+        hdr) echo " OpenPod — writing" ;;
+        setores) echo "sectors" ;;
+        boot_na) echo " bootloader (0x0..0xD000): NOT ADDRESSED" ;;
+        *) echo "$1" ;;
+        esac
+    else
+        case "$1" in
+        so_linux) echo "Este script e para Linux." ;;
+        tool_falta) echo "smtlink_dump nao encontrado em" ;;
+        falta) echo "faltando:" ;;
+        p1) echo "[1/6] conferindo os arquivos de setor..." ;;
+        nao_achei) echo "nao encontrei:" ;;
+        tam_err) echo "tamanho errado, esperado 4096 bytes:" ;;
+        sha_err) echo "SHA-256 nao confere:" ;;
+        esperado) echo "esperado" ;;
+        obtido) echo "obtido  " ;;
+        p2) echo "[2/6] procurando o aparelho..." ;;
+        ja_conectado) echo "ja conectado:" ;;
+        conecte1) echo ">>> CONECTE O GN-438 AGORA (com o cartao inserido)." ;;
+        conecte2) echo ">>> ATENCAO: o caminho MAIS CONFIAVEL e o contrario —" ;;
+        conecte3) echo ">>> plugar, esperar ~10s e SO ENTAO rodar o script." ;;
+        conecte4) echo ">>> Observado em 2026-09-12: conectando agora, o aparelho" ;;
+        conecte5) echo ">>> costuma re-enumerar logo depois (muda o Device N)." ;;
+        aguardando) echo ">>> Aguardando ate" ;;
+        nao_apareceu) echo "o aparelho nao apareceu em" ;;
+        detectado) echo "detectado:" ;;
+        estab1) echo "aguardando" ;;
+        estab2) echo "para estabilizar..." ;;
+        caiu) echo "o aparelho caiu durante a estabilizacao. Reconecte e rode de novo." ;;
+        continua) echo "continua conectado — OK" ;;
+        raio) echo "A tela mostra o raio e o aparelho esta estavel? [s/N] " ;;
+        abortado) echo "abortado pelo operador" ;;
+        p2b) echo "[2b/6] verificacao previa da ferramenta (recovery check)..." ;;
+        rc_ask) echo "Rodar o recovery check agora? (confere a ferramenta e le a flash) [S/n] " ;;
+        rc_skip) echo "PULADO a pedido do operador" ;;
+        rc_run) echo "rodando — pode demorar (clona, confere 15 hashes, compila, le 2 MiB)" ;;
+        rc_fail) echo "recovery check FALHOU. NAO PROSSIGA. codigo" ;;
+        rc_ok) echo "recovery check OK" ;;
+        rc_go) echo "O recovery check passou. Pode seguir para a gravacao? [s/N] " ;;
+        rc_ausente) echo "recovery_check_linux.sh nao esta nesta pasta — pulando" ;;
+        p3) echo "[3/6] lendo a flash e conferindo o estado ANTES..." ;;
+        le_ini) echo "leitura inicial falhou" ;;
+        incompleto) echo "esta incompleto" ;;
+        falha) echo "FALHA" ;;
+        estado_err) echo "o aparelho NAO esta no estado esperado. NAO PROSSIGA." ;;
+        conf1) echo " Tudo conferido. A proxima etapa MODIFICA o firmware do aparelho." ;;
+        conf4) echo "   NAO toca: bootloader, TONE, PSMP" ;;
+        palavra) echo "GRAVAR" ;;
+        digite) echo "Digite EXATAMENTE  GRAVAR  para continuar: " ;;
+        confirmou) echo "operador confirmou" ;;
+        gravando) echo "gravando" ;;
+        wf_falhou) echo "write_flash falhou em" ;;
+        rel_falhou) echo "releitura falhou em" ;;
+        rel_tam) echo "releitura com tamanho errado em" ;;
+        setor_err) echo "setor NAO confere apos gravar:" ;;
+        setor_ok) echo "OK — setor confere" ;;
+        p5) echo "[5/6] lendo a flash inteira e conferindo o estado DEPOIS..." ;;
+        le_fim) echo "leitura final falhou" ;;
+        res_ok) echo "RESULTADO: GRAVADO E VERIFICADO" ;;
+        desconecte) echo "   Desconecte e abra o menu principal." ;;
+        res_err) echo "RESULTADO: ALGUMA REGIAO NAO CONFERE" ;;
+        nao_desligue) echo "   NAO desligue o aparelho. REVERSAO para o estado ANTERIOR:" ;;
+        leve) echo "  leve de volta: before.bin  after.bin  flash_" ;;
+        ja_gravou) echo "*** JA HAVIA GRAVADO" ;;
+        ja_gravou2) echo "setor(es). NAO DESLIGUE O APARELHO." ;;
+        reversao) echo "*** REVERSAO para o estado ANTERIOR (a base deste kit):" ;;
+        diag) echo "*** Depois rode diag.sh e confira antes de desligar." ;;
+        nada) echo "*** Nada foi gravado." ;;
+        escreve) echo "   grava  :" ;;
+        muda) echo "   muda   :" ;;
+        hdr) echo " OpenPod — gravacao do" ;;
+        setores) echo "setores" ;;
+        boot_na) echo " bootloader (0x0..0xD000): NAO ENDERECADO" ;;
+        *) echo "$1" ;;
+        esac
+    fi
+}
+# --------------------------------------------------------------------------
+
 log "======================================================================"
-log " OpenPod — gravacao do OPENPOD_BETA1   (44 setores, 176 KiB)"
+log "$(m hdr) OPENPOD_BETA1   (44 $(m setores), 176 KiB)"
 log " 0x048000 +0x1000   <- OpenPod_Beta1_48000.bin"
 log " 0x052000 +0x1000   <- OpenPod_Beta1_52000.bin"
 log " 0x053000 +0x1000   <- OpenPod_Beta1_53000.bin"
@@ -129,23 +284,23 @@ log " 0x149000 +0x1000   <- OpenPod_Beta1_149000.bin"
 log " 0x1A3000 +0x1000   <- OpenPod_Beta1_1A3000.bin"
 log " 0x1A4000 +0x1000   <- OpenPod_Beta1_1A4000.bin"
 log " 0x1A6000 +0x1000   <- OpenPod_Beta1_1A6000.bin"
-log " bootloader (0x0..0xD000): NAO ENDERECADO"
+log "$(m boot_na)"
 log "======================================================================"
 log ""
 
-[ "$(uname -s)" = "Linux" ] || die "Este script e para Linux."
-[ -x "$TOOL" ] || die "smtlink_dump nao encontrado em $TOOLDIR"
+[ "$(uname -s)" = "Linux" ] || die "$(m so_linux)"
+[ -x "$TOOL" ] || die "$(m tool_falta) $TOOLDIR"
 for c in python3 lsusb; do
-    command -v "$c" >/dev/null 2>&1 || die "faltando: $c"
+    command -v "$c" >/dev/null 2>&1 || die "$(m falta) $c"
 done
 
-log "[1/6] conferindo os arquivos de setor..."
+log "$(m p1)"
 ck_file() {
-    [ -f "$1" ] || die "nao encontrei $1"
-    s=$(size "$1"); [ "$s" = "4096" ] || die "$1 tem $s bytes, esperado 4096"
-    g=$(sha "$1");  [ "$g" = "$2" ] || die "SHA-256 de $1 nao confere.
-    esperado $2
-    obtido   $g"
+    [ -f "$1" ] || die "$(m nao_achei) $1"
+    s=$(size "$1"); [ "$s" = "4096" ] || die "$(m tam_err) $1 ($s)"
+    g=$(sha "$1");  [ "$g" = "$2" ] || die "$(m sha_err) $1
+    $(m esperado) $2
+    $(m obtido) $g"
     log "        OK   $1"
 }
 ck_file "OpenPod_Beta1_48000.bin" 6ea532bf216161b7d65e6fec3857f9f27890899a6e7ccd0cccff654fb471dd12
@@ -237,7 +392,7 @@ ck_file "base_1A3000.bin" 6f4ef0b382a9fa4d2792e8446613308544b251e2d512ea1b5d3b83
 ck_file "base_1A4000.bin" f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
 ck_file "base_1A6000.bin" f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
 
-log "[2/6] procurando o aparelho..."
+log "$(m p2)"
 # --- espera ativa pelo aparelho ---------------------------------
 # O aparelho precisa de alguns segundos entre plugar e o primeiro
 # comando, senao cai do modo card reader no meio da operacao.
@@ -246,35 +401,35 @@ ESTABILIZA=8      # segundos de folga apos detectar
 aguardar_aparelho() {
     U=$(lsusb | grep -i "301a:2801" || true)
     if [ -n "$U" ]; then
-        log "        ja conectado: $U"
+        log "        $(m ja_conectado) $U"
     else
         log ""
-        log "        >>> CONECTE O GN-438 AGORA (com o cartao inserido)."
-        log "        >>> ATENCAO: o caminho MAIS CONFIAVEL e o contrario —"
-        log "        >>> plugar, esperar ~10s e SO ENTAO rodar o script."
-        log "        >>> Observado em 2026-09-12: conectando agora, o aparelho"
-        log "        >>> costuma re-enumerar logo depois (muda o Device N)."
-        log "        >>> Aguardando ate ${ESPERA}s..."
+        log "        $(m conecte1)"
+        log "        $(m conecte2)"
+        log "        $(m conecte3)"
+        log "        $(m conecte4)"
+        log "        $(m conecte5)"
+        log "        $(m aguardando) ${ESPERA}s..."
         i=0
         while [ "$i" -lt "$ESPERA" ]; do
             U=$(lsusb | grep -i "301a:2801" || true)
             [ -n "$U" ] && break
             i=$((i + 1)); sleep 1
         done
-        [ -n "$U" ] || die "aparelho nao apareceu em ${ESPERA}s."
-        log "        detectado: $U"
+        [ -n "$U" ] || die "$(m nao_apareceu) ${ESPERA}s."
+        log "        $(m detectado) $U"
     fi
-    log "        aguardando ${ESTABILIZA}s para estabilizar..."
+    log "        $(m estab1) ${ESTABILIZA}s $(m estab2)"
     sleep "$ESTABILIZA"
     V=$(lsusb | grep -i "301a:2801" || true)
-    [ -n "$V" ] || die "o aparelho caiu durante a estabilizacao. Reconecte e rode de novo."
-    log "        continua conectado — OK"
+    [ -n "$V" ] || die "$(m caiu)"
+    log "        $(m continua)"
 }
 aguardar_aparelho
 log ""
-printf "A tela mostra o raio e o aparelho esta estavel? [s/N] "
+printf '%s' "$(m raio)"
 read -r OK
-case "$OK" in [sSyY]*) ;; *) die "abortado pelo operador" ;; esac
+case "$OK" in [sSyY]*) ;; *) die "$(m abortado)" ;; esac
 # ----------------------------------------------------------------
 
 # --- verificacao previa: recovery check -------------------------
@@ -282,72 +437,72 @@ case "$OK" in [sSyY]*) ;; *) die "abortado pelo operador" ;; esac
 # travado e recompila. Garante que a ferramenta que vai ESCREVER
 # no aparelho e exatamente a versao auditada. Ver RECOVERY_CHECK.md.
 log ""
-log "[2b/6] verificacao previa da ferramenta (recovery check)..."
+log "$(m p2b)"
 if [ -f ./recovery_check_linux.sh ]; then
-    printf "Rodar o recovery check agora? (confere a ferramenta e le a flash) [S/n] "
+    printf '%s' "$(m rc_ask)"
     read -r R0
     case "$R0" in
-        [nN]*) log "        PULADO a pedido do operador" ;;
-        *) log "        rodando — pode demorar (clona, confere 15 hashes, compila, le 2 MiB)"
+        [nN]*) log "        $(m rc_skip)" ;;
+        *) log "        $(m rc_run)"
            # IMPORTANTE: nao usar  cmd | tee || die  — o || receberia o
            # status do tee, e um recovery check REPROVADO passaria batido.
            if sh ./recovery_check_linux.sh "$WORK/precheck" >"$WORK/.rc_out" 2>&1; then
                RCST=0; else RCST=$?; fi
            tee -a "$LOG" >&3 < "$WORK/.rc_out"; rm -f "$WORK/.rc_out"
-           [ "$RCST" -eq 0 ] || die "recovery check FALHOU (codigo $RCST). NAO PROSSIGA."
+           [ "$RCST" -eq 0 ] || die "$(m rc_fail) $RCST"
            log ""
-           log "        recovery check OK"
-           printf "O recovery check passou. Pode seguir para a gravacao? [s/N] "
+           log "        $(m rc_ok)"
+           printf '%s' "$(m rc_go)"
            read -r R1
-           case "$R1" in [sSyY]*) ;; *) die "abortado pelo operador" ;; esac ;;
+           case "$R1" in [sSyY]*) ;; *) die "$(m abortado)" ;; esac ;;
     esac
 else
-    log "        recovery_check_linux.sh nao esta nesta pasta — pulando"
+    log "        $(m rc_ausente)"
 fi
 # ----------------------------------------------------------------
 
-log "[3/6] lendo a flash e conferindo o estado ANTES..."
+log "$(m p3)"
 "$TOOL" --id "$DEV" read_flash 0 2M "$WORK/before.bin" >>"$LOG" 2>&1 \
-    || die "leitura inicial falhou"
-[ "$(size "$WORK/before.bin")" = "2097152" ] || die "before.bin incompleto"
+    || die "$(m le_ini)"
+[ "$(size "$WORK/before.bin")" = "2097152" ] || die "before.bin $(m incompleto)"
 F=0
 ck() {
     g=$(rsha "$WORK/before.bin" "$2" "$3")
     if [ "$g" = "$4" ]; then log "        OK   $1"
-    else log "        FALHA $1"; log "          esperado $4"; log "          obtido   $g"; F=1; fi
+    else log "        $(m falha) $1"; log "          $(m esperado) $4"; log "          $(m obtido) $g"; F=1; fi
 }
 ck "bootloader" 0 51532 861184003923634be0f2ae9883456035b40d1ea72f97682890238edfae3acb31
 ck "ptable" 53248 64 9f93d4435e7cb819b2dad2f38edf91fb0a0af44654c4d9fcd3df174bf3380a2d
 ck "FIRM" 57344 1647984 e2a7b86339030b94268dac7d562a167613a3e769c866790353b4921cad85dbdc
 ck "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3f8b4ace
-[ "$F" -eq 0 ] || die "o aparelho NAO esta no estado esperado. NAO PROSSIGA."
+[ "$F" -eq 0 ] || die "$(m estado_err)"
 
 log ""
 log "======================================================================"
-log " Tudo conferido. A proxima etapa MODIFICA o firmware do aparelho."
-log "   grava  : 176 KiB em 44 setores"
-log "   muda   : OpenPod Beta 1 — a partir do firmware de fabrica"
-log "   NAO toca: bootloader, TONE, PSMP"
+log "$(m conf1)"
+log "$(m escreve) 176 KiB / 44 $(m setores)"
+log "$(m muda) OpenPod Beta 1 — a partir do firmware de fabrica"
+log "$(m conf4)"
 log "======================================================================"
-printf 'Digite EXATAMENTE  GRAVAR  para continuar: '
+printf '%s' "$(m digite)"
 read -r R
-[ "$R" = "GRAVAR" ] || die "abortado pelo operador"
-log "operador confirmou"
+[ "$R" = "$(m palavra)" ] || die "$(m abortado)"
+log "$(m confirmou)"
 log ""
 
 wr() {
-    log "[$1] gravando $2 a partir de $3..."
+    log "[$1] $(m gravando) $2 <- $3..."
     WROTE=$((WROTE + 1))
     "$TOOL" --id "$DEV" write_flash "$2" 0 0x1000 "$3" >>"$LOG" 2>&1 \
-        || die "write_flash em $2 falhou"
+        || die "$(m wf_falhou) $2"
     "$TOOL" --id "$DEV" read_flash "$2" 0x1000 "$WORK/sec.bin" >>"$LOG" 2>&1 \
-        || die "releitura de $2 falhou"
-    s=$(size "$WORK/sec.bin"); [ "$s" = "4096" ] || die "releitura de $2 tem $s bytes"
+        || die "$(m rel_falhou) $2"
+    s=$(size "$WORK/sec.bin"); [ "$s" = "4096" ] || die "$(m rel_tam) $2 ($s)"
     g=$(sha "$WORK/sec.bin")
-    [ "$g" = "$4" ] || die "setor $2 NAO confere apos gravar.
-    esperado $4
-    obtido   $g"
-    log "        OK — setor confere"
+    [ "$g" = "$4" ] || die "$(m setor_err) $2
+    $(m esperado) $4
+    $(m obtido) $g"
+    log "        $(m setor_ok)"
 }
 wr "4/6 1/44" 0x48000 "OpenPod_Beta1_48000.bin" 6ea532bf216161b7d65e6fec3857f9f27890899a6e7ccd0cccff654fb471dd12
 wr "4/6 2/44" 0x52000 "OpenPod_Beta1_52000.bin" 3b36d143a96aaab07e0927c9eecf4351f6b0a21c833d0a6f5352fd8226bc5ca3
@@ -395,15 +550,15 @@ wr "4/6 43/44" 0x1A4000 "OpenPod_Beta1_1A4000.bin" 276a5497517bf2f5aa9572c7db7a0
 wr "4/6 44/44" 0x1A6000 "OpenPod_Beta1_1A6000.bin" afa0a382c198de50a0b4c5b86dcaf9b1e24f7926860d1003a9f1186358d8f15f
 rm -f "$WORK/sec.bin"
 
-log "[5/6] lendo a flash inteira e conferindo o estado DEPOIS..."
+log "$(m p5)"
 "$TOOL" --id "$DEV" read_flash 0 2M "$WORK/after.bin" >>"$LOG" 2>&1 \
-    || die "leitura final falhou"
-[ "$(size "$WORK/after.bin")" = "2097152" ] || die "after.bin incompleto"
+    || die "$(m le_fim)"
+[ "$(size "$WORK/after.bin")" = "2097152" ] || die "after.bin $(m incompleto)"
 F=0
 ck2() {
     g=$(rsha "$WORK/after.bin" "$2" "$3")
     if [ "$g" = "$4" ]; then log "        OK   $1"
-    else log "        FALHA $1"; log "          esperado $4"; log "          obtido   $g"; F=1; fi
+    else log "        $(m falha) $1"; log "          $(m esperado) $4"; log "          $(m obtido) $g"; F=1; fi
 }
 ck2 "bootloader" 0 51532 861184003923634be0f2ae9883456035b40d1ea72f97682890238edfae3acb31
 ck2 "ptable" 53248 64 9f93d4435e7cb819b2dad2f38edf91fb0a0af44654c4d9fcd3df174bf3380a2d
@@ -413,13 +568,13 @@ ck2 "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee
 log ""
 log "======================================================================"
 if [ "$F" -eq 0 ]; then
-    log " [6/6] RESULTADO: OPENPOD_BETA1 GRAVADO E VERIFICADO"
+    log " [6/6] OPENPOD_BETA1 — $(m res_ok)"
     log ""
-    log "   Desconecte e abra o menu principal."
+    log "$(m desconecte)"
 else
-    log " [6/6] RESULTADO: ALGUMA REGIAO NAO CONFERE"
+    log " [6/6] $(m res_err)"
     log ""
-    log "   NAO desligue o aparelho. REVERSAO para o estado ANTERIOR:"
+    log "$(m nao_desligue)"
     log "     sudo $TOOL --id $DEV write_flash 0x48000 0 0x1000 base_48000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x52000 0 0x1000 base_52000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x53000 0 0x1000 base_53000.bin"
@@ -467,5 +622,5 @@ else
 fi
 log "======================================================================"
 log ""
-log "  leve de volta: before.bin  after.bin  flash_$VERSAO.log"
+log "$(m leve)$VERSAO.log"
 log ""
