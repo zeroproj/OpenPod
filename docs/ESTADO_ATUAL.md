@@ -59,7 +59,7 @@ A moldura da capa pode existir **vazia** antes da capa funcionar.
 | | |
 |---|---|
 | título mostra o nome do arquivo | a tela não recebe a tag — DIAG_titulo responde |
-| Bluetooth reinicia nas opções | 13 bytes nossos naquela região — DIAG_bt responde |
+| Bluetooth reinicia nas opções | **de fábrica, confirmado** — não é regressão nossa: `docs/BLUETOOTH_REINICIA.md` |
 | capa do álbum | APIC, buffer do JPEG e redimensionamento: **nenhum medido** |
 | Pastas | só volta depois de entrar numa pasta |
 
