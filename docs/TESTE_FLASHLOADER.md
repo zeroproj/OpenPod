@@ -196,11 +196,61 @@ gravar ele de novo.
 
 ---
 
-## Resultado
+## Resultado — FUNCIONOU
 
-> A preencher depois do teste. Enquanto esta seção disser isto, o
-> caminho do Flashloader **não entra em nenhum pacote público**.
+**2026-09-18. Testado no Windows, gravação concluída com sucesso.**
 
-- data:
-- funcionou:
-- observações:
+O caminho do Flashloader deixa de ser hipótese. O `windows/LEIA-ME.txt`
+do pacote foi reescrito com o procedimento real, que é diferente do que
+eu tinha suposto em dois pontos.
+
+### O procedimento que funciona
+
+1. `setting → Language → English` — o programa abre em chinês.
+2. `setting → Develp setting...` — a janela de configuração. **Ela
+   continua em chinês** mesmo com o menu em inglês.
+3. Marcar as **três primeiras** opções de `Burn`:
+
+   | # | rótulo | o que é |
+   |---|---|---|
+   | 1 | `自动下载` | download automático |
+   | 2 | `烧录完后自动重启` | reinicia depois de gravar |
+   | 3 | `烧录完重启后恢复出厂设置` | **restaura o padrão de fábrica** ao reiniciar |
+
+   Deixar desmarcadas, e isto importa:
+
+   | # | rótulo | o que é |
+   |---|---|---|
+   | 4 | `仅擦除` | **só apagar** — apaga sem gravar nada de volta |
+   | 6 | `频偏校准（清除PSM变量）` | calibração que **apaga as variáveis PSM** |
+
+4. `Save`.
+5. `Select .up file` → `OpenPod_Beta1.up`.
+6. `Burn`.
+
+### Duas correções ao que este documento dizia antes
+
+**1. "Deixe `automatic download` desmarcado" estava errado.** Eu tirei
+isso do readme em inglês da Shenju, que avisa que a opção grava sozinho
+em todo aparelho conectado. É verdade — e é justamente o que faz o fluxo
+funcionar. A precaução certa não é desmarcar: é **conectar só o aparelho
+que se quer gravar**.
+
+**2. "As configurações do usuário sobrevivem" estava errado.** A opção 3
+liga `restaurar padrão de fábrica`. Elas são zeradas. A PSMP ficar fora da
+cobertura do `.up` é verdade, mas não basta: o firmware faz o reset
+sozinho no boot seguinte. A música no cartão não é tocada.
+
+**Consequência:** o passo "ler a flash antes de gravar" saiu do guia
+público. Com `自动下载` marcado a gravação começa assim que o aparelho
+aparece — não existe janela para ler antes. Quem quiser o backup tem que
+tirá-lo por outro caminho, antes de abrir o Flashloader.
+
+### O que isto desbloqueia
+
+Depois da primeira gravação o aparelho passa a ter
+`Configurar → Atualizar por SD`. **O Windows só é necessário uma vez**:
+as versões seguintes entram por cartão, sem computador.
+
+Fecha o buraco identificado hoje de manhã — o caminho do cartão não servia
+para quem vinha de fábrica, e agora serve a partir da segunda versão.

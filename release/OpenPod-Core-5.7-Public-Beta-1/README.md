@@ -20,11 +20,17 @@ the `windows/` folder, including the manufacturer's flashing tool.
 *Abra **`windows/LEIA-ME.txt`** e siga. Está tudo na pasta `windows/`,
 inclusive o gravador do fabricante.*
 
-> ⚠️ **This path has not been tested by us yet.** The firmware file is
-> verified byte for byte; the tool writing it is not. The guide says what
-> to report back.
+This is the **recommended path**, and you only need it **once**: with
+OpenPod installed the player gets `Settings → Update via SD`, so future
+versions go in by card, with no computer.
+
+*É o **caminho recomendado**, e só é preciso **uma vez**: com o OpenPod
+instalado o aparelho passa a ter `Configurar → Atualizar por SD`.*
+
+> ⚠️ **Your settings are erased** (volume, EQ, language). Music on the
+> card is untouched.
 >
-> *⚠️ **Este caminho ainda não foi testado por nós.***
+> *⚠️ **Suas configurações são apagadas.** A música no cartão não é tocada.*
 
 ### Linux / macOS
 
@@ -82,12 +88,13 @@ de fábrica, não o substitui.*
 
 ## Requirements / Requisitos
 
-Beta 1 installs **by USB cable**. The microSD route needs
-`Settings → Update via SD`, which a stock GN-438 does not have — it only
-works for a player that is already running OpenPod.
+The first install is **by USB cable**, because a stock GN-438 has no
+`Settings → Update via SD`. OpenPod adds it, so every version after this
+one goes in by card.
 
-*A Beta 1 instala **por cabo USB**. O caminho do cartão precisa de
-`Configurar → Atualizar por SD`, que o GN-438 de fábrica não tem.*
+*A primeira instalação é **por cabo USB**, porque o GN-438 de fábrica não
+tem `Configurar → Atualizar por SD`. O OpenPod passa a ter — então da
+próxima versão em diante é pelo cartão.*
 
 **Windows:** nothing to install by hand — the tool is in `windows/`.
 

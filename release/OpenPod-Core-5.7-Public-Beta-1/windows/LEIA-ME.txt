@@ -1,16 +1,8 @@
 OpenPod - Public Beta 1 - INSTALAR NO WINDOWS / INSTALL ON WINDOWS
 ==================================================================
 
-  >>> ESTE CAMINHO AINDA NAO FOI TESTADO POR NOS. <<<
-  >>> THIS PATH HAS NOT BEEN TESTED BY US YET.    <<<
-
-  O arquivo de firmware esta conferido byte a byte. O que nao sabemos
-  e se este programa grava ele direito. Voce e quem vai descobrir.
-  No fim deste arquivo tem o que anotar e mandar de volta.
-
-  The firmware file is verified byte for byte. What we do not know is
-  whether this program writes it correctly. You are the one finding
-  out. At the end of this file is what to report back.
+  Procedimento TESTADO e confirmado funcionando.
+  Procedure TESTED and confirmed working.
 
 
 ------------------------------------------------------------------
@@ -23,12 +15,20 @@ ANTES DE COMECAR / BEFORE YOU START
   [ ] Cabo USB de DADOS, nao de carga. E o erro mais comum.
       A DATA USB cable, not charge-only. Most common mistake.
 
-  [ ] Aparelho com carga.
-      Player charged.
+  [ ] SO o aparelho que voce quer gravar conectado. O programa grava
+      sozinho em todo aparelho que aparecer.
+      ONLY the player you want to flash connected. The tool writes to
+      every device that shows up.
+
+  >>> SUAS CONFIGURACOES SERAO APAGADAS (volume, EQ, idioma).
+  >>> YOUR SETTINGS WILL BE ERASED (volume, EQ, language).
+      O passo 2 liga "restaurar padrao de fabrica". A musica no
+      cartao nao e tocada. / Step 2 turns on "restore factory
+      settings". Music on the card is not touched.
 
 
 ------------------------------------------------------------------
-PASSO 1 - INSTALAR O PROGRAMA / INSTALL THE PROGRAM
+PASSO 1 - INSTALAR E POR EM INGLES / INSTALL AND SET ENGLISH
 ------------------------------------------------------------------
 
   Rode o arquivo que esta nesta mesma pasta:
@@ -36,36 +36,76 @@ PASSO 1 - INSTALAR O PROGRAMA / INSTALL THE PROGRAM
 
          FlashloaderSL-DEV-6.9.5.exe
 
-  E o Flashloader SL-DEV 6.9.5, o programa oficial da Shenju,
-  fabricante do chip. Nao e nosso. Esta aqui so para facilitar.
+  Abre como "Firmware tool 6.9.5", em chines.
+  It opens as "Firmware tool 6.9.5", in Chinese.
 
-  It is Flashloader SL-DEV 6.9.5, the official tool from Shenju,
-  who makes the chip. It is not ours. It is here for convenience.
+  Menu:   setting  ->  Language  ->  English
+
+  E o programa oficial da Shenju, fabricante do chip. Nao e nosso.
+  It is the official tool from Shenju, who makes the chip. Not ours.
 
 
 ------------------------------------------------------------------
-PASSO 2 - ESCOLHER O FIRMWARE / SELECT THE FIRMWARE
+PASSO 2 - CONFIGURAR / CONFIGURE
 ------------------------------------------------------------------
 
-  Deixe "automatic download" DESMARCADO.
-  Leave "automatic download" UNCHECKED.
+  Menu:   setting  ->  Develp setting...
 
-     Com essa caixa marcada o programa grava sozinho em qualquer
-     aparelho que aparecer, antes de voce conferir o arquivo.
-     With that box checked it writes to any device that shows up,
-     before you get to check the file.
+  Abre a janela de configuracao. Ela continua em CHINES mesmo com o
+  menu em ingles -- por isso vao os nomes originais aqui.
+  The dialog stays in CHINESE even with the menu in English -- that
+  is why the original labels are listed here.
 
-  Clique "Select a firmware file" e escolha, na PASTA DE CIMA:
-  Click "Select a firmware file" and pick, in the FOLDER ABOVE:
+  MARQUE as TRES PRIMEIRAS, so essas:
+  CHECK the FIRST THREE, only those:
+
+    [x] 1. 自动下载
+           download automatico / auto download
+
+    [x] 2. 烧录完后自动重启
+           reinicia depois de gravar / auto reboot after burning
+
+    [x] 3. 烧录完重启后恢复出厂设置
+           restaura o padrao de fabrica ao reiniciar
+           restore factory settings after reboot
+
+  DEIXE DESMARCADAS / LEAVE UNCHECKED:
+
+    [ ] 4. 仅擦除
+           SO APAGAR -- apaga sem gravar nada de volta
+           ERASE ONLY -- erases without writing anything back
+
+    [ ] 6. 频偏校准（清除PSM变量）
+           calibracao que APAGA as variaveis PSM
+           calibration that ERASES the PSM variables
+
+  NAO MEXA no resto / DO NOT TOUCH the rest:
+
+       Flash size(KB)          deixe como veio / leave as is
+       蓝牙地址递增基数         endereco Bluetooth / BT address
+       蓝牙地址基值             endereco Bluetooth / BT address
+
+  Clique  Save.
+
+
+------------------------------------------------------------------
+PASSO 3 - ESCOLHER O FIRMWARE / SELECT THE FIRMWARE
+------------------------------------------------------------------
+
+  Botao  "Select .up file"  (canto superior direito)
+  Button "Select .up file"  (top right)
+
+  Escolha, na PASTA DE CIMA:
+  Pick, in the FOLDER ABOVE:
 
          ..\OpenPod_Beta1.up
 
-  CONFIRA O NOME NA TELA. Tem que dizer OpenPod_Beta1.
-  CHECK THE NAME ON SCREEN. It must say OpenPod_Beta1.
+  CONFIRA O CAMINHO NA BARRA. Tem que terminar em OpenPod_Beta1.up
+  CHECK THE PATH IN THE BAR. It must end in OpenPod_Beta1.up
 
 
 ------------------------------------------------------------------
-PASSO 3 - MODO DE GRAVACAO / FLASHING MODE
+PASSO 4 - MODO DE GRAVACAO / FLASHING MODE
 ------------------------------------------------------------------
 
   Este modo mora na ROM do chip. Roda antes de qualquer firmware,
@@ -88,63 +128,53 @@ PASSO 3 - MODO DE GRAVACAO / FLASHING MODE
   A tela fica APAGADA. Isso e o esperado.
   The screen stays DARK. That is expected.
 
-  No Windows deve aparecer uma UNIDADE NOVA (uma letra de disco).
-  On Windows a NEW DRIVE should appear (a drive letter).
-
   >>> SE O WINDOWS OFERECER FORMATAR: NAO. Feche a janela.
   >>> IF WINDOWS OFFERS TO FORMAT: NO. Close the dialog.
       Formatar escreve na flash. / Formatting writes to the flash.
 
 
 ------------------------------------------------------------------
-PASSO 4 - LER A FLASH ANTES / READ THE FLASH FIRST
+PASSO 5 - GRAVAR / BURN
 ------------------------------------------------------------------
 
-  >>> NAO PULE ESTE PASSO. / DO NOT SKIP THIS STEP. <<<
+  Clique  Burn.  A barra vai de 0% a 100%.
+  Click   Burn.  The bar goes from 0% to 100%.
 
-  Botao DIREITO no dispositivo -> opcao de LEITURA (read).
-  Salve como:  antes.bin
-  RIGHT-CLICK the device -> READ. Save as: antes.bin
+  NAO desconecte nada.
+  Do NOT disconnect anything.
 
-  Esse arquivo e o seu caminho de volta. Se algo der errado, e ele
-  que devolve o aparelho ao estado de agora. Sem ele, vira aposta.
-
-  That file is your way back. If anything goes wrong, it is what
-  restores the player to how it is now. Without it, it is a gamble.
-
-  Se a leitura NAO funcionar, PARE e avise. Nao grave sem backup.
-  If the read does NOT work, STOP and say so. Do not write without
-  a backup.
+  O aparelho reinicia sozinho no fim (passo 2, opcao 2).
+  The player reboots by itself at the end (step 2, option 2).
 
 
 ------------------------------------------------------------------
-PASSO 5 - GRAVAR / WRITE
+PASSO 6 - CONFERIR / CHECK
 ------------------------------------------------------------------
 
-  Botao DIREITO no dispositivo -> BURN.
-  RIGHT-CLICK the device -> BURN.
-
-  NAO desconecte nada. Leva alguns minutos.
-  Do NOT disconnect anything. It takes a few minutes.
+  Configurar -> Informacoes:   OpenPod Beta 1
+  Settings   -> Information :  OpenPod Beta 1
 
 
 ------------------------------------------------------------------
-PASSO 6 - LER DE NOVO / READ AGAIN
+DAQUI PARA A FRENTE / FROM NOW ON
 ------------------------------------------------------------------
 
-  Mesma leitura do passo 4. Salve como:  depois.bin
-  Same read as step 4. Save as: depois.bin
+  Voce so precisa do Windows UMA VEZ.
+  You only need Windows ONCE.
 
+  Com o OpenPod instalado, o aparelho passa a ter
+  Configurar -> Atualizar por SD. As proximas versoes entram por
+  cartao: copie o .up para a raiz do cartao com o nome update.up,
+  e use essa opcao. Nao precisa de computador.
 
-------------------------------------------------------------------
-PASSO 7 - LIGAR / TURN IT ON
-------------------------------------------------------------------
+  With OpenPod installed, the player gets Settings -> Update via SD.
+  Future versions go in by card: copy the .up to the card root named
+  update.up and use that option. No computer needed.
 
-  Desconecte, aperte RESET, deixe ligar.
-  Disconnect, press RESET, let it boot.
-
-  Confira em  Configurar -> Informacoes:   OpenPod Beta 1
-  Check under Settings   -> Information :  OpenPod Beta 1
+  Depois que atualizar, APAGUE o update.up do cartao -- senao o
+  aparelho tenta atualizar toda vez que liga.
+  After updating, DELETE update.up from the card -- otherwise the
+  player tries to update on every boot.
 
 
 ------------------------------------------------------------------
@@ -154,39 +184,12 @@ SE NAO LIGAR / IF IT WILL NOT BOOT
   NAO DESLIGUE. Nao entre em panico: o aparelho e recuperavel.
   DO NOT POWER OFF. Do not panic: the player is recoverable.
 
-  O modo do PASSO 3 roda antes de qualquer firmware e ja foi
-  confirmado funcionando com a flash destruida. Repita o PASSO 3,
-  selecione o  antes.bin  que voce salvou e grave de volta.
+  O modo do PASSO 4 roda antes de qualquer firmware e ja foi
+  confirmado funcionando com a flash destruida. Repita o PASSO 4 e
+  grave de novo.
 
-  The mode in STEP 3 runs before any firmware and has been confirmed
-  working with a destroyed flash. Repeat STEP 3, select the
-  antes.bin you saved, and write it back.
-
-
-------------------------------------------------------------------
-O QUE MANDAR DE VOLTA / WHAT TO REPORT BACK
-------------------------------------------------------------------
-
-  1. O programa reconheceu o aparelho? Apareceu letra de unidade?
-     Did it recognise the player? Did a drive letter appear?
-
-  2. A leitura funcionou? Quantos bytes saiu o antes.bin?
-     Did the read work? How many bytes is antes.bin?
-
-  3. A gravacao terminou sem erro? Quanto tempo levou?
-     Did the write finish without error? How long did it take?
-
-  4. O aparelho ligou? A tela de Informacoes diz OpenPod Beta 1?
-     Did it boot? Does Information say OpenPod Beta 1?
-
-  5. Suas configuracoes (volume, EQ, idioma) sobreviveram?
-     Did your settings (volume, EQ, language) survive?
-
-  6. Mande os arquivos  antes.bin  e  depois.bin.
-     Send the antes.bin and depois.bin files.
-
-  O item 5 e o que prova que a area de configuracoes ficou de fora.
-  Item 5 is what proves the settings area was left alone.
+  The mode in STEP 4 runs before any firmware and has been confirmed
+  working with a destroyed flash. Repeat STEP 4 and burn again.
 
 
 ------------------------------------------------------------------

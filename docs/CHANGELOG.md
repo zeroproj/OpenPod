@@ -7,6 +7,58 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-18 — O Flashloader funciona, e o Windows só é preciso uma vez
+
+**Testado no hardware. Gravação concluída com sucesso.** O caminho do
+Flashloader deixa de ser HIPÓTESE.
+
+### O procedimento real
+
+`setting → Language → English`, depois `setting → Develp setting...`, e
+marcar as **três primeiras** opções de `Burn`:
+
+| # | rótulo | o que é |
+|---|---|---|
+| 1 | `自动下载` | download automático |
+| 2 | `烧录完后自动重启` | reinicia depois de gravar |
+| 3 | `烧录完重启后恢复出厂设置` | restaura o padrão de fábrica |
+
+Desmarcadas, e isto importa: `仅擦除` (só apagar) e
+`频偏校准（清除PSM变量）` (apaga as variáveis PSM). Depois `Save`,
+`Select .up file` e `Burn`.
+
+A janela de configuração **continua em chinês** mesmo com o menu em
+inglês — por isso os rótulos originais ficam registrados.
+
+### Duas coisas que eu tinha escrito erradas
+
+**"Deixe `automatic download` desmarcado."** Tirei do readme em inglês da
+Shenju, que avisa que a opção grava sozinho em todo aparelho conectado. É
+verdade — e é o que faz o fluxo funcionar. A precaução certa não é
+desmarcar: é **conectar só o aparelho que se quer gravar**.
+
+**"As configurações do usuário sobrevivem."** A opção 3 liga o reset de
+fábrica. São zeradas. A PSMP ficar fora da cobertura do `.up` é verdade,
+mas não basta — o firmware faz o reset sozinho no boot seguinte.
+
+Consequência: o passo "ler a flash antes de gravar" **saiu do guia
+público**. Com `自动下载` marcado, a gravação começa assim que o aparelho
+aparece; não existe janela para ler antes.
+
+### O que isto desbloqueia
+
+Depois da primeira gravação o aparelho passa a ter
+`Configurar → Atualizar por SD`. **O Windows só é necessário uma vez** —
+as versões seguintes entram por cartão, sem computador.
+
+Fecha o buraco identificado hoje de manhã: o caminho do cartão não servia
+para quem vinha de fábrica, e passa a servir da segunda versão em diante.
+
+**Alterados:** `release/.../windows/LEIA-ME.txt` reescrito com o
+procedimento provado; `release/.../README.md`; `docs/TESTE_FLASHLOADER.md`
+com a seção Resultado preenchida; `docs/NIVEIS_DE_GRAVACAO.md`.
+
+
 ## 2026-09-18 — A bateria verde funcionou o tempo todo
 
 **Correção de registro.** O `BATERIA_VERDE_ABERTO.md` dizia, desde
