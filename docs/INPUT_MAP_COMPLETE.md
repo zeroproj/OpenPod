@@ -49,7 +49,7 @@ ocorrências candidatas eram todas instruções VFP ou código comum —
 | **▶Ⅱ** | `0x21` | `enter` | **HIPÓTESE** | `enter` é a tecla de confirmação; nesta classe de player o play/pause acumula a função de selecionar |
 | **◀◀** | `0x42` | `left` | **HIPÓTESE** | correspondência direcional |
 | **▶▶** | `0x43` | `right` | **HIPÓTESE** | correspondência direcional |
-| **M** | `0x45` | `back` | **HIPÓTESE** | `M` costuma ser menu/voltar; `back` é o único candidato de navegação restante |
+| **M** | `0x45` | `back` | **CONFIRMADO** | 2026-09-18, no aparelho: com música tocando, `M` abre o menu de ajustes (página 5). A abertura está em `0x00D08CD0`, no tratador de teclas da página 4 |
 | **VOL +** | `0x24` | `volume_up` | **PROVÁVEL** | nome funcional inequívoco |
 | **VOL −** | `0x23` | `volume_down` | **PROVÁVEL** | nome funcional inequívoco |
 | chave liga/desliga | `0x37` / `0x47` | `onoff` / `power` | **CONFIRMADO** | `/dev/key_onoff` é aberto com exatamente esses dois ids (§4) |

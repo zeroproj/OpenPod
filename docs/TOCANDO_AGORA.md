@@ -1,0 +1,101 @@
+# Tocando Agora — a tela, o menu e os indicadores
+
+> Levantado em 2026-09-18. Parte por desmontagem, parte **confirmada no
+> aparelho** pelo mantenedor.
+
+---
+
+## 1. A tela
+
+```text
+página 4 (0x04)
+  view        page_music_play_create    0x00D31E7C   2.306 bytes
+  presenter   page4_scr_process         0x00D08A90
+```
+
+**2.306 bytes.** Para comparar, o menu de Música tem ~400. É a função de
+tela mais densa que o projeto abriu até hoje.
+
+### Geometria medida
+
+Sete objetos posicionados, todos com `x=0` e alinhamento 2:
+
+```text
+y =   0    faixa superior
+y =  22    bloco de 128×60
+y =  45    barra de 128×3        a barra de progresso
+y = 110    objeto
+y = 152    objeto                8 px até a borda de baixo
+```
+
+---
+
+## 2. O menu — CONFIRMADO no aparelho
+
+**Com música tocando, o botão `M` abre o menu de ajustes** (página 5,
+`page_music_set`, `0x00D3275C`). A abertura está em `0x00D08CD0`, no
+tratador de teclas da página 4.
+
+Isso **confirma** o que o `INPUT_MAP_COMPLETE.md` marcava como HIPÓTESE:
+o `M` é a tecla de menu/voltar.
+
+### Os seis itens, da tabela `0x00C48728`
+
+| | item | id |
+|---|---|---|
+| 0 | Voltar ao início | 124 |
+| 1 | Velocidade | 125 |
+| 2 | Modo | 128 |
+| 3 | Marcadores | 119 |
+| 4 | Favoritar | 126 |
+| 5 | Equalizador | 100 |
+
+Cada um tem página própria: Velocidade → 8, Modo → 9, Marcadores → 10,
+Equalizador → 11.
+
+---
+
+## 3. Os indicadores — o que cada um é
+
+| na tela | item do menu | quando aparece |
+|---|---|---|
+| seta de repetir | **Modo** | quando um modo é escolhido |
+| `AB` | **Marcadores** | quando há um trecho marcado |
+| coração | **Favoritar** | quando a faixa é favorita — fica **vermelho** |
+| `X` | **Velocidade** | quando a velocidade sai do normal |
+
+**Eles são condicionais.** Só aparecem quando algo foi ajustado — não
+são quatro ícones permanentes. Confirmado pelo mantenedor.
+
+> ⚠️ **Correção a uma leitura anterior minha.** Eu descrevi a tela como
+> tendo "quatro indicadores mudos ocupando a linha de cima" e disse que
+> nada avisava que o menu existia. Estava errado nos dois pontos: os
+> indicadores aparecem sob demanda, e o `M` é a tecla de menu como em
+> qualquer aparelho dessa classe. O problema real é menor — ver §4.
+
+---
+
+## 4. O que realmente falta
+
+O aparelho **não explica os símbolos na primeira vez**. Quem nunca abriu
+o menu não tem como saber que `AB` é marcador, ou que `X` é velocidade.
+
+Isso não se resolve com layout: resolve-se com **o menu dizendo o estado**
+— "Modo: Aleatório" em vez de só uma seta — ou com o indicador aparecendo
+junto de um rótulo quando muda.
+
+---
+
+## 5. O que o Marte pede e esta tela não tem
+
+| | hoje | Marte |
+|---|---|---|
+| posição na fila | `1/152` | `3 de 52` |
+| título | `Artista - Título` numa linha | três linhas: título, artista, álbum |
+| tempos | dois absolutos | decorrido e **restante negativo** (`-2:31`) |
+| volume | — | barra por 2 s, no lugar do progresso |
+
+**A capa de álbum não cabe como o Marte a desenha.** O mockup é para
+176×132 paisagem (ver `nanoclone.json`); esta tela é 128×160 retrato.
+Capa de 50 px + texto de ~90 px = 140 px numa tela de 128. Se houver
+capa, tem de ficar **acima** do texto, não ao lado.
