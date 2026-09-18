@@ -59,7 +59,7 @@ A moldura da capa pode existir **vazia** antes da capa funcionar.
 | | |
 |---|---|
 | título mostra o nome do arquivo | ABERTO. `r3 = 2` foi **refutado** — reinicia o aparelho: `docs/TOCANDO_AGORA.md` §7 |
-| Bluetooth reinicia nas opções | **de fábrica, confirmado** — não é regressão nossa: `docs/BLUETOOTH_REINICIA.md` |
+| **Bluetooth não funciona** | ⚠️ **REGRESSÃO NOSSA.** De fábrica funciona inteiro. Não está na região das telas do BT: `docs/BLUETOOTH_REINICIA.md` |
 | capa do álbum | APIC, buffer do JPEG e redimensionamento: **nenhum medido** |
 | Pastas | só volta depois de entrar numa pasta |
 
