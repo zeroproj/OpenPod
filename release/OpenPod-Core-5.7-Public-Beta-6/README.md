@@ -1,4 +1,4 @@
-# OpenPod — 5.7 Public Beta 5
+# OpenPod — 5.7 Public Beta 6
 
 An iPod nano–inspired interface for the **Iigenai GN-438** player
 (Smartlink/YP3, stock firmware `yp3_2.0.43`).
@@ -51,12 +51,12 @@ gravação fala a mesma língua.*
 ```text
 README.md              you are here / voce esta aqui
 install.sh             Linux / macOS  -> start here / comece aqui
-OpenPod_Beta5.up       the firmware / o firmware
+OpenPod_Beta6.up       the firmware / o firmware
 windows/               Windows -> start here / comece aqui
   LEIA-ME.txt
   FlashloaderSL-DEV-6.9.5.exe
 cabo/                  USB cable path, used by install.sh
-  flash_OpenPod_Beta5.sh
+  flash_OpenPod_Beta6.sh
   setores/             88 sector files / arquivos de setor
 ```
 
