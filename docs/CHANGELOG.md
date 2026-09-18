@@ -7,6 +7,61 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-18 — Core 5.7 Public Beta 2 — o nome na tela
+
+**Única mudança funcional: a string de versão.** `OpenPod Beta 1` →
+`OpenPod 5.7 Beta 2`.
+
+### Por que não o nome completo
+
+`OpenPod Core 5.7 Public Beta 1` mede **177 px**. A linha da tela
+Informação corta em **113 px** — corte duro, não quebra linha (confirmado
+no aparelho em 2026-09-14, `patch_versao.py`).
+
+Medido com a tabela de glifos da própria imagem:
+
+```text
+ 177 px   OpenPod Core 5.7 Public Beta 1    NAO CABE
+ 140 px   OpenPod Core 5.7 Beta 2           NAO CABE
+ 120 px   OpenPod Core 5.7 B2               NAO CABE
+ 110 px   OpenPod 5.7 Beta 2                cabe
+```
+
+O outro espaço de texto da tela é o título, `get_string(43)` =
+**"Sobre o aparelho"**. É o cabeçalho que a pessoa procura no menu —
+não serve para carregar a versão.
+
+### A imagem
+
+`GN438_beta2_carimbado.bin`, a partir do `GN438_beta1_carimbado.bin`.
+
+**21 bytes de diferença** contra a Beta 1: o literal em `0x0010A59C`
+(4 B, repontado `0x00DA6380` → `0x00DA6A2C`) e os 17 B do texto novo na
+área livre. Nada mais mudou.
+
+### Conferido antes de empacotar
+
+| o quê | resultado |
+|---|---|
+| CRC-16/CCITT-FALSE do `.up` | gravado `0x80E8`, calculado `0x80E8` — confere |
+| cobertura | `0x000000..0x1A7000`, PSMP `0x1FC000` **fora** |
+| os 44 setores do kit | **todos** batem byte a byte com o `.up` |
+| bootloader dentro do `.up` | idêntico ao de fábrica |
+| vs fábrica | 44 setores, `0x48000`..`0x1A6000` |
+| firmware ORIGINAL | SHA-256 confere, intacto |
+
+**Teste do script de gravação:** rodado de `/tmp`, fora do pacote, com
+`smtlink_dump` e `lsusb` falsos — os 88 setores conferiram e ele chegou
+na etapa de procurar o aparelho.
+
+### O pacote
+
+`release/OpenPod-Core-5.7-Public-Beta-2/`, mesma estrutura da Beta 1:
+`install.sh` bilíngue na raiz, `windows/` com o Flashloader e o guia,
+`cabo/` com o script e os 88 setores. Auditado: sem menção a Claude, sem
+caminho do sistema do mantenedor, sem dump pessoal.
+
+
 ## 2026-09-18 — O Flashloader funciona, e o Windows só é preciso uma vez
 
 **Testado no hardware. Gravação concluída com sucesso.** O caminho do

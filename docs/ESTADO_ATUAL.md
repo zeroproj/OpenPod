@@ -83,7 +83,7 @@ OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
 | **5.0** | ✅ | a tela inicial do OpenPod |
 | **5.1** | ⚠️ | contexto da Pastas — não resolveu. `docs/PASTAS_ABERTO.md` |
 | 5.2 – 5.6 | ✅ | faixa 16 px, alinhamento, cores da bateria |
-| **5.7** | ✅ | **NO APARELHO = BETA 1.** Bateria com casca prateada e miolo verde do Marte: `docs/BATERIA_VERDE.md` |
+| **5.7** | ✅ | **NO APARELHO = PUBLIC BETA 2.** Bateria com casca prateada e miolo verde do Marte: `docs/BATERIA_VERDE.md`. Na tela Informação: `OpenPod 5.7 Beta 2` — o nome completo não cabe nos 113 px |
 
 > ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
 > remendos em cima do mesmo código danificado. Volte para a 2.4.
