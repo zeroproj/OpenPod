@@ -8,6 +8,62 @@
 
 ---
 
+## ONDE PARAMOS — 2026-09-18, fim do dia
+
+**No aparelho:** Beta 8, confirmada pelo mantenedor.
+**No ar (GitHub Pages):** Beta 7. A 8 **não foi publicada** — decisão do
+mantenedor: fechar as três pendências antes de lançar.
+
+### A fila, em ordem
+
+| | | |
+|---|---|---|
+| 1 | **Beta 8** | ✅ gravada e confirmada — `-3:55` funcionando |
+| 2 | **DIAG_titulo** | ⏳ a tag do ID3 chega na tela de música? |
+| 3 | **DIAG_bt** | ⏳ o reinício do Bluetooth é nosso ou de fábrica? |
+
+Fechadas as três, publica.
+
+### O que a Beta 8 acumulou
+
+listas de 9 linhas · Bluetooth e Hora e data no padrão de 16 px ·
+tempos em `mm:ss` · contador `7 - 152` · fundo preto na Tocando Agora ·
+tempo restante negativo
+
+### O marco técnico da Beta 8
+
+O tempo restante é a **primeira rotina nova em área livre desde os dois
+travamentos** (Core 3.2 e Core 4.5). Ela é alcançada por `bl` e tem
+`push`/`pop` próprios — dona do seu quadro. Passou no `check_pilha.py`,
+no `check_branch_targets.py`, na desmontagem de volta, **e no aparelho**.
+
+Isso destrava o resto da Tocando Agora: as três linhas de texto e o
+reposicionamento vão precisar do mesmo tipo de rotina.
+
+### O layout decidido para a Tocando Agora
+
+`marte_tocando_agora` com a luminância invertida — fundo preto, texto e
+ícones brancos, azul igual. Capa de 50×50 à **esquerda**, três linhas de
+texto à direita (rolam quando não cabem). **Sem barra de volume** por
+enquanto.
+
+A moldura da capa pode existir **vazia** antes da capa funcionar.
+
+> **Descoberta:** `marte_nanoclone.png` está em 128×160 — o Marte já
+> adaptou o **menu** à nossa tela. Mas `marte_tocando_agora.png` está em
+> 176×132, a resolução do nano. **A tela de música nunca foi adaptada.**
+> Ver `docs/TOCANDO_AGORA.md`.
+
+### Aberto
+
+| | |
+|---|---|
+| título mostra o nome do arquivo | a tela não recebe a tag — DIAG_titulo responde |
+| Bluetooth reinicia nas opções | 13 bytes nossos naquela região — DIAG_bt responde |
+| capa do álbum | APIC, buffer do JPEG e redimensionamento: **nenhum medido** |
+| Pastas | só volta depois de entrar numa pasta |
+
+
 ## 1. Onde o aparelho está
 
 ```
