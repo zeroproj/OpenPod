@@ -80,7 +80,8 @@ OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
 | **4.9** | ⚠️ | idem; acrescentou `movs r0,#1`, não resolveu |
 | DIAG 6 | 🔍 | índice 3 abre o Extras ⇒ o código executa |
 | DIAG 7 | ✅ | o `sub` era o culpado |
-| **5.0** | ✅ | **NO APARELHO. A tela inicial do OpenPod.** ESTÁVEL |
+| **5.0** | ✅ | a tela inicial do OpenPod |
+| **5.1** | ⚠️ | contexto da Pastas — **não resolveu**. Ver `docs/PASTAS_ABERTO.md` |
 
 > ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
 > remendos em cima do mesmo código danificado. Volte para a 2.4.

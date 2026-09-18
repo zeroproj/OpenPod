@@ -167,7 +167,7 @@ DESTINOS = [
     (0x0C, 0, 0x00D01162, "F", "Livro digital"),   # caso de fabrica, home idx 4
     (0x15, 0, "imagem_fab", None, "Imagem"),       # replica com a origem CERTA
     (0x23, 0, None,     None,   "Bluetooth"),
-    (0x22, 1, None,     None,   "Pastas"),         # a replica da 4.3 QUEBROU: nem abria
+    (0x22, 1, "pastas_ctx", None, "Pastas"),       # so monta o contexto; a abertura fica
 ]
 
 CHECA_LISTA = 0x00D45CAC         # a verificacao que faltava
@@ -177,7 +177,23 @@ IMG_E39C    = 0x00D0E39C
 IMG_EDCC    = 0x00D3EDCC
 IMG_SCAN    = 0x00D0D058         # atualiza a lista de imagens
 
-# --- Pastas: ela NAO abre por pagina ---------------------------------
+# --- Pastas: falta o CONTEXTO, nao a abertura ------------------------
+#
+# A abertura de fabrica (home idx 8) termina assim:
+#
+#     ldr r3,=0x0081BE68 / ldr r0,=0x00C4CA69   ; a string "0:"
+#     str.w r0,[r3,#0x100]                       ; guarda o caminho raiz
+#     movs r1,#2 / pop.w {...} / b.w 0x00D3EBAC
+#
+# A Core 4.3 tentou REPLICAR a abertura inteira, e a Pastas parou ate de
+# abrir. Hoje ela abre pela primitiva de pagina (0x22) e so o VOLTAR
+# falha: "consigo fazer tudo mas nao consigo voltar, parece que ele nao
+# sabe o que fazer" -- e depois "so volta se eu navegar por dentro
+# primeiro", porque navegar preenche o caminho que a abertura nao pos.
+#
+# Esta versao NAO troca a abertura. So escreve o contexto antes, e
+# deixa o resto como esta. Licao da Core 5.0: nao trocar o que funciona.
+# --------------------------------------------------------------------
 # O caso de fabrica (home idx 8, 0x00D0128C) termina assim:
 #     ldr r3,=0x0081BE68 / ldr r0,=0x00C4CA69   ; o caminho "0:"
 #     str.w r0,[r3,#0x100]                       ; guarda o contexto
@@ -186,6 +202,8 @@ IMG_SCAN    = 0x00D0D058         # atualiza a lista de imagens
 # ponteiro -- ele funciona, mas o "voltar" nao tem para onde ir.
 # Mantenedor: "consigo fazer tudo mas nao consigo voltar, parece que ele
 # nao sabe o que fazer".
+PAS_CTX_BASE = 0x0081BE68        # +0x100 guarda o ponteiro do caminho
+PAS_PATH     = 0x00C4CA69        # a string "0:" (a raiz do cartao)
 PAS_CONTA   = 0x00D3EC58         # quantos arquivos faltam varrer
 PAS_CTX     = 0x0081BE68         # +0x100 guarda o caminho
 PAS_PATH    = 0x00C4CA69         # a string do caminho raiz
@@ -336,7 +354,17 @@ def montar():
     k.b.extend(bytes(pg for pg, _, _, _, _ in DESTINOS)); k.alinha()
 
     # ---- sub-rotinas de preparacao, replicadas dos casos de fabrica ----
-    k.rotulo("pastas")                # replica de 0x00D0128C
+    k.rotulo("pastas_ctx")            # so o contexto: 0x0081BF68 = "0:"
+    k.h(0xB500)                       # push {lr}
+    k.lit(0x4B00, "p_ctx")            # ldr  r3, =0x0081BE68
+    k.lit(0x4800, "p_path")           # ldr  r0, =0x00C4CA69
+    k.b.extend(bytes.fromhex("c3f80001"))   # str.w r0, [r3, #0x100]
+    k.h(0xBD00)                       # pop  {pc}
+    k.alinha()
+    k.rotulo("p_ctx");  k.w(PAS_CTX_BASE)
+    k.rotulo("p_path"); k.w(PAS_PATH)
+
+    k.rotulo("pastas_velha")          # replica de 0x00D0128C — NAO USADA
     k.bl(CHECA_CART)
     k.h(0x2800); k.h(0xD101); k.bw(0x00D01138)      # sem cartao
     k.h(0x2000); k.bl(CHECA_LISTA)
