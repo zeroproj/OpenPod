@@ -89,6 +89,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-of
 }
 .hero h1{font-size:clamp(34px,7vw,58px); font-weight:800; letter-spacing:-.03em; line-height:1.04}
 .hero p.lede{font-size:clamp(18px,2.4vw,21px); color:var(--ink-2); max-width:34em; margin:20px 0 0}
+.fit{font-size:15px; line-height:1.55; color:var(--ink-2); max-width:58ch; margin:22px 0 0;
+  padding:13px 16px; background:var(--sunk); border:1px solid var(--edge); border-radius:8px}
+.fit b{color:var(--ink); font-weight:600}
 .cta{display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:28px}
 .btn{
   display:inline-block; font:600 15px/1 var(--body); text-decoration:none;
@@ -202,17 +205,26 @@ footer a{color:var(--ink-2)}
 <div class="wrap">
 
   <div class="hero">
-    <div class="eyebrow">Iigenai GN-438 · Smartlink YP3 · 2&nbsp;MiB</div>
+    <div class="eyebrow">Base: yp3_2.0.43 · Smartlink / YP3 · ARM Thumb-2</div>
 
-    <h1 data-lang-pt>Um iPod dentro de<br>um player de R$&nbsp;60.</h1>
-    <h1 data-lang-en>An iPod inside<br>a $12 player.</h1>
+    <h1 data-lang-pt>Um firmware de iPod&nbsp;nano<br>para MP3 players chineses.</h1>
+    <h1 data-lang-en>iPod&nbsp;nano firmware<br>for cheap Chinese MP3 players.</h1>
 
-    <p class="lede" data-lang-pt>O GN-438 sai de fábrica com uma interface confusa e uma tradução
-      feita por máquina. O OpenPod reescreve essa interface <em>por dentro do firmware original</em> —
-      sem trocar o sistema, sem apagar o que já funciona.</p>
-    <p class="lede" data-lang-en>The GN-438 ships with a confusing interface and machine-translated
-      menus. OpenPod rewrites that interface <em>inside the original firmware</em> — without replacing
-      the system, without throwing away what already works.</p>
+    <p class="lede" data-lang-pt>O OpenPod é um firmware baseado no <b>yp3_2.0.43</b>, da família
+      <b>Smartlink/YP3</b> — o sistema que roda em boa parte dos players baratos. Ele reescreve a
+      interface <em>por dentro do firmware original</em>, com a navegação e a tipografia do
+      <b>iPod nano de 2ª geração</b>. Sem trocar o sistema, sem apagar o que já funciona.</p>
+    <p class="lede" data-lang-en>OpenPod is a firmware based on <b>yp3_2.0.43</b>, from the
+      <b>Smartlink/YP3</b> family — the system running inside a good share of cheap players. It rewrites
+      the interface <em>inside the original firmware</em>, with the navigation and typography of the
+      <b>2nd-generation iPod nano</b>. No new system, nothing working thrown away.</p>
+
+    <p class="fit" data-lang-pt><b>Serve no meu?</b> Esta build foi feita e testada no
+      <b>Iigenai GN-438</b>. Outros aparelhos da mesma família são candidatos, mas cada um precisa do
+      <b>dump do próprio aparelho</b> — gravar o firmware de outro modelo brica.</p>
+    <p class="fit" data-lang-en><b>Will it fit mine?</b> This build was made and tested on the
+      <b>Iigenai GN-438</b>. Other players in the family are candidates, but each one needs a
+      <b>dump of its own device</b> — flashing another model's firmware bricks it.</p>
 
     <div class="cta">
       <a class="btn" href="#instalar" data-lang-pt>Como instalar</a>
