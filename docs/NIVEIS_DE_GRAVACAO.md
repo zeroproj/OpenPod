@@ -48,6 +48,9 @@ fábrica (`--autoteste`).
 | onde | como |
 |---|---|
 | Windows | `SetupFlashloaderSL-DEV(6.9.5).exe`, em `firmware/VENDOR/B27.zip` |
+
+O caminho do Flashloader **ainda não foi testado**. Roteiro do primeiro
+teste em `docs/TESTE_FLASHLOADER.md`.
 | cartão SD | `update.up` na raiz — depende do flag 6 no PMU, que só a V030 daria |
 
 Regrava **1,7 MB**. Por isso não é o padrão: gasta ciclos de flash sem

@@ -7,6 +7,52 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-18 — Caminho do Flashloader: preparado, ainda não testado
+
+**Pergunta:** dá para gravar o OpenPod com a ferramenta oficial da
+Shenju, a que vem no pacote do B27?
+
+**No papel, sim.** Conferido sobre o `OpenPod_Beta1.up`:
+
+| o quê | resultado |
+|---|---|
+| magic / marca / fim de cabeçalho | `CONFIG` · `SL6801` · `55 AA` |
+| CRC-16/CCITT-FALSE | gravado `0xCEDB`, calculado `0xCEDB` — confere |
+| cobertura | `0x000000..0x1A7000` |
+| PSMP (`0x1FC000`) | fora da cobertura |
+| os 44 setores do kit de cabo | todos batem byte a byte com o `.up` |
+| bootloader dentro do `.up` | idêntico ao de fábrica |
+| diferença vs fábrica | exatamente 44 setores, `0x48000`..`0x1A6000` |
+
+O `.up` e o kit de cabo são o **mesmo firmware**. Muda só como chega.
+
+**Na prática, não sabemos.** O Flashloader nunca foi rodado com um `.up`
+nosso. É HIPÓTESE, não fato, e por isso não entra em pacote público.
+
+**Por que interessa:** hoje o Windows não tem caminho. O cartão exige
+`Atualizar por SD`, que o firmware de fábrica não tem; o cabo exige Linux
+e compilar o `smartlink_flash`. O Flashloader resolveria os dois, com a
+ferramenta do próprio fabricante.
+
+**Risco que o kit de cabo não tem:** o `.up` cobre desde `0x000000`, então
+os setores do bootloader são reescritos — com os mesmos bytes, mas são.
+Queda de energia no meio deixa o aparelho sem bootloader. Recuperável
+pelo modo de download da ROM de máscara, já confirmado no hardware com a
+flash destruída.
+
+**Criados:**
+
+- `docs/TESTE_FLASHLOADER.md` — roteiro do teste, com o que anotar e o
+  caminho de volta. Manda ler a flash ANTES de gravar: sem esse backup o
+  teste vira aposta.
+- `tools/confere_flashloader.py` — compara o que saiu do aparelho com o
+  `.up` esperado. Autotestado nos dois sentidos: imagem perfeita dá
+  `GRAVACAO CORRETA`; um setor divergente mais a PSMP mexida dá
+  `ALGO NAO CONFERE` e código de saída 1.
+
+**Nenhum aparelho foi tocado.**
+
+
 ## 2026-09-17 — Core 3.8 — não quebrou nada, e também não resolveu
 
 > ⚠️ **Esta entrada foi corrigida.** A primeira versão dela dizia que a
