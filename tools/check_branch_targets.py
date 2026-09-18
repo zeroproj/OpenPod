@@ -45,6 +45,7 @@ EXEMPLO REAL
 """
 import argparse
 import json
+import struct
 import sys
 
 try:
@@ -132,6 +133,28 @@ def main():
 
     desvios = varre_desvios(orig, CODE_START, CODE_END, args.base)
 
+    def parece_tabela_de_ponteiros(a, b):
+        """A faixa esta dentro de uma corrida densa de ponteiros XIP?
+
+        Patch de DADO -- repontar uma entrada de tabela de strings, por
+        exemplo -- cai numa faixa de 3 ou 4 bytes no meio de uma tabela
+        de ponteiros. A varredura por alinhamento decodifica as palavras
+        vizinhas como instrucao e inventa desvios que apontam para la.
+
+        Se as 8 palavras ao redor forem todas ponteiros XIP validos, e
+        tabela, nao codigo.
+        """
+        centro = (a // 4) * 4
+        validos = 0
+        for k in range(-4, 5):
+            q = centro + 4 * k
+            if q < 0 or q + 4 > len(orig):
+                continue
+            v = struct.unpack("<I", orig[q:q + 4])[0]
+            if 0x00C00000 <= v < 0x00E00000:
+                validos += 1
+        return validos >= 8
+
     def parece_codigo(a, b):
         """Uma faixa e CODIGO se desmonta de ponta a ponta sem morrer.
 
@@ -141,6 +164,8 @@ def main():
         """
         md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
         n = b - a + 1
+        if parece_tabela_de_ponteiros(a, b):
+            return False          # tabela de ponteiros: e dado
         if n < 4:
             return True            # curto demais para julgar: trata como codigo
         coberto = sum(i.size for i in md.disasm(orig[a:b + 1], a + args.base))

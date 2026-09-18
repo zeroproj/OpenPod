@@ -11,8 +11,13 @@
 ## 1. Onde o aparelho está
 
 ```
-OpenPod Core 3.7     <- O PONTO ESTAVEL. Tudo abre, Radio sintoniza.
-                        firmware/RELEASE/OpenPod Core 3.7/
+OpenPod Core 4.2     <- O PONTO ESTAVEL. O Extras fechado: os seis
+                        itens abrem, o Radio sintoniza, Imagem e Livro
+                        digital varrem o cartao, e o item da home se
+                        chama "Extras" nos nove idiomas.
+                        firmware/RELEASE/OpenPod Core 4.2/
+
+OpenPod Core 3.7     <- o ponto estavel anterior.
 
 OpenPod Core 3.6     <- o passo atras.
                         Os seis itens do Extras abrem, e o Radio
@@ -51,7 +56,11 @@ OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
 | **3.5** | ❌ | quebrou os menus: saltava para casos da home. OBSOLETA |
 | **3.6** | ✅ | Rádio sintoniza |
 | **3.7** | ✅ | **O PONTO ESTÁVEL.** Tudo funciona no Extras |
-| **3.8** | ⚠️ | abre tudo, mas não resolveu o update do SD. Equivale à 3.7 |
+| **3.8** | ⚠️ | equivale à 3.7 |
+| **3.9** | ✅ | experimento: Livro digital varre. Mecanismo provado |
+| **4.0** | ❌ | Imagem travava tudo depois (origem fixa = home) |
+| **4.1** | ✅ | rótulo "Extras" nos nove idiomas |
+| **4.2** | ✅ | **NO APARELHO. O Extras fechado.** ESTÁVEL |
 
 > ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
 > remendos em cima do mesmo código danificado. Volte para a 2.4.

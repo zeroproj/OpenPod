@@ -1,0 +1,10 @@
+OPENPOD - LOTE B - ACENTOS
+Codificacao: UTF-8
+
+A cancao e otima, porem a manutencao
+do coracao e dificil.
+
+agudo  á é í ó ú
+til    ã õ
+circ   â ê ô
+cedilha ç

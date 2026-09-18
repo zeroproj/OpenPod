@@ -59,6 +59,65 @@ falhasse. **Parei.**
 
 ---
 
+## 2026-09-17 — Core 4.2 — ✅ o Extras fechado
+
+**Confirmada no aparelho:** *"imagem funcionou e os outros continuam
+abrindo"*. **Ponto estável: 4.2.**
+
+Linha 3.9 → 4.2, toda medida:
+
+| | o quê | resultado |
+|---|---|---|
+| **3.9** | experimento de uma variável: só o Livro digital salta para o caso de fábrica | ✅ a varredura passou a rodar |
+| **4.0** | o mesmo para a Imagem | ❌ entrar na Imagem travava tudo depois |
+| **4.1** | rótulo "Extras" na home, nos nove idiomas | ✅ |
+| **4.2** | Imagem vira réplica, com a origem certa | ✅ |
+
+### O bug da 4.0, e por que só a Imagem
+
+A cauda dos dois casos de fábrica não é igual:
+
+```asm
+Livro   0x00D011A2  movs r3,#0xc  / b 0x00D01036
+                    0x00D01036: ldrh r0,[r4,#8]   origem DA MENSAGEM
+Imagem  0x00D011EA  movs r3,#0x15 / movs r2,#0 / movs r1,#2
+                    movs r0,#1                    origem FIXA = home
+```
+
+A página **guarda** a origem (`0x00D03AD8 strh r0,[r5,#-8]`). Com "vim da
+home" gravado, a APP e a ViewTask discordam de onde o aparelho está, e a
+guarda `msg->page == página corrente` falha para sempre.
+
+A 4.2 replica o caso da Imagem — mesmos ramos de erro, mesma varredura —
+mas termina em `0x00D01036`, o trampolim que lê a origem da mensagem.
+
+### A varredura, e como ela foi achada
+
+A mensagem "Lendo arquivos. Não desligue nem remova o cartão" é o **id
+154 (`0x9A`)**. Achá-la deu o ramo que faltava:
+
+```asm
+bl   #0x00D3EC3C        ; quantos arquivos faltam varrer?
+subs r5, r0, #0
+ble  <segue e abre>
+  movs r0, #0x9a        ; "Lendo arquivos..."
+  b    <RETORNA, NAO abre a pagina>
+```
+
+A 3.7 e a 3.8 copiaram só o outro ramo. Por isso nunca atualizavam.
+
+### O rótulo "Extras" (4.1)
+
+`get_string` (`0x00D2108C`) **não valida o id** — só o idioma. Então
+inventar um id novo leria ponteiro selvagem. Usado o **id 156**
+(`TP version:`), string morta: existe nos nove idiomas e ninguém a busca.
+
+Tabela de ids da home em `0x00C486C4`, item 2: id 5 → id 156.
+
+Traduções: Extras (en/fr/de/es/pt), Extra (it/nl), 更多 (zh), תוספות (he).
+
+---
+
 ## 2026-09-17 — Core 3.7 — ✅ O PONTO ESTÁVEL
 
 Confirmada por eliminação: a 3.8 quebrou e o mantenedor relatou que

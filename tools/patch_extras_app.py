@@ -107,16 +107,65 @@ CHECA_CART = 0x00CFE714
 #   origem. E a segunda tentativa neste mesmo item -- se nao resolver,
 #   parar e instrumentar em vez de tentar de novo.
 #
-#   arg == "T": a sub-rotina e TERMINAL -- ela nao volta, faz a
-#   abertura ela mesma, replicando a cauda do caso de fabrica byte a
-#   byte (inclusive `pop.w` + `b.w 0x00D0DAE0`). Chamada com `blx`, sem
-#   push, a pilha no momento do `pop.w` e exatamente o frame de
-#   0x00D0CC0C.
+#   arg == "T": sub-rotina TERMINAL, replica a cauda de fabrica.
+#
+# >>> A Core 3.9 E UM EXPERIMENTO CONTROLADO <<<
+#   A mensagem "Lendo arquivos. Nao desligue nem remova o cartao" e o
+#   id 0x9A. No caso de fabrica ela aparece assim:
+#
+#       bl   #0x00D3EC3C        ; quantos arquivos faltam varrer?
+#       subs r5, r0, #0
+#       ble  <segue e abre>
+#         movs r0, #0x9a        ; "Lendo arquivos..."
+#         bl   get_string / bl 0x00D0E2F0
+#         b    <RETORNA, NAO abre a pagina>
+#
+#   A VARREDURA E ESSE RAMO. A 3.7 e a 3.8 copiaram so o outro -- o de
+#   quando a lista ja esta pronta. E `0x00D3EC3C`, a contagem que decide
+#   qual ramo tomar, nunca foi chamada.
+#
+#   Em vez de replicar de novo (duas tentativas ja falharam), o indice 2
+#   SALTA para o caso de fabrica inteiro (`prep` = endereco, arg "F").
+#   Isso e a tecnica que quebrou na Core 3.5 -- mas la ela foi aplicada
+#   aos SEIS itens, e a quebra veio do despacho compartilhado 0x00D01036
+#   ler r0/r1/r2 da mensagem. Aqui a pagina de destino e FIXA no codigo
+#   (`movs r3,#0xc`), entao nao ha como ir para a tela errada.
+#
+#   O indice 3 (Imagem) ficou IGUAL AO DA 3.7 na 3.9, de proposito, para
+#   servir de controle.
+#
+# >>> RESULTADO DA 3.9, no aparelho <<<
+#   O salto para o caso de fabrica FUNCIONOU. Mantenedor: a varredura
+#   passou a rodar ao entrar no Extras, e ao abrir o item os arquivos ja
+#   estao la. O controle (Imagem) continuou sem varrer -- entao o
+#   resultado e do mecanismo, nao de coincidencia.
+#
+#   Core 4.0: o mesmo tratamento para a Imagem (home idx 5, 0x00D011AE).
+#
+# >>> O BUG DA 4.0/4.1, medido <<<
+#   Entrar na Imagem pelo Extras fazia TUDO parar de abrir depois.
+#
+#   A cauda dos dois casos de fabrica nao e igual:
+#
+#     Livro  0x00D011A2  movs r3,#0xc  / b 0x00D01036
+#                        0x00D01036: ldrh r0,[r4,#8]   origem DA MENSAGEM
+#     Imagem 0x00D011EA  movs r3,#0x15 / movs r2,#0 / movs r1,#2
+#                        movs r0,#1                    origem FIXA = home
+#
+#   A pagina GUARDA a origem (0x00D03AD8 `strh r0,[r5,#-8]`). Com "vim
+#   da home" gravado, a camada APP e a ViewTask discordam de onde o
+#   aparelho esta, e a guarda `msg->page == pagina corrente` passa a
+#   falhar sempre.
+#
+#   Core 4.2: a Imagem vira REPLICA do caso de fabrica, com os mesmos
+#   ramos de erro (que sao alcancados por endereco absoluto, frame
+#   compativel), mas terminando em 0x00D01036 -- o trampolim que le a
+#   origem da mensagem, igual ao do Livro digital.
 DESTINOS = [
     (0x18, 1, None,     None,   "Gravacao"),
     (0x1A, 0, "fm",     None,   "Radio"),
-    (0x0C, 1, "ebook",  "T",    "Livro digital"),
-    (0x15, 1, "imagem", "T",    "Imagem"),
+    (0x0C, 0, 0x00D01162, "F", "Livro digital"),   # caso de fabrica, home idx 4
+    (0x15, 0, "imagem_fab", None, "Imagem"),       # replica com a origem CERTA
     (0x23, 0, None,     None,   "Bluetooth"),
     (0x22, 1, None,     None,   "Pastas"),
 ]
@@ -224,6 +273,27 @@ def montar():
     k.b.extend(bytes(pg for pg, _, _, _, _ in DESTINOS)); k.b.extend(b"\x00\x00")
 
     # ---- sub-rotinas de preparacao, replicadas dos casos de fabrica ----
+    k.rotulo("imagem_fab")            # replica de 0x00D011AE, cauda corrigida
+    k.bl(CHECA_CART)                  # bl   cartao?
+    k.h(0x2800)                       # cmp  r0, #0
+    k.h(0xD101)                       # bne  +2 (segue)
+    k.bw(0x00D01138)                  #      b.w  "sem cartao" (msg 0x2F)
+    k.h(0x2000); k.bl(CHECA_LISTA)    # movs r0,#0 ; bl checa lista
+    k.h(0x2800)                       # cmp  r0, #0
+    k.h(0xD102)                       # bne  +4 (segue)
+    k.h(0x20D7)                       # movs r0, #0xd7
+    k.bw(0x00D01044)                  #      b.w  mostra mensagem
+    k.h(0x2000); k.bl(IMG_E8EC)       # movs r0,#0 ; bl 0x00D0E8EC
+    k.bl(IMG_E39C)                    # bl   0x00D0E39C
+    k.h(0x2000); k.bl(IMG_EDCC)       # movs r0,#0 ; bl 0x00D3EDCC
+    k.bl(IMG_SCAN)                    # bl   0x00D0D058  (a varredura)
+    k.h(0x2800)                       # cmp  r0, #0
+    k.h(0xDC02)                       # bgt  +4 (tem imagem: abre)
+    k.h(0x2033)                       # movs r0, #0x33   "sem imagens"
+    k.bw(0x00D01044)                  #      b.w  mostra mensagem
+    k.h(0x2315)                       # movs r3, #0x15
+    k.bw(0x00D01036)                  # b.w  trampolim: origem vem da MENSAGEM
+
     k.rotulo("fm")                    # de 0x00D0113C
     k.h(0xB500); k.h(0x20CA); k.bl(FM_STR)
     k.h(0x4601); k.h(0x2001); k.bl(FM_MBOX)
@@ -252,22 +322,14 @@ def montar():
         k.b.extend(bytes.fromhex("bde8f041"))   # pop.w {r4,r5,r6,r7,r8,lr}
         k.bw(ABRE_PAG)                # b.w  0x00D0DAE0
 
-    k.rotulo("ebook")                 # replica de 0x00D01162
-    k.h(0x2000); k.bl(CHECA_LISTA)    # movs r0,#0 ; bl checa lista
-    k.bl(EBOOK_SCAN)                  # bl  atualiza livros
-    abre_como_a_fabrica(0x0C)
 
-    k.rotulo("imagem")                # replica de 0x00D011AE
-    k.h(0x2000); k.bl(CHECA_LISTA)
-    k.h(0x2000); k.bl(IMG_E8EC)
-    k.bl(IMG_E39C)
-    k.h(0x2000); k.bl(IMG_EDCC)
-    k.bl(IMG_SCAN)                    # bl  atualiza imagens
-    abre_como_a_fabrica(0x15)
 
     # preenche TAB_PREP agora que os rotulos existem
     for i, (_, _, prep, _, _) in enumerate(DESTINOS):
-        v = (k.rot[prep] | 1) if prep else 0
+        if isinstance(prep, int):      # salto direto para caso de fabrica
+            v = prep | 1
+        else:
+            v = (k.rot[prep] | 1) if prep else 0
         k.b[tab_prep_em + 4 * i: tab_prep_em + 4 * i + 4] = v.to_bytes(4, "little")
     return bytes(k.b)
 
@@ -295,9 +357,10 @@ def main():
     print(f"gancho        {HOOK:#010x}  4 bytes (cmp r2,#2 / bhi)")
     print(f"  despacho de 3 -> 6 indices\n")
     for i, (pg, chk, prep, arg, nome) in enumerate(DESTINOS):
-        a = "  abre ela mesma (replica de fabrica)" if arg == "T" else "  args da mensagem"
+        a = ("  SALTA para o caso de fabrica" if arg == "F"
+             else "  abre ela mesma" if arg == "T" else "  args da mensagem")
         print(f"  {i}  {nome:<14} -> pagina {pg:#04x}{a}"
-              f"{('  + prep ' + prep) if prep else ''}"
+              f"{('  + prep ' + prep) if isinstance(prep, str) else ''}"
               f"{'  (checa cartao)' if chk else ''}")
     print(f"\nescrito: {sys.argv[2]}")
 
