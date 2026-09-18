@@ -11,7 +11,10 @@
 ## 1. Onde o aparelho está
 
 ```
-OpenPod Core 3.6     <- NO APARELHO, e ESTAVEL.
+OpenPod Core 3.7     <- O PONTO ESTAVEL. Tudo abre, Radio sintoniza.
+                        firmware/RELEASE/OpenPod Core 3.7/
+
+OpenPod Core 3.6     <- o passo atras.
                         Os seis itens do Extras abrem, e o Radio
                         sintoniza. Confirmada na tela em 17/09.
                         firmware/RELEASE/OpenPod Core 3.6/
@@ -46,7 +49,9 @@ OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
 | **3.3** | ✅ | metade LVGL. Confirmada: nada travou, itens 4-6 inertes |
 | **3.4** | ✅ | os seis itens abrem. **Rádio abre mas não sintoniza** |
 | **3.5** | ❌ | quebrou os menus: saltava para casos da home. OBSOLETA |
-| **3.6** | ✅ | **NO APARELHO. Rádio sintoniza.** ESTÁVEL |
+| **3.6** | ✅ | Rádio sintoniza |
+| **3.7** | ✅ | **O PONTO ESTÁVEL.** Tudo funciona no Extras |
+| **3.8** | ❌ | quebrou o Extras inteiro. OBSOLETA |
 
 > ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
 > remendos em cima do mesmo código danificado. Volte para a 2.4.

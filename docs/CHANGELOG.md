@@ -7,6 +7,65 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-17 — ⚠️ Core 3.8 OBSOLETA — quebrou o Extras inteiro
+
+Mantenedor: *"Após esse update no Extra somente gravação está
+funcionando. Pelo menos a 3.7 tudo funcionava."*
+
+**Ponto estável: Core 3.7.**
+
+### O diff, e por que ele acusa efeito colateral
+
+A 3.7 e a 3.8 diferem em **95 bytes**. Despacho, `TAB_CHK`, `TAB_PAG` e
+a preparação do FM são **idênticos**. Só os índices 2 (Livro digital) e
+3 (Imagem) mudaram de caminho.
+
+Rádio, Bluetooth e Pastas rodam código byte a byte igual ao da 3.7.
+Logo, eles não quebraram por si: entrar no Imagem ou no Livro digital
+deixou o aparelho num estado ruim e o resto parou depois.
+
+### O candidato, NÃO MEDIDO
+
+A fábrica testa o resultado da verificação de lista:
+
+```asm
+movs r0,#0 / bl #0x00D45CAC
+cmp  r0,#0 / beq -> mensagem "sem lista"
+```
+
+As réplicas da 3.7 e da 3.8 chamam `0x00D45CAC` e **ignoram o
+resultado**. Se a lista não existe, `0x00D00430` e `0x00D0D058`
+trabalham em cima de estado inválido.
+
+Copiei as chamadas e não copiei as guardas.
+
+### A regra que eu quebrei
+
+Duas gravações seguidas (3.7 e 3.8) no mesmo item, as duas apresentadas
+com confiança, as duas erradas. Na 3.8 eu escrevi que pararia se
+falhasse. **Parei.**
+
+> O defeito de Imagem/Livro digital fica ABERTO e sem tentativa nova até
+> haver medição — não mais uma hipótese. Instrumentar significa comparar
+> o estado da página nas duas entradas (home e Extras), não adivinhar
+> qual argumento importa.
+
+---
+
+## 2026-09-17 — Core 3.7 — ✅ O PONTO ESTÁVEL
+
+Confirmada por eliminação: a 3.8 quebrou e o mantenedor relatou que
+**"pelo menos a 3.7 tudo funcionava"**.
+
+Os seis itens do Extras abrem, o Rádio sintoniza. O que falta: Imagem e
+Livro digital não checam o cartão nem atualizam a lista ao entrar pelo
+Extras (funciona pela tela principal). Defeito ABERTO.
+
+- `firmware/RELEASE/OpenPod Core 3.7/OpenPod_Core_3.7.up`
+- hash: `5467824568276ed50e9704e8cdc63c79e33aa11253b14fcad1853e1c2c3eeca9`
+
+---
+
 ## 2026-09-17 — Core 3.6 — a 3.4 de volta, mais o tuner do FM
 
 **154 bytes** sobre a 3.4. **Um único setor: `0x1A6000`.** O gancho e as

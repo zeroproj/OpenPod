@@ -89,14 +89,44 @@ CHECA_CART = 0x00CFE714
 #   Pastas continua abrindo direto: nao achei caso de fabrica com frame
 #   compativel. O bloco da pagina 0x52 (0x00D0C888) desempilha QUATRO
 #   registradores e nao serve.
+# prep: sub-rotina de preparacao, ou None
+# arg : (origem, r1) com que chamar a primitiva, ou None para usar os
+#       campos da mensagem (o que a 3.4/3.6/3.7 faziam)
+#
+# >>> POR QUE `arg` EXISTE (Core 3.8) <<<
+#   A 3.7 replicou a preparacao de Imagem e Livro digital e NAO
+#   resolveu -- "do mesmo jeito". Comparando a chamada final:
+#
+#       fabrica (0x00D011EA):  r0=1     r1=2   r2=0  r3=0x15
+#       3.7                 :  r0=0x53  r1=4   r2=0  r3=0x15
+#
+#   A pagina GUARDA a origem no proprio estado (0x00D03AD8:
+#   `strh r0,[r5,#-8]`), entao r0 nao e decorativo.
+#
+#   HIPOTESE, nao medida: a pagina decide atualizar a lista a partir da
+#   origem. E a segunda tentativa neste mesmo item -- se nao resolver,
+#   parar e instrumentar em vez de tentar de novo.
+#
+#   arg == "T": a sub-rotina e TERMINAL -- ela nao volta, faz a
+#   abertura ela mesma, replicando a cauda do caso de fabrica byte a
+#   byte (inclusive `pop.w` + `b.w 0x00D0DAE0`). Chamada com `blx`, sem
+#   push, a pilha no momento do `pop.w` e exatamente o frame de
+#   0x00D0CC0C.
 DESTINOS = [
-    (0x18, 1, 0, "Gravacao"),
-    (0x1A, 0, 1, "Radio"),          # 1 = roda a preparacao do FM antes
-    (0x0C, 1, 0, "Livro digital"),
-    (0x15, 1, 0, "Imagem"),
-    (0x23, 0, 0, "Bluetooth"),
-    (0x22, 1, 0, "Pastas"),
+    (0x18, 1, None,     None,   "Gravacao"),
+    (0x1A, 0, "fm",     None,   "Radio"),
+    (0x0C, 1, "ebook",  "T",    "Livro digital"),
+    (0x15, 1, "imagem", "T",    "Imagem"),
+    (0x23, 0, None,     None,   "Bluetooth"),
+    (0x22, 1, None,     None,   "Pastas"),
 ]
+
+CHECA_LISTA = 0x00D45CAC         # a verificacao que faltava
+EBOOK_SCAN  = 0x00D00430         # atualiza a lista de livros
+IMG_E8EC    = 0x00D0E8EC
+IMG_E39C    = 0x00D0E39C
+IMG_EDCC    = 0x00D3EDCC
+IMG_SCAN    = 0x00D0D058         # atualiza a lista de imagens
 
 # rotinas da preparacao do FM, medidas em 0x00D0113C
 FM_STR     = 0x00D2108C          # get_string
@@ -125,73 +155,121 @@ def bw(origem, destino):
     return bytes(b)
 
 
+class Bloco:
+    """Montador simples: acumula bytes e sabe o endereco de cada rotulo.
+
+    Existe porque a Core 3.5/3.6 foram montadas com offsets contados a
+    mao, e um `bhs` acabou caindo no meio de outra instrucao. Com isto,
+    acrescentar uma rotina nao obriga a recontar nada.
+    """
+    def __init__(self, base):
+        self.base, self.b, self.rot = base, bytearray(), {}
+    def rotulo(self, nome):
+        self.rot[nome] = self.base + len(self.b)
+    @property
+    def pos(self):
+        return self.base + len(self.b)
+    def h(self, v):
+        self.b.extend(v.to_bytes(2, "little"))
+    def w(self, v):
+        self.b.extend(v.to_bytes(4, "little"))
+    def bl(self, destino):
+        self.b.extend(bl(self.pos, destino))
+    def bw(self, destino):
+        self.b.extend(bw(self.pos, destino))
+    def alinha(self, n=4):
+        while len(self.b) % n:
+            self.h(0xBF00) if len(self.b) % 2 == 0 else self.b.append(0)
+
+
 def montar():
-    c = bytearray()
-    def h(v): c.extend(v.to_bytes(2, "little"))
     A = APP_ROUTER
+    k = Bloco(A)
 
-    h(0x89A2)                          # 0x00  ldrh r2, [r4, #0xc]
-    h(0x2A06)                          # 0x02  cmp  r2, #6
-    h(0xD219)                          # 0x04  bhs  FIM (0x3a)
-    h(0x4615)                          # 0x06  mov  r5, r2
-    h(0x4B0D)                          # 0x08  ldr  r3, [pc,#0x34] -> &TAB_CHK
-    h(0x5C9B)                          # 0x0A  ldrb r3, [r3, r2]
-    h(0x2B00)                          # 0x0C  cmp  r3, #0
-    h(0xD003)                          # 0x0E  beq  PREP (0x18)
-    c += bl(A + 0x10, CHECA_CART)      # 0x10  bl   checa cartao
-    h(0x2800)                          # 0x14  cmp  r0, #0
-    h(0xD00E)                          # 0x16  beq  SEMCARTAO (0x36)
-    # PREP (0x18)
-    h(0x4B0A)                          # 0x18  ldr  r3, [pc,#0x28] -> &TAB_PREP
-    c += bytes.fromhex("53f82530")     # 0x1A  ldr.w r3, [r3, r5, lsl #2]
-    h(0x2B00)                          # 0x1E  cmp  r3, #0
-    h(0xD000)                          # 0x20  beq  ABRE (0x24)
-    h(0x4798)                          # 0x22  blx  r3     (r4/r5 sobrevivem)
-    # ABRE (0x24) — igual a 3.4, que funcionou
-    h(0x4B08)                          # 0x24  ldr  r3, [pc,#0x20] -> &TAB_PAG
-    h(0x5D5B)                          # 0x26  ldrb r3, [r3, r5]
-    h(0x2200)                          # 0x28  movs r2, #0
-    h(0x8961)                          # 0x2A  ldrh r1, [r4, #0xa]
-    h(0x8920)                          # 0x2C  ldrh r0, [r4, #8]
-    c += bytes.fromhex("bde8f041")     # 0x2E  pop.w {r4,r5,r6,r7,r8,lr}
-    c += bw(A + 0x32, ABRE_PAG)        # 0x32
-    c += bw(A + 0x36, SEM_CARTAO)      # 0x36  SEMCARTAO
-    c += bw(A + 0x3A, RETORNO)         # 0x3A  FIM
-    h(0xBF00)                          # 0x3E  nop
-    assert len(c) == 0x40, hex(len(c))
-    c += (A + 0x58).to_bytes(4, "little")   # 0x40 -> &TAB_CHK
-    c += (A + 0x60).to_bytes(4, "little")   # 0x44 -> &TAB_PREP
-    c += (A + 0x78).to_bytes(4, "little")   # 0x48 -> &TAB_PAG
-    c += b"\x00" * 0x0C                     # 0x4C  reservado
-    c += bytes(chk for _, chk, _, _ in DESTINOS)   # 0x58  6 B
-    c += b"\x00\x00"                         # 0x5E  pad
-    for _, _, prep, _ in DESTINOS:          # 0x60  6 words
-        c += ((A + 0x80) | 1).to_bytes(4, "little") if prep else b"\x00" * 4
-    c += bytes(pg for pg, _, _, _ in DESTINOS)     # 0x78  6 B
-    c += b"\x00\x00"                         # 0x7E  pad
-    assert len(c) == 0x80, hex(len(c))
+    k.h(0x89A2)                       # ldrh r2, [r4, #0xc]
+    k.h(0x2A06)                       # cmp  r2, #6
+    k.h(0xD219)                       # bhs  FIM
+    k.h(0x4615)                       # mov  r5, r2
+    k.h(0x4B0D)                       # ldr  r3, [pc,#0x34] -> &TAB_CHK
+    k.h(0x5C9B)                       # ldrb r3, [r3, r2]
+    k.h(0x2B00)                       # cmp  r3, #0
+    k.h(0xD003)                       # beq  PREP
+    k.bl(CHECA_CART)                  # bl   checa cartao
+    k.h(0x2800)                       # cmp  r0, #0
+    k.h(0xD00E)                       # beq  SEMCARTAO
+    k.h(0x4B0A)                       # PREP: ldr r3,[pc,#0x28] -> &TAB_PREP
+    k.b.extend(bytes.fromhex("53f82530"))   # ldr.w r3, [r3, r5, lsl #2]
+    k.h(0x2B00)                       # cmp  r3, #0
+    k.h(0xD000)                       # beq  ABRE
+    k.h(0x4798)                       # blx  r3
+    k.h(0x4B08)                       # ABRE: ldr r3,[pc,#0x20] -> &TAB_PAG
+    k.h(0x5D5B)                       # ldrb r3, [r3, r5]
+    k.h(0x2200)                       # movs r2, #0
+    k.h(0x8961)                       # ldrh r1, [r4, #0xa]
+    k.h(0x8920)                       # ldrh r0, [r4, #8]
+    k.b.extend(bytes.fromhex("bde8f041"))   # pop.w {r4,r5,r6,r7,r8,lr}
+    k.bw(ABRE_PAG)
+    k.bw(SEM_CARTAO)                  # SEMCARTAO
+    k.bw(RETORNO)                     # FIM
+    k.h(0xBF00)
+    assert k.pos == A + 0x40, hex(k.pos)
+    k.w(A + 0x58); k.w(A + 0x60); k.w(A + 0x78)   # &TAB_CHK, &TAB_PREP, &TAB_PAG
+    k.b.extend(b"\x00" * 0x0C)
+    assert k.pos == A + 0x58
+    k.b.extend(bytes(chk for _, chk, _, _, _ in DESTINOS)); k.b.extend(b"\x00\x00")
+    assert k.pos == A + 0x60
+    tab_prep_em = len(k.b)
+    k.b.extend(b"\x00" * 24)           # TAB_PREP, preenchida no fim
+    assert k.pos == A + 0x78
+    k.b.extend(bytes(pg for pg, _, _, _, _ in DESTINOS)); k.b.extend(b"\x00\x00")
 
-    # --- PREPARACAO DO FM (0x80) — replica de 0x00D0113C ---
-    h(0xB500)                          # 0x80  push {lr}
-    h(0x20CA)                          # 0x82  movs r0, #0xca
-    c += bl(A + 0x84, FM_STR)          # 0x84  bl   get_string
-    h(0x4601)                          # 0x88  mov  r1, r0
-    h(0x2001)                          # 0x8A  movs r0, #1
-    c += bl(A + 0x8C, FM_MBOX)         # 0x8C  bl   mostra mensagem
-    h(0x2001)                          # 0x90  movs r0, #1
-    c += bl(A + 0x92, FM_CFEC60)       # 0x92  bl   0x00CFEC60
-    h(0x2214)                          # 0x96  movs r2, #0x14
-    h(0x4903)                          # 0x98  ldr  r1, [pc,#0xc]  -> FM_LIT_R1
-    h(0x4804)                          # 0x9A  ldr  r0, [pc,#0x10] -> FM_LIT_R0
-    c += bl(A + 0x9C, FM_D45D50)       # 0x9C  bl   0x00D45D50
-    c += bl(A + 0xA0, FM_INIT)         # 0xA0  bl   0x00D00510  <- o tuner
-    h(0xBD00)                          # 0xA4  pop  {pc}
-    h(0xBF00)                          # 0xA6  nop
-    assert len(c) == 0xA8, hex(len(c))
-    c += FM_LIT_R1.to_bytes(4, "little")    # 0xA8
-    c += FM_LIT_R0.to_bytes(4, "little")    # 0xAC
-    assert len(c) == 0xB0, hex(len(c))
-    return bytes(c)
+    # ---- sub-rotinas de preparacao, replicadas dos casos de fabrica ----
+    k.rotulo("fm")                    # de 0x00D0113C
+    k.h(0xB500); k.h(0x20CA); k.bl(FM_STR)
+    k.h(0x4601); k.h(0x2001); k.bl(FM_MBOX)
+    k.h(0x2001); k.bl(FM_CFEC60)
+    k.h(0x2214)
+    # os dois `ldr rX,[pc,#imm]` sao emitidos com imm provisorio e
+    # corrigidos depois que o pool existir -- contar offset a mao foi o
+    # que errou na 3.6.
+    p_r1, a_r1 = len(k.b), k.pos; k.h(0x4900)
+    p_r0, a_r0 = len(k.b), k.pos; k.h(0x4800)
+    k.bl(FM_D45D50); k.bl(FM_INIT); k.h(0xBD00); k.alinha()
+    lit = k.pos
+    k.w(FM_LIT_R1); k.w(FM_LIT_R0)
+    for pos, addr, base_op, alvo in ((p_r1, a_r1, 0x4900, lit),
+                                     (p_r0, a_r0, 0x4800, lit + 4)):
+        imm = alvo - (((addr + 4) & ~3))
+        assert 0 <= imm <= 0x3FC and imm % 4 == 0, hex(imm)
+        k.b[pos:pos + 2] = (base_op | (imm // 4)).to_bytes(2, "little")
+
+    def abre_como_a_fabrica(pagina):
+        """A cauda dos casos da home: r0=1 (origem home), r1=2, r2=0."""
+        k.h(0x2300 | pagina)          # movs r3, #<pagina>
+        k.h(0x2200)                   # movs r2, #0
+        k.h(0x2102)                   # movs r1, #2
+        k.h(0x2001)                   # movs r0, #1
+        k.b.extend(bytes.fromhex("bde8f041"))   # pop.w {r4,r5,r6,r7,r8,lr}
+        k.bw(ABRE_PAG)                # b.w  0x00D0DAE0
+
+    k.rotulo("ebook")                 # replica de 0x00D01162
+    k.h(0x2000); k.bl(CHECA_LISTA)    # movs r0,#0 ; bl checa lista
+    k.bl(EBOOK_SCAN)                  # bl  atualiza livros
+    abre_como_a_fabrica(0x0C)
+
+    k.rotulo("imagem")                # replica de 0x00D011AE
+    k.h(0x2000); k.bl(CHECA_LISTA)
+    k.h(0x2000); k.bl(IMG_E8EC)
+    k.bl(IMG_E39C)
+    k.h(0x2000); k.bl(IMG_EDCC)
+    k.bl(IMG_SCAN)                    # bl  atualiza imagens
+    abre_como_a_fabrica(0x15)
+
+    # preenche TAB_PREP agora que os rotulos existem
+    for i, (_, _, prep, _, _) in enumerate(DESTINOS):
+        v = (k.rot[prep] | 1) if prep else 0
+        k.b[tab_prep_em + 4 * i: tab_prep_em + 4 * i + 4] = v.to_bytes(4, "little")
+    return bytes(k.b)
 
 
 def main():
@@ -216,10 +294,11 @@ def main():
     print(f"despacho APP  {APP_ROUTER:#010x}  {len(cod)} bytes")
     print(f"gancho        {HOOK:#010x}  4 bytes (cmp r2,#2 / bhi)")
     print(f"  despacho de 3 -> 6 indices\n")
-    for i, (pg, chk, prep, nome) in enumerate(DESTINOS):
-        print(f"  {i}  {nome:<14} -> pagina {pg:#04x}"
-              f"{'   + preparacao do FM' if prep else ''}"
-              f"{'   (checa cartao)' if chk else ''}")
+    for i, (pg, chk, prep, arg, nome) in enumerate(DESTINOS):
+        a = "  abre ela mesma (replica de fabrica)" if arg == "T" else "  args da mensagem"
+        print(f"  {i}  {nome:<14} -> pagina {pg:#04x}{a}"
+              f"{('  + prep ' + prep) if prep else ''}"
+              f"{'  (checa cartao)' if chk else ''}")
     print(f"\nescrito: {sys.argv[2]}")
 
 
