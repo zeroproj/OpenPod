@@ -68,8 +68,11 @@ está correto.
 ## 5. O que sobra do M-g
 
 A cor está feita. O que falta é o **degradê em bitmap** do Marte, que
-exige um objeto de imagem (`lv_img_dsc_t`) — mesmo bloqueio do M-h, e o
-primeiro pixel do NanoClone obriga o crédito CC-BY-SA na tela Sobre.
+exige um objeto de imagem (`lv_img_dsc_t`) — **e esse bloqueio caiu em
+2026-09-18**: o descritor está medido e confirmado em `docs/IMAGENS.md`.
+
+Continua de pé só a decisão sobre o crédito CC-BY-SA, que o primeiro
+pixel do NanoClone gravado no firmware torna obrigatório.
 
 Ver `docs/MARTE_ALVO.md` §M-g.
 

@@ -547,7 +547,7 @@ M-f  cor da selecao      FEITO  Core 1.2
 M-i  as 6 cores          FECHADO 18/09 — nada a fazer
 M-g  bateria             PARCIAL — casca e nivel nas cores do Marte
                                    (Core 5.2/5.3); o bitmap falta
-M-h  degrade da faixa    ABERTO — barato, ver secao 5
+M-h  degrade da faixa    DESBLOQUEADO — ver docs/IMAGENS.md
 M-j  tema claro          DESVIO ACEITO
 ```
 
