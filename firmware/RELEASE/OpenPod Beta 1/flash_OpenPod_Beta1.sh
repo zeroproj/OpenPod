@@ -1,12 +1,12 @@
 #!/bin/sh
-# flash_OpenPod_Beta1.sh — OpenPod. GERADO por tools/make_install_kit.py.
+#
 # NAO EDITE A MAO: as constantes sao calculadas a partir das imagens.
 #
 # OpenPod Beta 1 — a partir do firmware de fabrica
 #
 # Grava 44 setores de 4096 B (176 KiB). O bootloader (0x0..0xD000)
 # nao e endereçado. write_flash sempre com 0 no 2o argumento, a
-# partir de um arquivo por setor (docs/WRITE_FLASH_SEMANTICS.md).
+#
 #
 # USO   sudo sh flash_OpenPod_Beta1.sh [/opt/smartlink_flash]
 
