@@ -755,3 +755,41 @@ O helper serve **58 páginas** e eu **não conferi as 58**. Telas que não
 sejam lista também ganham 3 px de padding no contêiner. É reversível em
 4 bytes, mas o alcance é maior que o defeito relatado — e isso precisa
 ser olhado no aparelho, não deduzido.
+
+
+---
+
+# FECHADO — o "OpenPod" some sem cartão SD (2026-09-18)
+
+A pendência aberta na Core 2.3, em 15/09:
+
+> *"Se a rotina `0x00D226AC` for chamada só quando há cartão, o
+> 'OpenPod' vai sumir junto com ele — e aí o texto estaria fazendo papel
+> de indicador de cartão, o que é PIOR que o ícone original. Não dá para
+> responder isso pelo binário sem ler os dois chamadores."*
+
+**Respondida por observação no aparelho:** o mantenedor tirou o cartão e
+o "OpenPod" **some** da faixa.
+
+Ou seja: a hipótese estava certa. O título ocupa o slot do ícone de SD e
+herda a condição de existência dele.
+
+## A decisão
+
+**Do mantenedor: fica assim.** *"Tá ótimo, não tem problema."*
+
+Então o comportamento é **aceito, não corrigido**. Quem mexer nisso
+depois precisa saber que é escolha, não descuido:
+
+- o "OpenPod" na faixa é **indicador de cartão** na prática;
+- separar as duas coisas exige um objeto novo — é código, não dado
+  (ver §6 desta página);
+- e a rotina de título por página (V054, `0x001A5000`) **nunca foi
+  testada no aparelho** e não existe nesta linha de firmware.
+
+| Afirmação | Classe |
+|---|---|
+| O título some sem cartão | **CONFIRMADO** (observado na tela) |
+| É o slot do ícone de SD | CONFIRMADO |
+| Separar exige objeto novo | PROVÁVEL (§6) |
+| Comportamento aceito pelo mantenedor | decisão, 2026-09-18 |
