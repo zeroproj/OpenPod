@@ -1,14 +1,14 @@
 #!/bin/sh
-# flash_OpenPod_Beta2.sh — OpenPod. GERADO por tools/make_install_kit.py.
+# flash_OpenPod_Beta3.sh — OpenPod. GERADO por tools/make_install_kit.py.
 # NAO EDITE A MAO: as constantes sao calculadas a partir das imagens.
 #
-# OpenPod 5.7 Public Beta 2
+# OpenPod 5.7 Public Beta 3
 #
-# Grava 44 setores de 4096 B (176 KiB). O bootloader (0x0..0xD000)
+# Grava 45 setores de 4096 B (180 KiB). O bootloader (0x0..0xD000)
 # nao e endereçado. write_flash sempre com 0 no 2o argumento, a
 # partir de um arquivo por setor (docs/WRITE_FLASH_SEMANTICS.md).
 #
-# USO   sudo sh flash_OpenPod_Beta2.sh [/opt/smartlink_flash]
+# USO   sudo sh flash_OpenPod_Beta3.sh [/opt/smartlink_flash]
 
 set -eu
 export LC_ALL=C
@@ -16,7 +16,7 @@ export LC_ALL=C
 TOOLDIR=${1:-/opt/smartlink_flash}
 TOOL="$TOOLDIR/smtlink_dump"
 DEV=301a:2801
-VERSAO="OpenPod_Beta2"
+VERSAO="OpenPod_Beta3"
 # Os setores moram ao lado deste script, em setores/. Entramos la
 # para os nomes de arquivo resolverem, mas os logs e os dumps ficam
 # onde o usuario chamou o script -- nao enterrados no pacote.
@@ -42,6 +42,7 @@ die() {
         log "***   sudo $TOOL --id $DEV write_flash 0x53000 0 0x1000 base_53000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x54000 0 0x1000 base_54000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x5D000 0 0x1000 base_5D000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0xC7000 0 0x1000 base_C7000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0xCC000 0 0x1000 base_CC000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0xCD000 0 0x1000 base_CD000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0xD3000 0 0x1000 base_D3000.bin"
@@ -247,51 +248,52 @@ m() {
 # --------------------------------------------------------------------------
 
 log "======================================================================"
-log "$(m hdr) OPENPOD_BETA2   (44 $(m setores), 176 KiB)"
-log " 0x048000 +0x1000   <- OpenPod_Beta2_48000.bin"
-log " 0x052000 +0x1000   <- OpenPod_Beta2_52000.bin"
-log " 0x053000 +0x1000   <- OpenPod_Beta2_53000.bin"
-log " 0x054000 +0x1000   <- OpenPod_Beta2_54000.bin"
-log " 0x05D000 +0x1000   <- OpenPod_Beta2_5D000.bin"
-log " 0x0CC000 +0x1000   <- OpenPod_Beta2_CC000.bin"
-log " 0x0CD000 +0x1000   <- OpenPod_Beta2_CD000.bin"
-log " 0x0D3000 +0x1000   <- OpenPod_Beta2_D3000.bin"
-log " 0x0DF000 +0x1000   <- OpenPod_Beta2_DF000.bin"
-log " 0x101000 +0x1000   <- OpenPod_Beta2_101000.bin"
-log " 0x109000 +0x1000   <- OpenPod_Beta2_109000.bin"
-log " 0x10A000 +0x1000   <- OpenPod_Beta2_10A000.bin"
-log " 0x10C000 +0x1000   <- OpenPod_Beta2_10C000.bin"
-log " 0x10D000 +0x1000   <- OpenPod_Beta2_10D000.bin"
-log " 0x121000 +0x1000   <- OpenPod_Beta2_121000.bin"
-log " 0x122000 +0x1000   <- OpenPod_Beta2_122000.bin"
-log " 0x123000 +0x1000   <- OpenPod_Beta2_123000.bin"
-log " 0x126000 +0x1000   <- OpenPod_Beta2_126000.bin"
-log " 0x127000 +0x1000   <- OpenPod_Beta2_127000.bin"
-log " 0x128000 +0x1000   <- OpenPod_Beta2_128000.bin"
-log " 0x12A000 +0x1000   <- OpenPod_Beta2_12A000.bin"
-log " 0x12B000 +0x1000   <- OpenPod_Beta2_12B000.bin"
-log " 0x12C000 +0x1000   <- OpenPod_Beta2_12C000.bin"
-log " 0x12D000 +0x1000   <- OpenPod_Beta2_12D000.bin"
-log " 0x12E000 +0x1000   <- OpenPod_Beta2_12E000.bin"
-log " 0x12F000 +0x1000   <- OpenPod_Beta2_12F000.bin"
-log " 0x130000 +0x1000   <- OpenPod_Beta2_130000.bin"
-log " 0x131000 +0x1000   <- OpenPod_Beta2_131000.bin"
-log " 0x132000 +0x1000   <- OpenPod_Beta2_132000.bin"
-log " 0x133000 +0x1000   <- OpenPod_Beta2_133000.bin"
-log " 0x134000 +0x1000   <- OpenPod_Beta2_134000.bin"
-log " 0x135000 +0x1000   <- OpenPod_Beta2_135000.bin"
-log " 0x136000 +0x1000   <- OpenPod_Beta2_136000.bin"
-log " 0x137000 +0x1000   <- OpenPod_Beta2_137000.bin"
-log " 0x138000 +0x1000   <- OpenPod_Beta2_138000.bin"
-log " 0x139000 +0x1000   <- OpenPod_Beta2_139000.bin"
-log " 0x13A000 +0x1000   <- OpenPod_Beta2_13A000.bin"
-log " 0x13B000 +0x1000   <- OpenPod_Beta2_13B000.bin"
-log " 0x13C000 +0x1000   <- OpenPod_Beta2_13C000.bin"
-log " 0x13D000 +0x1000   <- OpenPod_Beta2_13D000.bin"
-log " 0x149000 +0x1000   <- OpenPod_Beta2_149000.bin"
-log " 0x1A3000 +0x1000   <- OpenPod_Beta2_1A3000.bin"
-log " 0x1A4000 +0x1000   <- OpenPod_Beta2_1A4000.bin"
-log " 0x1A6000 +0x1000   <- OpenPod_Beta2_1A6000.bin"
+log "$(m hdr) OPENPOD_BETA3   (45 $(m setores), 180 KiB)"
+log " 0x048000 +0x1000   <- OpenPod_Beta3_48000.bin"
+log " 0x052000 +0x1000   <- OpenPod_Beta3_52000.bin"
+log " 0x053000 +0x1000   <- OpenPod_Beta3_53000.bin"
+log " 0x054000 +0x1000   <- OpenPod_Beta3_54000.bin"
+log " 0x05D000 +0x1000   <- OpenPod_Beta3_5D000.bin"
+log " 0x0C7000 +0x1000   <- OpenPod_Beta3_C7000.bin"
+log " 0x0CC000 +0x1000   <- OpenPod_Beta3_CC000.bin"
+log " 0x0CD000 +0x1000   <- OpenPod_Beta3_CD000.bin"
+log " 0x0D3000 +0x1000   <- OpenPod_Beta3_D3000.bin"
+log " 0x0DF000 +0x1000   <- OpenPod_Beta3_DF000.bin"
+log " 0x101000 +0x1000   <- OpenPod_Beta3_101000.bin"
+log " 0x109000 +0x1000   <- OpenPod_Beta3_109000.bin"
+log " 0x10A000 +0x1000   <- OpenPod_Beta3_10A000.bin"
+log " 0x10C000 +0x1000   <- OpenPod_Beta3_10C000.bin"
+log " 0x10D000 +0x1000   <- OpenPod_Beta3_10D000.bin"
+log " 0x121000 +0x1000   <- OpenPod_Beta3_121000.bin"
+log " 0x122000 +0x1000   <- OpenPod_Beta3_122000.bin"
+log " 0x123000 +0x1000   <- OpenPod_Beta3_123000.bin"
+log " 0x126000 +0x1000   <- OpenPod_Beta3_126000.bin"
+log " 0x127000 +0x1000   <- OpenPod_Beta3_127000.bin"
+log " 0x128000 +0x1000   <- OpenPod_Beta3_128000.bin"
+log " 0x12A000 +0x1000   <- OpenPod_Beta3_12A000.bin"
+log " 0x12B000 +0x1000   <- OpenPod_Beta3_12B000.bin"
+log " 0x12C000 +0x1000   <- OpenPod_Beta3_12C000.bin"
+log " 0x12D000 +0x1000   <- OpenPod_Beta3_12D000.bin"
+log " 0x12E000 +0x1000   <- OpenPod_Beta3_12E000.bin"
+log " 0x12F000 +0x1000   <- OpenPod_Beta3_12F000.bin"
+log " 0x130000 +0x1000   <- OpenPod_Beta3_130000.bin"
+log " 0x131000 +0x1000   <- OpenPod_Beta3_131000.bin"
+log " 0x132000 +0x1000   <- OpenPod_Beta3_132000.bin"
+log " 0x133000 +0x1000   <- OpenPod_Beta3_133000.bin"
+log " 0x134000 +0x1000   <- OpenPod_Beta3_134000.bin"
+log " 0x135000 +0x1000   <- OpenPod_Beta3_135000.bin"
+log " 0x136000 +0x1000   <- OpenPod_Beta3_136000.bin"
+log " 0x137000 +0x1000   <- OpenPod_Beta3_137000.bin"
+log " 0x138000 +0x1000   <- OpenPod_Beta3_138000.bin"
+log " 0x139000 +0x1000   <- OpenPod_Beta3_139000.bin"
+log " 0x13A000 +0x1000   <- OpenPod_Beta3_13A000.bin"
+log " 0x13B000 +0x1000   <- OpenPod_Beta3_13B000.bin"
+log " 0x13C000 +0x1000   <- OpenPod_Beta3_13C000.bin"
+log " 0x13D000 +0x1000   <- OpenPod_Beta3_13D000.bin"
+log " 0x149000 +0x1000   <- OpenPod_Beta3_149000.bin"
+log " 0x1A3000 +0x1000   <- OpenPod_Beta3_1A3000.bin"
+log " 0x1A4000 +0x1000   <- OpenPod_Beta3_1A4000.bin"
+log " 0x1A6000 +0x1000   <- OpenPod_Beta3_1A6000.bin"
 log "$(m boot_na)"
 log "======================================================================"
 log ""
@@ -311,55 +313,57 @@ ck_file() {
     $(m obtido) $g"
     log "        OK   $1"
 }
-ck_file "OpenPod_Beta2_48000.bin" 6ea532bf216161b7d65e6fec3857f9f27890899a6e7ccd0cccff654fb471dd12
-ck_file "OpenPod_Beta2_52000.bin" 3b36d143a96aaab07e0927c9eecf4351f6b0a21c833d0a6f5352fd8226bc5ca3
-ck_file "OpenPod_Beta2_53000.bin" a62c6180f15359d58c91eb6b96c087dbbeae1e0403e8b94accc7e00a7b8e8fe8
-ck_file "OpenPod_Beta2_54000.bin" a96553f46460656f6a7c1a5d9636c0743f9ca606013b1901cd3ac95df109abb5
-ck_file "OpenPod_Beta2_5D000.bin" 7e3402a71dd7d45f80e9d1eb5bc03a5d56a9f9dfb87c5829efcb76e1a5a947c1
-ck_file "OpenPod_Beta2_CC000.bin" ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
-ck_file "OpenPod_Beta2_CD000.bin" 99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
-ck_file "OpenPod_Beta2_D3000.bin" eddeb2ee73066fdef9b81eee7fb5dd74e0710b594c0e0b67090daf9822ac630c
-ck_file "OpenPod_Beta2_DF000.bin" fd20c126093f6bc74a4068300166e922236d7eb571e87848c9bb0a841872686e
-ck_file "OpenPod_Beta2_101000.bin" 673da19a6d3d37b673316192ec95fab51e36ae91df6e3d1c0f72e560635d94eb
-ck_file "OpenPod_Beta2_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
-ck_file "OpenPod_Beta2_10A000.bin" b0b0803de103025b28afa65e061f7d5d7f4b9a30e50a9a2f0b74426f1b2ccbe1
-ck_file "OpenPod_Beta2_10C000.bin" 3b8683d363ba2d88fe25955572dfcb27a2153ec413f40a207ccf012d5e89b4d4
-ck_file "OpenPod_Beta2_10D000.bin" 6fe1812c1a69ae6e876e9fc7a63e10e83055850f60e209d3c0ed34a67231f40a
-ck_file "OpenPod_Beta2_121000.bin" 30ebefbe8d45d7d26c18201cd385b35f67e8e27396f726be0050649f77b1216d
-ck_file "OpenPod_Beta2_122000.bin" df9b903aa340d40041a61cffd9082181033811098b832b0e0603b97b09885250
-ck_file "OpenPod_Beta2_123000.bin" 213ef142bcbd7696faccc4e2139605cffda0d9f6e2bfbf0b368feca2fb2f0e50
-ck_file "OpenPod_Beta2_126000.bin" 25f7937818203d1f7e320fbd4aeef456aa71927db2a89d6ff14f05ad0d571b9f
-ck_file "OpenPod_Beta2_127000.bin" e9d327492dd109c2513cbf07d402e9443eca0acd47193c5de856a9ce03a5a498
-ck_file "OpenPod_Beta2_128000.bin" 34fa1dc3c4fb1832216c8ecac2b3e469f32988dcdad6d6bdf8c7a94cd92a8adc
-ck_file "OpenPod_Beta2_12A000.bin" fdba7d5b8cadf02fd1c59c6bda8c60e95fb1ee7efd827ca77462adc6af2cc5fd
-ck_file "OpenPod_Beta2_12B000.bin" 9e62381d3cc1bbf75d876f314567444437aff5104c29af406afbb614e3d6da5f
-ck_file "OpenPod_Beta2_12C000.bin" bd9fd998d33622f70ba6c0ba311f0bd1aabd5200df1296406646530a41a94bb2
-ck_file "OpenPod_Beta2_12D000.bin" 227a47305e6bea0028c8d7a0924896478f8041468f4429c5925e8a9d20688db4
-ck_file "OpenPod_Beta2_12E000.bin" 34338f09581e5aa1c689c188201ddfdebc29d251a0bfe7e1074d58c429be7157
-ck_file "OpenPod_Beta2_12F000.bin" a640a2e36034aed5c4b51653fb7b6cc85d94f5d43eb12224c3b16a74c61ef102
-ck_file "OpenPod_Beta2_130000.bin" 2dba79928d0639acae56054c764ffcb757ca3d14c75fa3b33607e8b70da36531
-ck_file "OpenPod_Beta2_131000.bin" 00e84901eb3343cf912de670743139a1bf23c4419e93faf15b881a47223c618a
-ck_file "OpenPod_Beta2_132000.bin" e05828e015b71a8c3f2290b03b843188771855583e7ee886244de7d17bd46f0e
-ck_file "OpenPod_Beta2_133000.bin" ffdb8e5ee01d4219eec486d7f3bc60df7e62e30269361daad437835008b513bf
-ck_file "OpenPod_Beta2_134000.bin" bdb077624bce3c8b2d508b03393c0608004a53cefbd1ab1c3e1142f5ef0cb6b4
-ck_file "OpenPod_Beta2_135000.bin" e52b4f721ab955ce0acc404d7bbffb4dded60b0c0b09d43fcd8b54b04ebfab7e
-ck_file "OpenPod_Beta2_136000.bin" 37133af6fa7684d462b11159bacebd685f7f5e533830fd2607ce63f0d177d7b8
-ck_file "OpenPod_Beta2_137000.bin" 9f27ec07c3773ed74cc2702121298b8cdbbcb4ec5815b994d8a430226b9e8bf5
-ck_file "OpenPod_Beta2_138000.bin" 69c8b20ae8e76e94436678ef7e3552b665b766e0335584e0b5649736edae6778
-ck_file "OpenPod_Beta2_139000.bin" 0809afdd572786578e9713711d83177fd77ebe5c89734a78cf16d55d90242c8d
-ck_file "OpenPod_Beta2_13A000.bin" 26aad81f09b8b23a6b3b1af03f9af0bde7107f59d6078b2e0ec2540d5f8de0aa
-ck_file "OpenPod_Beta2_13B000.bin" e76fe152ae3b0f4414952f7f658add959f41adf86e0297a5ea657288cafa1a6e
-ck_file "OpenPod_Beta2_13C000.bin" f9b05c7df264e8c210701e056986e0167641e37ed7cf32d8f477f15aa77feb34
-ck_file "OpenPod_Beta2_13D000.bin" e8bb94264408ab85f7e905d3561ed2a4527295409f6b8381c6a154e4d2139120
-ck_file "OpenPod_Beta2_149000.bin" 47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
-ck_file "OpenPod_Beta2_1A3000.bin" 9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
-ck_file "OpenPod_Beta2_1A4000.bin" 276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
-ck_file "OpenPod_Beta2_1A6000.bin" cc462140c83054e1001adfcba1d3c447c78e7cbb76b5b6c779f22736758c4e73
+ck_file "OpenPod_Beta3_48000.bin" 6ea532bf216161b7d65e6fec3857f9f27890899a6e7ccd0cccff654fb471dd12
+ck_file "OpenPod_Beta3_52000.bin" 3b36d143a96aaab07e0927c9eecf4351f6b0a21c833d0a6f5352fd8226bc5ca3
+ck_file "OpenPod_Beta3_53000.bin" a62c6180f15359d58c91eb6b96c087dbbeae1e0403e8b94accc7e00a7b8e8fe8
+ck_file "OpenPod_Beta3_54000.bin" a96553f46460656f6a7c1a5d9636c0743f9ca606013b1901cd3ac95df109abb5
+ck_file "OpenPod_Beta3_5D000.bin" 7e3402a71dd7d45f80e9d1eb5bc03a5d56a9f9dfb87c5829efcb76e1a5a947c1
+ck_file "OpenPod_Beta3_C7000.bin" f678974cafcb27f9b636e9713360e6f34a9d03f1b6082f3de9897e1513f3a421
+ck_file "OpenPod_Beta3_CC000.bin" ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
+ck_file "OpenPod_Beta3_CD000.bin" 99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
+ck_file "OpenPod_Beta3_D3000.bin" eddeb2ee73066fdef9b81eee7fb5dd74e0710b594c0e0b67090daf9822ac630c
+ck_file "OpenPod_Beta3_DF000.bin" fd20c126093f6bc74a4068300166e922236d7eb571e87848c9bb0a841872686e
+ck_file "OpenPod_Beta3_101000.bin" 673da19a6d3d37b673316192ec95fab51e36ae91df6e3d1c0f72e560635d94eb
+ck_file "OpenPod_Beta3_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
+ck_file "OpenPod_Beta3_10A000.bin" 3771e9fbb8b71e44aa3366b3548d2cba3780c6c63fb301e65aa1b25b4d196339
+ck_file "OpenPod_Beta3_10C000.bin" 3b8683d363ba2d88fe25955572dfcb27a2153ec413f40a207ccf012d5e89b4d4
+ck_file "OpenPod_Beta3_10D000.bin" 6fe1812c1a69ae6e876e9fc7a63e10e83055850f60e209d3c0ed34a67231f40a
+ck_file "OpenPod_Beta3_121000.bin" 30ebefbe8d45d7d26c18201cd385b35f67e8e27396f726be0050649f77b1216d
+ck_file "OpenPod_Beta3_122000.bin" df9b903aa340d40041a61cffd9082181033811098b832b0e0603b97b09885250
+ck_file "OpenPod_Beta3_123000.bin" 213ef142bcbd7696faccc4e2139605cffda0d9f6e2bfbf0b368feca2fb2f0e50
+ck_file "OpenPod_Beta3_126000.bin" 25f7937818203d1f7e320fbd4aeef456aa71927db2a89d6ff14f05ad0d571b9f
+ck_file "OpenPod_Beta3_127000.bin" e9d327492dd109c2513cbf07d402e9443eca0acd47193c5de856a9ce03a5a498
+ck_file "OpenPod_Beta3_128000.bin" 34fa1dc3c4fb1832216c8ecac2b3e469f32988dcdad6d6bdf8c7a94cd92a8adc
+ck_file "OpenPod_Beta3_12A000.bin" fdba7d5b8cadf02fd1c59c6bda8c60e95fb1ee7efd827ca77462adc6af2cc5fd
+ck_file "OpenPod_Beta3_12B000.bin" 9e62381d3cc1bbf75d876f314567444437aff5104c29af406afbb614e3d6da5f
+ck_file "OpenPod_Beta3_12C000.bin" bd9fd998d33622f70ba6c0ba311f0bd1aabd5200df1296406646530a41a94bb2
+ck_file "OpenPod_Beta3_12D000.bin" 227a47305e6bea0028c8d7a0924896478f8041468f4429c5925e8a9d20688db4
+ck_file "OpenPod_Beta3_12E000.bin" 34338f09581e5aa1c689c188201ddfdebc29d251a0bfe7e1074d58c429be7157
+ck_file "OpenPod_Beta3_12F000.bin" a640a2e36034aed5c4b51653fb7b6cc85d94f5d43eb12224c3b16a74c61ef102
+ck_file "OpenPod_Beta3_130000.bin" 2dba79928d0639acae56054c764ffcb757ca3d14c75fa3b33607e8b70da36531
+ck_file "OpenPod_Beta3_131000.bin" 00e84901eb3343cf912de670743139a1bf23c4419e93faf15b881a47223c618a
+ck_file "OpenPod_Beta3_132000.bin" e05828e015b71a8c3f2290b03b843188771855583e7ee886244de7d17bd46f0e
+ck_file "OpenPod_Beta3_133000.bin" ffdb8e5ee01d4219eec486d7f3bc60df7e62e30269361daad437835008b513bf
+ck_file "OpenPod_Beta3_134000.bin" bdb077624bce3c8b2d508b03393c0608004a53cefbd1ab1c3e1142f5ef0cb6b4
+ck_file "OpenPod_Beta3_135000.bin" e52b4f721ab955ce0acc404d7bbffb4dded60b0c0b09d43fcd8b54b04ebfab7e
+ck_file "OpenPod_Beta3_136000.bin" 37133af6fa7684d462b11159bacebd685f7f5e533830fd2607ce63f0d177d7b8
+ck_file "OpenPod_Beta3_137000.bin" 9f27ec07c3773ed74cc2702121298b8cdbbcb4ec5815b994d8a430226b9e8bf5
+ck_file "OpenPod_Beta3_138000.bin" 69c8b20ae8e76e94436678ef7e3552b665b766e0335584e0b5649736edae6778
+ck_file "OpenPod_Beta3_139000.bin" 0809afdd572786578e9713711d83177fd77ebe5c89734a78cf16d55d90242c8d
+ck_file "OpenPod_Beta3_13A000.bin" 26aad81f09b8b23a6b3b1af03f9af0bde7107f59d6078b2e0ec2540d5f8de0aa
+ck_file "OpenPod_Beta3_13B000.bin" e76fe152ae3b0f4414952f7f658add959f41adf86e0297a5ea657288cafa1a6e
+ck_file "OpenPod_Beta3_13C000.bin" f9b05c7df264e8c210701e056986e0167641e37ed7cf32d8f477f15aa77feb34
+ck_file "OpenPod_Beta3_13D000.bin" e8bb94264408ab85f7e905d3561ed2a4527295409f6b8381c6a154e4d2139120
+ck_file "OpenPod_Beta3_149000.bin" 47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
+ck_file "OpenPod_Beta3_1A3000.bin" 9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
+ck_file "OpenPod_Beta3_1A4000.bin" 276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
+ck_file "OpenPod_Beta3_1A6000.bin" 402687737b0649e07bf1bfbd216868fd05433c3fd2e47c64e1e484760fc6b52f
 ck_file "base_48000.bin" cd43df9cf6f193ab32cd4c0963555f95e95e7ecb02b836bc720c2d1873dcbc01
 ck_file "base_52000.bin" 91360fd9e5a5e0871f1682f38174f0acf9b29588e16d18e810f59ef01b158c2f
 ck_file "base_53000.bin" 5decc107dd674f7b6bdd34436f9a7e9b68900c61a7552df7a24be1f7f85bf4c5
 ck_file "base_54000.bin" f5757388180b2ec2c3c1da4c51068af8bf44bd526d48b8fff5fd3ccfe075d41c
 ck_file "base_5D000.bin" e0d56d6422cf0f404cda889d124397e73caaf81f7a6b758b304df46d60a73435
+ck_file "base_C7000.bin" ae29fc778567f832164a237fd2f523dd6eedb4eefad4c7d843676d63931039b4
 ck_file "base_CC000.bin" 83597203bed419cc2f76f1b8c942194d07a4b23c34f67e2e7834864361dd6688
 ck_file "base_CD000.bin" ab039386aa645f414a0580730cc4b62ca7831c9d4d8dff7b01c80f9b7be16f5f
 ck_file "base_D3000.bin" b53d3f48030da1ab150ad3d52b4a21771ce6ae766d1750d589fa4d811a12fe3b
@@ -488,8 +492,8 @@ ck "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3
 log ""
 log "======================================================================"
 log "$(m conf1)"
-log "$(m escreve) 176 KiB / 44 $(m setores)"
-log "$(m muda) OpenPod 5.7 Public Beta 2"
+log "$(m escreve) 180 KiB / 45 $(m setores)"
+log "$(m muda) OpenPod 5.7 Public Beta 3"
 log "$(m conf4)"
 log "======================================================================"
 printf '%s' "$(m digite)"
@@ -512,50 +516,51 @@ wr() {
     $(m obtido) $g"
     log "        $(m setor_ok)"
 }
-wr "4/6 1/44" 0x48000 "OpenPod_Beta2_48000.bin" 6ea532bf216161b7d65e6fec3857f9f27890899a6e7ccd0cccff654fb471dd12
-wr "4/6 2/44" 0x52000 "OpenPod_Beta2_52000.bin" 3b36d143a96aaab07e0927c9eecf4351f6b0a21c833d0a6f5352fd8226bc5ca3
-wr "4/6 3/44" 0x53000 "OpenPod_Beta2_53000.bin" a62c6180f15359d58c91eb6b96c087dbbeae1e0403e8b94accc7e00a7b8e8fe8
-wr "4/6 4/44" 0x54000 "OpenPod_Beta2_54000.bin" a96553f46460656f6a7c1a5d9636c0743f9ca606013b1901cd3ac95df109abb5
-wr "4/6 5/44" 0x5D000 "OpenPod_Beta2_5D000.bin" 7e3402a71dd7d45f80e9d1eb5bc03a5d56a9f9dfb87c5829efcb76e1a5a947c1
-wr "4/6 6/44" 0xCC000 "OpenPod_Beta2_CC000.bin" ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
-wr "4/6 7/44" 0xCD000 "OpenPod_Beta2_CD000.bin" 99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
-wr "4/6 8/44" 0xD3000 "OpenPod_Beta2_D3000.bin" eddeb2ee73066fdef9b81eee7fb5dd74e0710b594c0e0b67090daf9822ac630c
-wr "4/6 9/44" 0xDF000 "OpenPod_Beta2_DF000.bin" fd20c126093f6bc74a4068300166e922236d7eb571e87848c9bb0a841872686e
-wr "4/6 10/44" 0x101000 "OpenPod_Beta2_101000.bin" 673da19a6d3d37b673316192ec95fab51e36ae91df6e3d1c0f72e560635d94eb
-wr "4/6 11/44" 0x109000 "OpenPod_Beta2_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
-wr "4/6 12/44" 0x10A000 "OpenPod_Beta2_10A000.bin" b0b0803de103025b28afa65e061f7d5d7f4b9a30e50a9a2f0b74426f1b2ccbe1
-wr "4/6 13/44" 0x10C000 "OpenPod_Beta2_10C000.bin" 3b8683d363ba2d88fe25955572dfcb27a2153ec413f40a207ccf012d5e89b4d4
-wr "4/6 14/44" 0x10D000 "OpenPod_Beta2_10D000.bin" 6fe1812c1a69ae6e876e9fc7a63e10e83055850f60e209d3c0ed34a67231f40a
-wr "4/6 15/44" 0x121000 "OpenPod_Beta2_121000.bin" 30ebefbe8d45d7d26c18201cd385b35f67e8e27396f726be0050649f77b1216d
-wr "4/6 16/44" 0x122000 "OpenPod_Beta2_122000.bin" df9b903aa340d40041a61cffd9082181033811098b832b0e0603b97b09885250
-wr "4/6 17/44" 0x123000 "OpenPod_Beta2_123000.bin" 213ef142bcbd7696faccc4e2139605cffda0d9f6e2bfbf0b368feca2fb2f0e50
-wr "4/6 18/44" 0x126000 "OpenPod_Beta2_126000.bin" 25f7937818203d1f7e320fbd4aeef456aa71927db2a89d6ff14f05ad0d571b9f
-wr "4/6 19/44" 0x127000 "OpenPod_Beta2_127000.bin" e9d327492dd109c2513cbf07d402e9443eca0acd47193c5de856a9ce03a5a498
-wr "4/6 20/44" 0x128000 "OpenPod_Beta2_128000.bin" 34fa1dc3c4fb1832216c8ecac2b3e469f32988dcdad6d6bdf8c7a94cd92a8adc
-wr "4/6 21/44" 0x12A000 "OpenPod_Beta2_12A000.bin" fdba7d5b8cadf02fd1c59c6bda8c60e95fb1ee7efd827ca77462adc6af2cc5fd
-wr "4/6 22/44" 0x12B000 "OpenPod_Beta2_12B000.bin" 9e62381d3cc1bbf75d876f314567444437aff5104c29af406afbb614e3d6da5f
-wr "4/6 23/44" 0x12C000 "OpenPod_Beta2_12C000.bin" bd9fd998d33622f70ba6c0ba311f0bd1aabd5200df1296406646530a41a94bb2
-wr "4/6 24/44" 0x12D000 "OpenPod_Beta2_12D000.bin" 227a47305e6bea0028c8d7a0924896478f8041468f4429c5925e8a9d20688db4
-wr "4/6 25/44" 0x12E000 "OpenPod_Beta2_12E000.bin" 34338f09581e5aa1c689c188201ddfdebc29d251a0bfe7e1074d58c429be7157
-wr "4/6 26/44" 0x12F000 "OpenPod_Beta2_12F000.bin" a640a2e36034aed5c4b51653fb7b6cc85d94f5d43eb12224c3b16a74c61ef102
-wr "4/6 27/44" 0x130000 "OpenPod_Beta2_130000.bin" 2dba79928d0639acae56054c764ffcb757ca3d14c75fa3b33607e8b70da36531
-wr "4/6 28/44" 0x131000 "OpenPod_Beta2_131000.bin" 00e84901eb3343cf912de670743139a1bf23c4419e93faf15b881a47223c618a
-wr "4/6 29/44" 0x132000 "OpenPod_Beta2_132000.bin" e05828e015b71a8c3f2290b03b843188771855583e7ee886244de7d17bd46f0e
-wr "4/6 30/44" 0x133000 "OpenPod_Beta2_133000.bin" ffdb8e5ee01d4219eec486d7f3bc60df7e62e30269361daad437835008b513bf
-wr "4/6 31/44" 0x134000 "OpenPod_Beta2_134000.bin" bdb077624bce3c8b2d508b03393c0608004a53cefbd1ab1c3e1142f5ef0cb6b4
-wr "4/6 32/44" 0x135000 "OpenPod_Beta2_135000.bin" e52b4f721ab955ce0acc404d7bbffb4dded60b0c0b09d43fcd8b54b04ebfab7e
-wr "4/6 33/44" 0x136000 "OpenPod_Beta2_136000.bin" 37133af6fa7684d462b11159bacebd685f7f5e533830fd2607ce63f0d177d7b8
-wr "4/6 34/44" 0x137000 "OpenPod_Beta2_137000.bin" 9f27ec07c3773ed74cc2702121298b8cdbbcb4ec5815b994d8a430226b9e8bf5
-wr "4/6 35/44" 0x138000 "OpenPod_Beta2_138000.bin" 69c8b20ae8e76e94436678ef7e3552b665b766e0335584e0b5649736edae6778
-wr "4/6 36/44" 0x139000 "OpenPod_Beta2_139000.bin" 0809afdd572786578e9713711d83177fd77ebe5c89734a78cf16d55d90242c8d
-wr "4/6 37/44" 0x13A000 "OpenPod_Beta2_13A000.bin" 26aad81f09b8b23a6b3b1af03f9af0bde7107f59d6078b2e0ec2540d5f8de0aa
-wr "4/6 38/44" 0x13B000 "OpenPod_Beta2_13B000.bin" e76fe152ae3b0f4414952f7f658add959f41adf86e0297a5ea657288cafa1a6e
-wr "4/6 39/44" 0x13C000 "OpenPod_Beta2_13C000.bin" f9b05c7df264e8c210701e056986e0167641e37ed7cf32d8f477f15aa77feb34
-wr "4/6 40/44" 0x13D000 "OpenPod_Beta2_13D000.bin" e8bb94264408ab85f7e905d3561ed2a4527295409f6b8381c6a154e4d2139120
-wr "4/6 41/44" 0x149000 "OpenPod_Beta2_149000.bin" 47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
-wr "4/6 42/44" 0x1A3000 "OpenPod_Beta2_1A3000.bin" 9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
-wr "4/6 43/44" 0x1A4000 "OpenPod_Beta2_1A4000.bin" 276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
-wr "4/6 44/44" 0x1A6000 "OpenPod_Beta2_1A6000.bin" cc462140c83054e1001adfcba1d3c447c78e7cbb76b5b6c779f22736758c4e73
+wr "4/6 1/45" 0x48000 "OpenPod_Beta3_48000.bin" 6ea532bf216161b7d65e6fec3857f9f27890899a6e7ccd0cccff654fb471dd12
+wr "4/6 2/45" 0x52000 "OpenPod_Beta3_52000.bin" 3b36d143a96aaab07e0927c9eecf4351f6b0a21c833d0a6f5352fd8226bc5ca3
+wr "4/6 3/45" 0x53000 "OpenPod_Beta3_53000.bin" a62c6180f15359d58c91eb6b96c087dbbeae1e0403e8b94accc7e00a7b8e8fe8
+wr "4/6 4/45" 0x54000 "OpenPod_Beta3_54000.bin" a96553f46460656f6a7c1a5d9636c0743f9ca606013b1901cd3ac95df109abb5
+wr "4/6 5/45" 0x5D000 "OpenPod_Beta3_5D000.bin" 7e3402a71dd7d45f80e9d1eb5bc03a5d56a9f9dfb87c5829efcb76e1a5a947c1
+wr "4/6 6/45" 0xC7000 "OpenPod_Beta3_C7000.bin" f678974cafcb27f9b636e9713360e6f34a9d03f1b6082f3de9897e1513f3a421
+wr "4/6 7/45" 0xCC000 "OpenPod_Beta3_CC000.bin" ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
+wr "4/6 8/45" 0xCD000 "OpenPod_Beta3_CD000.bin" 99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
+wr "4/6 9/45" 0xD3000 "OpenPod_Beta3_D3000.bin" eddeb2ee73066fdef9b81eee7fb5dd74e0710b594c0e0b67090daf9822ac630c
+wr "4/6 10/45" 0xDF000 "OpenPod_Beta3_DF000.bin" fd20c126093f6bc74a4068300166e922236d7eb571e87848c9bb0a841872686e
+wr "4/6 11/45" 0x101000 "OpenPod_Beta3_101000.bin" 673da19a6d3d37b673316192ec95fab51e36ae91df6e3d1c0f72e560635d94eb
+wr "4/6 12/45" 0x109000 "OpenPod_Beta3_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
+wr "4/6 13/45" 0x10A000 "OpenPod_Beta3_10A000.bin" 3771e9fbb8b71e44aa3366b3548d2cba3780c6c63fb301e65aa1b25b4d196339
+wr "4/6 14/45" 0x10C000 "OpenPod_Beta3_10C000.bin" 3b8683d363ba2d88fe25955572dfcb27a2153ec413f40a207ccf012d5e89b4d4
+wr "4/6 15/45" 0x10D000 "OpenPod_Beta3_10D000.bin" 6fe1812c1a69ae6e876e9fc7a63e10e83055850f60e209d3c0ed34a67231f40a
+wr "4/6 16/45" 0x121000 "OpenPod_Beta3_121000.bin" 30ebefbe8d45d7d26c18201cd385b35f67e8e27396f726be0050649f77b1216d
+wr "4/6 17/45" 0x122000 "OpenPod_Beta3_122000.bin" df9b903aa340d40041a61cffd9082181033811098b832b0e0603b97b09885250
+wr "4/6 18/45" 0x123000 "OpenPod_Beta3_123000.bin" 213ef142bcbd7696faccc4e2139605cffda0d9f6e2bfbf0b368feca2fb2f0e50
+wr "4/6 19/45" 0x126000 "OpenPod_Beta3_126000.bin" 25f7937818203d1f7e320fbd4aeef456aa71927db2a89d6ff14f05ad0d571b9f
+wr "4/6 20/45" 0x127000 "OpenPod_Beta3_127000.bin" e9d327492dd109c2513cbf07d402e9443eca0acd47193c5de856a9ce03a5a498
+wr "4/6 21/45" 0x128000 "OpenPod_Beta3_128000.bin" 34fa1dc3c4fb1832216c8ecac2b3e469f32988dcdad6d6bdf8c7a94cd92a8adc
+wr "4/6 22/45" 0x12A000 "OpenPod_Beta3_12A000.bin" fdba7d5b8cadf02fd1c59c6bda8c60e95fb1ee7efd827ca77462adc6af2cc5fd
+wr "4/6 23/45" 0x12B000 "OpenPod_Beta3_12B000.bin" 9e62381d3cc1bbf75d876f314567444437aff5104c29af406afbb614e3d6da5f
+wr "4/6 24/45" 0x12C000 "OpenPod_Beta3_12C000.bin" bd9fd998d33622f70ba6c0ba311f0bd1aabd5200df1296406646530a41a94bb2
+wr "4/6 25/45" 0x12D000 "OpenPod_Beta3_12D000.bin" 227a47305e6bea0028c8d7a0924896478f8041468f4429c5925e8a9d20688db4
+wr "4/6 26/45" 0x12E000 "OpenPod_Beta3_12E000.bin" 34338f09581e5aa1c689c188201ddfdebc29d251a0bfe7e1074d58c429be7157
+wr "4/6 27/45" 0x12F000 "OpenPod_Beta3_12F000.bin" a640a2e36034aed5c4b51653fb7b6cc85d94f5d43eb12224c3b16a74c61ef102
+wr "4/6 28/45" 0x130000 "OpenPod_Beta3_130000.bin" 2dba79928d0639acae56054c764ffcb757ca3d14c75fa3b33607e8b70da36531
+wr "4/6 29/45" 0x131000 "OpenPod_Beta3_131000.bin" 00e84901eb3343cf912de670743139a1bf23c4419e93faf15b881a47223c618a
+wr "4/6 30/45" 0x132000 "OpenPod_Beta3_132000.bin" e05828e015b71a8c3f2290b03b843188771855583e7ee886244de7d17bd46f0e
+wr "4/6 31/45" 0x133000 "OpenPod_Beta3_133000.bin" ffdb8e5ee01d4219eec486d7f3bc60df7e62e30269361daad437835008b513bf
+wr "4/6 32/45" 0x134000 "OpenPod_Beta3_134000.bin" bdb077624bce3c8b2d508b03393c0608004a53cefbd1ab1c3e1142f5ef0cb6b4
+wr "4/6 33/45" 0x135000 "OpenPod_Beta3_135000.bin" e52b4f721ab955ce0acc404d7bbffb4dded60b0c0b09d43fcd8b54b04ebfab7e
+wr "4/6 34/45" 0x136000 "OpenPod_Beta3_136000.bin" 37133af6fa7684d462b11159bacebd685f7f5e533830fd2607ce63f0d177d7b8
+wr "4/6 35/45" 0x137000 "OpenPod_Beta3_137000.bin" 9f27ec07c3773ed74cc2702121298b8cdbbcb4ec5815b994d8a430226b9e8bf5
+wr "4/6 36/45" 0x138000 "OpenPod_Beta3_138000.bin" 69c8b20ae8e76e94436678ef7e3552b665b766e0335584e0b5649736edae6778
+wr "4/6 37/45" 0x139000 "OpenPod_Beta3_139000.bin" 0809afdd572786578e9713711d83177fd77ebe5c89734a78cf16d55d90242c8d
+wr "4/6 38/45" 0x13A000 "OpenPod_Beta3_13A000.bin" 26aad81f09b8b23a6b3b1af03f9af0bde7107f59d6078b2e0ec2540d5f8de0aa
+wr "4/6 39/45" 0x13B000 "OpenPod_Beta3_13B000.bin" e76fe152ae3b0f4414952f7f658add959f41adf86e0297a5ea657288cafa1a6e
+wr "4/6 40/45" 0x13C000 "OpenPod_Beta3_13C000.bin" f9b05c7df264e8c210701e056986e0167641e37ed7cf32d8f477f15aa77feb34
+wr "4/6 41/45" 0x13D000 "OpenPod_Beta3_13D000.bin" e8bb94264408ab85f7e905d3561ed2a4527295409f6b8381c6a154e4d2139120
+wr "4/6 42/45" 0x149000 "OpenPod_Beta3_149000.bin" 47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
+wr "4/6 43/45" 0x1A3000 "OpenPod_Beta3_1A3000.bin" 9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
+wr "4/6 44/45" 0x1A4000 "OpenPod_Beta3_1A4000.bin" 276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
+wr "4/6 45/45" 0x1A6000 "OpenPod_Beta3_1A6000.bin" 402687737b0649e07bf1bfbd216868fd05433c3fd2e47c64e1e484760fc6b52f
 rm -f "$WORK/sec.bin"
 
 log "$(m p5)"
@@ -570,13 +575,13 @@ ck2() {
 }
 ck2 "bootloader" 0 51532 861184003923634be0f2ae9883456035b40d1ea72f97682890238edfae3acb31
 ck2 "ptable" 53248 64 9f93d4435e7cb819b2dad2f38edf91fb0a0af44654c4d9fcd3df174bf3380a2d
-ck2 "FIRM" 57344 1647984 3c345588c8afeab625a12edccd433fc619ca73e94bbc67b7af4927c1e39ebdc7
+ck2 "FIRM" 57344 1647984 cf8bc268adead2716e394c697d64dc18302a408f60d746061595aa201a2d5dd4
 ck2 "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3f8b4ace
 
 log ""
 log "======================================================================"
 if [ "$F" -eq 0 ]; then
-    log " [6/6] OPENPOD_BETA2 — $(m res_ok)"
+    log " [6/6] OPENPOD_BETA3 — $(m res_ok)"
     log ""
     log "$(m desconecte)"
 else
@@ -588,6 +593,7 @@ else
     log "     sudo $TOOL --id $DEV write_flash 0x53000 0 0x1000 base_53000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x54000 0 0x1000 base_54000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x5D000 0 0x1000 base_5D000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0xC7000 0 0x1000 base_C7000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0xCC000 0 0x1000 base_CC000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0xCD000 0 0x1000 base_CD000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0xD3000 0 0x1000 base_D3000.bin"

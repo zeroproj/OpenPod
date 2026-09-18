@@ -7,6 +7,43 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-18 — Public Beta 3 — o papel de parede sai da frente
+
+**Uma mudança, e ela é de dados, não de código.**
+
+A tela Tocando Agora desenhava um swoosh azul 128×160 atrás do texto —
+`lv_img_dsc_t` em `0x000C73B8`. É o oposto do alvo: o iPod nano não tem
+papel de parede. E no GN-438 há um motivo a mais — o painel mostra faixas
+horizontais sobre fundo claro, e o swoosh é claro em boa parte da tela.
+
+A imagem é `INDEXED_8`, então zerar a **paleta** basta:
+
+```text
+1.024 bytes mudam        em vez de   21.504
+1 setor  (0x0C7000)      em vez de   6
+descritor intacto · 20.480 índices intactos
+```
+
+Conferido depois de gravar: paleta com **uma cor** (`000000ff`), índices
+byte a byte iguais aos de antes, descritor inalterado.
+
+### Conferido antes de empacotar
+
+| | |
+|---|---|
+| CRC do `.up` | gravado `0x92EE`, calculado `0x92EE` |
+| cobertura | `0x000000..0x1A7000`, PSMP fora |
+| setores | 45, todos batendo com o `.up` |
+| bootloader | idêntico ao de fábrica |
+
+45 setores contra 44 da Beta 2 — o setor a mais é `0x0C7000`, a paleta.
+
+**Na tela:** `OpenPod 5.7 Beta 3`.
+
+O `release/` público passa a ter só a versão atual; a Beta 2 continua em
+`firmware/RELEASE/` como histórico.
+
+
 ## 2026-09-18 — Core 5.7 Public Beta 2 — o nome na tela
 
 **Única mudança funcional: a string de versão.** `OpenPod Beta 1` →
