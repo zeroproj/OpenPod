@@ -7,22 +7,29 @@ número, hash e registro do que mudou.
 
 ---
 
-## 2026-09-17 — ⚠️ Core 3.8 OBSOLETA — quebrou o Extras inteiro
+## 2026-09-17 — Core 3.8 — não quebrou nada, e também não resolveu
 
-Mantenedor: *"Após esse update no Extra somente gravação está
-funcionando. Pelo menos a 3.7 tudo funcionava."*
+> ⚠️ **Esta entrada foi corrigida.** A primeira versão dela dizia que a
+> 3.8 "quebrou o Extras inteiro", a partir de *"somente gravação está
+> funcionando"*. O mantenedor esclareceu em seguida:
+>
+> *"Quer dizer entrava, só update do SD que não estava funcionando."*
+>
+> **Os seis itens continuam abrindo.** O que não funciona é a
+> atualização da lista do cartão em Imagem e Livro digital — o mesmo
+> defeito da 3.7. A teoria de "efeito colateral" abaixo estava errada e
+> nasceu da minha leitura apressada do relato.
 
-**Ponto estável: Core 3.7.**
+**Ponto estável: 3.7 ou 3.8 — equivalentes no comportamento observado.**
 
-### O diff, e por que ele acusa efeito colateral
+### O diff (a análise continua válida)
 
 A 3.7 e a 3.8 diferem em **95 bytes**. Despacho, `TAB_CHK`, `TAB_PAG` e
 a preparação do FM são **idênticos**. Só os índices 2 (Livro digital) e
 3 (Imagem) mudaram de caminho.
 
-Rádio, Bluetooth e Pastas rodam código byte a byte igual ao da 3.7.
-Logo, eles não quebraram por si: entrar no Imagem ou no Livro digital
-deixou o aparelho num estado ruim e o resto parou depois.
+Rádio, Bluetooth e Pastas rodam código byte a byte igual ao da 3.7 —
+o que bate com o esclarecimento: nada quebrou.
 
 ### O candidato, NÃO MEDIDO
 

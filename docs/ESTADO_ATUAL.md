@@ -51,7 +51,7 @@ OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
 | **3.5** | ❌ | quebrou os menus: saltava para casos da home. OBSOLETA |
 | **3.6** | ✅ | Rádio sintoniza |
 | **3.7** | ✅ | **O PONTO ESTÁVEL.** Tudo funciona no Extras |
-| **3.8** | ❌ | quebrou o Extras inteiro. OBSOLETA |
+| **3.8** | ⚠️ | abre tudo, mas não resolveu o update do SD. Equivale à 3.7 |
 
 > ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
 > remendos em cima do mesmo código danificado. Volte para a 2.4.
