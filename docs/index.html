@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OpenPod</title>
+<meta name="description" content="Um iPod dentro de um player de R$ 60. Firmware modificado para o Iigenai GN-438.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* ---------------------------------------------------------------
+   Toda cor abaixo marcada "medida" saiu do firmware ou da paleta
+   de referencia. Nenhuma foi escolhida no olho.
+   --------------------------------------------------------------- */
+:root{
+  color-scheme: light dark;
+
+  --band-top:#F6F6FF;     /* medida: faixa, topo do degrade      */
+  --band-base:#BDC6CD;    /* medida: faixa, base do degrade      */
+  --rule:#5A616A;         /* medida: separador da faixa          */
+  --sel-top:#639CE3;      /* medida: selecao, topo               */
+  --sel-base:#2866DD;     /* medida: selecao, base               */
+  --volt:#B4F683;         /* medida: miolo da bateria            */
+  --shell:#C5CED5;        /* medida: casca da bateria            */
+
+  --paper:#FFFFFF;
+  --ink:#11151B;
+  --ink-2:#4A545F;
+  --ink-3:#78838F;
+  --edge:#DCE2E8;
+  --sunk:#F1F4F7;
+  --accent:var(--sel-base);
+  --accent-soft:#E8EEFB;
+
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+
+  --s:3;                  /* escala da tela do aparelho */
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1117; --ink:#E7ECF2; --ink-2:#A3AEBB; --ink-3:#7A8592;
+    --edge:#232C37; --sunk:#151C24; --accent:#7FA9F5; --accent-soft:#182236;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D1117; --ink:#E7ECF2; --ink-2:#A3AEBB; --ink-3:#7A8592;
+  --edge:#232C37; --sunk:#151C24; --accent:#7FA9F5; --accent-soft:#182236;
+}
+@media (max-width:760px){ :root{ --s:2; } }
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font:400 17px/1.6 var(--body);
+  font-synthesis-weight:none;
+}
+img{max-width:100%}
+.wrap{max-width:860px; margin-inline:auto; padding-inline:20px}
+h1,h2,h3{font-family:var(--display); text-wrap:balance; margin:0}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:3px}
+
+/* ---- cabecalho ------------------------------------------------ */
+.top{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:10;
+  background:color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--edge);
+}
+.top .wrap{display:flex; align-items:center; gap:16px; padding-block:12px}
+.mark{font-family:var(--display); font-weight:800; font-size:19px; letter-spacing:-.02em; margin-right:auto}
+.mark b{color:var(--accent)}
+.lang{display:flex; border:1px solid var(--edge); border-radius:999px; overflow:hidden}
+.lang button{
+  font:600 12px/1 var(--body); letter-spacing:.06em; text-transform:uppercase;
+  padding:7px 11px; border:0; background:transparent; color:var(--ink-3); cursor:pointer;
+}
+.lang button[aria-pressed="true"]{background:var(--accent); color:#fff}
+
+/* ---- hero ----------------------------------------------------- */
+.hero{padding-block:56px 40px}
+.eyebrow{
+  font:500 12px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-3); margin-bottom:18px;
+}
+.hero h1{font-size:clamp(34px,7vw,58px); font-weight:800; letter-spacing:-.03em; line-height:1.04}
+.hero p.lede{font-size:clamp(18px,2.4vw,21px); color:var(--ink-2); max-width:34em; margin:20px 0 0}
+.cta{display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:28px}
+.btn{
+  display:inline-block; font:600 15px/1 var(--body); text-decoration:none;
+  padding:13px 20px; border-radius:7px;
+  background:linear-gradient(var(--sel-top),var(--sel-base)); color:#fff;
+  border:1px solid var(--sel-base);
+}
+.btn.ghost{background:transparent; color:var(--ink); border-color:var(--edge)}
+.ver{font:500 13px/1 var(--mono); color:var(--ink-3)}
+
+/* ---- a tela do aparelho --------------------------------------- */
+.stage{display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; margin-top:44px}
+.device{flex:0 0 auto}
+.screenbox{
+  width:calc(176px * var(--s)); height:calc(132px * var(--s));
+  overflow:hidden; border-radius:4px;
+  border:1px solid var(--rule);
+  box-shadow:0 10px 30px rgba(17,21,27,.16);
+}
+.screen{
+  width:176px; height:132px; transform:scale(var(--s)); transform-origin:top left;
+  background:#fff; color:#000; position:relative;
+  font:600 11px/1 var(--body);
+}
+.band{
+  height:16px; display:flex; align-items:center; gap:4px; padding:0 3px;
+  background:linear-gradient(var(--band-top),var(--band-base));
+  border-bottom:1px solid var(--rule);
+  font-size:9px; color:#000;
+}
+.band .mid{margin-inline:auto; font-weight:600}
+.batt{width:15px; height:8px; border:1px solid #6d7681; border-radius:2px; background:var(--shell); position:relative; display:flex; align-items:center; padding:1px}
+.batt::after{content:""; position:absolute; right:-3px; top:2px; width:2px; height:4px; background:#6d7681; border-radius:0 1px 1px 0}
+.batt i{display:block; height:100%; width:72%; background:var(--volt)}
+.row{height:16px; display:flex; align-items:center; padding:0 5px; font-size:10px}
+.row.sel{background:linear-gradient(var(--sel-top),var(--sel-base)); color:#fff}
+.grid9{display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:5px}
+.tile{aspect-ratio:1/1; display:grid; place-items:center; border:1px solid #c8cdd3; border-radius:2px; background:#f4f6f8}
+.tile.sel{border-color:var(--sel-base); background:var(--accent-soft)}
+.tile svg{width:13px; height:13px; fill:none; stroke:#3b444e; stroke-width:1.6}
+
+.caption{font:400 13px/1.5 var(--body); color:var(--ink-3); margin-top:10px; max-width:calc(176px * var(--s))}
+.stage .notes{flex:1 1 240px; min-width:0}
+.spec{list-style:none; margin:0; padding:0; border-top:1px solid var(--edge)}
+.spec li{display:flex; gap:14px; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--edge); font-size:15px}
+.spec dt,.spec .k{color:var(--ink-3)}
+.spec .v{font-family:var(--mono); font-size:13px; text-align:right; font-variant-numeric:tabular-nums}
+
+/* ---- secoes --------------------------------------------------- */
+section{padding-block:46px; border-top:1px solid var(--edge)}
+h2{font-size:clamp(23px,3.4vw,30px); font-weight:700; letter-spacing:-.02em}
+h2+p,h2+.sub{margin-top:12px}
+.sub{color:var(--ink-2); max-width:60ch}
+h3{font-size:16px; font-weight:600; margin-top:26px}
+
+.compare{display:flex; flex-wrap:wrap; gap:26px; margin-top:26px}
+.compare figure{margin:0}
+.swap{display:inline-flex; gap:0; border:1px solid var(--edge); border-radius:7px; overflow:hidden; margin-top:20px}
+.swap button{
+  font:600 13px/1 var(--body); padding:10px 16px; border:0; cursor:pointer;
+  background:transparent; color:var(--ink-2);
+}
+.swap button[aria-pressed="true"]{background:var(--accent); color:#fff}
+
+table{width:100%; border-collapse:collapse; margin-top:22px; font-size:15px}
+th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--edge); vertical-align:top}
+th{font:600 12px/1.3 var(--body); letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3)}
+td:first-child{font-weight:600}
+.tw{overflow-x:auto}
+
+.paths{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); margin-top:26px}
+.path{border:1px solid var(--edge); border-radius:9px; padding:18px; background:var(--sunk)}
+.path.lead{border-color:var(--accent); background:var(--accent-soft)}
+.path h3{margin:0 0 4px; font-size:15px}
+.path .step{font:500 11px/1 var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
+.path p{margin:8px 0 0; font-size:14.5px; color:var(--ink-2)}
+
+.find{list-style:none; margin:24px 0 0; padding:0; display:grid; gap:1px; background:var(--edge); border:1px solid var(--edge); border-radius:9px; overflow:hidden}
+.find li{background:var(--paper); padding:15px 17px}
+.find code{font:500 13px/1.5 var(--mono); color:var(--accent); background:var(--accent-soft); padding:1px 5px; border-radius:3px}
+.find p{margin:5px 0 0; font-size:14.5px; color:var(--ink-2)}
+.find strong{font-weight:600}
+
+.warn{border-left:3px solid var(--sel-base); background:var(--sunk); padding:15px 18px; border-radius:0 7px 7px 0; margin-top:22px; font-size:15px; color:var(--ink-2)}
+.warn b{color:var(--ink)}
+
+footer{border-top:1px solid var(--edge); padding-block:34px 46px; font-size:14px; color:var(--ink-3)}
+footer p{margin:0 0 10px; max-width:62ch}
+footer a{color:var(--ink-2)}
+
+[data-lang-en]{display:none}
+:root[data-site-lang="en"] [data-lang-pt]{display:none}
+:root[data-site-lang="en"] [data-lang-en]{display:revert}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="mark">Open<b>Pod</b></div>
+    <div class="lang" role="group" aria-label="Idioma / Language">
+      <button type="button" id="lp" aria-pressed="true">PT</button>
+      <button type="button" id="le" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Iigenai GN-438 · Smartlink YP3 · 2&nbsp;MiB</div>
+
+    <h1 data-lang-pt>Um iPod dentro de<br>um player de R$&nbsp;60.</h1>
+    <h1 data-lang-en>An iPod inside<br>a $12 player.</h1>
+
+    <p class="lede" data-lang-pt>O GN-438 sai de fábrica com uma interface confusa e uma tradução
+      feita por máquina. O OpenPod reescreve essa interface <em>por dentro do firmware original</em> —
+      sem trocar o sistema, sem apagar o que já funciona.</p>
+    <p class="lede" data-lang-en>The GN-438 ships with a confusing interface and machine-translated
+      menus. OpenPod rewrites that interface <em>inside the original firmware</em> — without replacing
+      the system, without throwing away what already works.</p>
+
+    <div class="cta">
+      <a class="btn" href="#instalar" data-lang-pt>Como instalar</a>
+      <a class="btn" href="#instalar" data-lang-en>How to install</a>
+      <a class="btn ghost" href="https://github.com/zeroproj/OpenPod" data-lang-pt>Código e análise</a>
+      <a class="btn ghost" href="https://github.com/zeroproj/OpenPod" data-lang-en>Code &amp; teardown</a>
+      <span class="ver">5.7 Public Beta&nbsp;2</span>
+    </div>
+
+    <div class="stage">
+      <div class="device">
+        <div class="screenbox">
+          <div class="screen" id="scr">
+            <div class="band">
+              <span>14:32</span>
+              <span class="mid">OpenPod</span>
+              <span class="batt"><i></i></span>
+            </div>
+            <div id="body-op">
+              <div class="row sel">Música</div>
+              <div class="row">Vídeo</div>
+              <div class="row">Extras</div>
+              <div class="row">Configurar</div>
+            </div>
+          </div>
+        </div>
+        <p class="caption" data-lang-pt>Reconstrução em CSS a 176×132, a resolução real da tela. As cores
+          são as medidas no firmware, não aproximações.</p>
+        <p class="caption" data-lang-en>CSS reconstruction at 176×132, the real screen resolution. The
+          colours are the ones measured in the firmware, not approximations.</p>
+      </div>
+
+      <div class="notes">
+        <ul class="spec">
+          <li><span class="k" data-lang-pt>Aparelho</span><span class="k" data-lang-en>Player</span><span class="v">Iigenai GN-438</span></li>
+          <li><span class="k">SoC</span><span class="v">Smartlink SL6801</span></li>
+          <li><span class="k" data-lang-pt>Arquitetura</span><span class="k" data-lang-en>Architecture</span><span class="v">ARM Thumb-2</span></li>
+          <li><span class="k">Flash</span><span class="v">2 MiB · NOR</span></li>
+          <li><span class="k" data-lang-pt>Tela</span><span class="k" data-lang-en>Screen</span><span class="v">176 × 132</span></li>
+          <li><span class="k" data-lang-pt>Base</span><span class="k" data-lang-en>Base</span><span class="v">yp3_2.0.43</span></li>
+          <li><span class="k">GUI</span><span class="v">LVGL v8</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <section id="muda">
+    <h2 data-lang-pt>O que muda</h2>
+    <h2 data-lang-en>What changes</h2>
+    <p class="sub" data-lang-pt>A tela inicial de fábrica é uma grade de nove ícones. O OpenPod a
+      transforma numa lista de quatro, e move o resto para um submenu — o mesmo movimento que o iPod
+      nano fazia.</p>
+    <p class="sub" data-lang-en>The stock home is a grid of nine icons. OpenPod turns it into a list of
+      four and moves the rest into a submenu — the same move the iPod nano made.</p>
+
+    <div class="swap" role="group" aria-label="Fábrica / OpenPod">
+      <button type="button" id="bs" aria-pressed="false" data-lang-pt>Fábrica</button>
+      <button type="button" aria-pressed="false" data-lang-en>Stock</button>
+      <button type="button" id="bo" aria-pressed="true">OpenPod</button>
+    </div>
+
+    <div class="tw">
+    <table>
+      <thead>
+        <tr>
+          <th data-lang-pt>Item</th><th data-lang-en>Item</th>
+          <th data-lang-pt>Fábrica</th><th data-lang-en>Stock</th>
+          <th>OpenPod</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td data-lang-pt>Tela inicial</td><td data-lang-en>Home</td>
+            <td data-lang-pt>grade 3×3, 9 ícones</td><td data-lang-en>3×3 grid, 9 icons</td>
+            <td data-lang-pt>lista de 4</td><td data-lang-en>list of 4</td></tr>
+        <tr><td>Extras</td><td>—</td>
+            <td data-lang-pt>Gravação, Rádio, Livro, Imagens, Bluetooth, Pastas</td>
+            <td data-lang-en>Recording, Radio, eBook, Images, Bluetooth, Folders</td></tr>
+        <tr><td data-lang-pt>Seleção</td><td data-lang-en>Selection</td>
+            <td data-lang-pt>cor do texto</td><td data-lang-en>text colour</td>
+            <td data-lang-pt>barra azul de borda a borda</td><td data-lang-en>full-width blue bar</td></tr>
+        <tr><td data-lang-pt>Faixa superior</td><td data-lang-en>Top bar</td>
+            <td data-lang-pt>altura variava por tela</td><td data-lang-en>height varied per screen</td>
+            <td data-lang-pt>16 px em todas</td><td data-lang-en>16 px everywhere</td></tr>
+        <tr><td data-lang-pt>Bateria</td><td data-lang-en>Battery</td>
+            <td data-lang-pt>glifo branco chapado</td><td data-lang-en>flat white glyph</td>
+            <td data-lang-pt>casca prateada, miolo verde</td><td data-lang-en>silver shell, green level</td></tr>
+        <tr><td data-lang-pt>Textos</td><td data-lang-en>Text</td>
+            <td data-lang-pt>tradução de máquina</td><td data-lang-en>machine translation</td>
+            <td data-lang-pt>português revisado</td><td data-lang-en>revised Portuguese</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section id="instalar">
+    <h2 data-lang-pt>Instalar</h2>
+    <h2 data-lang-en>Install</h2>
+    <p class="sub" data-lang-pt>A primeira instalação é por computador, porque o firmware de fábrica não
+      tem a opção de atualizar por cartão. O OpenPod passa a ter — então só a primeira vez dá trabalho.</p>
+    <p class="sub" data-lang-en>The first install needs a computer, because the stock firmware has no
+      update-by-card option. OpenPod adds one — so only the first time is any work.</p>
+
+    <div class="paths">
+      <div class="path lead">
+        <div class="step" data-lang-pt>Caminho 1</div><div class="step" data-lang-en>Path 1</div>
+        <h3>Windows</h3>
+        <p data-lang-pt>O pacote já traz o gravador do fabricante do chip e um guia passo a passo.
+          Nada para compilar.</p>
+        <p data-lang-en>The package ships the chip maker's flashing tool and a step-by-step guide.
+          Nothing to compile.</p>
+      </div>
+      <div class="path">
+        <div class="step" data-lang-pt>Caminho 2</div><div class="step" data-lang-en>Path 2</div>
+        <h3>Linux · macOS</h3>
+        <p data-lang-pt><code>sh install.sh</code> — pergunta o idioma, ensina o modo de gravação,
+          reconhece o aparelho e grava só os 44 setores que mudam.</p>
+        <p data-lang-en><code>sh install.sh</code> — asks your language, teaches flashing mode, finds
+          the player and writes only the 44 sectors that change.</p>
+      </div>
+      <div class="path">
+        <div class="step" data-lang-pt>Depois</div><div class="step" data-lang-en>After that</div>
+        <h3 data-lang-pt>Cartão microSD</h3><h3 data-lang-en>microSD card</h3>
+        <p data-lang-pt>Com o OpenPod instalado, as próximas versões entram pelo cartão em
+          <em>Configurar → Atualizar por SD</em>. Sem computador.</p>
+        <p data-lang-en>With OpenPod installed, future versions go in by card under
+          <em>Settings → Update via SD</em>. No computer.</p>
+      </div>
+    </div>
+
+    <p class="sub" style="margin-top:22px"><a data-lang-pt href="https://github.com/zeroproj/OpenPod/tree/main/release/OpenPod-Core-5.7-Public-Beta-2">Baixar o pacote da 5.7 Public Beta 2 &rarr;</a><a data-lang-en href="https://github.com/zeroproj/OpenPod/tree/main/release/OpenPod-Core-5.7-Public-Beta-2">Download the 5.7 Public Beta 2 package &rarr;</a></p>
+
+    <div class="warn">
+      <b data-lang-pt>O aparelho é recuperável por software, sempre.</b>
+      <b data-lang-en>The player is always recoverable in software.</b>
+      <span data-lang-pt>A ROM do chip tem um modo de gravação que roda antes de qualquer firmware —
+      confirmado funcionando num aparelho com a flash destruída. Gravar errado custa tempo, não o
+      aparelho.</span>
+      <span data-lang-en>The chip ROM has a flashing mode that runs before any firmware — confirmed
+      working on a player with a destroyed flash. A bad write costs time, not the device.</span>
+    </div>
+  </section>
+
+  <section id="dentro">
+    <h2 data-lang-pt>Por dentro</h2>
+    <h2 data-lang-en>Under the hood</h2>
+    <p class="sub" data-lang-pt>Não existe código-fonte, nem datasheet, nem SDK. Tudo abaixo foi
+      desmontado, medido e confirmado no aparelho.</p>
+    <p class="sub" data-lang-en>There is no source, no datasheet, no SDK. Everything below was
+      disassembled, measured and confirmed on the device.</p>
+
+    <ul class="find">
+      <li>
+        <strong data-lang-pt>O código roda direto da flash</strong>
+        <strong data-lang-en>The code runs straight from flash</strong>
+        <p data-lang-pt>Execução em <em>XIP</em>: endereço de flash + <code>0xC00000</code> = endereço em
+        execução. Editar um setor é editar o código que roda.</p>
+        <p data-lang-en>Execute in place: flash offset + <code>0xC00000</code> = runtime address. Editing
+        a sector edits the code that runs.</p>
+      </li>
+      <li>
+        <strong data-lang-pt>A navegação é assíncrona</strong>
+        <strong data-lang-en>Navigation is asynchronous</strong>
+        <p data-lang-pt>Callbacks da interface <em>postam mensagens</em> numa fila; a camada de
+        aplicação consome depois. Chamar a navegação direto do callback trava o aparelho — custou duas
+        imagens para aprender.</p>
+        <p data-lang-en>UI callbacks <em>post messages</em> to a queue; the app layer consumes them
+        later. Calling navigation directly from a callback freezes the device — that cost two images to
+        learn.</p>
+      </li>
+      <li>
+        <strong data-lang-pt>As cores entram invertidas</strong>
+        <strong data-lang-en>Colours go in pre-swapped</strong>
+        <p data-lang-pt><code>LV_COLOR_16_SWAP</code> está ligado: o valor RGB565 precisa dos bytes
+        trocados. Provado em tela — uma casca pintada de <code>0x07E0</code>, que seria verde, saiu
+        <strong>vermelha</strong>.</p>
+        <p data-lang-en><code>LV_COLOR_16_SWAP</code> is on: the RGB565 value needs its bytes swapped.
+        Proven on screen — a shell painted <code>0x07E0</code>, which should be green, came out
+        <strong>red</strong>.</p>
+      </li>
+      <li>
+        <strong data-lang-pt>O texto da versão corta em 113 px</strong>
+        <strong data-lang-en>The version string clips at 113 px</strong>
+        <p data-lang-pt>Corte duro, sem quebra de linha. Medido com a tabela de glifos da própria
+        imagem: <code>OpenPod Core 5.7 Public Beta 2</code> dá 177 px e não cabe.</p>
+        <p data-lang-en>Hard clip, no line break. Measured against the image's own glyph table:
+        <code>OpenPod Core 5.7 Public Beta 2</code> is 177 px and does not fit.</p>
+      </li>
+      <li>
+        <strong data-lang-pt>A imagem se valida sozinha</strong>
+        <strong data-lang-en>The image validates itself</strong>
+        <p data-lang-pt>Partições FIRM e TONE protegidas por <em>CRC-16/CCITT-FALSE</em>. O pacote de
+        atualização é reconstruído e conferido byte a byte contra o arquivo de fábrica antes de sair.</p>
+        <p data-lang-en>FIRM and TONE partitions are protected by <em>CRC-16/CCITT-FALSE</em>. The update
+        package is rebuilt and checked byte for byte against the factory file before shipping.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section id="aberto">
+    <h2 data-lang-pt>Ainda aberto</h2>
+    <h2 data-lang-en>Still open</h2>
+    <p class="sub" data-lang-pt>É uma beta, e o que não funciona fica escrito.</p>
+    <p class="sub" data-lang-en>It is a beta, and what does not work stays written down.</p>
+    <div class="tw">
+    <table>
+      <tbody>
+        <tr><td data-lang-pt>Pastas</td><td data-lang-en>Folders</td>
+            <td data-lang-pt>abre e navega, mas só volta depois de entrar numa pasta</td>
+            <td data-lang-en>opens and browses, but only goes back after entering a folder</td></tr>
+        <tr><td data-lang-pt>Degradê da faixa</td><td data-lang-en>Band gradient</td>
+            <td data-lang-pt>a faixa é chapada; o degradê exige um objeto de imagem</td>
+            <td data-lang-en>the bar is flat; the gradient needs an image object</td></tr>
+        <tr><td data-lang-pt>Capa do álbum</td><td data-lang-en>Album art</td>
+            <td data-lang-pt>não é exibida ao tocar</td>
+            <td data-lang-en>not shown while playing</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p data-lang-pt><b>iPod</b> e <b>iPod nano</b> são marcas da Apple. Este projeto não usa código nem
+      arte da Apple — reproduz apenas princípios de interface.</p>
+    <p data-lang-en><b>iPod</b> and <b>iPod nano</b> are Apple trademarks. This project uses no Apple
+      code or artwork — it reproduces interface principles only.</p>
+
+    <p data-lang-pt>Gravador para Linux e macOS: <b>smartlink_flash</b>, de Ilya Kurdyukov.
+      Gravador para Windows: <b>Flashloader SL-DEV</b>, da Shenju, fabricante do chip. Direção visual
+      referenciada no tema <b>NanoClone</b>, de Billy Blair (CC-BY-SA 3.0) — apenas valores de cor
+      medidos, nenhum pixel copiado.</p>
+    <p data-lang-en>Flashing tool for Linux and macOS: <b>smartlink_flash</b>, by Ilya Kurdyukov.
+      For Windows: <b>Flashloader SL-DEV</b>, by Shenju, the chip maker. Visual direction references the
+      <b>NanoClone</b> theme by Billy Blair (CC-BY-SA 3.0) — measured colour values only, no pixels
+      copied.</p>
+
+    <p data-lang-pt>OpenPod modifica o firmware do seu aparelho. Você assume o risco.</p>
+    <p data-lang-en>OpenPod modifies your device firmware. You take the risk.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root=document.documentElement;
+
+  /* idioma ---------------------------------------------------- */
+  var lp=document.getElementById('lp'), le=document.getElementById('le');
+  function setLang(l){
+    root.setAttribute('data-site-lang',l);
+    root.setAttribute('lang', l==='en' ? 'en' : 'pt-BR');
+    lp.setAttribute('aria-pressed', String(l!=='en'));
+    le.setAttribute('aria-pressed', String(l==='en'));
+    try{ localStorage.setItem('openpod-lang', l); }catch(e){}
+  }
+  lp.addEventListener('click',function(){setLang('pt');});
+  le.addEventListener('click',function(){setLang('en');});
+  var saved=null;
+  try{ saved=localStorage.getItem('openpod-lang'); }catch(e){}
+  if(!saved){ saved = (navigator.language||'').toLowerCase().indexOf('pt')===0 ? 'pt' : 'en'; }
+  setLang(saved==='en'?'en':'pt');
+
+  /* fabrica x OpenPod ----------------------------------------- */
+  var host=document.getElementById('body-op');
+  var openpod=host.innerHTML;
+  var icons=['M4 9V2l6-1v7','M2 2h9v9H2z','M6 1v11M2 4v5M10 4v5','M2 9l3-4 2 2 2-3 2 5z',
+             'M2 3h9v7H2z','M6 2a4 4 0 100 9 4 4 0 000-9z','M2 2h5l1 2h3v6H2z','M6 1l4 4-4 4',
+             'M2 6h9M6 2v9'];
+  var stock='<div class="grid9">'+icons.map(function(d,i){
+    return '<div class="tile'+(i===0?' sel':'')+'"><svg viewBox="0 0 13 13" aria-hidden="true">'+
+           '<path d="'+d+'"/></svg></div>';
+  }).join('')+'</div>';
+
+  var bs=document.getElementById('bs'), bo=document.getElementById('bo');
+  var bsEn=bs.nextElementSibling;
+  function show(which){
+    var isStock = which==='stock';
+    host.innerHTML = isStock ? stock : openpod;
+    document.querySelector('#scr .band .mid').textContent = isStock ? 'Menu' : 'OpenPod';
+    bs.setAttribute('aria-pressed',String(isStock));
+    bsEn.setAttribute('aria-pressed',String(isStock));
+    bo.setAttribute('aria-pressed',String(!isStock));
+  }
+  bs.addEventListener('click',function(){show('stock');});
+  bsEn.addEventListener('click',function(){show('stock');});
+  bo.addEventListener('click',function(){show('openpod');});
+})();
+</script>
+
+</body>
+</html>

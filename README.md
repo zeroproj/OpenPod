@@ -1,5 +1,9 @@
 # OpenPod
 
+**Site:** https://zeroproj.github.io/OpenPod/ — fonte em `docs/index.html`.
+Para publicar: *Settings → Pages → Source: main, pasta `/docs`*. O `.nojekyll`
+ao lado impede o Jekyll de tentar processar os `.md` da análise.
+
 Transformar o **Iigenai GN-438** — um player YP3/Smartlink de baixo custo
 — num player com a experiência de um iPod, progressivamente, sem
 reescrever o firmware do zero.
