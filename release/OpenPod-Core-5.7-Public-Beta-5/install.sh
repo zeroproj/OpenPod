@@ -1,10 +1,10 @@
 #!/bin/sh
-# OpenPod 5.7 Beta 4 — installer / instalador
+# OpenPod 5.7 Beta 5 — installer / instalador
 set -eu
 export LC_ALL=C
 
 HERE=$(cd "$(dirname "$0")" && pwd)
-UP="$HERE/OpenPod_Beta4.up"
+UP="$HERE/OpenPod_Beta5.up"
 DEV=301a:2801
 TOOL_SRC=https://github.com/ilyakurdyukov/smartlink_flash
 
@@ -33,7 +33,7 @@ if [ "$LANG_SEL" = en ]; then cat <<'TXT'
   Only for a player that ALREADY has  Settings -> Update via SD .
   A GN-438 on the stock firmware does not: use the USB cable.
 
-  1. Copy  OpenPod_Beta4.up  to the ROOT of the card, renamed to:
+  1. Copy  OpenPod_Beta5.up  to the ROOT of the card, renamed to:
 
          update.up
 
@@ -46,7 +46,7 @@ if [ "$LANG_SEL" = en ]; then cat <<'TXT'
   4. After it reboots, DELETE update.up from the card.
      If it stays there, the player tries to update on every boot.
 
-  5. Check under  Settings -> Information :   OpenPod 5.7 Beta 4
+  5. Check under  Settings -> Information :   OpenPod 5.7 Beta 5
 
 TXT
 else cat <<'TXT'
@@ -54,7 +54,7 @@ else cat <<'TXT'
   So para aparelho que JA tem  Configurar -> Atualizar por SD .
   O GN-438 de fabrica nao tem: use o cabo USB.
 
-  1. Copie  OpenPod_Beta4.up  para a RAIZ do cartao, renomeando para:
+  1. Copie  OpenPod_Beta5.up  para a RAIZ do cartao, renomeando para:
 
          update.up
 
@@ -67,7 +67,7 @@ else cat <<'TXT'
   4. Ao reiniciar, APAGUE o update.up do cartao.
      Se ficar la, o aparelho tenta atualizar toda vez que liga.
 
-  5. Confira em  Configurar -> Informacoes :   OpenPod 5.7 Beta 4
+  5. Confira em  Configurar -> Informacoes :   OpenPod 5.7 Beta 5
 
 TXT
 fi
@@ -198,16 +198,16 @@ TXT
     EXPECT=$(t FLASH GRAVAR)
     [ "$R" = "$EXPECT" ] || die "$(t 'cancelled.' 'cancelado.')"
 
-    [ -f "$HERE/cabo/flash_OpenPod_Beta4.sh" ] || \
-        die "$(t 'cabo/flash_OpenPod_Beta4.sh is missing.' 'falta o cabo/flash_OpenPod_Beta4.sh.')"
+    [ -f "$HERE/cabo/flash_OpenPod_Beta5.sh" ] || \
+        die "$(t 'cabo/flash_OpenPod_Beta5.sh is missing.' 'falta o cabo/flash_OpenPod_Beta5.sh.')"
     OPENPOD_LANG="$LANG_SEL" export OPENPOD_LANG
-    sh "$HERE/cabo/flash_OpenPod_Beta4.sh" "$(dirname "$TOOL")"
+    sh "$HERE/cabo/flash_OpenPod_Beta5.sh" "$(dirname "$TOOL")"
 }
 
 # ------------------------------------------------------------------ main
-[ -f "$UP" ] || { echo "OpenPod_Beta4.up not found / nao encontrado"; exit 1; }
+[ -f "$UP" ] || { echo "OpenPod_Beta5.up not found / nao encontrado"; exit 1; }
 
-hd "OpenPod - 5.7 Public Beta 4"
+hd "OpenPod - 5.7 Public Beta 5"
 pick_lang
 
 if [ "$LANG_SEL" = en ]; then cat <<'TXT'
@@ -215,7 +215,7 @@ if [ "$LANG_SEL" = en ]; then cat <<'TXT'
   HOW DO YOU WANT TO INSTALL?
 
     1) USB cable     - coming from the stock firmware. This is the
-                       one to use for Beta 4.
+                       one to use for Beta 5.
     2) microSD card  - ONLY if the player already shows
                        Settings -> Update via SD
                        The stock GN-438 does not offer it.
@@ -227,7 +227,7 @@ else cat <<'TXT'
   COMO VOCE QUER INSTALAR?
 
     1) Cabo USB       - vindo do firmware de fabrica. E este o
-                        caminho da Beta 4.
+                        caminho da Beta 5.
     2) Cartao microSD - SO se o aparelho ja mostrar
                         Configurar -> Atualizar por SD
                         O GN-438 de fabrica nao oferece isso.
