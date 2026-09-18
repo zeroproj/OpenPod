@@ -124,13 +124,13 @@ Cada linha carrega classe de confiança, conforme a regra §7 do
 | # | item do alvo | Marte quer | Core 1.0.1 tem | classe | custo |
 |---|---|---|---|---|---|
 | ~~**M-a**~~ | separador entre itens | **não existe** | ✅ **FEITO — Core 1.1** | **VISTO NA TELA** | 1 byte |
-| **M-b** | home | **lista** | grade 3×3 de fábrica | **CONFIRMADO** | código novo |
+| ~~**M-b**~~ | home | **lista** | ✅ **FEITO — Core 2.0** | **VISTO NA TELA** | código novo |
 | ~~**M-c**~~ | faixa na home | existe, com traço | ✅ **FEITO — Core 2.3** | — | pela carcaça |
 | ~~**M-d**~~ | barra de rolagem | **não existe** | ✅ **FEITO — Core 1.3** | — | **1 byte** |
 | ~~**M-e**~~ | ícone **decorativo** de linha | não existe | ✅ **FEITO — Core 1.4**, 23 telas | — | **2 bytes** |
 | ~~**M-f**~~ cor | seleção | AZUL RGB(41,101,222) | ✅ **FEITO — Core 1.2**, 2 bytes | **PROVADO POR DIAGNÓSTICO** | falta só o degradê (= M-h) |
 | **M-g** | bateria | ícone colorido | casca **prateada** (5.3) + barra **verde** (5.2), ambas do Marte | **parcial** | o bitmap com degradê exige objeto de imagem |
-| **M-h** | degradê da faixa | 19 linhas, `nanoclone.json` | faixa lisa | **CONFIRMADO** | rotina nova — **confirmado em 18/09**: o firmware não tem wrapper de degradê (ver `GUI_ANALYSIS.md`) |
+| **M-h** | degradê da faixa | 19 linhas, `nanoclone.json` | faixa lisa | **CONFIRMADO** | **revisto em 18/09: NÃO é rotina nova** — ver §5 |
 | ~~**M-i**~~ | cores dos 6 campos | ver `nanoclone.json` | ✅ **FECHADO em 18/09** — nada a fazer | **MEDIDO** | — |
 | **M-j** | luminância | claro | escuro | **DESVIO ACEITO** | — não fazer |
 
@@ -482,3 +482,96 @@ empacota os dois. Ver `ESTADO_ATUAL.md` §3.
    removida em 2026-09-14. A §2 agora compara com a **Core 1.0.1**, que é
    o que está no aparelho. Nenhuma afirmação sobre distância até o alvo
    deve citar uma versão que não existe.
+
+
+---
+
+## 5. REVISÃO DE 2026-09-18 — o M-h ficou barato, e eu quase não percebi
+
+### O caminho errado que eu tomei
+
+Investiguei o wrapper `0x00D4D0BE`, que a tabela do `GUI_ANALYSIS`
+rotula como `BG_GRAD` (prop 38), e concluí que ele **não servia**: os
+dois chamadores passam **strings de glifo**, não descritores de
+degradê.
+
+A conclusão sobre o comportamento estava certa. A conclusão sobre o
+**M-h** estava errada — e a §4 deste documento já avisava:
+
+> *"O degradê **não** depende de `BG_GRAD`. O JSON traz as cores linha a
+> linha e o `adaptado/` traz os pixels prontos."*
+
+### O que isso quer dizer
+
+`0x00D4D0BE` aceita **ponteiro de imagem** — é `BG_IMG_SRC`. E
+`marte/adaptado/faixa_128x18.png` é o degradê **já rasterizado na nossa
+medida**.
+
+Então o M-h é:
+
+1. um `lv_img_dsc_t` na área livre, com o degradê em RGB565;
+2. uma chamada a `0x00D4D0BE(faixa, &dsc, 0)` dentro da `CRIA_FAIXA`.
+
+**Dado mais uma chamada**, não rotina nova. O layout do descritor se
+copia dos que já existem no firmware (papel de parede em `0x000C73B8`,
+folha de ícones em `0x000CDD50`) — a regra de sempre: clonar o que está
+provado nesta imagem.
+
+> **Lição:** antes de medir do zero, reler o que o próprio projeto já
+> concluiu. Gastei uma investigação inteira para chegar a "BG_GRAD não
+> serve", que estava escrito aqui desde 14/09 — e ela me fez descartar
+> junto o caminho que **serve**.
+
+### ⚠️ O primeiro bitmap aciona a licença
+
+O NanoClone é **CC-BY-SA 3.0 — Billy Blair**. Até agora o projeto só usou
+**cores medidas**, que não constituem obra derivada. O primeiro pixel —
+seja o degradê do M-h ou a bateria do M-g — **obriga o crédito na tela
+Sobre**, como o passo 7 da §3 já registrava.
+
+Decidir isso é anterior a implementar.
+
+---
+
+## 6. O QUE FALTA, em 2026-09-18
+
+### A tabela M-a…M-j
+
+```text
+M-a  separador           FEITO  Core 1.1
+M-b  home em lista       FEITO  Core 2.0
+M-c  faixa na home       FEITO  Core 2.3
+M-d  barra de rolagem    FEITO  Core 1.3
+M-e  icone de linha      FEITO  Core 1.4
+M-f  cor da selecao      FEITO  Core 1.2
+M-i  as 6 cores          FECHADO 18/09 — nada a fazer
+M-g  bateria             PARCIAL — casca e nivel nas cores do Marte
+                                   (Core 5.2/5.3); o bitmap falta
+M-h  degrade da faixa    ABERTO — barato, ver secao 5
+M-j  tema claro          DESVIO ACEITO
+```
+
+**Sete fechados, um parcial, um aberto.**
+
+### O que a tabela NÃO cobre
+
+`marte/mockups/marte_tocando_agora.png` define a tela **Tocando Agora**,
+e `marte/adaptado/` traz **19 ativos prontos** que nenhum item da tabela
+menciona:
+
+```text
+progress_114x11   progress_sulco_114x11   volume_90x11
+playbtns_00..04   repeat_00..03   shuffle   hold
+vol-l  vol-r  volume  spk_mais  spk_menos   hdd_00..05
+```
+
+A tabela M-a…M-j fala **só da tela de menu**. A tela Tocando Agora é uma
+frente inteira sem plano — e é onde o aparelho passa a maior parte do
+tempo de uso real.
+
+> **Para concluir o Marte** faltam, em ordem de custo:
+> 1. **M-h** — o degradê da faixa (dado + 1 chamada)
+> 2. **M-g** — a bateria em bitmap (objeto de imagem)
+> 3. **Tocando Agora** — a frente que não tem tabela
+>
+> E, antes de 1 ou 2, a decisão sobre o **crédito CC-BY-SA**.
