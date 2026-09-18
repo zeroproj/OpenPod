@@ -668,7 +668,7 @@ refaz o layout. A propriedade real são os **10 bits baixos**.
 | `0x00D4D086` | `0x146a` | 106 | `BASE_DIR` |
 | `0x00D4D092` | `0x0020` | 32 | `BG_COLOR` |
 | `0x00D4D0B4` | `0x0021` | 33 | `BG_OPA` |
-| `0x00D4D0BE` | `0x0026` | 38 | `BG_GRAD` |
+| `0x00D4D0BE` | `0x0026` | 38 | ⚠️ **NÃO é utilizável como `BG_GRAD`** — ver abaixo |
 | `0x00D4D0C8` | `0x0030` | 48 | `BORDER_COLOR` |
 | `0x00D4D0EA` | `0x0031` | 49 | `BORDER_OPA` |
 | `0x00D4D0F4` | `0x1032` | 50 | `BORDER_WIDTH` |
@@ -700,6 +700,41 @@ dele. Quem procurar `LV_STYLE_RADIUS` em documentação solta pode achar
 Foi esse o erro: duas versões setaram `TRANSFORM_HEIGHT = 0` (que já era
 o padrão) achando que setavam o raio. A chamada era válida, executava, e
 não fazia nada.
+
+### ⚠️ A linha `0x00D4D0BE` não se comporta como o rótulo diz
+
+Medido em 2026-09-18, ao investigar o **M-h** (degradê da faixa).
+
+O wrapper realmente seta a propriedade 38:
+
+```asm
+0x00D4D0BE   movs r1, #0x26
+             b.w  #0x00D4CAC4
+```
+
+Mas ele **passa o argumento como ponteiro direto**, ao contrário do
+`BG_COLOR` (`0x00D4D092`), que empacota a cor por valor com `bfi`.
+
+E os **dois únicos chamadores** passam **strings de glifo**, não
+descritores de degradê:
+
+```asm
+0x00D5262C   ldr r1, = 0x00CDA20C    ; "\xef\x81\x93" + "January"...
+0x00D52694   ldr r1, = 0x00CD525B    ; "\xef\x81\x94" + "-%s no page_p->..."
+```
+
+`ef 81 93` é UTF-8 de `U+E053`. Na LVGL, `bg_img_src` aceita símbolo
+como ponteiro — o comportamento bate com **`BG_IMG_SRC`**, não com
+`BG_GRAD`.
+
+**Consequência: este firmware não tem wrapper de degradê.** O M-h
+continua sendo rotina nova, como a estimativa original do
+`MARTE_ALVO.md` dizia.
+
+> A ironia é que esta tabela existe justamente por causa do erro do
+> `RADIUS` — e ela própria tem uma linha que induz ao mesmo tipo de
+> engano. A regra abaixo vale, mas com um degrau a mais: **confira o
+> comportamento pelos chamadores, não só a propriedade pelo wrapper.**
 
 > **Regra derivada:** a propriedade de um estilo se lê **desta tabela**,
 > nunca da documentação da LVGL. E a ferramenta que mexer em estilo deve
