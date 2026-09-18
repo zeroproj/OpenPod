@@ -7,6 +7,50 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-18 — A bateria verde funcionou o tempo todo
+
+**Correção de registro.** O `BATERIA_VERDE_ABERTO.md` dizia, desde
+2026-09-17, que o miolo da bateria não ficava verde na Core 5.7. **Está
+verde.** O relato daquele dia estava errado, e eu o registrei como fato
+sem abrir o binário.
+
+Decodificado do `.up` que vai ser distribuído — os seis `movw` de cor em
+`view_set_icon_bat`:
+
+```text
+0x00D23686   movw r1, #0x7AC6    -> RGB(197, 206, 213)   casca prateada
+0x00D23694   movw r1, #0xB0B7    -> RGB(180, 246, 131)   MIOLO VERDE
+0x00D236CA   movw r1, #0x7AC6    -> RGB(197, 206, 213)   casca prateada
+0x00D236D6   movw r1, #0xB0B7    -> RGB(180, 246, 131)   MIOLO VERDE
+0x00D238E8   movw r1, #0x7AC6    -> RGB(197, 206, 213)   casca prateada
+0x00D23912   movw r1, #0x7AC6    -> RGB(197, 206, 213)   casca prateada
+```
+
+`RGB(180, 246, 131)` bate nos três canais com o miolo do Projeto Marte.
+
+**O que fez funcionar**, confirmado: varredura por **faixa de endereço**
+em vez de assinatura — foi assim que os sete escritores apareceram de uma
+vez — mais a **pré-inversão** `LV_COLOR_16_SWAP`, provada em tela pela
+DIAG 8 (casca pintada com `0x07E0` saiu **vermelha**).
+
+**Alterados:**
+
+- `docs/BATERIA_VERDE_ABERTO.md` → `docs/BATERIA_VERDE.md`, reescrito
+  como resolvido, com o caminho das cinco tentativas preservado e o erro
+  de registro assumido.
+- `docs/ESTADO_ATUAL.md` — a linha da 5.7 deixa de citar o defeito.
+- `release/.../README.md` — a bateria **sai** de "problemas conhecidos" e
+  **entra** na tabela do que muda. Corrigido **antes** do lançamento: o
+  pacote ia sair dizendo que um recurso que funciona estava quebrado.
+
+**Continua fora:** `0x00D236B6`, instruções sobrepostas — patchar ali
+quebra o outro caminho de código. Continua branco de propósito, e não é
+defeito visível.
+
+**A lição:** relato de tela e `movw` decodificado não são a mesma classe
+de evidência. Quando discordam, confere-se o binário primeiro.
+
+
 ## 2026-09-18 — Caminho do Flashloader: preparado, ainda não testado
 
 **Pergunta:** dá para gravar o OpenPod com a ferramenta oficial da

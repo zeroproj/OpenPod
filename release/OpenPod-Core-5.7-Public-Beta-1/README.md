@@ -33,6 +33,7 @@ gravação fala a mesma língua.*
 | Selection / Seleção | text colour | full-width blue bar |
 | Top bar / Faixa | height varied per screen | 16 px everywhere, clock + title |
 | Row height / Altura de linha | 15 px / 22 px | 16 px everywhere |
+| Battery / Bateria | flat white glyph | silver shell, green level |
 | Text / Textos | machine translation | revised Brazilian Portuguese |
 
 These are **patches over the original firmware** — OpenPod modifies the
@@ -84,7 +85,6 @@ firmware.
 | | |
 |---|---|
 | **Folders / Pastas** | opens and browses, but only goes back after entering a folder |
-| **Battery / Bateria** | shell is silver; the inner level is not green yet |
 
 ---
 
