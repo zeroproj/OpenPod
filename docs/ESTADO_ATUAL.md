@@ -11,9 +11,12 @@
 ## 1. Onde o aparelho está
 
 ```
-OpenPod Core 3.4     <- NO APARELHO, e ESTAVEL.
-                        Os seis itens do Extras abrem as telas certas.
-                        Confirmada na tela em 17/09.
+OpenPod Core 3.6     <- NO APARELHO, e ESTAVEL.
+                        Os seis itens do Extras abrem, e o Radio
+                        sintoniza. Confirmada na tela em 17/09.
+                        firmware/RELEASE/OpenPod Core 3.6/
+
+OpenPod Core 3.4     <- o passo atras. Tudo abre, Radio nao sintoniza.
                         firmware/RELEASE/OpenPod Core 3.4/
 
 OpenPod Core 3.3     <- metade LVGL, tambem confirmada. O passo atras.
@@ -41,7 +44,9 @@ OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
 | 3.1.2 | ❌ | apagou 5 destinos de desvio |
 | **3.2** | ❌ | **TRAVOU o aparelho.** Chamava navegação do callback do LVGL. OBSOLETA |
 | **3.3** | ✅ | metade LVGL. Confirmada: nada travou, itens 4-6 inertes |
-| **3.4** | ✅ | **NO APARELHO. Os seis itens do Extras abrem.** ESTÁVEL |
+| **3.4** | ✅ | os seis itens abrem. **Rádio abre mas não sintoniza** |
+| **3.5** | ❌ | quebrou os menus: saltava para casos da home. OBSOLETA |
+| **3.6** | ✅ | **NO APARELHO. Rádio sintoniza.** ESTÁVEL |
 
 > ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
 > remendos em cima do mesmo código danificado. Volte para a 2.4.

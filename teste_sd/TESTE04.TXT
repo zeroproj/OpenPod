@@ -1,0 +1,30 @@
+OPENPOD - TESTE DE LIVRO DIGITAL
+=================================
+
+Se voce esta lendo isto na tela do GN-438,
+o item Livro digital do Extras abriu certo.
+
+CONFIRA, NESTA ORDEM:
+
+1. O arquivo aparece na lista?
+2. Ao abrir, o texto aparece?
+3. As setas viram pagina?
+4. O botao voltar sai para a lista?
+5. O botao voltar de novo vai para onde?
+   ANOTE: Extras ou tela inicial?
+
+---------------------------------
+TESTE DE ACENTO
+
+Este arquivo esta em ASCII puro, sem
+nenhum acento. Se o texto acima apareceu
+inteiro e sem lixo, o basico funciona.
+
+Agora compare com TESTE05.TXT, que tem
+acentos. Se aquele aparecer com simbolos
+estranhos, o problema e a codificacao,
+nao o leitor.
+
+---------------------------------
+
+FIM DO ARQUIVO

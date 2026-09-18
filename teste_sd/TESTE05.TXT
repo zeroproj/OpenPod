@@ -1,0 +1,18 @@
+OPENPOD - ACENTOS
+=================
+
+Codificacao: LATIN-1 (ANSI)
+
+Voce nao esta sonhando. A cancao e otima,
+porem a manutencao do coracao e dificil.
+
+AEIOU com acento agudo:  A E I O U  ->  á é í ó ú
+Til:                     ã õ
+Circunflexo:             â ê ô
+Cedilha:                 ç
+Crase:                   à
+
+Se os caracteres acima aparecerem certos,
+o aparelho le LATIN-1.
+Se aparecerem como lixo, compare com
+TESTE06.TXT, que esta em UTF-8.

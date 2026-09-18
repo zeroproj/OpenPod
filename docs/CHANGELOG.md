@@ -7,6 +7,72 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-17 — Core 3.6 — a 3.4 de volta, mais o tuner do FM
+
+**154 bytes** sobre a 3.4. **Um único setor: `0x1A6000`.** O gancho e as
+tabelas são byte a byte os da 3.4.
+
+### O que mudou
+
+Só isto: o índice 1 (Rádio) ganhou uma sub-rotina de preparação, chamada
+por `blx` antes de abrir a página. Ela **replica** `0x00D0113C`:
+
+```asm
+movs r0, #0xca / bl get_string / bl 0x00D0E2F0   ; a mensagem
+movs r0, #1    / bl 0x00CFEC60
+movs r2, #0x14 / ldr r1,=0x00D0083D / ldr r0,=0x00C4C943
+bl  #0x00D45D50
+bl  #0x00D00510                                  ; o tuner
+```
+
+Os outros cinco itens seguem exatamente o caminho da 3.4.
+
+### ✅ CONFIRMADA NO APARELHO — 2026-09-17
+
+Mantenedor: **"Gravei e está sintonizando"**. O Rádio do Extras funciona.
+
+**Ponto estável do projeto: passa da 3.4 para a 3.6.**
+
+> Lição que fica: quando uma tela abre mas não funciona, o defeito não é
+> o despacho — é a **preparação** que o caso de fábrica faz antes de
+> abrir. Procure o que vem antes do `movs r3, #<pagina>`.
+
+---
+
+## 2026-09-17 — ⚠️ Core 3.5 OBSOLETA — quebrou os menus
+
+Gravada. Mantenedor: *"os menus estão todos bugados indo para outras
+coisas, a versão 3.4 tinha algo que está funcionando perfeitamente"*.
+
+### A causa
+
+A 3.5 trocou "abrir a página" por "saltar para o caso de fábrica da
+home". Os casos da home leem campos **da mensagem**:
+
+```asm
+0x00D01036  ldrh r2, [r4, #0xc]
+0x00D01038  ldrh r1, [r4, #0xa]
+0x00D0103A  ldrh r0, [r4, #8]
+```
+
+A mensagem do Extras tem esses campos com **outro significado** — o
+índice é 0..5 do submenu, não o índice da home. Cada item foi parar num
+lugar diferente.
+
+### A lição
+
+A 3.4 estava confirmada no aparelho e funcionando. Eu troquei o
+mecanismo dos **seis** itens para consertar **um**, e o defeito do
+Rádio nem justificava isso: bastava acrescentar a preparação.
+
+> Regra que o projeto já tinha, de 14/09: *"volta um passo por vez,
+> testado no aparelho, e nunca empacotado com algo que não foi pedido."*
+> A 3.5 violou a segunda metade.
+
+**Não gravar a 3.5.** Substituída pela 3.6.
+
+---
+
 ## 2026-09-17 — OpenPod Core 3.4 — os seis destinos, na camada APP
 
 **94 bytes** sobre a 3.3. Setores `0x10A000`, `0x10C000`, `0x1A6000`.

@@ -61,15 +61,51 @@ SEM_CARTAO = 0x00D0CCC2          # movs r0,#0x2f ; mostra "sem cartao"
 RETORNO    = 0x00D0CD6E          # pop.w {r4,r5,r6,r7,r8,pc}
 CHECA_CART = 0x00CFE714
 
-# indice na tela -> (pagina, precisa de cartao, nome, view)
+# indice na tela -> (pagina, checa cartao, PRECISA DE PREPARO, nome)
+#
+# >>> O ERRO DA Core 3.5 <<<
+#   Ela trocou "abrir a pagina" por "saltar para o caso de fabrica da
+#   home". Os casos da home leem campos DA MENSAGEM (`ldrh r2,[r4,#0xc]`
+#   e companhia), e a mensagem do Extras tem os campos com outro
+#   significado. Cada item foi parar num lugar diferente.
+#   O mantenedor: "os menus estao todos bugados indo para outras coisas".
+#
+#   A 3.4 estava certa. Trocar o que funciona por uma teoria custou uma
+#   gravacao.
+#
+# ESTA VERSAO: volta ao desenho da 3.4 (abrir a pagina direto) e
+# REPLICA a preparacao do FM como sub-rotina, em vez de saltar para ela.
+#
+# POR QUE O RADIO PRECISA DISSO (Core 3.5)
+#   A 3.4 abria a pagina e mais nada. O Radio abriu, mas nao sintonizava:
+#   o caso da home faz CINCO coisas antes de abrir a pagina 0x1A --
+#   mensagem, 0x00CFEC60, 0x00D45D50 e 0x00D00510 (a inicializacao do
+#   tuner). Abrir a pagina sem isso da uma tela de radio morta.
+#
+#   Os casos abaixo foram medidos e tem frame COMPATIVEL com o nosso
+#   (push.w {r4,r5,r6,r7,r8,lr}), e usam r4 = mensagem, igual a nos.
+#   O de Imagem mora na PROPRIA funcao 0x00D0CC0C (indice 1 de fabrica).
+#
+#   Pastas continua abrindo direto: nao achei caso de fabrica com frame
+#   compativel. O bloco da pagina 0x52 (0x00D0C888) desempilha QUATRO
+#   registradores e nao serve.
 DESTINOS = [
-    (0x18, 1, "Gravacao",      "page_record_menu"),
-    (0x1A, 0, "Radio",         "page_fm_play"),
-    (0x0C, 1, "Livro digital", "page_ebook_list"),
-    (0x15, 1, "Imagem",        "page_pict_list"),
-    (0x23, 0, "Bluetooth",     "page_bt_menu_option"),
-    (0x22, 1, "Pastas",        "page_folder_list"),
+    (0x18, 1, 0, "Gravacao"),
+    (0x1A, 0, 1, "Radio"),          # 1 = roda a preparacao do FM antes
+    (0x0C, 1, 0, "Livro digital"),
+    (0x15, 1, 0, "Imagem"),
+    (0x23, 0, 0, "Bluetooth"),
+    (0x22, 1, 0, "Pastas"),
 ]
+
+# rotinas da preparacao do FM, medidas em 0x00D0113C
+FM_STR     = 0x00D2108C          # get_string
+FM_MBOX    = 0x00D0E2F0          # mostra a mensagem
+FM_CFEC60  = 0x00CFEC60
+FM_D45D50  = 0x00D45D50
+FM_INIT    = 0x00D00510          # a inicializacao do tuner
+FM_LIT_R1  = 0x00D0083D          # literais do bl 0x00D45D50
+FM_LIT_R0  = 0x00C4C943
 
 
 def bl(origem, destino):
@@ -94,34 +130,67 @@ def montar():
     def h(v): c.extend(v.to_bytes(2, "little"))
     A = APP_ROUTER
 
-    h(0x89A2)                          # 0x00  ldrh r2, [r4, #0xc]   indice
+    h(0x89A2)                          # 0x00  ldrh r2, [r4, #0xc]
     h(0x2A06)                          # 0x02  cmp  r2, #6
-    h(0xD213)                          # 0x04  bhs  FIM (0x2e)
-    h(0x4615)                          # 0x06  mov  r5, r2           (sobrevive ao bl)
-    h(0x4B0A)                          # 0x08  ldr  r3, [pc,#0x28] -> &TAB_CHK
+    h(0xD219)                          # 0x04  bhs  FIM (0x3a)
+    h(0x4615)                          # 0x06  mov  r5, r2
+    h(0x4B0D)                          # 0x08  ldr  r3, [pc,#0x34] -> &TAB_CHK
     h(0x5C9B)                          # 0x0A  ldrb r3, [r3, r2]
     h(0x2B00)                          # 0x0C  cmp  r3, #0
-    h(0xD003)                          # 0x0E  beq  ABRE (0x18)
+    h(0xD003)                          # 0x0E  beq  PREP (0x18)
     c += bl(A + 0x10, CHECA_CART)      # 0x10  bl   checa cartao
     h(0x2800)                          # 0x14  cmp  r0, #0
-    h(0xD008)                          # 0x16  beq  SEMCARTAO (0x2a)
-    # ABRE (0x18) — convencao medida em 0x00D0CCAC
-    h(0x4B07)                          # 0x18  ldr  r3, [pc,#0x1c] -> &TAB_PAG
-    h(0x5D5B)                          # 0x1A  ldrb r3, [r3, r5]     pagina destino
-    h(0x2200)                          # 0x1C  movs r2, #0           sub
-    h(0x8961)                          # 0x1E  ldrh r1, [r4, #0xa]   da mensagem
-    h(0x8920)                          # 0x20  ldrh r0, [r4, #8]     da mensagem
-    c += bytes.fromhex("bde8f041")     # 0x22  pop.w {r4,r5,r6,r7,r8,lr}
-    c += bw(A + 0x26, ABRE_PAG)        # 0x26  b.w  abrir pagina
-    c += bw(A + 0x2A, SEM_CARTAO)      # 0x2A  SEMCARTAO
-    c += bw(A + 0x2E, RETORNO)         # 0x2E  FIM
-    h(0xBF00)                          # 0x32  nop (alinha)
-    assert len(c) == 0x34, hex(len(c))
-    c += (A + 0x3C).to_bytes(4, "little")   # 0x34 -> &TAB_CHK
-    c += (A + 0x42).to_bytes(4, "little")   # 0x38 -> &TAB_PAG
-    c += bytes(chk for _, chk, _, _ in DESTINOS)   # 0x3C
-    c += bytes(pg for pg, _, _, _ in DESTINOS)     # 0x42
-    assert len(c) == 0x48, hex(len(c))
+    h(0xD00E)                          # 0x16  beq  SEMCARTAO (0x36)
+    # PREP (0x18)
+    h(0x4B0A)                          # 0x18  ldr  r3, [pc,#0x28] -> &TAB_PREP
+    c += bytes.fromhex("53f82530")     # 0x1A  ldr.w r3, [r3, r5, lsl #2]
+    h(0x2B00)                          # 0x1E  cmp  r3, #0
+    h(0xD000)                          # 0x20  beq  ABRE (0x24)
+    h(0x4798)                          # 0x22  blx  r3     (r4/r5 sobrevivem)
+    # ABRE (0x24) — igual a 3.4, que funcionou
+    h(0x4B08)                          # 0x24  ldr  r3, [pc,#0x20] -> &TAB_PAG
+    h(0x5D5B)                          # 0x26  ldrb r3, [r3, r5]
+    h(0x2200)                          # 0x28  movs r2, #0
+    h(0x8961)                          # 0x2A  ldrh r1, [r4, #0xa]
+    h(0x8920)                          # 0x2C  ldrh r0, [r4, #8]
+    c += bytes.fromhex("bde8f041")     # 0x2E  pop.w {r4,r5,r6,r7,r8,lr}
+    c += bw(A + 0x32, ABRE_PAG)        # 0x32
+    c += bw(A + 0x36, SEM_CARTAO)      # 0x36  SEMCARTAO
+    c += bw(A + 0x3A, RETORNO)         # 0x3A  FIM
+    h(0xBF00)                          # 0x3E  nop
+    assert len(c) == 0x40, hex(len(c))
+    c += (A + 0x58).to_bytes(4, "little")   # 0x40 -> &TAB_CHK
+    c += (A + 0x60).to_bytes(4, "little")   # 0x44 -> &TAB_PREP
+    c += (A + 0x78).to_bytes(4, "little")   # 0x48 -> &TAB_PAG
+    c += b"\x00" * 0x0C                     # 0x4C  reservado
+    c += bytes(chk for _, chk, _, _ in DESTINOS)   # 0x58  6 B
+    c += b"\x00\x00"                         # 0x5E  pad
+    for _, _, prep, _ in DESTINOS:          # 0x60  6 words
+        c += ((A + 0x80) | 1).to_bytes(4, "little") if prep else b"\x00" * 4
+    c += bytes(pg for pg, _, _, _ in DESTINOS)     # 0x78  6 B
+    c += b"\x00\x00"                         # 0x7E  pad
+    assert len(c) == 0x80, hex(len(c))
+
+    # --- PREPARACAO DO FM (0x80) — replica de 0x00D0113C ---
+    h(0xB500)                          # 0x80  push {lr}
+    h(0x20CA)                          # 0x82  movs r0, #0xca
+    c += bl(A + 0x84, FM_STR)          # 0x84  bl   get_string
+    h(0x4601)                          # 0x88  mov  r1, r0
+    h(0x2001)                          # 0x8A  movs r0, #1
+    c += bl(A + 0x8C, FM_MBOX)         # 0x8C  bl   mostra mensagem
+    h(0x2001)                          # 0x90  movs r0, #1
+    c += bl(A + 0x92, FM_CFEC60)       # 0x92  bl   0x00CFEC60
+    h(0x2214)                          # 0x96  movs r2, #0x14
+    h(0x4903)                          # 0x98  ldr  r1, [pc,#0xc]  -> FM_LIT_R1
+    h(0x4804)                          # 0x9A  ldr  r0, [pc,#0x10] -> FM_LIT_R0
+    c += bl(A + 0x9C, FM_D45D50)       # 0x9C  bl   0x00D45D50
+    c += bl(A + 0xA0, FM_INIT)         # 0xA0  bl   0x00D00510  <- o tuner
+    h(0xBD00)                          # 0xA4  pop  {pc}
+    h(0xBF00)                          # 0xA6  nop
+    assert len(c) == 0xA8, hex(len(c))
+    c += FM_LIT_R1.to_bytes(4, "little")    # 0xA8
+    c += FM_LIT_R0.to_bytes(4, "little")    # 0xAC
+    assert len(c) == 0xB0, hex(len(c))
     return bytes(c)
 
 
@@ -147,8 +216,9 @@ def main():
     print(f"despacho APP  {APP_ROUTER:#010x}  {len(cod)} bytes")
     print(f"gancho        {HOOK:#010x}  4 bytes (cmp r2,#2 / bhi)")
     print(f"  despacho de 3 -> 6 indices\n")
-    for i, (pg, chk, nome, view) in enumerate(DESTINOS):
-        print(f"  {i}  {nome:<14} -> pagina {pg:#04x}  {view}"
+    for i, (pg, chk, prep, nome) in enumerate(DESTINOS):
+        print(f"  {i}  {nome:<14} -> pagina {pg:#04x}"
+              f"{'   + preparacao do FM' if prep else ''}"
               f"{'   (checa cartao)' if chk else ''}")
     print(f"\nescrito: {sys.argv[2]}")
 
