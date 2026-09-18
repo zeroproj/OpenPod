@@ -165,9 +165,9 @@ ck_file "OpenPod_OpenPodDIAGtitulo_CD000.bin" 99d56432ede44c31aa9fc2b928c7965db7
 ck_file "OpenPod_OpenPodDIAGtitulo_D3000.bin" eddeb2ee73066fdef9b81eee7fb5dd74e0710b594c0e0b67090daf9822ac630c
 ck_file "OpenPod_OpenPodDIAGtitulo_DF000.bin" fd20c126093f6bc74a4068300166e922236d7eb571e87848c9bb0a841872686e
 ck_file "OpenPod_OpenPodDIAGtitulo_101000.bin" 673da19a6d3d37b673316192ec95fab51e36ae91df6e3d1c0f72e560635d94eb
-ck_file "OpenPod_OpenPodDIAGtitulo_108000.bin" af2df7aa250baf57eb8fb0862f47f1e08a26a28268baa2279492589fdd712b03
+ck_file "OpenPod_OpenPodDIAGtitulo_108000.bin" 6f585b511bbac156970de30b91d52f56f15bdfba2e42137df2ef049098c51da6
 ck_file "OpenPod_OpenPodDIAGtitulo_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
-ck_file "OpenPod_OpenPodDIAGtitulo_10A000.bin" 889c9fe984a903a30a3dcdbac073c4cc59833544d8b4043f623a7136599b4541
+ck_file "OpenPod_OpenPodDIAGtitulo_10A000.bin" 5b67962d54acc73a7ad01de367b444d4fb88711ebe763ba9e0496a51117b028c
 ck_file "OpenPod_OpenPodDIAGtitulo_10C000.bin" 3b8683d363ba2d88fe25955572dfcb27a2153ec413f40a207ccf012d5e89b4d4
 ck_file "OpenPod_OpenPodDIAGtitulo_10D000.bin" 6fe1812c1a69ae6e876e9fc7a63e10e83055850f60e209d3c0ed34a67231f40a
 ck_file "OpenPod_OpenPodDIAGtitulo_121000.bin" 30ebefbe8d45d7d26c18201cd385b35f67e8e27396f726be0050649f77b1216d
@@ -200,7 +200,7 @@ ck_file "OpenPod_OpenPodDIAGtitulo_13D000.bin" e8bb94264408ab85f7e905d3561ed2a45
 ck_file "OpenPod_OpenPodDIAGtitulo_149000.bin" 47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
 ck_file "OpenPod_OpenPodDIAGtitulo_1A3000.bin" 9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
 ck_file "OpenPod_OpenPodDIAGtitulo_1A4000.bin" 276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
-ck_file "OpenPod_OpenPodDIAGtitulo_1A6000.bin" 647d9a5ce28322944c4c4c78e6b15b64821bc09c906c8cd79a777dbd1f23a9d0
+ck_file "OpenPod_OpenPodDIAGtitulo_1A6000.bin" 32011ad06d3059d3bbfd0548600d84bf4c4c42490ef091f57989d9413ecb0544
 ck_file "base_48000.bin" cd43df9cf6f193ab32cd4c0963555f95e95e7ecb02b836bc720c2d1873dcbc01
 ck_file "base_52000.bin" 91360fd9e5a5e0871f1682f38174f0acf9b29588e16d18e810f59ef01b158c2f
 ck_file "base_53000.bin" 5decc107dd674f7b6bdd34436f9a7e9b68900c61a7552df7a24be1f7f85bf4c5
@@ -372,9 +372,9 @@ wr "4/6 8/47" 0xCD000 "OpenPod_OpenPodDIAGtitulo_CD000.bin" 99d56432ede44c31aa9f
 wr "4/6 9/47" 0xD3000 "OpenPod_OpenPodDIAGtitulo_D3000.bin" eddeb2ee73066fdef9b81eee7fb5dd74e0710b594c0e0b67090daf9822ac630c
 wr "4/6 10/47" 0xDF000 "OpenPod_OpenPodDIAGtitulo_DF000.bin" fd20c126093f6bc74a4068300166e922236d7eb571e87848c9bb0a841872686e
 wr "4/6 11/47" 0x101000 "OpenPod_OpenPodDIAGtitulo_101000.bin" 673da19a6d3d37b673316192ec95fab51e36ae91df6e3d1c0f72e560635d94eb
-wr "4/6 12/47" 0x108000 "OpenPod_OpenPodDIAGtitulo_108000.bin" af2df7aa250baf57eb8fb0862f47f1e08a26a28268baa2279492589fdd712b03
+wr "4/6 12/47" 0x108000 "OpenPod_OpenPodDIAGtitulo_108000.bin" 6f585b511bbac156970de30b91d52f56f15bdfba2e42137df2ef049098c51da6
 wr "4/6 13/47" 0x109000 "OpenPod_OpenPodDIAGtitulo_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
-wr "4/6 14/47" 0x10A000 "OpenPod_OpenPodDIAGtitulo_10A000.bin" 889c9fe984a903a30a3dcdbac073c4cc59833544d8b4043f623a7136599b4541
+wr "4/6 14/47" 0x10A000 "OpenPod_OpenPodDIAGtitulo_10A000.bin" 5b67962d54acc73a7ad01de367b444d4fb88711ebe763ba9e0496a51117b028c
 wr "4/6 15/47" 0x10C000 "OpenPod_OpenPodDIAGtitulo_10C000.bin" 3b8683d363ba2d88fe25955572dfcb27a2153ec413f40a207ccf012d5e89b4d4
 wr "4/6 16/47" 0x10D000 "OpenPod_OpenPodDIAGtitulo_10D000.bin" 6fe1812c1a69ae6e876e9fc7a63e10e83055850f60e209d3c0ed34a67231f40a
 wr "4/6 17/47" 0x121000 "OpenPod_OpenPodDIAGtitulo_121000.bin" 30ebefbe8d45d7d26c18201cd385b35f67e8e27396f726be0050649f77b1216d
@@ -407,7 +407,7 @@ wr "4/6 43/47" 0x13D000 "OpenPod_OpenPodDIAGtitulo_13D000.bin" e8bb94264408ab85f
 wr "4/6 44/47" 0x149000 "OpenPod_OpenPodDIAGtitulo_149000.bin" 47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
 wr "4/6 45/47" 0x1A3000 "OpenPod_OpenPodDIAGtitulo_1A3000.bin" 9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
 wr "4/6 46/47" 0x1A4000 "OpenPod_OpenPodDIAGtitulo_1A4000.bin" 276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
-wr "4/6 47/47" 0x1A6000 "OpenPod_OpenPodDIAGtitulo_1A6000.bin" 647d9a5ce28322944c4c4c78e6b15b64821bc09c906c8cd79a777dbd1f23a9d0
+wr "4/6 47/47" 0x1A6000 "OpenPod_OpenPodDIAGtitulo_1A6000.bin" 32011ad06d3059d3bbfd0548600d84bf4c4c42490ef091f57989d9413ecb0544
 rm -f "$WORK/sec.bin"
 
 log "[5/6] lendo a flash inteira e conferindo o estado DEPOIS..."
@@ -422,7 +422,7 @@ ck2() {
 }
 ck2 "bootloader" 0 51532 861184003923634be0f2ae9883456035b40d1ea72f97682890238edfae3acb31
 ck2 "ptable" 53248 64 9f93d4435e7cb819b2dad2f38edf91fb0a0af44654c4d9fcd3df174bf3380a2d
-ck2 "FIRM" 57344 1647984 5a598318e5d37f725ff02fcb2d7b8bafb8e139b7fd90bf2af14abc14335dc83d
+ck2 "FIRM" 57344 1647984 c4cab4e878987021f8a77f94c4495c29e68974dc6164db3a77dc2933befff3d2
 ck2 "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3f8b4ace
 
 log ""
