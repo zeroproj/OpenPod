@@ -99,3 +99,42 @@ junto de um rótulo quando muda.
 176×132 paisagem (ver `nanoclone.json`); esta tela é 128×160 retrato.
 Capa de 50 px + texto de ~90 px = 140 px numa tela de 128. Se houver
 capa, tem de ficar **acima** do texto, não ao lado.
+
+---
+
+## 6. Achado lateral — Bluetooth ficou de fora do padrão
+
+2026-09-18, reportado pelo mantenedor ao testar a Beta 4: *"Bluetooth
+não segue o padrão, tá tudo grande."*
+
+Medido:
+
+| | Bluetooth | padrão OpenPod |
+|---|---|---|
+| faixa superior | `tela_alt/10` = **16** ✅ | 16 |
+| altura da lista | `tela_alt - tela_alt/10` = **144** ✅ | 144 |
+| **altura da linha** | `tela_alt/7` = **22** ❌ | 16 |
+
+```text
+0x00D28804   movs r2, #7        160 / 7  = 22 px
+             sdiv r2, r0, r2
+             bl   set_size
+```
+
+O conserto é **um byte**: `07` → `0A`, dando `tela_alt/10` = 16.
+
+### Por que escapou
+
+O `patch_faixa_16px.py` procurou altura em **valores fixos**. O
+Bluetooth calcula por divisão, não por constante — a varredura passou
+por cima.
+
+Mesmo erro da bateria verde: **varredura por assinatura sempre perde
+alguém e não avisa.** Lá foram 7 escritores de cor e a varredura achou
+4; aqui foram 24 sítios de altura e achou 23.
+
+**Confirmado que é o único:** a sequência `movs r2,#7 / sdiv / set_size`
+aparece **uma vez** no firmware inteiro.
+
+Livro digital e Imagem foram conferidos pelo mantenedor na mesma sessão
+e **seguem o padrão**.
