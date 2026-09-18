@@ -138,3 +138,65 @@ aparece **uma vez** no firmware inteiro.
 
 Livro digital e Imagem foram conferidos pelo mantenedor na mesma sessão
 e **seguem o padrão**.
+
+---
+
+## 7. O byte do título: `r3 = 2` REINICIA o aparelho
+
+> Testado na Beta 9, em 2026-09-18. **Regressão introduzida por mim.**
+
+### O que aconteceu
+
+Troquei `movs r3, #1` por `movs r3, #2` em `0x00D08462`, apostando que
+`r3` seria um seletor entre "nome do arquivo" e "tag".
+
+**O aparelho reinicia ao entrar na tela de música.** Não mostra texto
+errado: reinicia.
+
+O mantenedor voltou para a Beta 8, que está sã.
+
+### O que isso ensina, e não é pouco
+
+**`r3` importa.** O byte não é inerte — mudá-lo muda o comportamento de
+forma drástica. Se fosse ignorado, a tela abriria normal.
+
+**Mas não é um seletor de fonte de texto.** Um seletor inválido daria
+texto vazio ou estranho, não reinício. Reinício com watchdog é sintoma
+de escrita fora de lugar ou ponteiro inválido.
+
+### A leitura que eu deveria ter feito antes de gravar
+
+```asm
+bl    0x00CFF1A8    ; r0 = tipo da fonte
+movs  r3, #1        ; <- r3
+mov   r2, r5        ; buffer de 255 bytes (malloc(0xff))
+mov   r1, r4
+bl    0x00CFEE60
+```
+
+E dentro de `0x00CFEE60`:
+
+```asm
+mov  r5, r3         ; guarda r3
+cbnz r2, ...        ; buffer nulo -> retorna 0
+cmp  r3, #0
+beq  ...            ; r3 == 0 -> retorna 0
+tbb  [pc, r7]       ; despacha pela FONTE (r0), nao por r3
+...
+mov  r3, r5         ; r3 e repassado ao construtor
+```
+
+`r3` é **repassado adiante** ao construtor, não consumido ali. E o
+buffer tem 255 bytes. A hipótese que sobra, e que eu não testei:
+
+> **`r3` é um tamanho, um índice ou uma contagem** — não um modo. Com
+> `1` o construtor escreve uma coisa; com `2`, escreve além do que o
+> buffer ou a estrutura comportam.
+
+### Estado
+
+**REFUTADO.** `r3 = 2` não é o caminho. Não tentar `3`, `4` etc. sem
+antes ler o que o construtor (`0x00D6DB3C` ou `0x00D6D7F0`) faz com
+esse argumento — foi exatamente o passo que eu pulei.
+
+O título continuar mostrando o nome do arquivo **continua ABERTO**.
