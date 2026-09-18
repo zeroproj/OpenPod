@@ -83,6 +83,49 @@ setembro. Com as duas inertes, ela deixou de importar.
 
 ---
 
+## 2026-09-18 — Core 5.0 — ✅ a tela inicial do OpenPod
+
+**Confirmada no aparelho.** A tela inicial passa a ser:
+
+```
+Música
+Vídeo
+Extras
+Configurar
+```
+
+É o alvo que o `PLANO_EXTRAS.md` escreveu em 14/09, quatro dias antes.
+
+### O que fazia Configurar não abrir
+
+Duas coisas, e as duas vieram de eu copiar o caso de fábrica do índice 7
+(`0x00D0123A`) **pela forma**, sem verificar de que ele depende:
+
+| | fábrica idx 7 | o que era preciso |
+|---|---|---|
+| `r0` (origem) | não define — conta com `r0` já valer 1 | `movs r0, #1` explícito |
+| `r2` (sub) | `7` | **`0`** |
+
+O `sub` vira `strh r2,[r3,#4]` na struct da página, e o valor `7` não
+sobrevive à home reduzida a quatro itens.
+
+O modelo certo a copiar era o **índice 2** — o Extras, que funciona
+nesta mesma imagem e usa `r0=1, r2=0`. A regra que fica:
+
+> Copie o que está provado **nesta** imagem, não o que estava no
+> firmware de fábrica.
+
+### Os dois diagnósticos
+
+**DIAG 6** (índice 3 → página `0x53`): abriu o Extras ⇒ o código do
+índice 3 executa. Mas essa imagem mudou **duas** variáveis de uma vez —
+a página e o `sub` — e não distinguia qual importava. Erro de método meu.
+
+**DIAG 7** (página `0x28`, `sub` 7 → 0): **uma variável só.** Configurar
+abriu. Era o `sub`.
+
+---
+
 ## 2026-09-18 — Core 4.8 / 4.9 — ⚠️ home com quatro itens, Configurar NÃO ABRE
 
 O alvo do `PLANO_EXTRAS.md`: tirar da home os cinco itens repetidos no

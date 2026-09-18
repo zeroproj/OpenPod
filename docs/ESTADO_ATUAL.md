@@ -11,7 +11,11 @@
 ## 1. Onde o aparelho está
 
 ```
-OpenPod Core 4.7     <- A ULTIMA BOA. Extras completo, voltar certo,
+OpenPod Core 5.0     <- O PONTO ESTAVEL. A tela inicial e
+                        Musica | Video | Extras | Configurar.
+                        firmware/RELEASE/OpenPod Core 5.0/
+
+OpenPod Core 4.7     <- o ponto estavel anterior. Extras completo, voltar certo,
                         M e VOL inertes. firmware/RELEASE/OpenPod Core 4.7/
 
 OpenPod Core 4.6     <- o voltar retorna ao Extras.
@@ -75,7 +79,8 @@ OpenPod Core 1.0.1   <- A BASELINE reproduzivel byte a byte.
 | **4.8** | ⚠️ | home com 4 itens, mas **Configurar não abre** |
 | **4.9** | ⚠️ | idem; acrescentou `movs r0,#1`, não resolveu |
 | DIAG 6 | 🔍 | índice 3 abre o Extras ⇒ o código executa |
-| DIAG 7 | ⬜ | página `0x28` com `sub` 0 — **pendente de teste** |
+| DIAG 7 | ✅ | o `sub` era o culpado |
+| **5.0** | ✅ | **NO APARELHO. A tela inicial do OpenPod.** ESTÁVEL |
 
 > ⚠️ **Não tente consertar a 3.1.2 com mais um patch.** Seriam quatro
 > remendos em cima do mesmo código danificado. Volte para a 2.4.

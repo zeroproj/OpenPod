@@ -32,9 +32,16 @@ SEIS PONTOS ACOPLADOS, todos medidos
         [1, 3, 156, 6, 2, 4, 9, 10, 8]  ->  [1, 3, 156, 10, ...]
   6. o indice 3 tem que abrir CONFIGURAR
         O caso do indice 3 (0x00D0113C) e o do RADIO. Ele e reescrito
-        com o caso do Configurar, copiado do indice 7 (0x00D0123A):
+        com o padrao do indice 2 -- o Extras, que funciona NESTA imagem:
 
-            movs r3, #0x28 / movs r2, #7 / movs r1, #2 / b 0x00D011F2
+            movs r3, #0x28 / movs r2, #0 / movs r1, #2
+            movs r0, #1    / b 0x00D011F2
+
+        NAO copiar o caso de fabrica do indice 7 (0x00D0123A). Ele omite
+        `movs r0,#1` (conta com r0 ja valer 1) e passa `sub = 7`. As
+        duas coisas quebraram: a Core 4.8 e a 4.9 nao abriam Configurar.
+        Medido pela DIAG 6 (o codigo executa) e pela DIAG 7 (o sub era
+        o culpado).
 
 POR QUE E SEGURO DESTRUIR O CASO DO RADIO
     O Radio continua acessivel pelo Extras, e o nosso despacho NAO
@@ -99,7 +106,13 @@ def main():
     off = CASO_IDX3 - BASE_XIP
     c = bytearray()
     c += (0x2300 | 0x28).to_bytes(2, "little")   # movs r3, #0x28  (pagina)
-    c += (0x2200 | 7).to_bytes(2, "little")      # movs r2, #7     (sub)
+    # O caso de fabrica do indice 7 passa sub = 7. Copiar esse 7 fazia
+    # Configurar NAO ABRIR (Core 4.8 e 4.9). O `sub` vira
+    # `strh r2,[r3,#4]` na struct da pagina, e o valor 7 nao sobrevive a
+    # home reduzida a quatro itens. Medido pela DIAG 7: com sub = 0,
+    # Configurar abre normalmente. O caso do indice 2 (o Extras), que
+    # sempre funcionou nesta imagem, tambem usa 0.
+    c += (0x2200 | 0).to_bytes(2, "little")      # movs r2, #0     (sub)
     c += (0x2100 | 2).to_bytes(2, "little")      # movs r1, #2
     # `movs r0, #1` NAO estava no caso de fabrica do indice 7, que conta
     # com r0 ja valendo 1 ao chegar na tbh. Copiei a forma sem verificar
