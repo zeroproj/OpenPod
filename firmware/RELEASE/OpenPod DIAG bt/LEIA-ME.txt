@@ -21,7 +21,7 @@ A REGRA QUE NASCEU DE UM ERRO REAL
 
 CONTEUDO
 --------
-  flash_OpenPod_OpenPodDIAGbt.sh      grava (46 setores, 184 KiB)
+  flash_OpenPod_OpenPodDIAGbt.sh      grava (44 setores, 176 KiB)
   diag.sh                diagnostico          (SO LEITURA)
   recovery_check_linux.sh  confere a ferramenta (SO LEITURA)
 
@@ -47,8 +47,6 @@ CONTEUDO
     OpenPod_OpenPodDIAGbt_123000.bin 0x123000  213ef142bcbd7696faccc4e2139605cffda0d9f6e2bfbf0b368feca2fb2f0e50
     OpenPod_OpenPodDIAGbt_126000.bin 0x126000  25f7937818203d1f7e320fbd4aeef456aa71927db2a89d6ff14f05ad0d571b9f
     OpenPod_OpenPodDIAGbt_127000.bin 0x127000  e9d327492dd109c2513cbf07d402e9443eca0acd47193c5de856a9ce03a5a498
-    OpenPod_OpenPodDIAGbt_128000.bin 0x128000  54003ea0d776f6fc4e095704e4f1377084457f94346f82521d580d35d549d2a2
-    OpenPod_OpenPodDIAGbt_12A000.bin 0x12A000  fdba7d5b8cadf02fd1c59c6bda8c60e95fb1ee7efd827ca77462adc6af2cc5fd
     OpenPod_OpenPodDIAGbt_12B000.bin 0x12B000  27de098786b4fd862aa7f7f852bfad6e73d53cce0fc0ee3fa23b9433406745e9
     OpenPod_OpenPodDIAGbt_12C000.bin 0x12C000  bd9fd998d33622f70ba6c0ba311f0bd1aabd5200df1296406646530a41a94bb2
     OpenPod_OpenPodDIAGbt_12D000.bin 0x12D000  6f2c626887db52348a599f6bf544611bedb43cc2751dd4b75104333c1ae3dcba
@@ -71,7 +69,7 @@ CONTEUDO
     OpenPod_OpenPodDIAGbt_149000.bin 0x149000  47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
     OpenPod_OpenPodDIAGbt_1A3000.bin 0x1A3000  9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
     OpenPod_OpenPodDIAGbt_1A4000.bin 0x1A4000  276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
-    OpenPod_OpenPodDIAGbt_1A6000.bin 0x1A6000  af9d3cf932a04932fe92a110c3c7dc3e67bc909673344a8cb48027a95e36b11e
+    OpenPod_OpenPodDIAGbt_1A6000.bin 0x1A6000  b80dd6335fa20c0c38486a022d253750036b2f8001f7ae628d1c818545689d25
 
   SETORES DE REVERSAO -> ESTADO ANTERIOR (a base deste kit)
     base_48000.bin   0x048000  cd43df9cf6f193ab32cd4c0963555f95e95e7ecb02b836bc720c2d1873dcbc01
@@ -95,8 +93,6 @@ CONTEUDO
     base_123000.bin  0x123000  fdd9e6ef0752425d429d354bc74652402039880f251c0a390b42b60c087a5805
     base_126000.bin  0x126000  cc31a3d9cea495315d60f231c08705f2396ddd1eb70dcc962853aff1b346da35
     base_127000.bin  0x127000  0318cc59765edcc893008ee976b24ace551a27ce8b3212837f5d072f2f186b27
-    base_128000.bin  0x128000  4393a597215fa98b88eaee6ef9855b6b12f9401d4e2e506029fa91b6c4450b6d
-    base_12A000.bin  0x12A000  aa94827f67ae6f0c2b57f83c1806b79e7759329c4a975efd3ad7781621447dda
     base_12B000.bin  0x12B000  aa3358950b8cd2d6b8c65702c33d2efda29516144b3c69d7a0a74f770826b5cd
     base_12C000.bin  0x12C000  ccc11583d6490eebb0b292115bb32c139c984ef40d3d39286bd86c00c6fb0356
     base_12D000.bin  0x12D000  84bf9e4e0c04ea9352d343e34e5603d64876e192d3556f5341bc970810f94c85
@@ -194,10 +190,6 @@ NAO DESLIGUE O APARELHO. Enquanto ele enumera, tem conserto.
        write_flash 0x126000 0 0x1000 base_126000.bin
   sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
        write_flash 0x127000 0 0x1000 base_127000.bin
-  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
-       write_flash 0x128000 0 0x1000 base_128000.bin
-  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
-       write_flash 0x12A000 0 0x1000 base_12A000.bin
   sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
        write_flash 0x12B000 0 0x1000 base_12B000.bin
   sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \

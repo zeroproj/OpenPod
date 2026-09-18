@@ -4,7 +4,7 @@
 #
 # OpenPod OpenPod DIAG bt
 #
-# Grava 46 setores de 4096 B (184 KiB). O bootloader (0x0..0xD000)
+# Grava 44 setores de 4096 B (176 KiB). O bootloader (0x0..0xD000)
 # nao e endereçado. write_flash sempre com 0 no 2o argumento, a
 # partir de um arquivo por setor (docs/WRITE_FLASH_SEMANTICS.md).
 #
@@ -50,8 +50,6 @@ die() {
         log "***   sudo $TOOL --id $DEV write_flash 0x123000 0 0x1000 base_123000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x126000 0 0x1000 base_126000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x127000 0 0x1000 base_127000.bin"
-        log "***   sudo $TOOL --id $DEV write_flash 0x128000 0 0x1000 base_128000.bin"
-        log "***   sudo $TOOL --id $DEV write_flash 0x12A000 0 0x1000 base_12A000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x12B000 0 0x1000 base_12B000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x12C000 0 0x1000 base_12C000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x12D000 0 0x1000 base_12D000.bin"
@@ -86,7 +84,7 @@ size() { python3 -c "import os,sys;print(os.path.getsize(sys.argv[1]))" "$1"; }
 rsha() { python3 -c "import hashlib,sys;d=open(sys.argv[1],'rb').read()[int(sys.argv[2]):int(sys.argv[2])+int(sys.argv[3])];print(hashlib.sha256(d).hexdigest())" "$1" "$2" "$3"; }
 
 log "======================================================================"
-log " OpenPod — gravacao do OPENPOD_OPENPODDIAGBT   (46 setores, 184 KiB)"
+log " OpenPod — gravacao do OPENPOD_OPENPODDIAGBT   (44 setores, 176 KiB)"
 log " 0x048000 +0x1000   <- OpenPod_OpenPodDIAGbt_48000.bin"
 log " 0x052000 +0x1000   <- OpenPod_OpenPodDIAGbt_52000.bin"
 log " 0x053000 +0x1000   <- OpenPod_OpenPodDIAGbt_53000.bin"
@@ -108,8 +106,6 @@ log " 0x122000 +0x1000   <- OpenPod_OpenPodDIAGbt_122000.bin"
 log " 0x123000 +0x1000   <- OpenPod_OpenPodDIAGbt_123000.bin"
 log " 0x126000 +0x1000   <- OpenPod_OpenPodDIAGbt_126000.bin"
 log " 0x127000 +0x1000   <- OpenPod_OpenPodDIAGbt_127000.bin"
-log " 0x128000 +0x1000   <- OpenPod_OpenPodDIAGbt_128000.bin"
-log " 0x12A000 +0x1000   <- OpenPod_OpenPodDIAGbt_12A000.bin"
 log " 0x12B000 +0x1000   <- OpenPod_OpenPodDIAGbt_12B000.bin"
 log " 0x12C000 +0x1000   <- OpenPod_OpenPodDIAGbt_12C000.bin"
 log " 0x12D000 +0x1000   <- OpenPod_OpenPodDIAGbt_12D000.bin"
@@ -173,8 +169,6 @@ ck_file "OpenPod_OpenPodDIAGbt_122000.bin" df9b903aa340d40041a61cffd908218103381
 ck_file "OpenPod_OpenPodDIAGbt_123000.bin" 213ef142bcbd7696faccc4e2139605cffda0d9f6e2bfbf0b368feca2fb2f0e50
 ck_file "OpenPod_OpenPodDIAGbt_126000.bin" 25f7937818203d1f7e320fbd4aeef456aa71927db2a89d6ff14f05ad0d571b9f
 ck_file "OpenPod_OpenPodDIAGbt_127000.bin" e9d327492dd109c2513cbf07d402e9443eca0acd47193c5de856a9ce03a5a498
-ck_file "OpenPod_OpenPodDIAGbt_128000.bin" 54003ea0d776f6fc4e095704e4f1377084457f94346f82521d580d35d549d2a2
-ck_file "OpenPod_OpenPodDIAGbt_12A000.bin" fdba7d5b8cadf02fd1c59c6bda8c60e95fb1ee7efd827ca77462adc6af2cc5fd
 ck_file "OpenPod_OpenPodDIAGbt_12B000.bin" 27de098786b4fd862aa7f7f852bfad6e73d53cce0fc0ee3fa23b9433406745e9
 ck_file "OpenPod_OpenPodDIAGbt_12C000.bin" bd9fd998d33622f70ba6c0ba311f0bd1aabd5200df1296406646530a41a94bb2
 ck_file "OpenPod_OpenPodDIAGbt_12D000.bin" 6f2c626887db52348a599f6bf544611bedb43cc2751dd4b75104333c1ae3dcba
@@ -197,7 +191,7 @@ ck_file "OpenPod_OpenPodDIAGbt_13D000.bin" e8bb94264408ab85f7e905d3561ed2a452729
 ck_file "OpenPod_OpenPodDIAGbt_149000.bin" 47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
 ck_file "OpenPod_OpenPodDIAGbt_1A3000.bin" 9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
 ck_file "OpenPod_OpenPodDIAGbt_1A4000.bin" 276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
-ck_file "OpenPod_OpenPodDIAGbt_1A6000.bin" af9d3cf932a04932fe92a110c3c7dc3e67bc909673344a8cb48027a95e36b11e
+ck_file "OpenPod_OpenPodDIAGbt_1A6000.bin" b80dd6335fa20c0c38486a022d253750036b2f8001f7ae628d1c818545689d25
 ck_file "base_48000.bin" cd43df9cf6f193ab32cd4c0963555f95e95e7ecb02b836bc720c2d1873dcbc01
 ck_file "base_52000.bin" 91360fd9e5a5e0871f1682f38174f0acf9b29588e16d18e810f59ef01b158c2f
 ck_file "base_53000.bin" 5decc107dd674f7b6bdd34436f9a7e9b68900c61a7552df7a24be1f7f85bf4c5
@@ -219,8 +213,6 @@ ck_file "base_122000.bin" dc3b6a4a0150763564474047400cebac7b4e331820901505eacf36
 ck_file "base_123000.bin" fdd9e6ef0752425d429d354bc74652402039880f251c0a390b42b60c087a5805
 ck_file "base_126000.bin" cc31a3d9cea495315d60f231c08705f2396ddd1eb70dcc962853aff1b346da35
 ck_file "base_127000.bin" 0318cc59765edcc893008ee976b24ace551a27ce8b3212837f5d072f2f186b27
-ck_file "base_128000.bin" 4393a597215fa98b88eaee6ef9855b6b12f9401d4e2e506029fa91b6c4450b6d
-ck_file "base_12A000.bin" aa94827f67ae6f0c2b57f83c1806b79e7759329c4a975efd3ad7781621447dda
 ck_file "base_12B000.bin" aa3358950b8cd2d6b8c65702c33d2efda29516144b3c69d7a0a74f770826b5cd
 ck_file "base_12C000.bin" ccc11583d6490eebb0b292115bb32c139c984ef40d3d39286bd86c00c6fb0356
 ck_file "base_12D000.bin" 84bf9e4e0c04ea9352d343e34e5603d64876e192d3556f5341bc970810f94c85
@@ -333,7 +325,7 @@ ck "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3
 log ""
 log "======================================================================"
 log " Tudo conferido. A proxima etapa MODIFICA o firmware do aparelho."
-log "   grava  : 184 KiB em 46 setores"
+log "   grava  : 176 KiB em 44 setores"
 log "   muda   : OpenPod OpenPod DIAG bt"
 log "   NAO toca: bootloader, TONE, PSMP"
 log "======================================================================"
@@ -357,52 +349,50 @@ wr() {
     obtido   $g"
     log "        OK — setor confere"
 }
-wr "4/6 1/46" 0x48000 "OpenPod_OpenPodDIAGbt_48000.bin" 6ea532bf216161b7d65e6fec3857f9f27890899a6e7ccd0cccff654fb471dd12
-wr "4/6 2/46" 0x52000 "OpenPod_OpenPodDIAGbt_52000.bin" 3b36d143a96aaab07e0927c9eecf4351f6b0a21c833d0a6f5352fd8226bc5ca3
-wr "4/6 3/46" 0x53000 "OpenPod_OpenPodDIAGbt_53000.bin" a62c6180f15359d58c91eb6b96c087dbbeae1e0403e8b94accc7e00a7b8e8fe8
-wr "4/6 4/46" 0x54000 "OpenPod_OpenPodDIAGbt_54000.bin" a96553f46460656f6a7c1a5d9636c0743f9ca606013b1901cd3ac95df109abb5
-wr "4/6 5/46" 0x5D000 "OpenPod_OpenPodDIAGbt_5D000.bin" 7e3402a71dd7d45f80e9d1eb5bc03a5d56a9f9dfb87c5829efcb76e1a5a947c1
-wr "4/6 6/46" 0xC7000 "OpenPod_OpenPodDIAGbt_C7000.bin" f678974cafcb27f9b636e9713360e6f34a9d03f1b6082f3de9897e1513f3a421
-wr "4/6 7/46" 0xCC000 "OpenPod_OpenPodDIAGbt_CC000.bin" ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
-wr "4/6 8/46" 0xCD000 "OpenPod_OpenPodDIAGbt_CD000.bin" 99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
-wr "4/6 9/46" 0xD3000 "OpenPod_OpenPodDIAGbt_D3000.bin" eddeb2ee73066fdef9b81eee7fb5dd74e0710b594c0e0b67090daf9822ac630c
-wr "4/6 10/46" 0xDF000 "OpenPod_OpenPodDIAGbt_DF000.bin" fd20c126093f6bc74a4068300166e922236d7eb571e87848c9bb0a841872686e
-wr "4/6 11/46" 0x101000 "OpenPod_OpenPodDIAGbt_101000.bin" 673da19a6d3d37b673316192ec95fab51e36ae91df6e3d1c0f72e560635d94eb
-wr "4/6 12/46" 0x108000 "OpenPod_OpenPodDIAGbt_108000.bin" 850b51b6c1b1ef43eb7b289178027ad22c6a245d0799b1696a53fe468bff7f7e
-wr "4/6 13/46" 0x109000 "OpenPod_OpenPodDIAGbt_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
-wr "4/6 14/46" 0x10A000 "OpenPod_OpenPodDIAGbt_10A000.bin" 5b67962d54acc73a7ad01de367b444d4fb88711ebe763ba9e0496a51117b028c
-wr "4/6 15/46" 0x10C000 "OpenPod_OpenPodDIAGbt_10C000.bin" 3b8683d363ba2d88fe25955572dfcb27a2153ec413f40a207ccf012d5e89b4d4
-wr "4/6 16/46" 0x10D000 "OpenPod_OpenPodDIAGbt_10D000.bin" 6fe1812c1a69ae6e876e9fc7a63e10e83055850f60e209d3c0ed34a67231f40a
-wr "4/6 17/46" 0x121000 "OpenPod_OpenPodDIAGbt_121000.bin" 30ebefbe8d45d7d26c18201cd385b35f67e8e27396f726be0050649f77b1216d
-wr "4/6 18/46" 0x122000 "OpenPod_OpenPodDIAGbt_122000.bin" df9b903aa340d40041a61cffd9082181033811098b832b0e0603b97b09885250
-wr "4/6 19/46" 0x123000 "OpenPod_OpenPodDIAGbt_123000.bin" 213ef142bcbd7696faccc4e2139605cffda0d9f6e2bfbf0b368feca2fb2f0e50
-wr "4/6 20/46" 0x126000 "OpenPod_OpenPodDIAGbt_126000.bin" 25f7937818203d1f7e320fbd4aeef456aa71927db2a89d6ff14f05ad0d571b9f
-wr "4/6 21/46" 0x127000 "OpenPod_OpenPodDIAGbt_127000.bin" e9d327492dd109c2513cbf07d402e9443eca0acd47193c5de856a9ce03a5a498
-wr "4/6 22/46" 0x128000 "OpenPod_OpenPodDIAGbt_128000.bin" 54003ea0d776f6fc4e095704e4f1377084457f94346f82521d580d35d549d2a2
-wr "4/6 23/46" 0x12A000 "OpenPod_OpenPodDIAGbt_12A000.bin" fdba7d5b8cadf02fd1c59c6bda8c60e95fb1ee7efd827ca77462adc6af2cc5fd
-wr "4/6 24/46" 0x12B000 "OpenPod_OpenPodDIAGbt_12B000.bin" 27de098786b4fd862aa7f7f852bfad6e73d53cce0fc0ee3fa23b9433406745e9
-wr "4/6 25/46" 0x12C000 "OpenPod_OpenPodDIAGbt_12C000.bin" bd9fd998d33622f70ba6c0ba311f0bd1aabd5200df1296406646530a41a94bb2
-wr "4/6 26/46" 0x12D000 "OpenPod_OpenPodDIAGbt_12D000.bin" 6f2c626887db52348a599f6bf544611bedb43cc2751dd4b75104333c1ae3dcba
-wr "4/6 27/46" 0x12E000 "OpenPod_OpenPodDIAGbt_12E000.bin" 34338f09581e5aa1c689c188201ddfdebc29d251a0bfe7e1074d58c429be7157
-wr "4/6 28/46" 0x12F000 "OpenPod_OpenPodDIAGbt_12F000.bin" a640a2e36034aed5c4b51653fb7b6cc85d94f5d43eb12224c3b16a74c61ef102
-wr "4/6 29/46" 0x130000 "OpenPod_OpenPodDIAGbt_130000.bin" a209c305d8cc078e6b1947f7e437cda6a8f92d7ae757b986f8d0b4e2fcead5b6
-wr "4/6 30/46" 0x131000 "OpenPod_OpenPodDIAGbt_131000.bin" 13cbb12b13d73a421e60cbd298869e9cf68d0ce2eca5548602adf6cf37e2e8c5
-wr "4/6 31/46" 0x132000 "OpenPod_OpenPodDIAGbt_132000.bin" e05828e015b71a8c3f2290b03b843188771855583e7ee886244de7d17bd46f0e
-wr "4/6 32/46" 0x133000 "OpenPod_OpenPodDIAGbt_133000.bin" ffdb8e5ee01d4219eec486d7f3bc60df7e62e30269361daad437835008b513bf
-wr "4/6 33/46" 0x134000 "OpenPod_OpenPodDIAGbt_134000.bin" bdb077624bce3c8b2d508b03393c0608004a53cefbd1ab1c3e1142f5ef0cb6b4
-wr "4/6 34/46" 0x135000 "OpenPod_OpenPodDIAGbt_135000.bin" e52b4f721ab955ce0acc404d7bbffb4dded60b0c0b09d43fcd8b54b04ebfab7e
-wr "4/6 35/46" 0x136000 "OpenPod_OpenPodDIAGbt_136000.bin" 37133af6fa7684d462b11159bacebd685f7f5e533830fd2607ce63f0d177d7b8
-wr "4/6 36/46" 0x137000 "OpenPod_OpenPodDIAGbt_137000.bin" 9f27ec07c3773ed74cc2702121298b8cdbbcb4ec5815b994d8a430226b9e8bf5
-wr "4/6 37/46" 0x138000 "OpenPod_OpenPodDIAGbt_138000.bin" b4ae75cffaf10da6b7edb44bb19483b627db21dcbfcd9b6388b8f1aa11626863
-wr "4/6 38/46" 0x139000 "OpenPod_OpenPodDIAGbt_139000.bin" 0809afdd572786578e9713711d83177fd77ebe5c89734a78cf16d55d90242c8d
-wr "4/6 39/46" 0x13A000 "OpenPod_OpenPodDIAGbt_13A000.bin" 72f6bc37de6f618d6528e4411c86c090bdcf45a9e565ed5bcae94ed0d3d7f629
-wr "4/6 40/46" 0x13B000 "OpenPod_OpenPodDIAGbt_13B000.bin" e76fe152ae3b0f4414952f7f658add959f41adf86e0297a5ea657288cafa1a6e
-wr "4/6 41/46" 0x13C000 "OpenPod_OpenPodDIAGbt_13C000.bin" f9b05c7df264e8c210701e056986e0167641e37ed7cf32d8f477f15aa77feb34
-wr "4/6 42/46" 0x13D000 "OpenPod_OpenPodDIAGbt_13D000.bin" e8bb94264408ab85f7e905d3561ed2a4527295409f6b8381c6a154e4d2139120
-wr "4/6 43/46" 0x149000 "OpenPod_OpenPodDIAGbt_149000.bin" 47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
-wr "4/6 44/46" 0x1A3000 "OpenPod_OpenPodDIAGbt_1A3000.bin" 9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
-wr "4/6 45/46" 0x1A4000 "OpenPod_OpenPodDIAGbt_1A4000.bin" 276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
-wr "4/6 46/46" 0x1A6000 "OpenPod_OpenPodDIAGbt_1A6000.bin" af9d3cf932a04932fe92a110c3c7dc3e67bc909673344a8cb48027a95e36b11e
+wr "4/6 1/44" 0x48000 "OpenPod_OpenPodDIAGbt_48000.bin" 6ea532bf216161b7d65e6fec3857f9f27890899a6e7ccd0cccff654fb471dd12
+wr "4/6 2/44" 0x52000 "OpenPod_OpenPodDIAGbt_52000.bin" 3b36d143a96aaab07e0927c9eecf4351f6b0a21c833d0a6f5352fd8226bc5ca3
+wr "4/6 3/44" 0x53000 "OpenPod_OpenPodDIAGbt_53000.bin" a62c6180f15359d58c91eb6b96c087dbbeae1e0403e8b94accc7e00a7b8e8fe8
+wr "4/6 4/44" 0x54000 "OpenPod_OpenPodDIAGbt_54000.bin" a96553f46460656f6a7c1a5d9636c0743f9ca606013b1901cd3ac95df109abb5
+wr "4/6 5/44" 0x5D000 "OpenPod_OpenPodDIAGbt_5D000.bin" 7e3402a71dd7d45f80e9d1eb5bc03a5d56a9f9dfb87c5829efcb76e1a5a947c1
+wr "4/6 6/44" 0xC7000 "OpenPod_OpenPodDIAGbt_C7000.bin" f678974cafcb27f9b636e9713360e6f34a9d03f1b6082f3de9897e1513f3a421
+wr "4/6 7/44" 0xCC000 "OpenPod_OpenPodDIAGbt_CC000.bin" ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
+wr "4/6 8/44" 0xCD000 "OpenPod_OpenPodDIAGbt_CD000.bin" 99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
+wr "4/6 9/44" 0xD3000 "OpenPod_OpenPodDIAGbt_D3000.bin" eddeb2ee73066fdef9b81eee7fb5dd74e0710b594c0e0b67090daf9822ac630c
+wr "4/6 10/44" 0xDF000 "OpenPod_OpenPodDIAGbt_DF000.bin" fd20c126093f6bc74a4068300166e922236d7eb571e87848c9bb0a841872686e
+wr "4/6 11/44" 0x101000 "OpenPod_OpenPodDIAGbt_101000.bin" 673da19a6d3d37b673316192ec95fab51e36ae91df6e3d1c0f72e560635d94eb
+wr "4/6 12/44" 0x108000 "OpenPod_OpenPodDIAGbt_108000.bin" 850b51b6c1b1ef43eb7b289178027ad22c6a245d0799b1696a53fe468bff7f7e
+wr "4/6 13/44" 0x109000 "OpenPod_OpenPodDIAGbt_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
+wr "4/6 14/44" 0x10A000 "OpenPod_OpenPodDIAGbt_10A000.bin" 5b67962d54acc73a7ad01de367b444d4fb88711ebe763ba9e0496a51117b028c
+wr "4/6 15/44" 0x10C000 "OpenPod_OpenPodDIAGbt_10C000.bin" 3b8683d363ba2d88fe25955572dfcb27a2153ec413f40a207ccf012d5e89b4d4
+wr "4/6 16/44" 0x10D000 "OpenPod_OpenPodDIAGbt_10D000.bin" 6fe1812c1a69ae6e876e9fc7a63e10e83055850f60e209d3c0ed34a67231f40a
+wr "4/6 17/44" 0x121000 "OpenPod_OpenPodDIAGbt_121000.bin" 30ebefbe8d45d7d26c18201cd385b35f67e8e27396f726be0050649f77b1216d
+wr "4/6 18/44" 0x122000 "OpenPod_OpenPodDIAGbt_122000.bin" df9b903aa340d40041a61cffd9082181033811098b832b0e0603b97b09885250
+wr "4/6 19/44" 0x123000 "OpenPod_OpenPodDIAGbt_123000.bin" 213ef142bcbd7696faccc4e2139605cffda0d9f6e2bfbf0b368feca2fb2f0e50
+wr "4/6 20/44" 0x126000 "OpenPod_OpenPodDIAGbt_126000.bin" 25f7937818203d1f7e320fbd4aeef456aa71927db2a89d6ff14f05ad0d571b9f
+wr "4/6 21/44" 0x127000 "OpenPod_OpenPodDIAGbt_127000.bin" e9d327492dd109c2513cbf07d402e9443eca0acd47193c5de856a9ce03a5a498
+wr "4/6 22/44" 0x12B000 "OpenPod_OpenPodDIAGbt_12B000.bin" 27de098786b4fd862aa7f7f852bfad6e73d53cce0fc0ee3fa23b9433406745e9
+wr "4/6 23/44" 0x12C000 "OpenPod_OpenPodDIAGbt_12C000.bin" bd9fd998d33622f70ba6c0ba311f0bd1aabd5200df1296406646530a41a94bb2
+wr "4/6 24/44" 0x12D000 "OpenPod_OpenPodDIAGbt_12D000.bin" 6f2c626887db52348a599f6bf544611bedb43cc2751dd4b75104333c1ae3dcba
+wr "4/6 25/44" 0x12E000 "OpenPod_OpenPodDIAGbt_12E000.bin" 34338f09581e5aa1c689c188201ddfdebc29d251a0bfe7e1074d58c429be7157
+wr "4/6 26/44" 0x12F000 "OpenPod_OpenPodDIAGbt_12F000.bin" a640a2e36034aed5c4b51653fb7b6cc85d94f5d43eb12224c3b16a74c61ef102
+wr "4/6 27/44" 0x130000 "OpenPod_OpenPodDIAGbt_130000.bin" a209c305d8cc078e6b1947f7e437cda6a8f92d7ae757b986f8d0b4e2fcead5b6
+wr "4/6 28/44" 0x131000 "OpenPod_OpenPodDIAGbt_131000.bin" 13cbb12b13d73a421e60cbd298869e9cf68d0ce2eca5548602adf6cf37e2e8c5
+wr "4/6 29/44" 0x132000 "OpenPod_OpenPodDIAGbt_132000.bin" e05828e015b71a8c3f2290b03b843188771855583e7ee886244de7d17bd46f0e
+wr "4/6 30/44" 0x133000 "OpenPod_OpenPodDIAGbt_133000.bin" ffdb8e5ee01d4219eec486d7f3bc60df7e62e30269361daad437835008b513bf
+wr "4/6 31/44" 0x134000 "OpenPod_OpenPodDIAGbt_134000.bin" bdb077624bce3c8b2d508b03393c0608004a53cefbd1ab1c3e1142f5ef0cb6b4
+wr "4/6 32/44" 0x135000 "OpenPod_OpenPodDIAGbt_135000.bin" e52b4f721ab955ce0acc404d7bbffb4dded60b0c0b09d43fcd8b54b04ebfab7e
+wr "4/6 33/44" 0x136000 "OpenPod_OpenPodDIAGbt_136000.bin" 37133af6fa7684d462b11159bacebd685f7f5e533830fd2607ce63f0d177d7b8
+wr "4/6 34/44" 0x137000 "OpenPod_OpenPodDIAGbt_137000.bin" 9f27ec07c3773ed74cc2702121298b8cdbbcb4ec5815b994d8a430226b9e8bf5
+wr "4/6 35/44" 0x138000 "OpenPod_OpenPodDIAGbt_138000.bin" b4ae75cffaf10da6b7edb44bb19483b627db21dcbfcd9b6388b8f1aa11626863
+wr "4/6 36/44" 0x139000 "OpenPod_OpenPodDIAGbt_139000.bin" 0809afdd572786578e9713711d83177fd77ebe5c89734a78cf16d55d90242c8d
+wr "4/6 37/44" 0x13A000 "OpenPod_OpenPodDIAGbt_13A000.bin" 72f6bc37de6f618d6528e4411c86c090bdcf45a9e565ed5bcae94ed0d3d7f629
+wr "4/6 38/44" 0x13B000 "OpenPod_OpenPodDIAGbt_13B000.bin" e76fe152ae3b0f4414952f7f658add959f41adf86e0297a5ea657288cafa1a6e
+wr "4/6 39/44" 0x13C000 "OpenPod_OpenPodDIAGbt_13C000.bin" f9b05c7df264e8c210701e056986e0167641e37ed7cf32d8f477f15aa77feb34
+wr "4/6 40/44" 0x13D000 "OpenPod_OpenPodDIAGbt_13D000.bin" e8bb94264408ab85f7e905d3561ed2a4527295409f6b8381c6a154e4d2139120
+wr "4/6 41/44" 0x149000 "OpenPod_OpenPodDIAGbt_149000.bin" 47c9bc96248f581805ec555ccc7e6166a454ef6a5b0ae472531c9d24d3683884
+wr "4/6 42/44" 0x1A3000 "OpenPod_OpenPodDIAGbt_1A3000.bin" 9f06327e4e94065d21a686623ade77e48141f60be7a2c680712c73c9748a78e0
+wr "4/6 43/44" 0x1A4000 "OpenPod_OpenPodDIAGbt_1A4000.bin" 276a5497517bf2f5aa9572c7db7a0adb003dfc70ade9fabfa420cd6ad3450edf
+wr "4/6 44/44" 0x1A6000 "OpenPod_OpenPodDIAGbt_1A6000.bin" b80dd6335fa20c0c38486a022d253750036b2f8001f7ae628d1c818545689d25
 rm -f "$WORK/sec.bin"
 
 log "[5/6] lendo a flash inteira e conferindo o estado DEPOIS..."
@@ -417,7 +407,7 @@ ck2() {
 }
 ck2 "bootloader" 0 51532 861184003923634be0f2ae9883456035b40d1ea72f97682890238edfae3acb31
 ck2 "ptable" 53248 64 9f93d4435e7cb819b2dad2f38edf91fb0a0af44654c4d9fcd3df174bf3380a2d
-ck2 "FIRM" 57344 1647984 5b7261e27377bf9cf0deac8329ff9e113b7d2543b7028320423670c3d423a85a
+ck2 "FIRM" 57344 1647984 5105e079d4945f5d4cdf0ee0754a10702569f1412f4e3dd9c44dd9cb7d05e684
 ck2 "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3f8b4ace
 
 log ""
@@ -451,8 +441,6 @@ else
     log "     sudo $TOOL --id $DEV write_flash 0x123000 0 0x1000 base_123000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x126000 0 0x1000 base_126000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x127000 0 0x1000 base_127000.bin"
-    log "     sudo $TOOL --id $DEV write_flash 0x128000 0 0x1000 base_128000.bin"
-    log "     sudo $TOOL --id $DEV write_flash 0x12A000 0 0x1000 base_12A000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x12B000 0 0x1000 base_12B000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x12C000 0 0x1000 base_12C000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x12D000 0 0x1000 base_12D000.bin"
