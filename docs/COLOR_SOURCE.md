@@ -351,3 +351,40 @@ por um tom claro é a alavanca única para o tema claro do nano 2G —
 Risco conhecido: telas que definam texto claro **por conta própria**
 ficariam ilegíveis sobre fundo claro. O mapa de alcance precisa ser
 completado antes.
+
+
+---
+
+# A pré-inversão, CONFIRMADA NA TELA (2026-09-18)
+
+A regra deste documento estava no projeto desde setembro **deduzida de
+um único caso**: a bateria fraca usa `0x00F8`, que pré-invertido dá
+`0xF800` = vermelho puro.
+
+Nunca tinha sido verificada na tela.
+
+## O teste — DIAG 8
+
+A casca da bateria foi pintada com `0x07E0`, que é inequívoco dos dois
+lados:
+
+```text
+lido direto      RGB(  0,255,  0)   VERDE puro
+pré-invertido    RGB(230,  0, 57)   VERMELHO
+```
+
+**Resultado no aparelho: a casca ficou VERMELHA.**
+
+## O que isso fecha
+
+A pré-inversão **existe**, e portanto toda cor que o projeto escreveu
+está correta na convenção: a seleção azul da Core 1.2, a faixa cinza da
+2.4, o verde da barra, o prateado da casca.
+
+| Afirmação | Classe |
+|---|---|
+| As cores são gravadas pré-invertidas | **CONFIRMADO** (visto na tela, DIAG 8) |
+
+> Antes disso, a regra era PROVÁVEL apoiada num caso. Custou uma
+> gravação para virar CONFIRMADO — e ela valia, porque a regra sustenta
+> todas as cores do projeto.

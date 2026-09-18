@@ -47,7 +47,28 @@ ALINHA = [
     (0x00D217D6, "0223", "relogio  y_ofs"),
     (0x00D226B6, "0223", "titulo   y_ofs"),
 ]
-COR_RUNTIME = (0x00D23686, bytes.fromhex("4ff0ff31"), "casca: branco -> prateado")
+# TODOS os sitios que pintam a casca de BRANCO. Sao CINCO, nao um.
+# A Core 5.3 pintou na criacao (apagado pelo atualizador) e a 5.5
+# pegou so 0x00D23686. A pergunta que faltou, pela TERCEIRA vez neste
+# mesmo icone: "quem MAIS escreve neste slot?"
+# Os dois sitios de vermelho (0x00D23674 e 0x00D23876) NAO sao tocados:
+# bateria fraca deve continuar vermelha.
+BRANCO = bytes.fromhex("4ff0ff31")          # mov.w r1, #-1
+COR_RUNTIME = [0x00D23686, 0x00D236CA, 0x00D238E8, 0x00D23912]
+
+# 0x00D236B0 fica FORA, e o motivo e instrutivo:
+#
+#     bytes          4f f0 ff 31
+#     lido de 0xB0   mov.w r1, #-1       <- caminho de queda
+#     lido de 0xB2   adds  r1, #0xff     <- TRES `bpl` saltam para ca
+#
+# Sao INSTRUCOES SOBREPOSTAS: os mesmos bytes servem a dois caminhos,
+# um entrando no meio do outro. Trocar por `movw` faria o caminho B
+# executar `movs r1,#0xc6` em vez de `adds r1,#0xff`.
+#
+# Quem pegou isso foi tools/check_branch_targets.py, com
+# "3 desvios apontam para alvo DESTRUIDO". A desmontagem linear nao
+# pega: ela le so um dos dois alinhamentos.
 
 
 def to565(r, g, b):
@@ -83,14 +104,20 @@ def main():
         img[off] = a.y                      # `movs r3,#N` — o N e o byte baixo
         print(f"  {addr:#010x}  {texto}: 2 -> {a.y}")
 
-    addr, antes, texto = COR_RUNTIME
-    off = addr - BASE_XIP
-    if bytes(img[off:off + 4]) != antes:
-        sys.exit(f"erro: {addr:#x} tem {img[off:off+4].hex()}, "
-                 f"esperava {antes.hex()}")
     cor = pre_inverte(to565(*MARTE))
-    img[off:off + 4] = movw(1, cor)
-    print(f"  {addr:#010x}  {texto}: movw r1, #{cor:#06x}  RGB{MARTE}")
+    novo = movw(1, cor)
+    for addr in COR_RUNTIME:
+        off = addr - BASE_XIP
+        atual = bytes(img[off:off + 4])
+        if atual == novo:
+            print(f"  {addr:#010x}  casca: ja estava prateado")
+            continue
+        if atual != BRANCO:
+            sys.exit(f"erro: {addr:#x} tem {atual.hex()}, "
+                     f"esperava {BRANCO.hex()} (mov.w r1,#-1)")
+        img[off:off + 4] = novo
+        print(f"  {addr:#010x}  casca: branco -> movw r1, #{cor:#06x}")
+    print(f"     RGB{MARTE} — o prateado do Marte, em {len(COR_RUNTIME)} sitios")
 
     open(a.saida, "wb").write(img)
     print(f"\n  escrito: {a.saida}")
