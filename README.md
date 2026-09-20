@@ -21,6 +21,10 @@ reescrever o firmware do zero.
 
 ---
 
+> **Assumindo o projeto?** Leia **[`CONTINUAR.md`](CONTINUAR.md)** primeiro.
+> Ele tem o estado, a primeira coisa a fazer, o conserto que está pronto
+> para escrever e as três lições que custaram caro.
+
 ## Por onde começar
 
 | quero... | leia |

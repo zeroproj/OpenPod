@@ -7,6 +7,58 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-20 — Beta 12, Beta 13, e a entrega do projeto
+
+### O saldo de dois dias
+
+**Entrou e funciona:** listas de 9 linhas · Bluetooth e Hora e data com
+linha de 16 px · tempos em `mm:ss` · contador `7 - 152` · fundo preto na
+Tocando Agora.
+
+**Entrou e saiu:** o tempo restante `-3:55` (suspeito de travar a
+música) e o conserto de argumentos do Bluetooth (quebrou os seis itens
+do Extras).
+
+### Um bug, quatro sintomas — `docs/EXTRAS_INDICE.md`
+
+O Extras passa o índice do **nosso** menu onde a fábrica passa o índice
+**dela**. Levantado item a item na TBH da home (`0x00D00FBA`):
+
+| nosso | item | página | `sub` correto |
+|---|---|---|---|
+| 0 | Gravação | 24 | 2 |
+| 1 | Rádio | 26 | 3 |
+| 2 | Livro digital | 12 | 4 |
+| 3 | Imagem | 21 | 5 |
+| 4 | Bluetooth | 35 | 6 |
+| 5 | Pastas | 34 | 0 |
+
+Passamos `0` para os seis. Por isso Imagem e Livro digital não atualizam
+a biblioteca e o Bluetooth reinicia. **Pastas acerta por acidente.**
+
+### A pergunta que ficou aberta
+
+A **Beta 10** aplicou 26 bytes que passaram em toda verificação estática
+disponível — e quebrou o Extras inteiro. A causa é **desconhecida**.
+
+A **Beta 13** isola a variável: o mesmo salto, com uma rotina de destino
+que é um no-op deliberado. Os dois resultados possíveis mudam o projeto.
+
+### Três lições registradas
+
+1. **varredura por forma sempre perde alguém** — bateria 4/7, altura de
+   linha 1/6;
+2. **verificação estática não basta** — a Beta 10 passou em tudo;
+3. **conclusão larga de teste estreito** — a Beta 9 reverteu uma faixa
+   que continha seis páginas e eu li o resultado como se fosse uma.
+
+### `CONTINUAR.md`
+
+Prompt de continuação para quem assumir: o estado, a primeira coisa a
+fazer, o conserto pronto para escrever, o que não fazer, e como o
+mantenedor trabalha.
+
+
 ## 2026-09-18 — Public Beta 7 — as linhas de 22 px acabam
 
 Publicada. Junta o que as Betas 4 a 7 acumularam.

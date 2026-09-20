@@ -8,60 +8,69 @@
 
 ---
 
-## ONDE PARAMOS — 2026-09-18, fim do dia
+## ONDE PARAMOS — 2026-09-20
 
-**No aparelho:** Beta 8, confirmada pelo mantenedor.
-**No ar (GitHub Pages):** Beta 7. A 8 **não foi publicada** — decisão do
-mantenedor: fechar as três pendências antes de lançar.
+**No aparelho:** Beta 12, funcionando.
+**No ar (GitHub Pages):** Beta 7. Nada publicado depois disso.
+**Pronta para testar:** Beta 13 — ver §"a pergunta que trava tudo".
 
-### A fila, em ordem
-
-| | | |
-|---|---|---|
-| 1 | **Beta 8** | ✅ gravada e confirmada — `-3:55` funcionando |
-| 2 | **DIAG_titulo** | ⏳ a tag do ID3 chega na tela de música? |
-| 3 | **DIAG_bt** | ⏳ o reinício do Bluetooth é nosso ou de fábrica? |
-
-Fechadas as três, publica.
-
-### O que a Beta 8 acumulou
-
-listas de 9 linhas · Bluetooth e Hora e data no padrão de 16 px ·
-tempos em `mm:ss` · contador `7 - 152` · fundo preto na Tocando Agora ·
-tempo restante negativo
-
-### O marco técnico da Beta 8
-
-O tempo restante é a **primeira rotina nova em área livre desde os dois
-travamentos** (Core 3.2 e Core 4.5). Ela é alcançada por `bl` e tem
-`push`/`pop` próprios — dona do seu quadro. Passou no `check_pilha.py`,
-no `check_branch_targets.py`, na desmontagem de volta, **e no aparelho**.
-
-Isso destrava o resto da Tocando Agora: as três linhas de texto e o
-reposicionamento vão precisar do mesmo tipo de rotina.
-
-### O layout decidido para a Tocando Agora
-
-`marte_tocando_agora` com a luminância invertida — fundo preto, texto e
-ícones brancos, azul igual. Capa de 50×50 à **esquerda**, três linhas de
-texto à direita (rolam quando não cabem). **Sem barra de volume** por
-enquanto.
-
-A moldura da capa pode existir **vazia** antes da capa funcionar.
-
-> **Descoberta:** `marte_nanoclone.png` está em 128×160 — o Marte já
-> adaptou o **menu** à nossa tela. Mas `marte_tocando_agora.png` está em
-> 176×132, a resolução do nano. **A tela de música nunca foi adaptada.**
-> Ver `docs/TOCANDO_AGORA.md`.
-
-### Aberto
+### As versões que existem
 
 | | |
 |---|---|
-| título mostra o nome do arquivo | ABERTO. `r3 = 2` foi **refutado** — reinicia o aparelho: `docs/TOCANDO_AGORA.md` §7 |
-| **Bluetooth não funciona** | ⚠️ **REGRESSÃO NOSSA.** De fábrica funciona inteiro. Não está na região das telas do BT: `docs/BLUETOOTH_REINICIA.md` |
-| capa do álbum | APIC, buffer do JPEG e redimensionamento: **nenhum medido** |
-| Pastas | só volta depois de entrar numa pasta |
+| `release/OpenPod-Core-5.7-Public-Beta-12/` | **a boa.** Extras abre, música toca |
+| `release/OpenPod-Core-5.7-Public-Beta-13/` | um teste, não uma versão |
+| `release/OpenPod-Fabrica/` | o firmware de fábrica, para comparar |
+
+### O que a Beta 12 entrega
+
+listas de 9 linhas · Bluetooth e Hora e data com linha de 16 px ·
+tempos em `mm:ss` · contador `7 - 152` · fundo preto na Tocando Agora ·
+bateria prateada com miolo verde · Extras com seis itens
+
+### A pergunta que trava tudo
+
+A **Beta 10** aplicou um conserto que passou em **toda** verificação
+estática disponível — desmontagem instrução a instrução, codificação
+dos saltos conferida bit a bit, tabelas e pools intactos, área de
+destino comprovadamente livre, `check_branch_targets` aprovado.
+
+**Quebrou os seis itens do Extras.** A causa é desconhecida.
+
+A **Beta 13** isola a variável: é a Beta 12 com **o mesmo salto** da
+Beta 10, mas a rotina de destino faz *exatamente* o que a cauda
+original fazia.
+
+```text
+tudo funciona  ->  o salto e a área livre estão bons;
+                   o erro estava na lógica
+nada funciona  ->  o problema é o salto em si, e isso derruba uma
+                   premissa usada em TODAS as rotinas de área livre
+```
+
+**Enquanto essa pergunta não for respondida, não mexer no despacho do
+Extras.**
+
+### Aberto
+
+| | onde | estado |
+|---|---|---|
+| Bluetooth reinicia | despacho do Extras | **causa conhecida**: `docs/EXTRAS_INDICE.md` |
+| Imagem e Livro sem biblioteca | despacho do Extras | **mesma causa** |
+| Pastas só volta depois de entrar | Extras | aberto, duas tentativas refutadas |
+| título mostra o nome do arquivo | tela de música | `r3=2` refutado — reinicia. Ler o construtor `0x00D6DB3C` antes de tentar outro valor |
+| ícone do BT sobre "OpenPod" | faixa superior | **decisão de projeto**: o texto tem 52 px, o vão tem 23. Não cabe |
+| tempo restante `-3:55` | tela de música | retirado na Beta 12 — era suspeito de travar a música |
+
+### Três lições que custaram caro
+
+1. **Varredura por forma sempre perde alguém e não avisa.** Bateria: 4
+   de 7 escritores. Altura de linha: 1 de 6 sítios. Varrer por
+   **significado** — desmontar e procurar o padrão.
+2. **Verificação estática não basta neste firmware.** A Beta 10 provou.
+3. **Conclusão larga de teste estreito.** A Beta 9 reverteu "a região do
+   Bluetooth" — que continha seis páginas diferentes — e eu concluí "não
+   é nosso". Era.
 
 
 ## 1. Onde o aparelho está
