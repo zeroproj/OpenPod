@@ -1,0 +1,56 @@
+BETA 10 — o Bluetooth
+======================
+
+UMA mudanca em relacao a Beta 8: o Extras passa a abrir o Bluetooth
+com os mesmos argumentos que a tela inicial de fabrica usa.
+
+Na tela Informacoes:  OpenPod 5.7 B10
+(abreviado porque "Beta 10" por extenso da 117 px e o corte e 113)
+
+
+O QUE OLHAR
+------------
+
+  Extras  ->  Bluetooth
+
+  a) ABRE e funciona -- pareia, conecta
+     -> resolvido.
+
+  b) abre mas alguma opcao nao funciona
+     -> me diga QUAL. O conserto acertou a abertura; o que falhar
+        depois e outro problema.
+
+  c) continua reiniciando
+     -> os argumentos nao eram (ou nao eram so) a causa. Me diga, e
+        eu volto a investigar com esse dado.
+
+
+CONFIRA TAMBEM QUE NADA MAIS QUEBROU
+-------------------------------------
+
+Os outros cinco itens do Extras passam pelo mesmo trecho de codigo,
+desviando antes da parte nova. Devem estar iguais:
+
+    Gravacao        Radio        Livro digital
+    Imagem          Pastas
+
+Se algum deles parou de abrir, o desvio esta errado e eu conserto.
+
+
+O QUE MUDOU POR DENTRO
+-----------------------
+
+De fabrica a pagina 35 (Bluetooth) e aberta com r1=2 e r2=6, onde 6 e
+o indice do item na tela inicial. O nosso despacho passava r2=0 e r1
+vindo da mensagem.
+
+Levantei os doze itens da home de fabrica: r1 e sempre 2, e r2 e o
+indice. Esse mesmo argumento ja quebrou o Configurar nas Core 4.8/4.9.
+
+26 bytes, um setor.
+
+
+COMO VOLTAR
+------------
+
+Grave o OpenPod_Beta8.up.
