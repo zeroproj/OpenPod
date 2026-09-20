@@ -1,0 +1,41 @@
+BETA 11 — musica estavel + Bluetooth
+=====================================
+
+Na tela Informacoes:  OpenPod 5.7 B11
+
+DUAS MUDANCAS em relacao a Beta 8:
+
+  TIRADO   o tempo restante (-3:55). Volta a mostrar a duracao
+           total (04:02), como era na Beta 5.
+  POSTO    o conserto do Bluetooth: o Extras passa a abrir a
+           pagina 35 com os argumentos da fabrica.
+
+
+O QUE OLHAR — nesta ordem
+--------------------------
+
+1. MUSICA. Deixe uma musica tocando UM MINUTO INTEIRO, sem mexer.
+
+   nao travou  -> a rotina do tempo restante era a causa. Eu a
+                  reescrevo de outro jeito, ou desisto dela.
+   travou      -> a causa e outra, e o proximo suspeito e o
+                  patch de mm:ss da Beta 5. Me diga, e eu desfaco
+                  aquele tambem.
+
+2. EXTRAS -> BLUETOOTH. Abre? Funciona?
+
+3. Os outros cinco itens do Extras continuam abrindo?
+   Gravacao, Radio, Livro digital, Imagem, Pastas.
+
+
+O QUE CONTINUA DA BETA 8
+-------------------------
+
+listas de 9 linhas · Bluetooth e Hora e data com linha de 16 px ·
+tempos em mm:ss · contador "7 - 152" · fundo preto na Tocando Agora
+
+
+COMO VOLTAR
+------------
+
+Grave o OpenPod_Beta8.up, se ainda tiver.
