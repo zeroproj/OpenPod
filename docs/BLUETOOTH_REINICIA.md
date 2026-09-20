@@ -79,3 +79,67 @@ atual está apertada entre saltos.
 ## Estado
 
 **Causa confirmada por leitura. Conserto não escrito, não testado.**
+
+---
+
+## O conserto dos argumentos FALHOU — e eu não sei por quê
+
+> 2026-09-20. Gravado nas Betas 10 e 11. **Quebrou os seis itens do
+> Extras** — nada abre, o aparelho fica preso na tela. Retirado na
+> Beta 12.
+
+### O que eu escrevi
+
+Os 4 bytes de `movs r2,#0 ; ldrh r1,[r4,#0xa]` em `0x00DA6230` viraram
+um `b.w` para uma rotina de 22 bytes em `0x00DA6112`:
+
+```asm
+movs r2, #0
+ldrh r1, [r4, #0xa]
+cmp  r5, #4
+bne  sai
+movs r1, #2
+movs r2, #6
+sai:
+ldrh r0, [r4, #8]
+pop.w {r4,r5,r6,r7,r8,lr}
+b.w  0xd0dae0
+```
+
+### O que eu conferi, e que estava certo
+
+| | |
+|---|---|
+| a desmontagem da rotina | instrução a instrução, igual ao pretendido |
+| o `b.w` da cauda | capstone lê `b.w #0xda6112`, alcance folgado |
+| a área de destino | só continha a string morta `"OpenPod Core 3.3"`, terminada antes de `0x00DA6112`. **Nenhum ponteiro e nenhum salto** apontavam para lá |
+| as três tabelas | `A`, `B`, `C` byte a byte iguais às da Beta 8 |
+| os três pools | `0x00DA6248`, `0x00DA624C`, `0x00DA6250` inalterados |
+| `check_branch_targets` | APROVADO |
+| o diff | **só os 4 bytes da cauda** mudaram naquela região |
+
+E mesmo assim não funciona.
+
+### O que eu NÃO conferi, e devia
+
+**`check_pilha.py` reportou 0 ganchos.** Ele procura saltos *do
+firmware* para a área livre; o meu vai de área livre para área livre.
+**Ele nunca verificou esta rotina**, e eu registrei isso como ressalva
+em vez de tratar como lacuna.
+
+### Hipóteses para a próxima tentativa
+
+1. **`r5` não vale o índice naquele ponto em todos os caminhos.** O
+   código original lê `r5` em `0x00DA622E`, então ele vale ali — mas
+   pode não valer depois do `blx r3` em todos os itens.
+2. **O `b.w` para trás dentro da área livre** tem algum efeito que eu
+   não modelei — alinhamento, ou a região não ser executável do jeito
+   que presumo.
+3. **`r1=2, r2=6` não é o que a página 35 espera** quando chamada com
+   `r0` vindo da mensagem em vez do valor que a home usa.
+
+### Regra que fica
+
+**Não reescrever isto sem antes provar, por diagnóstico isolado, que
+uma rotina alcançada por `b.w` a partir da área livre executa.** Foi o
+único elo que eu nunca verifiquei, e é o mais provável.
