@@ -143,3 +143,20 @@ em vez de tratar como lacuna.
 **Não reescrever isto sem antes provar, por diagnóstico isolado, que
 uma rotina alcançada por `b.w` a partir da área livre executa.** Foi o
 único elo que eu nunca verifiquei, e é o mais provável.
+
+---
+
+## RESPOSTA DA BETA 13 — 2026-09-21
+
+A Beta 13 (mesmo salto, destino = cauda original, sem lógica) **funciona
+nos seis itens** — relato do mantenedor no aparelho. Portanto:
+
+- **Hipótese 2 REFUTADA.** O `b.w` para a área livre executa, e a rotina
+  de destino roda e retorna corretamente.
+- **A causa da Beta 10 era a lógica adicionada** (hipóteses 1/3): o
+  `cmp r5,#4` com `r5` possivelmente corrompido após o `blx r3`, ou os
+  argumentos `r1=2,r2=6` aplicados a páginas que não os esperam.
+
+O conserto definitivo **não usa `r5` nem mexe em `r1`/`r2` na cauda**:
+reescreve `[r4,#0xc]` **antes** da preparação (`docs/EXTRAS_INDICE.md`),
+valendo para os dois caminhos. Liberado para escrita.

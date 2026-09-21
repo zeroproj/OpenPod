@@ -7,6 +7,53 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-21 — Beta 14: o Extras passa o índice certo
+
+### A resposta da Beta 13 (de manhã)
+
+O mantenedor relatou na **Beta 13**: os seis itens do Extras **abrem**
+(Livro abre e escaneia, Imagem abre vazia, BT abre e ativa). Resultado
+**(a)**: o salto e a área livre estão bons; o erro da Beta 10 estava na
+**lógica** (`cmp r5,#4` após o `blx r3`, com `r5` possivelmente
+corrompido). Hipótese "o salto não executa" **refutada no hardware**.
+
+Relato de campo registrado em `docs/EXTRAS_INDICE.md`: Livro escaneou e
+travou a navegação (padrão da 4.0 — origem errada gravada, guarda
+`msg->page == página corrente` falha para sempre; só reboot destrava);
+após reboot os arquivos apareceram (o banco persiste no cartão); Imagem
+sem varredura → "nenhuma imagem"; BT reinicia **nas opções**, ativa.
+
+### O conserto — `tools/patch_extras_indice.py`
+
+Dois pontos, um campo (`[r4,#0xc]` da mensagem), tabela `[2,3,4,5,6,0]`:
+
+1. **Inserção em `0x00DA6206`** → `b.w 0x00DA6114`; a rotina reproduz os
+   bytes e reescreve o campo **antes** de qualquer preparação. Sem `cmp`,
+   sem `r5` depois de `blx`, sem tocar `r1`.
+2. **Cauda em `0x00DA6230`**: `movs r2,#0` → `ldrh r2,[r4,#0xc]`. Dois
+   bytes, in-place.
+
+Descobertas da escrita:
+
+- A cauda serve Gravação, Rádio (a preparação **retorna**), Bluetooth e
+  Pastas; o trampolim `0x00D01036` serve Livro e Imagem. Por isso o
+  conserto precisa dos **dois** pontos — a doc original só citava a
+  inserção.
+- `r1` **não é propagado** por `0x00D0DAE0` (só aparece no ramo de erro).
+  O `movs r1,#2` da Beta 10 era inócuo e inútil.
+- Nada entre a inserção e as preparações lê `[r4,#0xc]` esperando o
+  índice nosso: as tabelas A/B usam `r5`, preservado.
+
+**28 bytes, um setor (`0x1A6000`).** `check_branch_targets` e
+`check_pilha` APROVADOS (baseline = Beta 12). Carimbo `OpenPod 5.7 B14`
+(97 px). CRC do pacote `0xE845`, 47 setores.
+
+- `firmware/WORKING/GN438_beta14_carimbado.bin`
+- `release/OpenPod-Core-5.7-Public-Beta-14/` (com TESTAR.txt)
+- **Aguardando teste no aparelho.**
+
+---
+
 ## 2026-09-20 — Beta 12, Beta 13, e a entrega do projeto
 
 ### O saldo de dois dias

@@ -10,9 +10,11 @@
 
 ## ONDE PARAMOS — 2026-09-20
 
-**No aparelho:** Beta 12, funcionando.
+**No aparelho:** Beta 13, funcionando (= Beta 12 + salto no-op).
 **No ar (GitHub Pages):** Beta 7. Nada publicado depois disso.
-**Pronta para testar:** Beta 13 — ver §"a pergunta que trava tudo".
+**Pronta para testar:** **Beta 14** — o conserto do índice do Extras,
+escrito e validado estaticamente em 2026-09-21. Ver
+`release/OpenPod-Core-5.7-Public-Beta-14/TESTAR.txt`.
 
 ### As versões que existem
 
@@ -28,28 +30,21 @@ listas de 9 linhas · Bluetooth e Hora e data com linha de 16 px ·
 tempos em `mm:ss` · contador `7 - 152` · fundo preto na Tocando Agora ·
 bateria prateada com miolo verde · Extras com seis itens
 
-### A pergunta que trava tudo
+### A pergunta que trava tudo — RESPONDIDA 2026-09-21
 
 A **Beta 10** aplicou um conserto que passou em **toda** verificação
-estática disponível — desmontagem instrução a instrução, codificação
-dos saltos conferida bit a bit, tabelas e pools intactos, área de
-destino comprovadamente livre, `check_branch_targets` aprovado.
+estática disponível — e quebrou os seis itens do Extras.
 
-**Quebrou os seis itens do Extras.** A causa é desconhecida.
+A **Beta 13** isolou a variável: mesmo salto, destino fazendo exatamente
+o que a cauda original fazia. **Resultado no aparelho: os seis itens
+abrem** (relato do mantenedor: Livro abre e escaneia, Imagem abre vazia,
+BT abre e ativa). **Resultado (a): o salto e a área livre estão bons;
+o erro da Beta 10 estava na lógica** (`cmp r5,#4` / `r1=2,r2=6`).
 
-A **Beta 13** isola a variável: é a Beta 12 com **o mesmo salto** da
-Beta 10, mas a rotina de destino faz *exatamente* o que a cauda
-original fazia.
-
-```text
-tudo funciona  ->  o salto e a área livre estão bons;
-                   o erro estava na lógica
-nada funciona  ->  o problema é o salto em si, e isso derruba uma
-                   premissa usada em TODAS as rotinas de área livre
-```
-
-**Enquanto essa pergunta não for respondida, não mexer no despacho do
-Extras.**
+**O conserto do índice do Extras (`docs/EXTRAS_INDICE.md`) está
+LIBERADO para escrita.** Ele não usa `r5` nem toca `r1`/`r2` na cauda:
+reescreve `[r4,#0xc]` antes da preparação, valendo para os dois
+caminhos de abertura.
 
 ### Aberto
 

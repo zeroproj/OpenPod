@@ -1,7 +1,8 @@
 # O índice do Extras — um bug, quatro sintomas
 
 > Levantado em 2026-09-20 por leitura do firmware de fábrica.
-> **Causa confirmada. Conserto NÃO escrito.**
+> **Causa confirmada. Conserto ESCRITO na Beta 14 (2026-09-21),
+> aguardando teste no aparelho.**
 
 ---
 
@@ -74,7 +75,7 @@ O conserto alcançava metade dos itens. E, por motivo ainda desconhecido,
 
 ---
 
-## O conserto correto — NÃO ESCRITO
+## O conserto correto — ESCRITO na Beta 14
 
 Reescrever o campo `[r4, #0xc]` da mensagem **antes** de chamar a
 preparação, usando uma tabela de 6 bytes na área livre:
@@ -89,6 +90,50 @@ strh r3, [r4, #0xc]
 Assim vale para os **dois** caminhos — o que passa pela cauda e o que
 salta de `0x00D01036`. É menor e mais central que o da Beta 10.
 
-> ⚠️ **Não escrever isto antes de saber por que a Beta 10 falhou.** É o
-> mesmo despacho, a mesma classe de alteração. A **Beta 13** responde
-> essa pergunta.
+### Implementação (Beta 14, `tools/patch_extras_indice.py`)
+
+Dois pontos, um campo:
+
+1. **Inserção em `0x00DA6206`** (4 bytes: `mov r5,r2 ; movs r0,#0x53`
+   viram `b.w 0x00DA6114`). A rotina na área livre reproduz os dois
+   bytes e faz a reescrita: `ldr r3,[pc,#8] ; ldrb r3,[r3,r5] ;
+   strh r3,[r4,#0xc] ; b.w 0x00DA620A`. Tabela `[2,3,4,5,6,0]` em
+   `0x00DA6124`.
+2. **Cauda em `0x00DA6230`**: `movs r2,#0` → `ldrh r2,[r4,#0xc]`.
+   Dois bytes, in-place, sem salto.
+
+Detalhes verificados na escrita:
+
+- A cauda serve Gravação, Rádio (a preparação **retorna**), Bluetooth
+  e Pastas. O trampolim serve Livro e Imagem. Os dois caminhos leem o
+  campo corrigido.
+- Nada entre `0x00DA6206` e as preparações lê `[r4,#0xc]` esperando o
+  índice nosso: as tabelas A/B usam `r5`, que fica intacto.
+- `r1` **não é propagado** pela primitiva `0x00D0DAE0` (só aparece no
+  ramo de erro) — por isso o conserto não toca nele. O `movs r1,#2`
+  da Beta 10 era inócuo e inútil.
+- 28 bytes, um único setor (`0x1A6000`). `check_branch_targets` e
+  `check_pilha` APROVADOS (baseline = Beta 12).
+
+> ✅ **Beta 13 respondida em 2026-09-21: resultado (a).** Os seis itens
+> abrem na B13 (relato do mantenedor: Livro abre e escaneia, Imagem abre
+> vazia, BT abre e ativa). O salto e a área livre estão bons; o erro da
+> Beta 10 estava na **lógica** (`cmp r5,#4` / `r1=2,r2=6`). **Conserto
+> da tabela LIBERADO para escrita.**
+
+---
+
+## Confirmação em campo — Beta 12, 2026-09-21
+
+Relato do mantenedor, sintoma por sintoma:
+
+| observação | explicação |
+|---|---|
+| Livro digital, 1ª entrada: **fez a checagem e travou tudo** (não saía do Extras, não entrava em nada) | biblioteca vazia → ramo da varredura (`0x9A`) disparou; origem errada gravada → guarda `msg->page == página corrente` falha para sempre (mesmo padrão da 4.0). **Só reboot destrava** |
+| Livro digital, após reboot: **arquivos apareceram** | o banco da varredura persiste no cartão; 2ª entrada abre direto com dados |
+| Imagem: **"não tem nenhuma imagem"** | a varredura nunca disparou → banco vazio. Agravante: na home 5.x não há outro caminho para a Imagem — só o conserto destrava |
+| Bluetooth: **reinicia ao entrar nas opções, mas ativa** | refina o sintoma documentado ("reinicia ao entrar"): ativar funciona, o crash é nas **opções** internas |
+
+Todos os quatro são o mesmo bug do `sub`. O conserto da tabela também
+resolve o travamento: com os argumentos certos, a origem gravada passa
+a ser a correta.
