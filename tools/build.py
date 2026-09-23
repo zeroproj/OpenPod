@@ -148,6 +148,7 @@ MAPA = {
     # 0x001A5000..0x001A6000 e reservado: o `patch_titulos` exige esses
     # 4 KiB virgens. O que nao cabe antes vai para depois dele.
     "make_extras_menu.py":     (0x001A6000, 0x0400),
+    "patch_faixa_degrade.py": (0x001A6000, 0x0040),
 }
 AREA_INI, AREA_FIM = 0x001A3040, 0x001A8000
 
@@ -296,9 +297,22 @@ RELOAD_ALPHA = [
     ("patch_nome_faixa.py", ["--em", "0x1A3040"], "'OpenPod' na barra (centro)"),
 ]
 
+RELOAD_ALPHA_0_2 = RELOAD_ALPHA + [
+    # 4. Degradê na barra principal (topo RGB 70,75,90 -> base 30,34,40, vertical)
+    ("patch_faixa_degrade.py", ["--em", "0x1A6000"], "degradê na barra principal"),
+    # 5. Bateria — casca prata + miolo verde (3 patches, uma ideia só)
+    ("patch_bateria_casca.py", [], "bateria casca prata"),
+    ("patch_bateria_verde.py", [], "bateria nível verde"),
+    ("patch_bateria_miolo.py", [], "bateria miolo verde"),
+    # 6. Textos corrigidos em pt-BR (relocate + aplica)
+    ("relocate_lang_table.py", [], "tabela pt para área livre"),
+    ("aplica_textos.py",       ["--em", "0x1A3D00"], "textos revisados pt-BR"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
+    "reload_alpha_0.2": RELOAD_ALPHA_0_2,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.

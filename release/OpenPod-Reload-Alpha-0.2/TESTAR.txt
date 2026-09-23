@@ -1,0 +1,24 @@
+OpenPod Reload Alpha 0.2 — TESTAR
+Base: GN438_original.bin sha b7cd5eb952be5328cbaa926099cf8d88168633c1fab6d0f31f3a283c9e24b36f
+Imagem: GN438_reload_alpha_v002.bin sha 24c0cd4920b35795d884263591af81d10f55caef3a6f8ffc2c1da8bd0813b479 (carimbada 45F5)
+Up: OpenPod_Reload_Alpha_0.2.up 1732864B CRC 45F5
+
+RECEITA reload_alpha_0.2 (11 passos):
+  1 update_sd + 3 fundos + barra OpenPod (0.1)
+  6 faixa_degrade (0x0012171A -> 0x1A6000, topo 0x4B42 base 0x0519 dir vertical)
+  7-9 bateria_casca/prata + verde + miolo
+  10-11 relocate_lang_table + aplica_textos (173 textos)
+
+O QUE TESTAR
+  [ ] Barra com degradê sutil (claro em cima, escuro em baixo)
+  [ ] Bateria: casca prateada, preenchimento verde-limão (não branco/azulado)
+  [ ] Bateria fraca ainda vermelha
+  [ ] Textos: Configurar, Pastas, Tocando agora, Informações etc sem corte
+  [ ] Textos longos cabem em 113px (ex: "Atualizar por SD", "Nenhuma música encontrada")
+  [ ] Informações: "Reload Alpha 0.2"
+  [ ] Fundo preto e update por SD ainda OK (regressão)
+
+INSTALAÇÃO
+  Cabo (1ª vez) ou SD (update.up) → Configurar → Atualizar por SD
+
+RECOVERY: USB → VOLUME ↓ + RESET → 301a:2800

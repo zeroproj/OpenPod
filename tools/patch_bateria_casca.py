@@ -66,9 +66,18 @@ def movw(rd, valor):
 
 
 def main():
-    if len(sys.argv) != 3:
-        sys.exit("uso: patch_bateria_casca.py <entrada.bin> <saida.bin>")
-    img = bytearray(open(sys.argv[1], "rb").read())
+    import argparse
+    ap = argparse.ArgumentParser(add_help=False)
+    ap.add_argument("--in", dest="src")
+    ap.add_argument("--out", dest="dst")
+    ap.add_argument("pos_src", nargs="?")
+    ap.add_argument("pos_dst", nargs="?")
+    a,_ = ap.parse_known_args()
+    src = a.src or a.pos_src
+    dst = a.dst or a.pos_dst
+    if not src or not dst:
+        sys.exit("uso: patch_bateria_casca.py <entrada.bin> <saida.bin> ou --in/--out")
+    img = bytearray(open(src, "rb").read())
     if len(img) != 2 * 1024 * 1024:
         sys.exit("erro: esperava 2 MiB")
     off = SITIO - BASE_XIP
@@ -80,10 +89,10 @@ def main():
     novo = movw(1, cor) + bytes.fromhex("0022") + bytes.fromhex("00bf")
     assert len(novo) == 8
     img[off:off + 8] = novo
-    open(sys.argv[2], "wb").write(img)
+    open(dst, "wb").write(img)
     print(f"  {SITIO:#010x}  bl getter  ->  movw r1, #{cor:#06x}")
     print(f"     a casca passa a ser RGB{MARTE} — o prateado do Marte")
-    print(f"\n  escrito: {sys.argv[2]}")
+    print(f"\n  escrito: {dst}")
 
 
 if __name__ == "__main__":

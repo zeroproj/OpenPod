@@ -57,9 +57,18 @@ def movw(rd, valor):
 
 
 def main():
-    if len(sys.argv) != 3:
-        sys.exit("uso: patch_bateria_verde.py <entrada.bin> <saida.bin>")
-    img = bytearray(open(sys.argv[1], "rb").read())
+    import argparse
+    ap = argparse.ArgumentParser(add_help=False)
+    ap.add_argument("--in", dest="src")
+    ap.add_argument("--out", dest="dst")
+    ap.add_argument("pos_src", nargs="?")
+    ap.add_argument("pos_dst", nargs="?")
+    a,_ = ap.parse_known_args()
+    src = a.src or a.pos_src
+    dst = a.dst or a.pos_dst
+    if not src or not dst:
+        sys.exit("uso: patch_bateria_verde.py <entrada.bin> <saida.bin> ou --in/--out")
+    img = bytearray(open(src, "rb").read())
     if len(img) != 2 * 1024 * 1024:
         sys.exit("erro: esperava 2 MiB")
     off = SITIO - BASE_XIP
@@ -70,7 +79,7 @@ def main():
     cor = to565(*MARTE)
     novo = movw(1, pre_inverte(cor))
     img[off:off + 4] = novo
-    open(sys.argv[2], "wb").write(img)
+    open(dst, "wb").write(img)
 
     def mostra(v):
         r = ((v >> 11) & 0x1F) * 255 // 31
@@ -82,7 +91,7 @@ def main():
     print(f"  {SITIO:#010x}  movw r1, #{antiga ^ 0:#06x} -> #{pre_inverte(cor):#06x}")
     print(f"     antes  {mostra(antiga)}   (verde azulado de fabrica)")
     print(f"     agora  {mostra(cor)}   (o verde do Marte)")
-    print(f"\n  escrito: {sys.argv[2]}")
+    print(f"\n  escrito: {dst}")
 
 
 if __name__ == "__main__":

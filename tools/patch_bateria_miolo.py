@@ -63,9 +63,18 @@ def movw(rd, valor):
 
 
 def main():
-    if len(sys.argv) != 3:
-        sys.exit("uso: patch_bateria_miolo.py <entrada.bin> <saida.bin>")
-    img = bytearray(open(sys.argv[1], "rb").read())
+    import argparse
+    ap = argparse.ArgumentParser(add_help=False)
+    ap.add_argument("--in", dest="src")
+    ap.add_argument("--out", dest="dst")
+    ap.add_argument("pos_src", nargs="?")
+    ap.add_argument("pos_dst", nargs="?")
+    a,_ = ap.parse_known_args()
+    src = a.src or a.pos_src
+    dst = a.dst or a.pos_dst
+    if not src or not dst:
+        sys.exit("uso: patch_bateria_miolo.py <entrada.bin> <saida.bin> ou --in/--out")
+    img = bytearray(open(src, "rb").read())
     if len(img) != 2 * 1024 * 1024:
         sys.exit("erro: esperava 2 MiB")
     cor = pre_inverte(to565(*MARTE_MIOLO))
@@ -84,9 +93,9 @@ def main():
         img[achou:achou + 4] = novo
         print(f"  {achou + BASE_XIP:#010x}  {texto} -> movw r1, #{cor:#06x}")
 
-    open(sys.argv[2], "wb").write(img)
+    open(dst, "wb").write(img)
     print(f"     RGB{MARTE_MIOLO} — o verde-limao do miolo do Marte")
-    print(f"\n  escrito: {sys.argv[2]}")
+    print(f"\n  escrito: {dst}")
 
 
 if __name__ == "__main__":
