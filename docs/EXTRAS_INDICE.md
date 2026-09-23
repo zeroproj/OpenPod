@@ -75,7 +75,7 @@ O conserto alcançava metade dos itens. E, por motivo ainda desconhecido,
 
 ---
 
-## O conserto correto — ESCRITO na Beta 14
+## O conserto correto — ESCRITO na Beta 14, INSUFICIENTE no aparelho
 
 Reescrever o campo `[r4, #0xc]` da mensagem **antes** de chamar a
 preparação, usando uma tabela de 6 bytes na área livre:
@@ -114,6 +114,30 @@ Detalhes verificados na escrita:
   da Beta 10 era inócuo e inútil.
 - 28 bytes, um único setor (`0x1A6000`). `check_branch_targets` e
   `check_pilha` APROVADOS (baseline = Beta 12).
+
+### Resultado no aparelho — Beta 14 testada em 2026-09-21
+
+**REPROVADA nos sintomas principais:**
+
+| item | resultado na B14 |
+|---|---|
+| Livro digital | **mesmo bug**: escaneia e trava a navegação |
+| Imagem | **"nenhuma imagem encontrada"**: não escaneia |
+| Bluetooth | **qualquer opção reinicia** |
+| Gravação | normal |
+| Rádio | normal |
+| Pastas | **pareceu melhorar** (voltar funcionando) |
+
+**Conclusão:** o `sub` não é a causa única. O campo `[r4,#0xc]` ter
+algum efeito (Pastas melhorou) confirma que a reescrita acontece, mas
+Livro/Imagem/Bluetooth dependem de **outro campo** da mensagem. A
+hipótese atual é a **origem** (`r0`): nosso Extras manda `r0 = 0x53`,
+mas as páginas podem estar guardando isso como se tivéssemos vindo da
+home, quando a página corrente real é o Extras — reproduzindo o padrão
+da Core 4.0 (`origem FIXA = home`).
+
+**Próximo passo:** mapear o ID real da página do Extras e corrigir
+`r0` na mensagem antes de qualquer Beta 15.
 
 > ✅ **Beta 13 respondida em 2026-09-21: resultado (a).** Os seis itens
 > abrem na B13 (relato do mantenedor: Livro abre e escaneia, Imagem abre

@@ -1,0 +1,27 @@
+OpenPod Reload Alpha 0.1 — TESTAR
+Base: GN438_original.bin sha b7cd5eb952be5328cbaa926099cf8d88168633c1fab6d0f31f3a283c9e24b36f
+Imagem: GN438_reload_alpha_v001.bin sha 6e1bddb20501d08ad63da40666f38f44632552b9f755cf64c52d97509903be33 (carimbada 1EB0)
+Pacote: OpenPod_Reload_Alpha_0.1.up sha 1EB0 / 1724672 B
+
+RECEITA (tools/build.py --receita reload_alpha):
+  1. patch_update_sd       — Configurar → Atualizar por SD
+  2. patch_fundo_display    — fundo global preto (0x001567F6 FF→00)
+  3. patch_fundo_abertura   — fundo abertura preto
+  4. patch_fundo_preto      — Tocando Agora preto
+  5. patch_nome_faixa       — "OpenPod" na barra
+  6. patch_versao           — "Reload Alpha 0.1" em Informações
+
+O QUE TESTAR
+  [ ] Fundo preto em todas as telas (sem fresta branca)
+  [ ] Abertura: logo sobre preto
+  [ ] Tocando Agora: sem swoosh azul
+  [ ] Barra: Data | OpenPod | Bateria
+  [ ] Informações: mostra "Reload Alpha 0.1"
+  [ ] Configurar → Atualizar por SD → Sim reinicia e lê update.up
+  [ ] Depois apague update.up do cartão
+
+INSTALAÇÃO
+  1ª vez: cabo via recovery/ (o de fábrica não tem SD)
+  Depois: SD com update.up → Configurar → Atualizar por SD
+
+RECOVERY: USB → segure VOLUME ↓ → RESET → 301a:2800 (ver docs/MODO_DOWNLOAD.md)

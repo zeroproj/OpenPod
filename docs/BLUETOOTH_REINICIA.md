@@ -157,6 +157,8 @@ nos seis itens** — relato do mantenedor no aparelho. Portanto:
   `cmp r5,#4` com `r5` possivelmente corrompido após o `blx r3`, ou os
   argumentos `r1=2,r2=6` aplicados a páginas que não os esperam.
 
-O conserto definitivo **não usa `r5` nem mexe em `r1`/`r2` na cauda**:
-reescreve `[r4,#0xc]` **antes** da preparação (`docs/EXTRAS_INDICE.md`),
-valendo para os dois caminhos. Liberado para escrita.
+O conserto do `sub` (`docs/EXTRAS_INDICE.md`) foi escrito e testado na
+Beta 14, mas se mostrou **insuficiente**: Bluetooth continuou
+reiniciando nas opções. A hipótese atual é que, além do `sub`, a
+**origem** (`r0`) da mensagem do Extras também está errada. Investigação
+em aberto; voltar para Beta 12 como uso diário.

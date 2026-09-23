@@ -50,7 +50,23 @@ Descobertas da escrita:
 
 - `firmware/WORKING/GN438_beta14_carimbado.bin`
 - `release/OpenPod-Core-5.7-Public-Beta-14/` (com TESTAR.txt)
-- **Aguardando teste no aparelho.**
+
+### Resultado do teste no aparelho
+
+**REPROVADA nos sintomas principais (2026-09-21):**
+
+| item | resultado |
+|---|---|
+| Livro digital | escaneia e trava a navegação — **mesmo bug** |
+| Imagem | **"nenhuma imagem encontrada"** |
+| Bluetooth | **qualquer opção reinicia** |
+| Gravação | normal |
+| Rádio | normal |
+| Pastas | **pareceu melhorar** |
+
+O `sub` não é a causa única. A hipótese atual é que a **origem** (`r0`)
+da mensagem do Extras também está errada. Voltar para Beta 12 como uso
+diário; investigar antes de Beta 15.
 
 ---
 

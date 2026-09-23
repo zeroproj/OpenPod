@@ -271,8 +271,34 @@ CORE_1_0 = [
 # NUNCA empacotado com algo que nao foi pedido.
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# OPENPOD RELOAD ALPHA — reset limpo, 3 features só.
+#
+# Pedido do mantenedor 2026-09-23: reset no ORIGINAL chamado
+# "OpenPod Reload Alpha". Primeira versão entrega:
+#   - Update via SD
+#   - Fundo preto em todas as telas
+#   - Barra principal (Data | OpenPod | Bateria)
+#
+# Filosofia: mínimo viável, sem carregar acoplamento da linha Core.
+# Cada patch é independente (nenhum depende do outro).
+# ---------------------------------------------------------------------------
+RELOAD_ALPHA = [
+    # 1. Update via SD — o aparelho passa a se atualizar pelo cartão
+    ("patch_update_sd.py",     [], "Update via SD (Configurar → Atualizar por SD)"),
+    # 2. Fundo preto — 3 patches, uma ideia só
+    ("patch_fundo_display.py", [], "fundo do display preto (global)"),
+    ("patch_fundo_abertura.py",[], "fundo da abertura preto"),
+    ("patch_fundo_preto.py",   [], "papel de parede Tocando Agora preto"),
+    # 3. Barra principal — Data | OpenPod | Bateria
+    #    Data e bateria já existem (relógio + ícone de bateria).
+    #    Este patch coloca "OpenPod" no centro, no lugar do ícone de SD.
+    ("patch_nome_faixa.py", ["--em", "0x1A3040"], "'OpenPod' na barra (centro)"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
+    "reload_alpha": RELOAD_ALPHA,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.

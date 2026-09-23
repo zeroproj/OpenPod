@@ -1,21 +1,21 @@
-# OpenPod
+# OpenPod — Reload Alpha
 
 **Site:** https://zeroproj.github.io/OpenPod/ — fonte em `docs/index.html`.
 Para publicar: *Settings → Pages → Source: main, pasta `/docs`*. O `.nojekyll`
 ao lado impede o Jekyll de tentar processar os `.md` da análise.
 
-Transformar o **Iigenai GN-438** — um player YP3/Smartlink de baixo custo
-— num player com a experiência de um iPod, progressivamente, sem
-reescrever o firmware do zero.
+Melhorar o **Iigenai GN-438** — um player YP3/Smartlink de baixo custo
+— mantendo o que já funciona e corrigindo o que incomoda, sem reescrever
+o firmware do zero e sem copiar outro aparelho.
 
-> **Estado em 2026-09-14:** o aparelho está na **OpenPod Core 1.0.1**, a
-> única versão STABLE. A linha 2.x (Saturno, chrome, Marte-paleta,
-> carcaça) foi **removida** neste dia, a pedido do mantenedor: ela
-> acoplava a barra superior a tudo o mais, e mudanças pedidas vinham com
-> carona não pedida.
+> **Estado em 2026-09-23:** **OpenPod Reload Alpha 0.1** — reset limpo no
+> ORIGINAL (`yp3_2.0.43`), 3 mudanças só: fundo preto em todas as telas,
+> barra principal Data · OpenPod · Bateria e atualização por cartão SD.
+> Receita `reload_alpha` em `tools/build.py`. Detalhes em
+> [`docs/RELOAD_ALPHA.md`](docs/RELOAD_ALPHA.md).
 >
-> **A referência é a Core 1.0.1 e o que foi desmontado e entendido do
-> firmware.** Nada de versão anterior serve como base.
+> A linha Core (1.0.1, Saturno, Marte) fica como referência histórica —
+> não é base para a Alpha.
 >
 > Entrada obrigatória: **[`docs/ESTADO_ATUAL.md`](docs/ESTADO_ATUAL.md)**.
 
@@ -34,7 +34,8 @@ reescrever o firmware do zero.
 | voltar o aparelho ao de fábrica | `recovery/VOLTAR_AO_ORIGINAL.md` |
 | como gravar, e o que já custou caro | `docs/PROTOCOLO_GRAVACAO.md` |
 | o firmware por dentro | `docs/FIRMWARE_ANALYSIS.md`, `docs/ARQUITETURA.md` |
-| a referência visual | `docs/PROJETO_MARTE.md`, `docs/OpenPod_Design_System.md` |
+| a proposta da Reload Alpha | `docs/RELOAD_ALPHA.md` |
+| a referência visual anterior | `docs/PROJETO_MARTE.md`, `docs/OpenPod_Design_System.md` |
 
 ---
 
@@ -43,8 +44,9 @@ reescrever o firmware do zero.
 ```
 firmware/
   ORIGINAL/     GN438_original.bin — sagrado, modo 444, sha b7cd5eb9…
-  WORKING/      a cópia de trabalho e a imagem da Core 1.0.1
-  RELEASE/      o único kit publicado: OpenPod Core 1.0.1
+  WORKING/      imagens de trabalho (GN438_reload_alpha_v001.bin)
+  RELEASE/      kits históricos (Core 1.0.1)
+  release/      pacotes publicados (Reload Alpha 0.1)
   VENDOR/       Flashloader SL-DEV oficial da Shenju
   READBACK/     leituras feitas do aparelho
 
@@ -59,9 +61,8 @@ patches/        patches avulsos
 analysis/       varreduras, disassembly, mapas
 extracted/      gráficos, fontes e recursos extraídos
 assets/         a logo do OpenPod e material de referência
-marte/          o estudo NanoClone: paleta, ícones adaptados, mockups
-                — A BASE VISUAL do projeto
-docs/           o entendimento do firmware; `reports/` guarda os longos
+marte/          estudo anterior NanoClone — histórico, não é base da Alpha
+docs/           o entendimento do firmware; `RELOAD_ALPHA.md` é a entrada atual
 ```
 
 ---
@@ -72,12 +73,12 @@ Não é mais uma corrente de patches aplicados à mão. É uma **receita
 declarada**:
 
 ```sh
-python3 tools/build.py --receita core1.0 --saida firmware/WORKING/core101.bin
+python3 tools/build.py --receita reload_alpha --saida firmware/WORKING/GN438_reload_alpha_v001.bin
 python3 tools/build.py --so-lista
 ```
 
-**Existe UMA receita, `core1.0`, de seis passos.** As receitas 2.x foram
-removidas em 2026-09-14 — ver `docs/ESTADO_ATUAL.md` §3.
+**Receita atual: `reload_alpha`, 5 passos** (update SD + 3 fundos + barra).
+A `core1.0` segue existindo como referência. Ver `docs/RELOAD_ALPHA.md`.
 
 O `build.py` confere o sha do ORIGINAL antes de começar, roda cada passo
 num arquivo próprio, impõe um **mapa de endereços da área livre** (cada
@@ -89,7 +90,7 @@ Depois:
 ```sh
 python3 tools/validate_firmware.py <imagem>     # estrutura, CRCs, partições
 python3 tools/gera_up.py --in <imagem> --out <pacote.up>
-python3 tools/make_install_kit.py  --base ... --alvo ...   # kit de setores
+python3 tools/make_install_kit.py  --base firmware/ORIGINAL/GN438_original.bin --alvo <imagem> --versao "OpenPod Reload Alpha 0.1" --saida release/OpenPod-Reload-Alpha-0.1
 ```
 
 ---
@@ -109,10 +110,9 @@ Cada uma tem um preço já pago; estão inteiras em
   por nada — confirmado no aparelho.
 - **Conferência é por releitura do aparelho**, nunca por hash de arquivo
   no PC.
-- **Aparência se decide pela referência, não por gosto.** Sempre o Marte
-  — `marte/mockups/marte_completo.png` e `marte/paleta/nanoclone.json` —
-  ou os próprios objetos do NanoClone em `marte/adaptado/`. A regra e o
-  porquê em [`docs/MARTE_ALVO.md`](docs/MARTE_ALVO.md) §0.
+- **Aparência se decide pelo que melhora o uso, não por gosto.** Na Reload
+  Alpha a referência é o próprio firmware: fundo preto resolve fresta branca,
+  barra Data·OpenPod·Bateria organiza o topo. Sem copiar outro aparelho.
 - **Nada de hipótese apresentada como fato.** Cada afirmação carrega
   classe: CONFIRMADO, PROVÁVEL, HIPÓTESE, DESCONHECIDO.
 
@@ -131,5 +131,6 @@ modo download       301a:2800, na ROM de máscara — sempre recuperável
 
 ## Crédito
 
-A referência visual vem do tema **NanoClone**, de Billy Blair, sob
-CC BY-SA 3.0. Detalhes e obrigações em [`ATRIBUICAO.md`](ATRIBUICAO.md).
+Reload Alpha não copia interface de outro aparelho. O estudo anterior
+NanoClone (Billy Blair, CC BY-SA 3.0) fica como histórico em `marte/` e
+`ATRIBUICAO.md` — não é base da Alpha.

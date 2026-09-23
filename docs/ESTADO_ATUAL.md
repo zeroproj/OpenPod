@@ -10,11 +10,15 @@
 
 ## ONDE PARAMOS — 2026-09-20
 
-**No aparelho:** Beta 13, funcionando (= Beta 12 + salto no-op).
+**No aparelho:** Beta 12, funcionando (a última boa).
 **No ar (GitHub Pages):** Beta 7. Nada publicado depois disso.
-**Pronta para testar:** **Beta 14** — o conserto do índice do Extras,
-escrito e validado estaticamente em 2026-09-21. Ver
-`release/OpenPod-Core-5.7-Public-Beta-14/TESTAR.txt`.
+**Beta 14 — TESTADA E REPROVADA no aparelho (2026-09-21):** o conserto
+ do índice (`sub`) foi insuficiente. Livro continuou travando, Imagem
+ continuou sem achar imagens, Bluetooth continuou reiniciando nas
+ opções. Pastas pareceu melhorar. Ver `docs/EXTRAS_INDICE.md` §
+ "Beta 14 — conserto insuficiente" e `docs/CHANGELOG.md`.
+**Próxima:** investigar a origem (`r0`) da mensagem do Extras antes de
+qualquer nova gravação.
 
 ### As versões que existem
 

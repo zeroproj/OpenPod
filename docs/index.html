@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>OpenPod</title>
-<meta name="description" content="Um iPod dentro de um player de R$ 60. Firmware modificado para o Iigenai GN-438.">
+<title>OpenPod — Reload Alpha</title>
+<meta name="description" content="Firmware melhorado para o Iigenai GN-438. Fundo preto, barra unificada, atualização por SD. Base yp3_2.0.43.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
@@ -112,9 +112,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-of
   box-shadow:0 10px 30px rgba(17,21,27,.16);
 }
 .screen{
-  /* O OpenPod segue o Marte em tudo MENOS a luminancia: fundo preto,
-     texto branco. Nao e escolha estetica -- o painel mostra faixas
-     horizontais sobre fundo claro. Ver docs/MARTE_ALVO.md. */
+  /* Fundo preto global (disp->bg_color = 0x00) — evita fresta branca.
+     Ver docs/ARQUITETURA.md §12 e tools/patch_fundo_display.py */
   width:176px; height:132px; transform:scale(var(--s)); transform-origin:top left;
   background:#000; color:#fff; position:relative;
   font:600 11px/1 var(--body);
@@ -138,7 +137,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-of
 .tile{
   /* Os nove icones sao os DO FIRMWARE: folha INDEXED_8 128x160 em
      0x000CDD50, extraida e remontada em sprite. Ver docs/IMAGENS.md. */
-  aspect-ratio:1/1; background-image:url("data:image/png;base64,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");
+  aspect-ratio:1/1; background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAIAAABt+uBvAAAZa0lEQVR42u2cC7BV1XnH77kHiOIIYlTGGukEkqjtDNYRqyY+pqJDrzATCfGRSCf1jo3xXaClBpn4oAiEXJWBIFxCi6CRx1gfUy5RLESxB4FQQRQLXgaDIY74DGospOP0t/Z/n++ss/bj7HtuO9MZ3fPNmnXW3mff8/3O//vWY69zW1qyj1LfvkcPPuFPTj9z1LeuuqL9xvE/mNh+6w8pqdNCO2e5puUzeOD2kKFfgcIP/v5HN0+ZJpt01ywrMU7Bi2u4sjeYSqecVb5qQt8JK8sdv+o7d7uzWRX38qoJrSMu7r0vp5ZKs/v27SqV9pZKByKjUimV5pfLl7SWBzZxR3Rx0Zix+O/TCUxnxQjjet7VYzSjxgOl3yO/PXJJt0pX6dwlE6zWaUtLbff0OWpAE47cUC7vKJU+bmnJsb0Rvh5gQg7fvPpafDYEwuGjMUCio7jjXby34F9BGkIjExqjE+to7naucbKaVSnfvb5HakIalUZozCQraDa+L2lFicYsqaMgxETHchN3aPhXiB0fjat07ird+5qPQ+bqXkufcTMLCqcgF6Mje7i1tYF2/ExsgPKjTBebcYd8HR3ZfpvRMTRguvDx7js2dy/d+S62YOtvblr74hmLnwVKaeLqmBSApqzh7fl0iJeGOAIuvpGqBmblHWLEnPR15MdaagJKMsrKR752MKGBy/ufHP407Xh+z9vfWbEORi5nR4CcZesoqR3DkQNlb7Xcm6Uj+qALR/6luSdAAaMgvoI05JPFuFsyrdJbBXRQjaGhgnamVw5gKOgX+z8wTLTDqM8NywQIWKn56FQv6WSxSBIJbEdU3tWvXxhc/vfvywHnYXHHzPtnP/BPC5etkFGnhXY/WwXvSgaaS8Aene8+/aahIaBcSlaimbLG4Ziy5svzNkNK17zw5kfGCEBY8gvY4Ynl1yedlIUmy3YPGyZAMnDX5EMnbVk2wAQFcCxZ9WTSaA8Y+YojYH0f6NGNDizQjnnu0tDUbg2ClKeVmEXk8p89b1eW2xfTIkDcMAguG+Z8OnL0W1//Ro5SdngVs1f7Izdl439j0HH6GUt0MgXqenWp4Nq1ty3aPOkf9h7y99RUhejeZ1L/JTkRyLmi6gmn6gjV2Rte/djpOSGhREapw7qUT62rFy6egHZWoymrt5OAnLyQUqY9wVUqnRAgxkapORr5J3HHnunshEQxoULBKUSvffVkRdVonrFRHTueefLnyCtUFFYQWHf977P11KzMZdDilMrVz/FWb2doDPjjRjCTGYfWEyuHJDDZGijI1kRVuq2LNyw8pVzQKO3/NHfLgWZAHFbyz4Hqghw3lSDwwIkFtCxvGZKqQw5Ge3wUlB4Oy9Vj0dGKEX+yDdLw9SlnZjOmMvrbORoGAGoa91zertMSUr64lZB56Wh4OsfHuIjznxpHwjcsHBWBS5qRFlOJkBpX1zrtiIcEh1nGVi7s+2LLcoUX3jLB8M9RZALmWHD/CD68JWXDZBRqERYay+HnKxA67IoMxBowSdFI/6/Om1GCp2qdS/sfPQ/D3CZQaEuAxyNcgAnjc7Qh/boI1LROJCzpilLN6QeELhoirKyiYiOn7oAWX+PJ4om+UadEvkYGjlPcPkK6qq2Y+vOPw80XdEbnxk7dv3w07uiMZG7O17hjLwSKRmNGDLJBDRyNPi27tj57MYtupiKGe3cUA4QPgJknRfZJ07Gc51epkeAYH3d6k1y4NAnh3mpdCNAX5/9lNppiRldOUf376pmWTLI3npRiI4SsIXY7996D79oEaOu6AKDwk3gVVMQjslJmVy1xiC+fvnX7UGU7fntf+lKSrNdr3VjNFqG1lQLIpOrLFyWiRj5gMgvQ6c8OnlDHAudG15WxgEH7ZaG0A7tBkgg...");
   background-size:300% 300%; background-repeat:no-repeat;
   image-rendering:pixelated;
 }
@@ -203,7 +202,7 @@ footer a{color:var(--ink-2)}
 
 <header class="top">
   <div class="wrap">
-    <div class="mark">Open<b>Pod</b></div>
+    <div class="mark">Open<b>Pod</b> <span style="font-weight:600; font-size:12px; color:var(--ink-3); margin-left:6px; letter-spacing:.04em">RELOAD ALPHA</span></div>
     <div class="lang" role="group" aria-label="Idioma / Language">
       <button type="button" id="lp" aria-pressed="true">PT</button>
       <button type="button" id="le" aria-pressed="false">EN</button>
@@ -215,19 +214,19 @@ footer a{color:var(--ink-2)}
 <div class="wrap">
 
   <div class="hero">
-    <div class="eyebrow">Base: yp3_2.0.43 · Smartlink / YP3 · ARM Thumb-2</div>
+    <div class="eyebrow">Reload Alpha · yp3_2.0.43 · Smartlink SL6801 · 2 MiB</div>
 
-    <h1 data-lang-pt>Um firmware de iPod&nbsp;nano<br>para MP3 players chineses.</h1>
-    <h1 data-lang-en>iPod&nbsp;nano firmware<br>for cheap Chinese MP3 players.</h1>
+    <h1 data-lang-pt>O mesmo player.<br>Só que melhor.</h1>
+    <h1 data-lang-en>Same player.<br>Just better.</h1>
 
-    <p class="lede" data-lang-pt>O OpenPod é um firmware baseado no <b>yp3_2.0.43</b>, da família
-      <b>Smartlink/YP3</b> — o sistema que roda em boa parte dos players baratos. Ele reescreve a
-      interface <em>por dentro do firmware original</em>, com a navegação e a tipografia do
-      <b>iPod nano de 2ª geração</b>. Sem trocar o sistema, sem apagar o que já funciona.</p>
-    <p class="lede" data-lang-en>OpenPod is a firmware based on <b>yp3_2.0.43</b>, from the
-      <b>Smartlink/YP3</b> family — the system running inside a good share of cheap players. It rewrites
-      the interface <em>inside the original firmware</em>, with the navigation and typography of the
-      <b>2nd-generation iPod nano</b>. No new system, nothing working thrown away.</p>
+    <p class="lede" data-lang-pt>O <b>OpenPod Reload Alpha</b> parte do firmware original <b>yp3_2.0.43</b>
+      e melhora o que já existe — <b>fundo preto</b> em todas as telas, <b>barra superior unificada</b>
+      com Data · OpenPod · Bateria e <b>atualização por cartão SD</b>. Sem trocar o sistema,
+      sem copiar outro aparelho, sem apagar o que funciona.</p>
+    <p class="lede" data-lang-en><b>OpenPod Reload Alpha</b> starts from the stock <b>yp3_2.0.43</b>
+      firmware and improves what is already there — <b>black background</b> on every screen,
+      a <b>unified top bar</b> with Date · OpenPod · Battery, and <b>update via SD card</b>.
+      No system replacement, no cloning another device, nothing working thrown away.</p>
 
     <p class="fit" data-lang-pt><b>Serve no meu?</b> Testado <b>só no Iigenai GN-438</b>. Outros
       aparelhos da família Smartlink/YP3 são candidatos — <b>e é você quem decide testar</b>. Cada
@@ -243,7 +242,7 @@ footer a{color:var(--ink-2)}
       <a class="btn" href="#instalar" data-lang-en>How to install</a>
       <a class="btn ghost" href="https://github.com/zeroproj/OpenPod" data-lang-pt>Código e análise</a>
       <a class="btn ghost" href="https://github.com/zeroproj/OpenPod" data-lang-en>Code &amp; teardown</a>
-      <span class="ver">5.7 Beta 7</span>
+      <span class="ver">Reload Alpha 0.1</span>
     </div>
 
     <div class="stage">
@@ -263,14 +262,10 @@ footer a{color:var(--ink-2)}
             </div>
           </div>
         </div>
-        <p class="caption" data-lang-pt>Reconstrução a 176×132, a resolução real da tela. As cores são as
-          medidas no firmware e <b>as letras são a fonte do firmware</b> — bitmap de 12 px, extraída e
-          desenhada pixel a pixel. O fundo é preto de propósito: este painel mostra faixas horizontais
-          sobre fundo claro.</p>
-        <p class="caption" data-lang-en>Reconstruction at 176×132, the real screen resolution. The colours
-          are the ones measured in the firmware and <b>the letters are the firmware's own font</b> — a
-          12 px bitmap, extracted and drawn pixel by pixel. The background is black on purpose: this
-          panel shows horizontal banding over light backgrounds.</p>
+        <p class="caption" data-lang-pt>Reload Alpha 0.1 em 128×160. Fundo preto global, barra com Data · OpenPod · Bateria,
+          lista com seleção em barra. Letras são a fonte de 12 px do firmware, desenhada pixel a pixel.</p>
+        <p class="caption" data-lang-en>Reload Alpha 0.1 at 128×160. Global black background, top bar with Date · OpenPod · Battery,
+          list with bar selection. Letters are the firmware's 12 px bitmap font, drawn pixel by pixel.</p>
       </div>
 
       <div class="notes">
@@ -279,7 +274,7 @@ footer a{color:var(--ink-2)}
           <li><span class="k">SoC</span><span class="v">Smartlink SL6801</span></li>
           <li><span class="k" data-lang-pt>Arquitetura</span><span class="k" data-lang-en>Architecture</span><span class="v">ARM Thumb-2</span></li>
           <li><span class="k">Flash</span><span class="v">2 MiB · NOR</span></li>
-          <li><span class="k" data-lang-pt>Tela</span><span class="k" data-lang-en>Screen</span><span class="v">176 × 132</span></li>
+          <li><span class="k" data-lang-pt>Tela</span><span class="k" data-lang-en>Screen</span><span class="v">128 × 160</span></li>
           <li><span class="k" data-lang-pt>Base</span><span class="k" data-lang-en>Base</span><span class="v">yp3_2.0.43</span></li>
           <li><span class="k">GUI</span><span class="v">LVGL v8</span></li>
         </ul>
@@ -290,16 +285,15 @@ footer a{color:var(--ink-2)}
   <section id="muda">
     <h2 data-lang-pt>O que muda</h2>
     <h2 data-lang-en>What changes</h2>
-    <p class="sub" data-lang-pt>A tela inicial de fábrica é uma grade de nove ícones. O OpenPod a
-      transforma numa lista de quatro, e move o resto para um submenu — o mesmo movimento que o iPod
-      nano fazia.</p>
-    <p class="sub" data-lang-en>The stock home is a grid of nine icons. OpenPod turns it into a list of
-      four and moves the rest into a submenu — the same move the iPod nano made.</p>
+    <p class="sub" data-lang-pt>O Reload Alpha não tenta ser outro aparelho. Ele corrige o que incomoda no
+      original e deixa o resto como está — três mudanças pequenas, mas que já mudam o uso no dia a dia.</p>
+    <p class="sub" data-lang-en>Reload Alpha does not try to be another device. It fixes what bothers in the
+      stock firmware and leaves the rest alone — three small changes that already change daily use.</p>
 
     <div class="swap" role="group" aria-label="Fábrica / OpenPod">
       <button type="button" id="bs" aria-pressed="false" data-lang-pt>Fábrica</button>
       <button type="button" aria-pressed="false" data-lang-en>Stock</button>
-      <button type="button" id="bo" aria-pressed="true">OpenPod</button>
+      <button type="button" id="bo" aria-pressed="true">Reload Alpha</button>
     </div>
 
     <div class="tw">
@@ -308,28 +302,25 @@ footer a{color:var(--ink-2)}
         <tr>
           <th data-lang-pt>Item</th><th data-lang-en>Item</th>
           <th data-lang-pt>Fábrica</th><th data-lang-en>Stock</th>
-          <th>OpenPod</th>
+          <th>Reload Alpha 0.1</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td data-lang-pt>Tela inicial</td><td data-lang-en>Home</td>
-            <td data-lang-pt>grade 3×3, 9 ícones</td><td data-lang-en>3×3 grid, 9 icons</td>
-            <td data-lang-pt>lista de 4</td><td data-lang-en>list of 4</td></tr>
-        <tr><td>Extras</td><td>—</td>
-            <td data-lang-pt>Gravação, Rádio, Livro, Imagens, Bluetooth, Pastas</td>
-            <td data-lang-en>Recording, Radio, eBook, Images, Bluetooth, Folders</td></tr>
-        <tr><td data-lang-pt>Seleção</td><td data-lang-en>Selection</td>
-            <td data-lang-pt>cor do texto</td><td data-lang-en>text colour</td>
-            <td data-lang-pt>barra azul de borda a borda</td><td data-lang-en>full-width blue bar</td></tr>
-        <tr><td data-lang-pt>Faixa superior</td><td data-lang-en>Top bar</td>
-            <td data-lang-pt>altura variava por tela</td><td data-lang-en>height varied per screen</td>
-            <td data-lang-pt>16 px em todas</td><td data-lang-en>16 px everywhere</td></tr>
-        <tr><td data-lang-pt>Bateria</td><td data-lang-en>Battery</td>
-            <td data-lang-pt>glifo branco chapado</td><td data-lang-en>flat white glyph</td>
-            <td data-lang-pt>casca prateada, miolo verde</td><td data-lang-en>silver shell, green level</td></tr>
-        <tr><td data-lang-pt>Textos</td><td data-lang-en>Text</td>
-            <td data-lang-pt>tradução de máquina</td><td data-lang-en>machine translation</td>
-            <td data-lang-pt>português revisado</td><td data-lang-en>revised Portuguese</td></tr>
+        <tr><td data-lang-pt>Fundo</td><td data-lang-en>Background</td>
+            <td data-lang-pt>claro, com fresta branca entre faixa e lista; Tocando com swoosh azul</td><td data-lang-en>light, white gap between bar and list; Now Playing with blue swoosh</td>
+            <td data-lang-pt>preto em todas as telas</td><td data-lang-en>black on every screen</td></tr>
+        <tr><td data-lang-pt>Barra superior</td><td data-lang-en>Top bar</td>
+            <td data-lang-pt>ícone de SD à direita, data pequena à esquerda</td><td data-lang-en>SD icon on the right, small date on the left</td>
+            <td>Data · OpenPod · Bateria</td></tr>
+        <tr><td data-lang-pt>Atualização</td><td data-lang-en>Update</td>
+            <td data-lang-pt>só por cabo USB</td><td data-lang-en>only via USB cable</td>
+            <td data-lang-pt>por cartão SD em Configurar → Atualizar por SD</td><td data-lang-en>via SD card in Settings → Update via SD</td></tr>
+        <tr><td data-lang-pt>Abertura</td><td data-lang-en>Boot screen</td>
+            <td data-lang-pt>logo GENAI sobre faixa clara</td><td data-lang-en>GENAI logo on light stripe</td>
+            <td data-lang-pt>logo sobre fundo preto</td><td data-lang-en>logo on black</td></tr>
+        <tr><td data-lang-pt>Filosofia</td><td data-lang-en>Philosophy</td>
+            <td data-lang-pt>interface original sem manutenção</td><td data-lang-en>stock UI without maintenance</td>
+            <td data-lang-pt>melhorar o que existe, não copiar outro aparelho</td><td data-lang-en>improve what exists, not clone another device</td></tr>
       </tbody>
     </table>
     </div>
@@ -339,9 +330,9 @@ footer a{color:var(--ink-2)}
     <h2 data-lang-pt>Instalar</h2>
     <h2 data-lang-en>Install</h2>
     <p class="sub" data-lang-pt>A primeira instalação é por computador, porque o firmware de fábrica não
-      tem a opção de atualizar por cartão. O OpenPod passa a ter — então só a primeira vez dá trabalho.</p>
+      tem a opção de atualizar por cartão. O Reload Alpha passa a ter — então só a primeira vez dá trabalho.</p>
     <p class="sub" data-lang-en>The first install needs a computer, because the stock firmware has no
-      update-by-card option. OpenPod adds one — so only the first time is any work.</p>
+      update-by-card option. Reload Alpha adds one — so only the first time is any work.</p>
 
     <div class="paths">
       <div class="path lead">
@@ -356,21 +347,21 @@ footer a{color:var(--ink-2)}
         <div class="step" data-lang-pt>Caminho 2</div><div class="step" data-lang-en>Path 2</div>
         <h3>Linux · macOS</h3>
         <p data-lang-pt><code>sh install.sh</code> — pergunta o idioma, ensina o modo de gravação,
-          reconhece o aparelho e grava só os 44 setores que mudam.</p>
+          reconhece o aparelho e grava só os 6 setores que mudam.</p>
         <p data-lang-en><code>sh install.sh</code> — asks your language, teaches flashing mode, finds
-          the player and writes only the 44 sectors that change.</p>
+          the player and writes only the 6 sectors that change.</p>
       </div>
       <div class="path">
         <div class="step" data-lang-pt>Depois</div><div class="step" data-lang-en>After that</div>
         <h3 data-lang-pt>Cartão microSD</h3><h3 data-lang-en>microSD card</h3>
-        <p data-lang-pt>Com o OpenPod instalado, as próximas versões entram pelo cartão em
+        <p data-lang-pt>Com o Reload Alpha instalado, as próximas versões entram pelo cartão em
           <em>Configurar → Atualizar por SD</em>. Sem computador.</p>
-        <p data-lang-en>With OpenPod installed, future versions go in by card under
+        <p data-lang-en>With Reload Alpha installed, future versions go in by card under
           <em>Settings → Update via SD</em>. No computer.</p>
       </div>
     </div>
 
-    <p class="sub" style="margin-top:22px"><a data-lang-pt href="https://github.com/zeroproj/OpenPod/tree/main/release/OpenPod-Core-5.7-Public-Beta-7">Baixar o pacote da 5.7 5.7 5.7 5.7 Public Beta 7 &rarr;</a><a data-lang-en href="https://github.com/zeroproj/OpenPod/tree/main/release/OpenPod-Core-5.7-Public-Beta-7">Download the 5.7 5.7 5.7 5.7 Public Beta 7 package &rarr;</a></p>
+    <p class="sub" style="margin-top:22px"><a data-lang-pt href="https://github.com/zeroproj/OpenPod/tree/main/release/OpenPod-Reload-Alpha-0.1">Baixar o Reload Alpha 0.1 &rarr;</a><a data-lang-en href="https://github.com/zeroproj/OpenPod/tree/main/release/OpenPod-Reload-Alpha-0.1">Download Reload Alpha 0.1 &rarr;</a></p>
 
     <div class="warn">
       <b data-lang-pt>O aparelho é recuperável por software, sempre.</b>
@@ -421,12 +412,12 @@ footer a{color:var(--ink-2)}
         <strong>red</strong>.</p>
       </li>
       <li>
-        <strong data-lang-pt>O texto da versão corta em 113 px</strong>
-        <strong data-lang-en>The version string clips at 113 px</strong>
-        <p data-lang-pt>Corte duro, sem quebra de linha. Medido com a tabela de glifos da própria
-        imagem: <code>OpenPod Core 5.7 5.7 5.7 5.7 Public Beta 7</code> dá 177 px e não cabe.</p>
-        <p data-lang-en>Hard clip, no line break. Measured against the image's own glyph table:
-        <code>OpenPod Core 5.7 5.7 5.7 5.7 Public Beta 7</code> is 177 px and does not fit.</p>
+        <strong data-lang-pt>O fundo preto é 1 byte</strong>
+        <strong data-lang-en>Black background is 1 byte</strong>
+        <p data-lang-pt>Em <code>lv_disp_drv_register</code> o display nasce branco (<code>movs r3,#0xFF</code> em
+        <code>0x00D567F6</code>). Trocar para <code>0x00</code> apaga a fresta branca em todas as telas.</p>
+        <p data-lang-en>In <code>lv_disp_drv_register</code> the display starts white (<code>movs r3,#0xFF</code> at
+        <code>0x00D567F6</code>). Changing it to <code>0x00</code> removes the white gap on every screen.</p>
       </li>
       <li>
         <strong data-lang-pt>A imagem se valida sozinha</strong>
@@ -442,20 +433,20 @@ footer a{color:var(--ink-2)}
   <section id="aberto">
     <h2 data-lang-pt>Ainda aberto</h2>
     <h2 data-lang-en>Still open</h2>
-    <p class="sub" data-lang-pt>É uma beta, e o que não funciona fica escrito.</p>
-    <p class="sub" data-lang-en>It is a beta, and what does not work stays written down.</p>
+    <p class="sub" data-lang-pt>É uma Alpha — o que não funciona fica escrito.</p>
+    <p class="sub" data-lang-en>It is an Alpha — what does not work stays written down.</p>
     <div class="tw">
     <table>
       <tbody>
-        <tr><td data-lang-pt>Pastas</td><td data-lang-en>Folders</td>
-            <td data-lang-pt>abre e navega, mas só volta depois de entrar numa pasta</td>
-            <td data-lang-en>opens and browses, but only goes back after entering a folder</td></tr>
-        <tr><td data-lang-pt>Degradê da faixa</td><td data-lang-en>Band gradient</td>
-            <td data-lang-pt>a faixa é chapada; o degradê exige um objeto de imagem</td>
-            <td data-lang-en>the bar is flat; the gradient needs an image object</td></tr>
-        <tr><td data-lang-pt>Capa do álbum</td><td data-lang-en>Album art</td>
-            <td data-lang-pt>não é exibida ao tocar</td>
-            <td data-lang-en>not shown while playing</td></tr>
+        <tr><td data-lang-pt>Bateria colorida</td><td data-lang-en>Coloured battery</td>
+            <td data-lang-pt>casca prateada + miolo verde fica para 0.2</td>
+            <td data-lang-en>silver shell + green level comes in 0.2</td></tr>
+        <tr><td data-lang-pt>Logo OpenPod</td><td data-lang-en>OpenPod logo</td>
+            <td data-lang-pt>ainda é GENAI na abertura; troca entra na 0.2</td>
+            <td data-lang-en>still GENAI on boot; swap comes in 0.2</td></tr>
+        <tr><td data-lang-pt>Textos</td><td data-lang-en>Texts</td>
+            <td data-lang-pt>tradução de máquina; revisão entra na 0.2</td>
+            <td data-lang-en>machine translation; revision comes in 0.2</td></tr>
       </tbody>
     </table>
     </div>
@@ -466,19 +457,15 @@ footer a{color:var(--ink-2)}
 
 <footer>
   <div class="wrap">
-    <p data-lang-pt><b>iPod</b> e <b>iPod nano</b> são marcas da Apple. Este projeto não usa código nem
-      arte da Apple — reproduz apenas princípios de interface.</p>
-    <p data-lang-en><b>iPod</b> and <b>iPod nano</b> are Apple trademarks. This project uses no Apple
-      code or artwork — it reproduces interface principles only.</p>
+    <p data-lang-pt>O OpenPod Reload Alpha melhora o firmware original YP3. Não copia interface de outro
+      aparelho — corrige o que existe e mantém o que funciona.</p>
+    <p data-lang-en>OpenPod Reload Alpha improves the stock YP3 firmware. It does not clone another
+      device's UI — it fixes what exists and keeps what works.</p>
 
     <p data-lang-pt>Gravador para Linux e macOS: <b>smartlink_flash</b>, de Ilya Kurdyukov.
-      Gravador para Windows: <b>Flashloader SL-DEV</b>, da Shenju, fabricante do chip. Direção visual
-      referenciada no tema <b>NanoClone</b>, de Billy Blair (CC-BY-SA 3.0) — apenas valores de cor
-      medidos, nenhum pixel copiado.</p>
+      Gravador para Windows: <b>Flashloader SL-DEV</b>, da Shenju, fabricante do chip.</p>
     <p data-lang-en>Flashing tool for Linux and macOS: <b>smartlink_flash</b>, by Ilya Kurdyukov.
-      For Windows: <b>Flashloader SL-DEV</b>, by Shenju, the chip maker. Visual direction references the
-      <b>NanoClone</b> theme by Billy Blair (CC-BY-SA 3.0) — measured colour values only, no pixels
-      copied.</p>
+      For Windows: <b>Flashloader SL-DEV</b>, by Shenju, the chip maker.</p>
 
     <p data-lang-pt>OpenPod modifica o firmware do seu aparelho. Você assume o risco.</p>
     <p data-lang-en>OpenPod modifies your device firmware. You take the risk.</p>
@@ -519,7 +506,7 @@ footer a{color:var(--ink-2)}
     var isStock = which==='stock';
     host.innerHTML = isStock ? stock : openpod;
     document.querySelector('#scr .band .mid').innerHTML =
-      isStock ? '<svg class="g" viewBox="0 0 30 12" width="30" height="12" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 0h1v1h-1zM7 0h1v1h-1zM1 1h2v1h-2zM6 1h2v1h-2zM1 2h2v1h-2zM6 2h2v1h-2zM11 2h3v1h-3zM17 2h1v1h-1zM19 2h2v1h-2zM24 2h1v1h-1zM28 2h1v1h-1zM1 3h1v1h-1zM3 3h1v1h-1zM5 3h1v1h-1zM7 3h1v1h-1zM10 3h1v1h-1zM14 3h1v1h-1zM17 3h2v1h-2zM21 3h1v1h-1zM24 3h1v1h-1zM28 3h1v1h-1zM1 4h1v1h-1zM3 4h1v1h-1zM5 4h1v1h-1zM7 4h1v1h-1zM10 4h1v1h-1zM14 4h1v1h-1zM17 4h1v1h-1zM21 4h1v1h-1zM24 4h1v1h-1zM28 4h1v1h-1zM1 5h1v1h-1zM3 5h1v1h-1zM5 5h1v1h-1zM7 5h1v1h-1zM10 5h5v1h-5zM17 5h1v1h-1zM21 5h1v1h-1zM24 5h1v1h-1zM28 5h1v1h-1zM1 6h1v1h-1zM3 6h1v1h-1zM5 6h1v1h-1zM7 6h1v1h-1zM10 6h1v1h-1zM17 6h1v1h-1zM21 6h1v1h-1zM24 6h1v1h-1zM28 6h1v1h-1zM1 7h1v1h-1zM4 7h1v1h-1zM7 7h1v1h-1zM10 7h1v1h-1zM14 7h1v1h-1zM17 7h1v1h-1zM21 7h1v1h-1zM24 7h1v1h-1zM28 7h1v1h-1zM1 8h1v1h-1zM4 8h1v1h-1zM7 8h1v1h-1zM11 8h3v1h-3zM17 8h1v1h-1zM21 8h1v1h-1zM25 8h4v1h-4z"/></svg>''Menu' : '<svg class="g" viewBox="0 0 52 12" width="52" height="12" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M3 0h3v1h-3zM31 0h5v1h-5zM50 0h1v1h-1zM2 1h1v1h-1zM6 1h1v1h-1zM31 1h1v1h-1zM36 1h1v1h-1zM50 1h1v1h-1zM1 2h1v1h-1zM7 2h1v1h-1zM10 2h1v1h-1zM12 2h2v1h-2zM18 2h3v1h-3zM24 2h1v1h-1zM26 2h2v1h-2zM31 2h1v1h-1zM36 2h1v1h-1zM40 2h3v1h-3zM47 2h2v1h-2zM50 2h1v1h-1zM1 3h1v1h-1zM7 3h1v1h-1zM10 3h2v1h-2zM14 3h1v1h-1zM17 3h1v1h-1zM21 3h1v1h-1zM24 3h2v1h-2zM28 3h1v1h-1zM31 3h1v1h-1zM36 3h1v1h-1zM39 3h1v1h-1zM43 3h1v1h-1zM46 3h1v1h-1zM49 3h2v1h-2zM1 4h1v1h-1zM7 4h1v1h-1zM10 4h1v1h-1zM14 4h1v1h-1zM17 4h1v1h-1zM21 4h1v1h-1zM24 4h1v1h-1zM28 4h1v1h-1zM31 4h5v1h-5zM39 4h1v1h-1zM43 4h1v1h-1zM46 4h1v1h-1zM50 4h1v1h-1zM1 5h1v1h-1zM7 5h1v1h-1zM10 5h1v1h-1zM14 5h1v1h-1zM17 5h5v1h-5zM24 5h1v1h-1zM28 5h1v1h-1zM31 5h1v1h-1zM39 5h1v1h-1zM43 5h1v1h-1zM46 5h1v1h-1zM50 5h1v1h-1zM1 6h1v1h-1zM7 6h1v1h-1zM10 6h1v1h-1zM14 6h1v1h-1zM17 6h1v1h-1zM24 6h1v1h-1zM28 6h1v1h-1zM31 6h1v1h-1zM39 6h1v1h-1zM43 6h1v1h-1zM46 6h1v1h-1zM50 6h1v1h-1zM2 7h1v1h-1zM6 7h1v1h-1zM10 7h2v1h-2zM14 7h1v1h-1zM17 7h1v1h-1zM21 7h1v1h-1zM24 7h1v1h-1zM28 7h1v1h-1zM31 7h1v1h-1zM39 7h1v1h-1zM43 7h1v1h-1zM46 7h1v1h-1zM50 7h1v1h-1zM3 8h3v1h-3zM10 8h1v1h-1zM12 8h2v1h-2zM18 8h3v1h-3zM24 8h1v1h-1zM28 8h1v1h-1zM31 8h1v1h-1zM40 8h3v1h-3zM47 8h4v1h-4zM10 9h1v1h-1zM10 10h1v1h-1z"/></svg>''OpenPod';
+      isStock ? '<svg class="g" viewBox="0 0 30 12" width="30" height="12" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 0h1v1h-1zM7 0h1v1h-1zM1 1h2v1h-2zM6 1h2v1h-2zM1 2h2v1h-2zM6 2h2v1h-2zM11 2h3v1h-3zM17 2h1v1h-1zM19 2h2v1h-2zM24 2h1v1h-1zM28 2h1v1h-1zM1 3h1v1h-1zM3 3h1v1h-1zM5 3h1v1h-1zM7 3h1v1h-1zM10 3h1v1h-1zM14 3h1v1h-1zM17 3h2v1h-2zM21 3h1v1h-1zM24 3h1v1h-1zM28 3h1v1h-1zM1 4h1v1h-1zM3 4h1v1h-1zM5 4h1v1h-1zM7 4h1v1h-1zM10 4h1v1h-1zM14 4h1v1h-1zM17 4h1v1h-1zM21 4h1v1h-1zM24 4h1v1h-1zM28 4h1v1h-1zM1 5h1v1h-1zM3 5h1v1h-1zM5 5h1v1h-1zM7 5h1v1h-1zM10 5h5v1h-5zM17 5h1v1h-1zM21 5h1v1h-1zM24 5h1v1h-1zM28 5h1v1h-1zM1 6h1v1h-1zM3 6h1v1h-1zM5 6h1v1h-1zM7 6h1v1h-1zM10 6h1v1h-1zM17 6h1v1h-1zM21 6h1v1h-1zM24 6h1v1h-1zM28 6h1v1h-1zM1 7h1v1h-1zM4 7h1v1h-1zM7 7h1v1h-1zM10 7h1v1h-1zM14 7h1v1h-1zM17 7h1v1h-1zM21 7h1v1h-1zM24 7h1v1h-1zM28 7h1v1h-1zM1 8h1v1h-1zM4 8h1v1h-1zM7 8h1v1h-1zM11 8h3v1h-3zM17 8h1v1h-1zM21 8h1v1h-1zM25 8h4v1h-4z"/></svg>''Menu' : '<svg class="g" viewBox="0 0 52 12" width="52" height="12" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M3 0h3v1h-3zM31 0h5v1h-5zM50 0h1v1h-1zM2 1h1v1h-1zM6 1h1v1h-1zM31 1h1v1h-1zM36 1h1v1h-1zM50 1h1v1h-1zM1 2h1v1h-1zM7 2h1v1h-1zM10 2h1v1h-1zM12 2h2v1h-2zM18 2h3v1h-3zM24 2h1v1h-1zM26 2h2v1h-2zM31 2h1v1h-1zM36 2h1v1h-1zM40 2h3v1h-3zM47 2h2v1h-2zM50 2h1v1h-1zM1 3h1v1h-1zM7 3h1v1h-1zM10 3h2v1h-2zM14 3h1v1h-1zM17 3h1v1h-1zM21 3h1v1h-1zM24 3h2v1h-2zM28 3h1v1h-1zM31 3h1v1h-1zM36 3h1v1h-1zM39 3h1v1h-1zM43 3h1v1h-1zM46 3h1v1h-1zM49 3h2v1h-2zM1 4h1v1h-1zM7 4h1v1h-1zM10 4h1v1h-1zM14 4h1v1h-1zM17 4h1v1h-1zM21 4h1v1h-1zM24 4h1v1h-1zM28 4h1v1h-1zM31 4h5v1h-5zM39 4h1v1h-1zM43 4h1v1h-1zM46 4h1v1h-1zM50 4h1v1h-1zM1 5h1v1h-1zM7 5h1v1h-1zM10 5h1v1h-1zM14 5h1v1h-1zM17 5h5v1h-5zM24 5h1v1h-1zM28 5h1v1h-1zM31 5h1v1h-1zM39 5h1v1h-1zM43 5h1v1h-1zM46 5h1v1h-1zM50 5h1v1h-1zM1 6h1v1h-1zM7 6h1v1h-1zM10 6h1v1h-1zM14 6h1v1h-1zM17 6h1v1h-1zM24 6h1v1h-1zM28 6h1v1h-1zM31 6h1v1h-1zM39 6h1v1h-1zM43 6h1v1h-1zM46 6h1v1h-1zM50 6h1v1h-1zM2 7h1v1h-1zM6 7h1v1h-1zM10 7h2v1h-2zM14 7h1v1h-1zM17 7h1v1h-1zM21 7h1v1h-1zM24 7h1v1h-1zM28 7h1v1h-1zM31 7h1v1h-1zM39 7h1v1h-1zM43 7h1v1h-1zM46 7h1v1h-1zM50 7h1v1h-1zM3 8h3v1h-3zM10 8h1v1h-1zM12 8h2v1h-2zM18 8h3v1h-3zM24 8h1v1h-1zM28 8h1v1h-1zM31 8h1v1h-1zM40 8h3v1h-3zM47 8h4v1h-4zM10 9h1v1h-1zM10 10h1v1h-1z"/></svg>''OpenPod' : '<svg class="g" viewBox="0 0 52 12" width="52" height="12" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M3 0h3v1h-3zM31 0h5v1h-5zM50 0h1v1h-1zM2 1h1v1h-1zM6 1h1v1h-1zM31 1h1v1h-1zM36 1h1v1h-1zM50 1h1v1h-1zM1 2h1v1h-1zM7 2h1v1h-1zM10 2h1v1h-1zM12 2h2v1h-2zM18 2h3v1h-3zM24 2h1v1h-1zM26 2h2v1h-2zM31 2h1v1h-1zM36 2h1v1h-1zM40 2h3v1h-3zM47 2h2v1h-2zM50 2h1v1h-1zM1 3h1v1h-1zM7 3h1v1h-1zM10 3h2v1h-2zM14 3h1v1h-1zM17 3h1v1h-1zM21 3h1v1h-1zM24 3h2v1h-2zM28 3h1v1h-1zM31 3h1v1h-1zM36 3h1v1h-1zM39 3h1v1h-1zM43 3h1v1h-1zM46 3h1v1h-1zM49 3h2v1h-2zM1 4h1v1h-1zM7 4h1v1h-1zM10 4h1v1h-1zM14 4h1v1h-1zM17 4h1v1h-1zM21 4h1v1h-1zM24 4h1v1h-1zM28 4h1v1h-1zM31 4h5v1h-5zM39 4h1v1h-1zM43 4h1v1h-1zM46 4h1v1h-1zM50 4h1v1h-1zM1 5h1v1h-1zM7 5h1v1h-1zM10 5h1v1h-1zM14 5h1v1h-1zM17 5h5v1h-5zM24 5h1v1h-1zM28 5h1v1h-1zM31 5h1v1h-1zM39 5h1v1h-1zM43 5h1v1h-1zM46 5h1v1h-1zM50 5h1v1h-1zM1 6h1v1h-1zM7 6h1v1h-1zM10 6h1v1h-1zM14 6h1v1h-1zM17 6h1v1h-1zM24 6h1v1h-1zM28 6h1v1h-1zM31 6h1v1h-1zM39 6h1v1h-1zM43 6h1v1h-1zM46 6h1v1h-1zM50 6h1v1h-1zM2 7h1v1h-1zM6 7h1v1h-1zM10 7h2v1h-2zM14 7h1v1h-1zM17 7h1v1h-1zM21 7h1v1h-1zM24 7h1v1h-1zM28 7h1v1h-1zM31 7h1v1h-1zM39 7h1v1h-1zM43 7h1v1h-1zM46 7h1v1h-1zM50 7h1v1h-1zM3 8h3v1h-3zM10 8h1v1h-1zM12 8h2v1h-2zM18 8h3v1h-3zM24 8h1v1h-1zM28 8h1v1h-1zM31 8h1v1h-1zM40 8h3v1h-3zM47 8h4v1h-4zM10 9h1v1h-1zM10 10h1v1h-1z"/></svg>';
     bs.setAttribute('aria-pressed',String(isStock));
     bsEn.setAttribute('aria-pressed',String(isStock));
     bo.setAttribute('aria-pressed',String(!isStock));
