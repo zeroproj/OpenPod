@@ -1,0 +1,21 @@
+OpenPod Reload 1.0 RC1 — TESTAR
+
+Base: GN438_original.bin (sha b7cd5eb9...) — NADA das Alphas.
+Receita reload_1.0_rc1: 1 passo, patch_update_sd.py
+Imagem carimbada: 4 setores (0x053000 0x109000 0x10A000 0x1A3000), CRC do .up 0x7515
+
+INSTALAR
+  1a vez: CABO (pasta cabo/ ou windows/)
+  O .up na raiz e para as proximas, pelo cartao.
+
+O QUE OLHAR
+  [ ] Liga normal, logo GENAI de fabrica (esperado nesta RC)
+  [ ] Configurar -> Informacoes mostra "Reload 1.0 RC1"
+  [ ] Configurar tem "Atualizar por SD"
+  [ ] Resto identico a fabrica: musica, Extras, Bluetooth, Livro, Imagem
+
+RESULTADOS POSSIVEIS
+  tudo ok          -> base aprovada, sigo para RC2 (logo + fundo preto)
+  item falhou      -> me diga qual; nenhum outro passo entra antes
+
+RECOVERY: USB -> VOLUME baixo + RESET -> 301a:2800

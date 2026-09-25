@@ -309,10 +309,25 @@ RELOAD_ALPHA_0_2 = RELOAD_ALPHA + [
     ("aplica_textos.py",       ["--em", "0x1A3D00"], "textos revisados pt-BR"),
 ]
 
+# ---------------------------------------------------------------------------
+# OPENPOD RELOAD 1.0 — refeito do ORIGINAL, 2026-09-24.
+#
+# Pedido do mantenedor: NAO reaproveitar as Alphas (bugadas). A 1.0 sobe
+# em degraus, uma imagem por degrau, cada uma testada no aparelho:
+#   RC1  update por SD
+#   RC2  + logo na abertura + fundo preto
+#   RC3  + "OpenPod" na barra + degrade
+#   RC4  + icones da tela principal + bateria prata/verde
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC1 = [
+    ("patch_update_sd.py",     [], "Update via SD (Configurar → Atualizar por SD)"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
     "reload_alpha_0.2": RELOAD_ALPHA_0_2,
+    "reload_1.0_rc1": RELOAD_1_0_RC1,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.

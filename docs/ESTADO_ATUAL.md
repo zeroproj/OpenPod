@@ -8,6 +8,18 @@
 
 ---
 
+## ONDE PARAMOS — 2026-09-24 (Reload 1.0)
+
+**Projeto reiniciado como OpenPod Reload 1.0**, do ORIGINAL, em degraus.
+Tudo abaixo desta seção (linha Core, Betas) é histórico.
+
+- **Próximo passo:** o mantenedor grava a **RC1** por cabo
+  (`release/OpenPod-Reload-1.0-RC1/`) e relata.
+- Alphas 0.1/0.2: **descartadas**, não reaproveitar.
+- Plano, hashes e pendências: `docs/RELOAD_1_0.md`.
+- **Este branch não sobe para o repo público.** O público recebe só o
+  kit e o link de download, com autorização a cada publicação.
+
 ## ONDE PARAMOS — 2026-09-20
 
 **No aparelho:** Beta 12, funcionando (a última boa).

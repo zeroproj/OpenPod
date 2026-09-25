@@ -7,6 +7,26 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-09-24 — Reload 1.0: recomeço do ORIGINAL, RC1 e ícones novos
+
+As **Alphas 0.1/0.2 foram descartadas** a pedido do mantenedor (bugadas).
+A 1.0 é refeita do `GN438_original.bin`, em degraus testados um a um.
+Plano completo em `docs/RELOAD_1_0.md`.
+
+- **RC1** — receita `reload_1.0_rc1` (só `patch_update_sd.py`). Imagem
+  `a427c62e...`, carimbada `a423e7ad...` ("Reload 1.0 RC1"), `.up` CRC
+  0x7515. Kit em `release/OpenPod-Reload-1.0-RC1/` (cabo + `.up`).
+  **Aguardando gravação.**
+- **Ícones da tela principal** — `tools/patch_icones_home.py` troca a
+  folha 128×160 INDEXED_8 em `0x0CDD50` (só paleta e pixels). Desenho
+  "Apple-like moderno" aprovado, em `assets/IconesHome.png`, gerado por
+  `tools/desenha_icones_home.py`. Autoteste OK. Entra na RC4.
+- **Branch `privado-completo` fica só local.** Estava publicado no repo
+  público `zeroproj/OpenPod`; a partir daqui não sobe mais para lá
+  (`pushRemote` travado). Vai para um repo privado quando existir.
+
+---
+
 ## 2026-09-21 — Beta 14: o Extras passa o índice certo
 
 ### A resposta da Beta 13 (de manhã)

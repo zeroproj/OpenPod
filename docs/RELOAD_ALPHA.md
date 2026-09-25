@@ -1,5 +1,8 @@
 # OpenPod Reload Alpha — reset limpo
 
+> **DESCARTADA em 2026-09-24** (bugada, pedido do mantenedor). Não
+> reaproveitar imagens nem receitas. Substituída por `docs/RELOAD_1_0.md`.
+
 > Criado 2026-09-23. Base: `GN438_original.bin` sha `b7cd5eb9...`
 
 ## Filosofia

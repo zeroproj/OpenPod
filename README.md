@@ -1,4 +1,4 @@
-# OpenPod — Reload Alpha
+# OpenPod — Reload 1.0
 
 **Site:** https://zeroproj.github.io/OpenPod/ — fonte em `docs/index.html`.
 Para publicar: *Settings → Pages → Source: main, pasta `/docs`*. O `.nojekyll`
@@ -8,14 +8,14 @@ Melhorar o **Iigenai GN-438** — um player YP3/Smartlink de baixo custo
 — mantendo o que já funciona e corrigindo o que incomoda, sem reescrever
 o firmware do zero e sem copiar outro aparelho.
 
-> **Estado em 2026-09-23:** **OpenPod Reload Alpha 0.1** — reset limpo no
-> ORIGINAL (`yp3_2.0.43`), 3 mudanças só: fundo preto em todas as telas,
-> barra principal Data · OpenPod · Bateria e atualização por cartão SD.
-> Receita `reload_alpha` em `tools/build.py`. Detalhes em
-> [`docs/RELOAD_ALPHA.md`](docs/RELOAD_ALPHA.md).
+> **Estado em 2026-09-24:** **OpenPod Reload 1.0** — refeito do ORIGINAL
+> (`yp3_2.0.43`) em degraus: RC1 update por SD → RC2 logo + fundo preto →
+> RC3 barra "OpenPod" + degradê → RC4 ícones novos + bateria prata/verde.
+> RC1 gerada, aguardando gravação. Detalhes em
+> [`docs/RELOAD_1_0.md`](docs/RELOAD_1_0.md).
 >
-> A linha Core (1.0.1, Saturno, Marte) fica como referência histórica —
-> não é base para a Alpha.
+> As Alphas 0.1/0.2 foram descartadas (bugadas); a linha Core fica como
+> referência histórica.
 >
 > Entrada obrigatória: **[`docs/ESTADO_ATUAL.md`](docs/ESTADO_ATUAL.md)**.
 
