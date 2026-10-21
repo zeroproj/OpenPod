@@ -115,17 +115,22 @@ procedência no diff (D9).
     `MAPA`: nenhuma das duas aloca, e a conferência de "escreveu só no
     próprio lote" do pipeline não se aplica a elas.
   - Recusa (D3) nas duas ferramentas: tamanho 2 MiB, os **dois**
-    descritores INDEXED_8 (cf, largura, altura, data_size e ponteiro XIP),
-    os bytes de fábrica dos dois `bl`, de `0x1567F6` e das funções
+    descritores INDEXED_8 conferidos **inteiros** (os 32 bits do cabeçalho
+    palavra por palavra — cf, `always_zero`, bits reservados e
+    largura/altura embutidas —, mais data_size e ponteiro XIP), os bytes de
+    fábrica dos dois `bl`, de `0x1567F6` e das funções
     `0x00D21384`/`0x00D2138A`, e no `fab_logo` o sha256 e o tamanho do PNG.
     Recusa sai com código ≠ 0 sem criar a saída e sem tocar na entrada.
-  - `sh tools/ci.sh`: passos 1 a 4 verdes (ORIGINAL, protegidos, sintaxe,
-    os três testes, 16/16 em `test_rc2.py`). Passo 5 (gitleaks) **não roda
-    nesta máquina**: ver pendência 1.
+  - `--out` recusado quando aponta para a própria entrada por qualquer via:
+    mesmo caminho, symlink ou hardlink (`os.path.samefile`, recusa 2).
+  - `sh tools/ci.sh`: **tudo verde**, `CI OK` (passos 1 a 5). A pendência 1
+    da R0 foi resolvida pelo merge: o `ci.sh` do ramo principal trocou `-q`
+    por `--log-level error`, e o gitleaks 8.30.1 roda.
   - Imagem da RC2, para o pacote: `fcca5fdc99b828fb135cae77f5915c42cfddf1a537eb0a619f0c135313ccd123`
     (reprodutível: dois builds seguidos deram o mesmo sha). Setores tocados
     contra o ORIGINAL, além dos da RC1: `0x0C7000`, `0x0CC000`, `0x0CD000`,
-    `0x122000`, `0x156000`.
+    `0x122000`, `0x156000`. A R1 **não muda a imagem**: o sha acima é o
+    mesmo antes e depois (a correção é só de premissa e recusa).
 - Decisões tomadas:
   - As duas ferramentas são **auto-suficientes** (só stdlib; `fab_logo` usa
     também Pillow). Thumb-2 `bl` é codificado e decodificado dentro de
@@ -144,15 +149,10 @@ procedência no diff (D9).
   - Nenhuma linha em `docs/` além desta Entrega: CHANGELOG, `RELOAD_1_0.md`
     e `docs/metricas.md` são do engenheiro (processo-padrao §2/§11).
 - Pendências / limitações:
-  1. **`tools/ci.sh` passo 5 não roda aqui, por versão do gitleaks.**
-     A linha é `gitleaks detect --no-banner --redact -q`, e o gitleaks
-     instalado (8.30.1) removeu o atalho `-q` → `unknown shorthand flag`,
-     `set -e` aborta. O arquivo é protegido (hash em
-     `tests/PROTEGIDOS.sha256`), então não posso mexer. Rodei o passo sem a
-     flag: **"253 commits scanned … no leaks found", saída 0**. Sugestão
-     para o arquiteto: trocar `-q` por `--log-level error` ou similar
-     (mesma proteção, funciona em 8.x). Isto **não** é falha da RC2 e
-     falha igual no branch base.
+  1. **Resolvido na R1.** `tools/ci.sh` passo 5 não rodava aqui por versão
+     do gitleaks: a linha usava `-q`, que o gitleaks 8.30.1 removeu. O
+     merge do ramo principal trocou por `--log-level error` e o porteiro
+     fecha verde, `CI OK`. Não é mais pendência.
   2. A imagem não foi testada no aparelho — é o roteiro do decisor (D8).
      Em especial: com o fundo do display preto em todas as telas, texto
      cinza-claro e seleção precisam continuar legíveis.
@@ -177,5 +177,35 @@ procedência no diff (D9).
     o fundo preto do item 2 o resultado é o mesmo; se um dia o fundo da
     abertura deixar de ser preto, a logo apareceria com um retângulo preto
     em volta. A ferramenta recusa PNG com alfa em vez de adivinhar.
+  - **Falta o mesmo `--out` por link nas ferramentas mais antigas.**
+    `patch_update_sd.py` (o passo 1 da receita) compara só
+    `os.path.abspath(src) == os.path.abspath(dst)`, como eu fazia na R0:
+    um symlink passaria. Não corrigi — é ferramenta já aprovada no aparelho
+    (D02) e mexer nela é fora do escopo desta ficha. Sugestão para o
+    engenheiro: puxar a ideia para o padrão de `tools/` numa ficha própria.
 
 ## Rodadas
+
+### R1 — gpt-6-astra, análise do diff (códigos em `docs/seguranca.md`)
+Achados: **1 MÉDIA + 1 BAIXA**, ambos da minha entrega.
+
+| # | Sev. | Achado | Causa | Correção |
+|---|---|---|---|---|
+| 1 | MÉDIA | D3 ignorava `always_zero` e os bits reservados (5–9) do cabeçalho dos descritores | `confere_descritor()` comparava campo por campo: só `cf` (`header & 0x1F`), largura e altura. Bits 5–9 nunca eram lidos, e a ficha diz que o **descritor** é premissa, não o campo útil | As duas ferramentas comparam agora a **palavra de 32 bits inteira** com o valor de fábrica (`0x0462000A` na logo, `0x1402000A` no papel), e o erro passa a imprimir os dois valores em hex |
+| 2 | BAIXA | `--out` que é symlink/hardlink da entrada sobrescrevia a entrada | Só havia `os.path.abspath(src) == os.path.abspath(dst)`, que compara **nome de caminho**, não arquivo. Um link com outro nome passa e a gravação vai dentro da entrada | Função `mesma_entrada()` nas duas: caminho igual **ou** `os.path.samefile` quando `--out` existe (`lexists`, com `OSError` → não é a mesma). Recusa 2, antes de qualquer leitura ou escrita |
+
+Achado lateral que a correção do #1 expôs: minha constante do cabeçalho do
+papel estava escrita `0x0140200A` (zero a mais) e só não apareceu antes
+porque a conferência por campo comparava só `cf`. A conferida agora é a
+palavra inteira, e a constante foi corrigida para `0x1402000A` (valor lido
+no ORIGINAL). Sem isso, o `fab_logo` recusaria a própria imagem de fábrica —
+que é o que a correction do #1 fez aparecer logo no primeiro build.
+
+Verificação: `tests/test_rc2.py` **18/18** (16 da R0 + os 2 novos da R1),
+`sh tools/ci.sh` **verde, `CI OK`** (passos 1 a 5, com o `ci.sh` corrigido
+pelo merge). conferi ainda à mão: symlink e hardlink recusados pelas duas
+ferramentas (rc=2, entrada intacta), `--dry-run` também recusa link, e um
+bit reservado aceso no cabeçalho da **logo** é recusado pelo
+`fab_fundo_preto` (a checagem é cruzada, como a R0 já pedia). A imagem da
+RC2 **não mudou**: `fcca5fdc…` antes e depois, porque as duas correções são
+de premissa e recusa, não de escrita.

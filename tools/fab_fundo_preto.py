@@ -44,9 +44,12 @@ PREMISSAS, conferidas ANTES de escrever qualquer byte
     saida e sem tocar na entrada:
 
       - a imagem tem 2 MiB;
-      - os dois descritores INDEXED_8 sao os de fabrica (cf, largura,
-        altura, data_size e ponteiro XIP): o da logo da abertura
-        (0x0CC7C4) e o do papel de parede (0x0C73B8);
+      - os dois descritores INDEXED_8 sao os de fabrica, INTEIROS: os 32
+        bits do cabecalho palavra por palavra (cf, always_zero, os bits
+        reservados e a largura/altura embutidas), mais o data_size e o
+        ponteiro XIP — o da logo da abertura (0x0CC7C4) e o do papel de
+        parede (0x0C73B8). Conferir so o cf e a largura deixaria passar
+        um sempre_zero ou um bit reservado aceso (achado 001-R1);
       - os dois `bl` da abertura (0x12285A e 0x1228E4) sao exatamente a
         codificacao de fabrica do salto para 0x00D21384;
       - 0x1567F6 ainda e `ff 23`;
@@ -57,6 +60,13 @@ PREMISSAS, conferidas ANTES de escrever qualquer byte
     Este item 2 e o unico jeito de trocar a cor da abertura: a funcao
     preta ja existe na imagem. Nada e alocado, nada e criado, nada e
     sobrescrito — por isso as premissas importam tanto.
+
+SEGURANCA DA ESCRITA
+
+    `--out` e recusado quando aponta para a propria entrada — mesmo
+    caminho, symlink ou hardlink (`os.path.samefile`, achado 001-R1).
+    Sem isso, um link com outro nome passava pela comparacao de caminho
+    e a gravacao escrevia por cima da entrada.
 
 USO
 
@@ -97,7 +107,7 @@ PAPEL_CAB = 0x0C73B8
 PAPEL_DADOS = 0x0C73C4
 PAPEL_PALETA_FIM = PAPEL_DADOS + 1024       # 0x0C77C4
 PAPEL_FIM = PAPEL_PALETA_FIM + 128 * 160
-PAPEL_CAB_FABRICA = 0x0140200A
+PAPEL_CAB_FABRICA = 0x1402000A
 PAPEL_TAM_FABRICA = 1024 + 128 * 160
 PAPEL_PTR_FABRICA = PAPEL_DADOS + XIP
 
@@ -163,15 +173,20 @@ def enc_bl(de, para):
 
 def confere_descritor(d, cab, nome, cab_fabrica, tam_fabrica, ptr_fabrica,
                       larg, alt):
+    """O descritor e INTEIRO de fabrica: os 32 bits do cabecalho palavra por
+    palavra — cf, always_zero, os bits reservados e a largura/altura
+    embutidas — mais o data_size e o ponteiro XIP.
+
+    Conferir campo por campo deixava passar um sempre_zero ou um bit
+    reservado aceso: sao bits que o aparelho le, e a ficha diz que o
+    descritor e premissa, nao o seu campo util (achado 001-R1, MEDIA).
+    """
     cab_pal, tam, ptr = struct.unpack_from("<3I", d, cab)
-    cf = cab_pal & 0x1F
-    w = (cab_pal >> 10) & 0x7FF
-    h = (cab_pal >> 21) & 0x7FF
     erros = []
-    if cf != (cab_fabrica & 0x1F):
-        erros.append(f"{nome} 0x{cab:06X}: cf={cf}, esperado {cab_fabrica & 0x1F}")
-    if (w, h) != (larg, alt):
-        erros.append(f"{nome} 0x{cab:06X}: {w}x{h}, esperado {larg}x{alt}")
+    if cab_pal != cab_fabrica:
+        erros.append(f"{nome} 0x{cab:06X}: cabecalho 0x{cab_pal:08X}, "
+                     f"esperado 0x{cab_fabrica:08X} inteiro "
+                     f"(cf, always_zero, reservados, {larg}x{alt})")
     if tam != tam_fabrica:
         erros.append(f"{nome} 0x{cab:06X}: data_size=0x{tam:X}, "
                      f"esperado 0x{tam_fabrica:X}")
@@ -297,6 +312,25 @@ def confere_resultado(d):
     return erros
 
 
+def mesma_entrada(src, dst):
+    """--out aponta para a propria entrada?
+
+    Comparar caminho resolve so o caso literal. Um symlink ou um hardlink
+    com outro nome passa pela comparacao e a gravacao vai DENTRO da
+    entrada — que e o que a regra do projeto proibe (achado 001-R1,
+    BAIXA). `samefile` pergunta ao sistema de arquivos qual arquivo e,
+    nao como ele se chama.
+    """
+    if os.path.abspath(src) == os.path.abspath(dst):
+        return True
+    if not os.path.lexists(dst):          # saida ainda nao existe: nada a ver
+        return False
+    try:
+        return os.path.samefile(src, dst)
+    except OSError:                       # link pendurado, sem permissao
+        return False
+
+
 def main():
     ap = argparse.ArgumentParser(
         description="fundo preto: abertura, display e papel de parede")
@@ -305,8 +339,9 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
-    if os.path.abspath(a.src) == os.path.abspath(a.dst):
-        print("RECUSADO: origem e destino sao o mesmo arquivo.", file=sys.stderr)
+    if mesma_entrada(a.src, a.dst):
+        print("RECUSADO: --out e a propria entrada (mesmo caminho, symlink "
+              "ou hardlink).", file=sys.stderr)
         return 2
 
     orig = open(a.src, "rb").read()

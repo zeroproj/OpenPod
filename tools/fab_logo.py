@@ -34,11 +34,14 @@ PREMISSAS, conferidas ANTES de escrever qualquer byte
     saida e sem tocar na entrada:
 
       - a imagem tem 2 MiB;
-      - o cabecalho da `lv_img_dsc` e o de fabrica (cf, largura, altura,
-        data_size) e o ponteiro XIP aponta para 0x000CC7D0;
+      - o cabecalho da `lv_img_dsc` e o de fabrica, INTEIRO: os 32 bits
+        palavra por palavra (cf, always_zero, os bits reservados e a
+        largura/altura embutidas), o data_size, e o ponteiro XIP
+        apontando para 0x000CC7D0. Conferir so o cf e a largura deixaria
+        passar um sempre_zero ou um bit reservado aceso (achado 001-R1);
       - o cabecalho da imagem do papel de parede (0x0C73B8) tambem e o
-        de fabrica — a imagem tem de ser a que a ficha descreve, nao
-        qualquer uma do tamanho certo;
+        de fabrica, inteiro — a imagem tem de ser a que a ficha
+        descreve, nao qualquer uma do tamanho certo;
       - os dois `bl` da abertura (0x12285A e 0x1228E4) ainda chamam a
         funcao de cor branca 0x00D21384;
       - 0x1567F6 ainda e `ff 23` (o `movs r3,#0xff` do fundo do display);
@@ -58,6 +61,13 @@ CONFERENCIA DE SAIDA
     erro maximo 64 e alfa 255 em todos os pixels. Sao os limites dos
     criterios de aceite; se algum estourar, a ferramenta recusa em vez
     de gravar uma imagem que ninguem conferiu.
+
+SEGURANCA DA ESCRITA
+
+    `--out` e recusado quando aponta para a propria entrada — mesmo
+    caminho, symlink ou hardlink (`os.path.samefile`, achado 001-R1).
+    Sem isso, um link com outro nome passava pela comparacao de caminho
+    e a gravacao escrevia por cima da entrada.
 
 USO
 
@@ -106,7 +116,7 @@ PTR_FABRICA = DADOS + XIP
 
 # --- o outro descritor, conferido so como premissa
 PAPEL_CAB = 0x0C73B8
-PAPEL_CAB_FABRICA = 0x0140200A
+PAPEL_CAB_FABRICA = 0x1402000A
 PAPEL_TAM_FABRICA = 1024 + 128 * 160
 PAPEL_PTR_FABRICA = 0x0C73C4 + XIP
 
@@ -213,17 +223,22 @@ def erro_por_canal(rgb, pal, px):
 # premissas
 # ---------------------------------------------------------------------------
 
-def confere_descritor(d, cab, nome, cf_fabrica, tam_fabrica, ptr_fabrica,
+def confere_descritor(d, cab, nome, cab_fabrica, tam_fabrica, ptr_fabrica,
                       larg, alt):
+    """O descritor e INTEIRO de fabrica: os 32 bits do cabecalho palavra por
+    palavra — cf, always_zero, os bits reservados e a largura/altura
+    embutidas — mais o data_size e o ponteiro XIP.
+
+    Conferir campo por campo deixava passar um sempre_zero ou um bit
+    reservado aceso: sao bits que o aparelho le, e a ficha diz que o
+    descritor e premissa, nao o seu campoutil (achado 001-R1, MEDIA).
+    """
     cab_pal, tam, ptr = struct.unpack_from("<3I", d, cab)
-    cf = cab_pal & 0x1F
-    w = (cab_pal >> 10) & 0x7FF
-    h = (cab_pal >> 21) & 0x7FF
     erros = []
-    if cf != (cf_fabrica & 0x1F):
-        erros.append(f"{nome} 0x{cab:06X}: cf={cf}, esperado {cf_fabrica & 0x1F}")
-    if (w, h) != (larg, alt):
-        erros.append(f"{nome} 0x{cab:06X}: {w}x{h}, esperado {larg}x{alt}")
+    if cab_pal != cab_fabrica:
+        erros.append(f"{nome} 0x{cab:06X}: cabecalho 0x{cab_pal:08X}, "
+                     f"esperado 0x{cab_fabrica:08X} inteiro "
+                     f"(cf, always_zero, reservados, {larg}x{alt})")
     if tam != tam_fabrica:
         erros.append(f"{nome} 0x{cab:06X}: data_size=0x{tam:X}, "
                      f"esperado 0x{tam_fabrica:X}")
@@ -284,6 +299,25 @@ def confere_slot(d, cab, nome):
     return pal, px, erros
 
 
+def mesma_entrada(src, dst):
+    """--out aponta para a propria entrada?
+
+    Comparar caminho resolve so o caso literal. Um symlink ou um hardlink
+    com outro nome passa pela comparacao e a gravacao vai DENTRO da
+    entrada — que e o que a regra do projeto proibe (achado 001-R1,
+    BAIXA). `samefile` pergunta ao sistema de arquivos qual arquivo e,
+    nao como ele se chama.
+    """
+    if os.path.abspath(src) == os.path.abspath(dst):
+        return True
+    if not os.path.lexists(dst):          # saida ainda nao existe: nada a ver
+        return False
+    try:
+        return os.path.samefile(src, dst)
+    except OSError:                       # link pendurado, sem permissao
+        return False
+
+
 def main():
     ap = argparse.ArgumentParser(
         description="logo da abertura = assets/OpenLogo.png")
@@ -294,8 +328,9 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
-    if os.path.abspath(a.src) == os.path.abspath(a.dst):
-        print("RECUSADO: origem e destino sao o mesmo arquivo.", file=sys.stderr)
+    if mesma_entrada(a.src, a.dst):
+        print("RECUSADO: --out e a propria entrada (mesmo caminho, symlink "
+              "ou hardlink).", file=sys.stderr)
         return 2
 
     orig = open(a.src, "rb").read()
