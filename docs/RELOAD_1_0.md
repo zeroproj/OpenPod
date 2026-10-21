@@ -31,8 +31,8 @@ foi gravado e relatado.** Se algo quebrar, sabemos qual passo foi.
 
 | Degrau | Receita | Conteúdo | Estado |
 |---|---|---|---|
-| RC1 | `reload_1.0_rc1` | 1 | **gerada, aguardando gravação** |
-| RC2 | — | + 2, 3 | não gerada |
+| RC1 | `reload_1.0_rc1` | 1 | **APROVADA no aparelho em 2026-10-21** (Flashloader, Windows; update por SD testado) |
+| RC2 | `reload_1.0_rc2` | + 2, 3 | ficha `docs/tarefas/001-rc2-logo-fundo.md`, testes vermelhos |
 | RC3 | — | + 4, 5 | não gerada |
 | RC4 | — | + 6, 7 | não gerada; ferramenta dos ícones pronta |
 
@@ -90,7 +90,6 @@ Em aberto: Tocando agora e Livro estão ambos laranja (aprovado assim).
 
 ## 5. Pendências
 
-- Resultado da RC1 no aparelho.
 - **Quais defeitos as Alphas mostraram** — decide se `patch_nome_faixa`,
   `patch_faixa_degrade`, `patch_fundo_display` e `patch_fundo_abertura`
   são reaproveitados ou reescritos antes da RC2/RC3.

@@ -7,6 +7,22 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-10-21 — RC1 aprovada; processo padrão adotado; ficha da RC2
+
+- **RC1 aprovada no aparelho.** Gravada pelo Flashloader (Windows); liga,
+  mostra "Reload 1.0 RC1", "Atualizar por SD" aparece e **atualiza pelo
+  cartão**; resto igual à fábrica.
+- **Processo padrão v1.4 adaptado a firmware** (`docs/processo-padrao.md`,
+  D01): ficha + testes vermelhos protegidos, MiniMax implementa, Codex
+  revisa, `tools/ci.sh` é o porteiro local (Fase 0).
+- **Ficha 001 — RC2** (logo + fundo preto) com evidência tirada do
+  ORIGINAL: logo `0x0CC7C4`; abertura `bl 0xD21384`(branco) → `0xD2138A`
+  (preto, da própria fábrica) em `0x12285A`/`0x1228E4`; fundo do display
+  `0x1567F6` `ff 23`→`00 23`; papel de parede `0x0C73B8` paleta preta.
+  Testes em `tests/test_rc2.py` (12, vermelhos).
+
+---
+
 ## 2026-09-24 — Reload 1.0: recomeço do ORIGINAL, RC1 e ícones novos
 
 As **Alphas 0.1/0.2 foram descartadas** a pedido do mantenedor (bugadas).
