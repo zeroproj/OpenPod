@@ -99,8 +99,113 @@ procedência no diff (D9).
 
 ## Entrega (preenchida pelo desenvolvedor)
 - O que foi feito:
+  - `tools/fab_logo.py` (item 1): `assets/OpenLogo.png` na `lv_img_dsc` de
+    128×35 da abertura. Escreve **só** os 5504 B de `0x0CC7D0..0x0CDD50`
+    (1024 de paleta BGRA + 4480 de índices); o cabeçalho `0x0CC7C4` fica
+    intocado. Quantiza por median cut do Pillow, alfa 255 nas 256 entradas
+    e confere o resultado lendo de volta pelo cabeçalho: erro médio 0,07
+    (limite 2,0), máximo 6 (limite 64), alfa 255 em todos os pixels.
+  - `tools/fab_fundo_preto.py` (itens 2, 3 e 4): os dois `bl` da abertura
+    passam a chamar `0x00D2138A` (a função preta da própria fábrica, que
+    fica intacta); `0x1567F6` vira `00 23`; as 256 cores da paleta do papel
+    de parede (0x0C73C4..0x0C77C4) viram preto com o alfa de fábrica.
+    Cabeçalho e pixels do papel de parede intocados.
+  - Receita `reload_1.0_rc2` em `tools/build.py` = `reload_1.0_rc1` +
+    `fab_logo.py` + `fab_fundo_preto.py`, nessa ordem. Sem entrada no
+    `MAPA`: nenhuma das duas aloca, e a conferência de "escreveu só no
+    próprio lote" do pipeline não se aplica a elas.
+  - Recusa (D3) nas duas ferramentas: tamanho 2 MiB, os **dois**
+    descritores INDEXED_8 conferidos **inteiros** (os 32 bits do cabeçalho
+    palavra por palavra — cf, `always_zero`, bits reservados e
+    largura/altura embutidas —, mais data_size e ponteiro XIP), os bytes de
+    fábrica dos dois `bl`, de `0x1567F6` e das funções
+    `0x00D21384`/`0x00D2138A`, e no `fab_logo` o sha256 e o tamanho do PNG.
+    Recusa sai com código ≠ 0 sem criar a saída e sem tocar na entrada.
+  - `--out` recusado quando aponta para a própria entrada por qualquer via:
+    mesmo caminho, symlink ou hardlink (`os.path.samefile`, recusa 2).
+  - `sh tools/ci.sh`: **tudo verde**, `CI OK` (passos 1 a 5). A pendência 1
+    da R0 foi resolvida pelo merge: o `ci.sh` do ramo principal trocou `-q`
+    por `--log-level error`, e o gitleaks 8.30.1 roda.
+  - Imagem da RC2, para o pacote: `fcca5fdc99b828fb135cae77f5915c42cfddf1a537eb0a619f0c135313ccd123`
+    (reprodutível: dois builds seguidos deram o mesmo sha). Setores tocados
+    contra o ORIGINAL, além dos da RC1: `0x0C7000`, `0x0CC000`, `0x0CD000`,
+    `0x122000`, `0x156000`. A R1 **não muda a imagem**: o sha acima é o
+    mesmo antes e depois (a correção é só de premissa e recusa).
 - Decisões tomadas:
+  - As duas ferramentas são **auto-suficientes** (só stdlib; `fab_logo` usa
+    também Pillow). Thumb-2 `bl` é codificado e decodificado dentro de
+    cada uma, sem importar de outra ferramenta: a premissa dos `bl` é
+    sobre o *alvo* do salto, e comparar bytes crus não diz para onde o
+    aparelho vai.
+  - Cada uma confere as premissas **inteiras**, inclusive as dos itens que
+    não escreve (é o que a ficha pede: "cada ferramenta confere TODAS as
+    premissas"). Só o que muda é a lista de erros que cada recusa imprime.
+  - O `fab_logo` grava alfa 255 nas 256 entradas da paleta, inclusive nas
+    que nenhum pixel usa. A de fábrica deixa as não usadas com alfa 0, mas
+    elas não aparecem na tela: o índice nunca as referencia.
+  - Segunda passagem é recusada por construção (o `bl` e o imediato já não
+    são os de fábrica). É o comportamento certo para ferramenta de receita,
+    e está escrito na seção LIMITACOES das duas.
+  - Nenhuma linha em `docs/` além desta Entrega: CHANGELOG, `RELOAD_1_0.md`
+    e `docs/metricas.md` são do engenheiro (processo-padrao §2/§11).
 - Pendências / limitações:
+  1. **Resolvido na R1.** `tools/ci.sh` passo 5 não rodava aqui por versão
+     do gitleaks: a linha usava `-q`, que o gitleaks 8.30.1 removeu. O
+     merge do ramo principal trocou por `--log-level error` e o porteiro
+     fecha verde, `CI OK`. Não é mais pendência.
+  2. A imagem não foi testada no aparelho — é o roteiro do decisor (D8).
+     Em especial: com o fundo do display preto em todas as telas, texto
+     cinza-claro e seleção precisam continuar legíveis.
+  3. A paleta depende da versão do Pillow (median cut). Com o sha256 do PNG
+     fixado pela ficha, é reproduzível na mesma máquina; o que garante a
+     imagem não é o algoritmo, e sim a conferência de erro que a
+     ferramenta roda antes de gravar.
+  4. Se `assets/OpenLogo.png` mudar, `fab_logo.py` recusa até alguém
+     atualizar a constante `SHA_PNG`. É o que a ficha pediu (hash fixado),
+     e é uma trava de duas mãos: quem quiser outra logo tem de passar por
+     ficha nova.
 - Danos notados e não cobertos:
+  - **D8 (legibilidade sobre preto)** continua aberto: nenhum teste
+    neste repositório vê texto nem seleção. Só o roteiro no aparelho fecha.
+  - **D7 (`.up`)** continua com o engenheiro: `gera_versao` tem de dar
+    [4/4] OK com esta imagem. Não gero kit, não carimbo versão.
+  - **D2** é coberto pela conferência de cada ferramenta (ela aborta se
+    escrever fora do próprio lote) e pelo C7; **D1** pela conferência do
+    alvo decodificado depois de escrever.
+  - Observação de fundo (não é dano, é para o registro): a logo nova é
+    **opaca**, com o preto do PNG virando cor de paleta, não alfa 0. Sobre
+    o fundo preto do item 2 o resultado é o mesmo; se um dia o fundo da
+    abertura deixar de ser preto, a logo apareceria com um retângulo preto
+    em volta. A ferramenta recusa PNG com alfa em vez de adivinhar.
+  - **Falta o mesmo `--out` por link nas ferramentas mais antigas.**
+    `patch_update_sd.py` (o passo 1 da receita) compara só
+    `os.path.abspath(src) == os.path.abspath(dst)`, como eu fazia na R0:
+    um symlink passaria. Não corrigi — é ferramenta já aprovada no aparelho
+    (D02) e mexer nela é fora do escopo desta ficha. Sugestão para o
+    engenheiro: puxar a ideia para o padrão de `tools/` numa ficha própria.
 
 ## Rodadas
+
+### R1 — gpt-6-astra, análise do diff (códigos em `docs/seguranca.md`)
+Achados: **1 MÉDIA + 1 BAIXA**, ambos da minha entrega.
+
+| # | Sev. | Achado | Causa | Correção |
+|---|---|---|---|---|
+| 1 | MÉDIA | D3 ignorava `always_zero` e os bits reservados (5–9) do cabeçalho dos descritores | `confere_descritor()` comparava campo por campo: só `cf` (`header & 0x1F`), largura e altura. Bits 5–9 nunca eram lidos, e a ficha diz que o **descritor** é premissa, não o campo útil | As duas ferramentas comparam agora a **palavra de 32 bits inteira** com o valor de fábrica (`0x0462000A` na logo, `0x1402000A` no papel), e o erro passa a imprimir os dois valores em hex |
+| 2 | BAIXA | `--out` que é symlink/hardlink da entrada sobrescrevia a entrada | Só havia `os.path.abspath(src) == os.path.abspath(dst)`, que compara **nome de caminho**, não arquivo. Um link com outro nome passa e a gravação vai dentro da entrada | Função `mesma_entrada()` nas duas: caminho igual **ou** `os.path.samefile` quando `--out` existe (`lexists`, com `OSError` → não é a mesma). Recusa 2, antes de qualquer leitura ou escrita |
+
+Achado lateral que a correção do #1 expôs: minha constante do cabeçalho do
+papel estava escrita `0x0140200A` (zero a mais) e só não apareceu antes
+porque a conferência por campo comparava só `cf`. A conferida agora é a
+palavra inteira, e a constante foi corrigida para `0x1402000A` (valor lido
+no ORIGINAL). Sem isso, o `fab_logo` recusaria a própria imagem de fábrica —
+que é o que a correction do #1 fez aparecer logo no primeiro build.
+
+Verificação: `tests/test_rc2.py` **18/18** (16 da R0 + os 2 novos da R1),
+`sh tools/ci.sh` **verde, `CI OK`** (passos 1 a 5, com o `ci.sh` corrigido
+pelo merge). conferi ainda à mão: symlink e hardlink recusados pelas duas
+ferramentas (rc=2, entrada intacta), `--dry-run` também recusa link, e um
+bit reservado aceso no cabeçalho da **logo** é recusado pelo
+`fab_fundo_preto` (a checagem é cruzada, como a R0 já pedia). A imagem da
+RC2 **não mudou**: `fcca5fdc…` antes e depois, porque as duas correções são
+de premissa e recusa, não de escrita.
