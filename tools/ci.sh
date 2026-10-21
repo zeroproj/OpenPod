@@ -15,5 +15,5 @@ python3 tests/test_roundtrip.py
 python3 tools/patch_icones_home.py --autoteste
 python3 tests/test_rc2.py
 echo "== 5. segredos"
-if command -v gitleaks >/dev/null; then gitleaks detect --no-banner --redact -q; else echo "gitleaks ausente (pulado)"; fi
+if command -v gitleaks >/dev/null; then gitleaks detect --no-banner --redact --log-level error; else echo "gitleaks ausente (pulado)"; fi
 echo "CI OK"
