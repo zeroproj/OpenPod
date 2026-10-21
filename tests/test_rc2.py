@@ -38,8 +38,12 @@ ABERTURA_BL = (0x12285A, 0x1228E4)      # bl lv_color_white antes do bg da abert
 COR_BRANCA, COR_PRETA = 0x00D21384, 0x00D2138A
 FUNDO_DISPLAY = 0x1567F6                # movs r3,#0xff -> bg do display
 
+PAPEL_PALETA_FIM = PAPEL_DADOS + 1024
+SHA_LOGO_PNG = "1e459938eddc15416d01fb9f29d7486400a2c9166ed159eac1ba0c58edf90d4d"
+FERRAMENTAS = ("fab_logo.py", "fab_fundo_preto.py")   # nomes fixados pela ficha
+
 PERMITIDO_RC2 = (
-    [(LOGO_DADOS, LOGO_FIM), (PAPEL_DADOS, PAPEL_FIM),
+    [(LOGO_DADOS, LOGO_FIM), (PAPEL_DADOS, PAPEL_PALETA_FIM),
      (FUNDO_DISPLAY, FUNDO_DISPLAY + 2)]
     + [(a, a + 4) for a in ABERTURA_BL]
 )
@@ -127,6 +131,7 @@ class RC2(unittest.TestCase):
     def test_c2_receita_sem_ferramentas_antigas(self):
         rec = carrega_build().RECEITAS["reload_1.0_rc2"]
         nomes = [t for t, _, _ in rec]
+        self.assertEqual(set(nomes[1:]), set(FERRAMENTAS), "RC2 = RC1 + as duas ferramentas da ficha")
         self.assertEqual(nomes[0], "patch_update_sd.py", "RC2 = RC1 + passos novos")
         self.assertFalse(PROIBIDAS & set(nomes), f"ferramenta antiga na receita: {PROIBIDAS & set(nomes)}")
         for t in nomes[1:]:
@@ -142,8 +147,13 @@ class RC2(unittest.TestCase):
         from PIL import Image
         w, h, px = decodifica(self.rc2, LOGO_CAB)
         self.assertEqual((w, h), (128, 35))
-        ref = Image.open(os.path.join(RAIZ, "assets/OpenLogo.png")).convert("RGB").tobytes()
+        png = os.path.join(RAIZ, "assets/OpenLogo.png")
+        self.assertEqual(sha(open(png, "rb").read()), SHA_LOGO_PNG, "OpenLogo.png mudou")
+        img = Image.open(png)
+        self.assertEqual(img.size, (128, 35))
+        ref = img.convert("RGB").tobytes()
         got = bytes(c for p in px for c in p[:3])
+        self.assertEqual(len(ref), len(got))
         difs = [abs(a - b) for a, b in zip(ref, got)]
         self.assertLessEqual(sum(difs) / len(difs), 2.0, "logo longe do PNG")
         self.assertLessEqual(max(difs), 64)
@@ -169,8 +179,13 @@ class RC2(unittest.TestCase):
         self.assertEqual(self.rc2[PAPEL_CAB:PAPEL_DADOS], self.orig[PAPEL_CAB:PAPEL_DADOS])
         w, h, px = decodifica(self.rc2, PAPEL_CAB)
         self.assertEqual((w, h), (128, 160))
-        self.assertTrue(all(p[:3] == (0, 0, 0) for p in px), "papel de parede nao e preto")
-        self.assertTrue(all(p[3] == 255 for p in px))
+        pal = self.rc2[PAPEL_DADOS:PAPEL_PALETA_FIM]
+        opal = self.orig[PAPEL_DADOS:PAPEL_PALETA_FIM]
+        for i in range(256):
+            self.assertEqual(pal[i * 4:i * 4 + 3], b"\0\0\0", f"cor {i} da paleta nao e preta")
+            self.assertEqual(pal[i * 4 + 3], opal[i * 4 + 3], f"alfa {i} mudou")
+        self.assertEqual(self.rc2[PAPEL_PALETA_FIM:PAPEL_FIM],
+                         self.orig[PAPEL_PALETA_FIM:PAPEL_FIM], "pixels do papel mudaram")
 
     # --- C7: segurança — nada fora do declarado
     def test_c7_so_regioes_permitidas(self):
@@ -184,6 +199,57 @@ class RC2(unittest.TestCase):
         dif = [i for i in range(len(self.orig)) if self.orig[i] != self.rc2[i]]
         self.assertGreaterEqual(min(dif), 0xE000, "bootloader ou setor 0xD000 tocado")
         self.assertFalse(any(i >= 0x1FC000 for i in dif), "PSMP tocada")
+
+
+class Recusa(unittest.TestCase):
+    """D3: com premissa errada, a ferramenta recusa ANTES de escrever."""
+
+    def roda(self, ferramenta, entrada):
+        tmp = tempfile.mkdtemp(prefix="openpod_recusa_")
+        src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
+        open(src, "wb").write(entrada)
+        r = subprocess.run([sys.executable, os.path.join(RAIZ, "tools", ferramenta),
+                            "--in", src, "--out", dst], capture_output=True, text=True, cwd=RAIZ)
+        return r.returncode, os.path.exists(dst), open(src, "rb").read() == entrada
+
+    def casos(self):
+        o = open(ORIGINAL, "rb").read()
+        def troca(a, v):
+            b = bytearray(o); b[a:a + len(v)] = v; return bytes(b)
+        return {
+            "truncado": o[:0x100000],
+            "logo_cab": troca(LOGO_CAB, b"\0\0\0\0"),
+            "papel_cab": troca(PAPEL_CAB + 8, b"\0\0\0\0"),
+            "bl1": troca(ABERTURA_BL[0], b"\0\xbf\0\xbf"),
+            "bl2": troca(ABERTURA_BL[1], b"\0\xbf\0\xbf"),
+            "display": troca(FUNDO_DISPLAY, b"\x12\x23"),
+            "preta": troca(COR_PRETA - XIP, b"\0\0\0\0"),
+        }
+
+    def test_d3_ferramentas_existem(self):
+        for f in FERRAMENTAS:
+            self.assertTrue(os.path.exists(os.path.join(RAIZ, "tools", f)), f)
+
+    def test_d3_logo_recusa(self):
+        for nome in ("truncado", "logo_cab"):
+            rc, criou, intacta = self.roda("fab_logo.py", self.casos()[nome])
+            self.assertNotEqual(rc, 0, f"fab_logo aceitou {nome}")
+            self.assertFalse(criou, f"fab_logo criou saida com {nome}")
+            self.assertTrue(intacta)
+
+    def test_d3_fundo_recusa(self):
+        for nome in ("truncado", "papel_cab", "bl1", "bl2", "display", "preta"):
+            rc, criou, intacta = self.roda("fab_fundo_preto.py", self.casos()[nome])
+            self.assertNotEqual(rc, 0, f"fab_fundo_preto aceitou {nome}")
+            self.assertFalse(criou, f"fab_fundo_preto criou saida com {nome}")
+            self.assertTrue(intacta)
+
+    def test_d3_aceita_o_original(self):
+        o = open(ORIGINAL, "rb").read()
+        for f in FERRAMENTAS:
+            rc, criou, _ = self.roda(f, o)
+            self.assertEqual(rc, 0, f"{f} recusou o ORIGINAL")
+            self.assertTrue(criou)
 
 
 if __name__ == "__main__":

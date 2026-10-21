@@ -4,7 +4,7 @@
 - Desenvolvedor: MiniMax M3 (opencode.json do worktree)
 - Analista: gpt-6-astra, esforço high
 - Depende de: RC1 (aprovada no aparelho em 2026-10-21)
-- Status: rascunho
+- Status: revisada (astra R0 incorporada) — aguardando aprovação do decisor
 
 ## Objetivo
 O aparelho liga mostrando a logo do OpenPod sobre fundo preto, e as telas
@@ -13,7 +13,15 @@ fica preta. Tudo o que a RC1 entregou (update por SD) continua igual.
 
 ## Escopo
 - Inclui: receita `reload_1.0_rc2` em `tools/build.py` = os passos da
-  `reload_1.0_rc1` + ferramentas NOVAS para os quatro itens abaixo.
+  `reload_1.0_rc1` + **exatamente duas ferramentas novas**, com estes nomes:
+  - `tools/fab_logo.py` — item 1 (lê `assets/OpenLogo.png`);
+  - `tools/fab_fundo_preto.py` — itens 2, 3 e 4.
+  Interface das duas: `--in <bin> --out <bin> [--dry-run]`, padrão de `tools/`.
+- **Recusa antes de escrever (D3):** cada ferramenta lê a entrada, confere
+  TODAS as premissas abaixo (tamanho 2 MiB; cabeçalhos e ponteiros XIP dos
+  descritores; bytes de fábrica dos `bl`, de `0x1567F6` e das funções
+  `0xD21384`/`0xD2138A`) e, se qualquer uma falhar, sai com código ≠ 0
+  **sem criar o arquivo de saída** e sem tocar a entrada.
 - Não inclui: barra "OpenPod", degradê, ícones, bateria, textos (RC3/RC4);
   carimbo de versão e kit (o engenheiro faz).
 - **Proibido**: usar, importar ou copiar `patch_logo.py`,
@@ -38,8 +46,9 @@ Base XIP `0x00C00000`. Thumb-2, little-endian. Endereços abaixo = offset no arq
    Trocar o imediato para 0: `00 23`.
 4. **Papel de parede da Tocando Agora** — `lv_img_dsc` em `0x0C73B8`
    (INDEXED_8 128×160, ptr `0x00CC73C4`), referenciado em `0x13217C`.
-   Deixar todas as 256 cores da paleta pretas (B=G=R=0), alfa 255.
-   Cabeçalho intocado.
+   Deixar as **256** cores da paleta pretas (B=G=R=0), alfa como na
+   fábrica. Só a paleta (`0x0C73C4..0x0C77C4`) muda: cabeçalho e pixels
+   intocados.
 
 ## Critérios de aceite (todos em `tests/test_rc2.py`)
 - [ ] C0 `reload_1.0_rc2` constrói e passa a validação do `build.py`
@@ -48,7 +57,8 @@ Base XIP `0x00C00000`. Thumb-2, little-endian. Endereços abaixo = offset no arq
 - [ ] C3 cabeçalho da logo intocado; logo decodificada ≈ `OpenLogo.png` (erro médio ≤ 2, máx ≤ 64), alfa 255
 - [ ] C4 os dois `bl` da abertura chamam `0xD2138A`; a função preta continua intocada
 - [ ] C5 `0x1567F6` = `00 23`
-- [ ] C6 papel de parede: cabeçalho intocado, todos os pixels pretos, alfa 255
+- [ ] C6 papel de parede: cabeçalho e pixels intocados; as 256 cores pretas; alfa de fábrica
+- [ ] D3 as duas ferramentas existem, aceitam o ORIGINAL e recusam entrada truncada ou adulterada sem criar saída
 - [ ] C7 nenhum byte fora do permitido; nada abaixo de `0xE000`; PSMP intocada
 
 ## Danos possíveis (equivalente dos casos de abuso)
@@ -60,16 +70,32 @@ Base XIP `0x00C00000`. Thumb-2, little-endian. Endereços abaixo = offset no arq
 | D4 | quebra a RC1 (update por SD) | RC1 intacta dentro da RC2 | C1 |
 | D5 | código de projeto antigo entra escondido | receita e fontes sem nomes proibidos | C2 |
 | D6 | bootloader / setor `0xD000` / PSMP tocados | build e teste recusam | C7 |
+| D7 | `.up` com payload errado, CRC errado ou alcançando a PSMP | o engenheiro só entrega com `gera_versao` [4/4] OK (CRC, cobertura, PSMP fora, setores = imagem) e registra no pacote | pacote |
+| D8 | fundo preto deixa texto ou seleção ilegível, inclusive no caminho do update por SD | roteiro obrigatório no aparelho antes de aprovar | roteiro |
+| D9 | código antigo copiado e renomeado | o analista confere a procedência no diff (só fábrica + Pillow + stdlib) | revisão do diff |
+
+## Roteiro no aparelho (decisor, antes de aprovar)
+| Fluxo | Passos | ✔/✘ |
+|---|---|---|
+| Abertura | ligar → logo OpenPod, fundo preto; repetir após reset | |
+| Navegação | home → cada item → voltar; textos e seleção legíveis | |
+| Tocando Agora | tocar uma música → fundo preto, tempos e título legíveis | |
+| Configurar | Informações = "Reload 1.0 RC2"; "Atualizar por SD" legível | |
+| Update por SD | `update.up` da RC2 no cartão → Atualizar por SD → volta normal → apagar `update.up` | |
 
 ## Bytes permitidos
-Além dos da RC1: `0x0CC7D0..0x0CDD50`, `0x0C73C4..0x0CC7C4`,
+Além dos da RC1: `0x0CC7D0..0x0CDD50`, `0x0C73C4..0x0C77C4` (só a paleta),
 `0x12285A..0x12285E`, `0x1228E4..0x1228E8`, `0x1567F6..0x1567F8`.
 
 ## Arquivos de teste protegidos
 - `tests/test_rc2.py`, `tools/ci.sh` (hash em `tests/PROTEGIDOS.sha256`)
 
 ## Revisão da ficha (Codex)
-<pendente>
+R0 — gpt-6-astra high, 2026-10-21: REPROVADO (2 ALTA, 3 MÉDIA, 1 BAIXA).
+Incorporado: recusa testada com 7 entradas adulteradas (D3); papel de
+parede limitado à paleta, 256 entradas; hash e tamanho do PNG fixados;
+conferência do `.up` pelo engenheiro (D7); roteiro no aparelho (D8);
+procedência no diff (D9).
 
 ## Entrega (preenchida pelo desenvolvedor)
 - O que foi feito:
