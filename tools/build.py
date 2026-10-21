@@ -323,11 +323,35 @@ RELOAD_1_0_RC1 = [
     ("patch_update_sd.py",     [], "Update via SD (Configurar → Atualizar por SD)"),
 ]
 
+# ---------------------------------------------------------------------------
+# RELOAD 1.0 RC2 — a RC1 mais logo e fundo preto (ficha 001, tipo Risco).
+#
+# A RC1 (update por SD) ja foi aprovada no aparelho e virou catraca:
+# sha256 a427c62e..., em tests/test_rc2.py. Por isso os passos dela vem
+# primeiro, na ordem dela, e as ferramentas novas ficam DEPOIS: a RC2 tem
+# que conter a RC1 byte a byte.
+#
+# As duas ferramentas novas nao alocam nada e nao usam area livre: uma
+# escreve os 5504 bytes da imagem da abertura (paleta + pixels, cabecalho
+# intocado), a outra mexe em 4 bytes de codigo, 2 bytes de imediato e nas
+# 256 cores da paleta do papel de parede. Ambas conferem a premissa no
+# binario ANTES de escrever e recusam sem criar a saida — logo, nao entram
+# no MAPA: nao ha lote alocado para declarar.
+#
+# A ordem entre elas e a da ficha. As duas recusam rodar duas vezes: a
+# premissa de fabrica so existe na primeira passagem.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC2 = RELOAD_1_0_RC1 + [
+    ("fab_logo.py",       [], "a logo da abertura passa a ser a do OpenPod"),
+    ("fab_fundo_preto.py", [], "fundo preto: abertura, display e papel de parede"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
     "reload_alpha_0.2": RELOAD_ALPHA_0_2,
     "reload_1.0_rc1": RELOAD_1_0_RC1,
+    "reload_1.0_rc2": RELOAD_1_0_RC2,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
