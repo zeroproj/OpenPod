@@ -32,7 +32,7 @@ foi gravado e relatado.** Se algo quebrar, sabemos qual passo foi.
 | Degrau | Receita | Conteúdo | Estado |
 |---|---|---|---|
 | RC1 | `reload_1.0_rc1` | 1 | **APROVADA no aparelho em 2026-10-21** (Flashloader, Windows; update por SD testado) |
-| RC2 | `reload_1.0_rc2` | + 2, 3 | ficha `docs/tarefas/001-rc2-logo-fundo.md`, testes vermelhos |
+| RC2 | `reload_1.0_rc2` | + 2, 3 | **APROVADA no aparelho em 2026-10-21** (pelo cartão). Imagem `fcca5fdc…`, carimbada `da3398d1…`, `.up` `2adb53ed…` CRC 0x91F1 |
 | RC3 | — | + 4, 5 | não gerada |
 | RC4 | — | + 6, 7 | não gerada; ferramenta dos ícones pronta |
 

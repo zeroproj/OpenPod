@@ -7,6 +7,20 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-10-21 — RC2 aprovada no aparelho (ficha 001)
+
+- Logo do OpenPod na abertura, fundo preto na abertura e no display, papel
+  de parede da Tocando Agora preto. Instalada **pelo cartão** (update por SD
+  da RC1). Roteiro completo OK: abertura, navegação, Tocando Agora,
+  Configurar, novo update por SD.
+- Ferramentas novas, só do firmware de fábrica: `tools/fab_logo.py`,
+  `tools/fab_fundo_preto.py` (MiniMax M3). Análise astra: ficha R0
+  reprovada (6 achados incorporados); diff R0 reprovado (cabeçalho
+  incompleto, saída-link), R1 aprovado.
+- Imagem `fcca5fdc…` vira catraca em `tests/test_rc2.py`.
+
+---
+
 ## 2026-10-21 — RC1 aprovada; processo padrão adotado; ficha da RC2
 
 - **RC1 aprovada no aparelho.** Gravada pelo Flashloader (Windows); liga,

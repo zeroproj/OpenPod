@@ -1,0 +1,94 @@
+OpenPod_Install — OpenPod_OpenPodReload1.0RC2
+=================================================
+
+OpenPod OpenPod Reload 1.0 RC2
+
+GERADO por tools/make_install_kit.py. Nao edite a mao.
+Requisitos: Linux, python3, lsusb, smtlink_dump.
+
+
+A REGRA QUE NASCEU DE UM ERRO REAL
+----------------------------------
+  O write_flash grava A PARTIR DO OFFSET 0 DO ARQUIVO.
+  O 2o argumento NAO e o offset dentro do arquivo.
+
+  ERRADO  write_flash 0xD000 0xD000 0x1000 imagem_2MiB.bin
+  CERTO   write_flash 0xD000 0      0x1000 setor_D000.bin
+
+  Por isso: um arquivo POR SETOR, sempre 0 no 2o argumento.
+  Detalhe em docs/WRITE_FLASH_SEMANTICS.md.
+
+
+CONTEUDO
+--------
+  flash_OpenPod_OpenPodReload1.0RC2.sh      grava (6 setores, 24 KiB)
+  diag.sh                diagnostico          (SO LEITURA)
+  recovery_check_linux.sh  confere a ferramenta (SO LEITURA)
+
+  SETORES A GRAVAR (4096 B cada)
+    OpenPod_OpenPodReload1.0RC2_C7000.bin 0x0C7000  f678974cafcb27f9b636e9713360e6f34a9d03f1b6082f3de9897e1513f3a421
+    OpenPod_OpenPodReload1.0RC2_CC000.bin 0x0CC000  ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
+    OpenPod_OpenPodReload1.0RC2_CD000.bin 0x0CD000  99d56432ede44c31aa9fc2b928c7965db70129bd8e4bc3f3a9b00b82abd4554e
+    OpenPod_OpenPodReload1.0RC2_122000.bin 0x122000  23d44d20cd914ab860eedd25f938eece99af4a059e8e229b3a33e6195fef06ac
+    OpenPod_OpenPodReload1.0RC2_156000.bin 0x156000  09ea275aa3916096700af353b3a9b51b3f51ab9fcad3a8ee616a504bae18d60d
+    OpenPod_OpenPodReload1.0RC2_1A3000.bin 0x1A3000  e622a4d147c8438aea819ee25f2c4d3b63667748337e46e2b1df641750e79ed5
+
+  SETORES DE REVERSAO -> ESTADO ANTERIOR (a base deste kit)
+    base_C7000.bin   0x0C7000  ae29fc778567f832164a237fd2f523dd6eedb4eefad4c7d843676d63931039b4
+    base_CC000.bin   0x0CC000  83597203bed419cc2f76f1b8c942194d07a4b23c34f67e2e7834864361dd6688
+    base_CD000.bin   0x0CD000  ab039386aa645f414a0580730cc4b62ca7831c9d4d8dff7b01c80f9b7be16f5f
+    base_122000.bin  0x122000  dc3b6a4a0150763564474047400cebac7b4e331820901505eacf3644083c7c48
+    base_156000.bin  0x156000  b1791e9f5e5a62402d93ada9f3174129843ed8af22b7d23904d5cd472e9b43c5
+    base_1A3000.bin  0x1A3000  cbdbbde7dee32577c1f0465e206b7034225c51dac1281dbc5123aa537d6c025e
+
+
+COMO RODAR
+----------
+  sha256sum *.bin          # conferir a transferencia
+
+  sudo sh diag.sh /opt/smartlink_flash        # so leitura
+  sudo sh flash_OpenPod_OpenPodReload1.0RC2.sh /opt/smartlink_flash
+
+ORDEM RECOMENDADA (a que se mostrou mais confiavel):
+  1. plugue o aparelho, com o cartao, e espere o raio na tela
+  2. espere mais ~10 segundos
+  3. SO ENTAO rode o script
+
+O script tambem aceita a ordem inversa — se o aparelho nao estiver
+conectado ele espera e avisa a hora de plugar. Mas por esse caminho
+o aparelho costuma RE-ENUMERAR logo depois de detectado (observado
+em 2026-09-12: Device 094 na espera, Device 098 segundos depois).
+
+Por que a folga importa: o aparelho precisa de alguns segundos
+entre plugar e o primeiro comando, senao cai do modo card reader no
+meio da operacao. Era por isso que o recovery_check_linux.sh
+'funcionava melhor' — ele gastava tempo compilando antes de falar
+com o aparelho. Agora essa folga e explicita.
+
+O script para e pede GRAVAR digitado. Ate ai, so houve leitura.
+
+
+SE DER ERRADO
+-------------
+NAO DESLIGUE O APARELHO. Enquanto ele enumera, tem conserto.
+
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xC7000 0 0x1000 base_C7000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCC000 0 0x1000 base_CC000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0xCD000 0 0x1000 base_CD000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x122000 0 0x1000 base_122000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x156000 0 0x1000 base_156000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1A3000 0 0x1000 base_1A3000.bin
+
+Isso devolve o aparelho ao estado ANTERIOR — o mesmo que ele tinha
+antes deste kit, ja verificado e ja testado bootando.
+
+NAO use setores de fabrica para reverter um patch parcial: o resto
+da flash continuaria no estado da base e a FIRM ficaria misturada,
+com o CRC da tabela de particoes sem bater. Para voltar de fato ao
+ORIGINAL DE FABRICA, use o procedimento completo de recuperacao.

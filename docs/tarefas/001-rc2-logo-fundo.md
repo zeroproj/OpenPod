@@ -4,7 +4,7 @@
 - Desenvolvedor: MiniMax M3 (opencode.json do worktree)
 - Analista: gpt-6-astra, esforço high
 - Depende de: RC1 (aprovada no aparelho em 2026-10-21)
-- Status: revisada (astra R0 incorporada) — aguardando aprovação do decisor
+- Status: merged (aprovada no aparelho em 2026-10-21)
 
 ## Objetivo
 O aparelho liga mostrando a logo do OpenPod sobre fundo preto, e as telas

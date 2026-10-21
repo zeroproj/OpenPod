@@ -1,0 +1,21 @@
+OpenPod Reload 1.0 RC2 — TESTAR
+
+Base: RC1 (aprovada). Receita reload_1.0_rc2 = RC1 + fab_logo.py + fab_fundo_preto.py
+Imagem carimbada: da3398d1... · .up CRC 0x91F1 · sha 2adb53ed...
+Muda em relacao a RC1: 6 setores (0x0C7000 0x0CC000 0x0CD000 0x122000 0x156000 0x1A3000)
+
+INSTALAR (pelo cartao — a RC1 ja tem "Atualizar por SD")
+  1. Copie OpenPod_OpenPodReload1.0RC2.up para a RAIZ do cartao com o nome update.up
+  2. Configurar -> Atualizar por SD -> Sim
+  3. O aparelho reinicia, atualiza e volta
+  4. APAGUE o update.up do cartao
+
+ROTEIRO (marque ok / falhou)
+  [ ] Abertura: logo OpenPod, fundo preto; desligar/ligar de novo
+  [ ] Navegacao: home -> cada item -> voltar; textos e selecao legiveis
+  [ ] Tocando Agora: fundo preto (sem o azul); titulo e tempos legiveis
+  [ ] Configurar: Informacoes = "Reload 1.0 RC2"; "Atualizar por SD" legivel
+  [ ] Update por SD de novo (o mesmo update.up) -> volta normal -> apagar update.up
+
+SE ALGO DER ERRADO
+  Volte a RC1 pelo cartao (update.up da RC1) ou pelo modo de gravacao (Flashloader).

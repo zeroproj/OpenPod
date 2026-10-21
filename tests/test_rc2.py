@@ -28,6 +28,7 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ORIGINAL = os.path.join(RAIZ, "firmware/ORIGINAL/GN438_original.bin")
 SHA_ORIGINAL = "b7cd5eb952be5328cbaa926099cf8d88168633c1fab6d0f31f3a283c9e24b36f"
 SHA_RC1 = "a427c62ec7da0170ef4296ebda6a55ec5d287c4058d3c5a9e80e645f28e5c3f2"
+SHA_RC2 = "fcca5fdc99b828fb135cae77f5915c42cfddf1a537eb0a619f0c135313ccd123"  # aprovada no aparelho 2026-10-21
 XIP = 0x00C00000
 
 # --- fatos do firmware de fábrica (verificados no ORIGINAL, ficha §Evidência)
@@ -120,6 +121,9 @@ class RC2(unittest.TestCase):
     def test_c1_rc1_reprodutivel(self):
         self.assertEqual(self.rc1_rc, 0, self.rc1_log[-2000:])
         self.assertEqual(sha(self.rc1), SHA_RC1, "a RC1 mudou — catraca")
+
+    def test_catraca_rc2_reprodutivel(self):
+        self.assertEqual(sha(self.rc2), SHA_RC2, "a RC2 aprovada mudou — catraca")
 
     def test_c1_rc2_contem_rc1(self):
         dif1 = [i for i in range(len(self.orig)) if self.orig[i] != self.rc1[i]]
