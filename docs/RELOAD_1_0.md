@@ -35,6 +35,7 @@ foi gravado e relatado.** Se algo quebrar, sabemos qual passo foi.
 | RC2 | `reload_1.0_rc2` | + 2, 3 | **APROVADA no aparelho em 2026-10-21** (pelo cartão). Imagem `fcca5fdc…`, carimbada `da3398d1…`, `.up` `2adb53ed…` CRC 0x91F1 |
 | RC3 | — | + 4, 5 | não gerada |
 | RC4 | — | + 6, 7 | não gerada; ferramenta dos ícones pronta |
+| RC5 | — | + capa do álbum na Tocando Agora | **pedido 2026-10-21; começa por ficha de análise** (ver §6) |
 
 Instalação: **1ª gravação por cabo**; todo kit leva também o `.up` para as
 seguintes pelo cartão.
@@ -94,3 +95,25 @@ Em aberto: Tocando agora e Livro estão ambos laranja (aprovado assim).
   `patch_faixa_degrade`, `patch_fundo_display` e `patch_fundo_abertura`
   são reaproveitados ou reescritos antes da RC2/RC3.
 - A barra com "OpenPod" fixo tira o ícone de cartão SD do centro.
+
+## 6. RC5 — capa do álbum (pedido do mantenedor, 2026-10-21)
+
+Varredura rápida do ORIGINAL (2026-10-21):
+
+| | Evidência | Confiança |
+|---|---|---|
+| decodificador JPEG | `JpegDecInit/Decoder/Release` (`0x4FCAE`) + mensagens de libjpeg (`0x51680`…) | CONFIRMADO que existe |
+| decodificador BMP | `BmpDecInit/Decoder/Release` (`0x4FC75`) | CONFIRMADO que existe |
+| leitura de capa embutida (ID3 `APIC`) | nenhuma string `APIC`/`PIC`/`covr`; os `ID3` achados são de outro contexto | **não há evidência** |
+| objeto de imagem na Tocando Agora | papel de parede `0x0C73B8` é `lv_img` (`docs/IMAGENS.md`) | CONFIRMADO |
+
+Dois caminhos, do mais barato ao mais caro:
+1. **`cover.jpg` da pasta do álbum** — reaproveita o decodificador que o
+   visualizador de Imagem já usa; falta medir como ele entrega os pixels e
+   quanta RAM sobra durante a reprodução.
+2. **Capa embutida no MP3 (ID3 APIC)** — exige um leitor de ID3 novo na
+   área livre, além do item 1.
+
+Tipo: **Pesada** (código novo, várias partes). Primeiro passo: ficha de
+análise (sem imagem gravável) que responda RAM, saída do JpegDec e onde
+enganchar na Tocando Agora.
