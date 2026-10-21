@@ -244,6 +244,34 @@ class Recusa(unittest.TestCase):
             self.assertFalse(criou, f"fab_fundo_preto criou saida com {nome}")
             self.assertTrue(intacta)
 
+    # R1 (achado MÉDIA da análise do diff): o cabeçalho inteiro é premissa,
+    # inclusive always_zero (bits 5-7) e reservados (bits 8-9).
+    def test_r1_cabecalho_bits_reservados(self):
+        o = open(ORIGINAL, "rb").read()
+        for ferramenta, cab in (("fab_logo.py", LOGO_CAB), ("fab_fundo_preto.py", PAPEL_CAB)):
+            h = struct.unpack_from("<I", o, cab)[0]
+            for bit in range(5, 10):
+                b = bytearray(o)
+                struct.pack_into("<I", b, cab, h ^ (1 << bit))
+                rc, criou, intacta = self.roda(ferramenta, bytes(b))
+                self.assertNotEqual(rc, 0, f"{ferramenta} aceitou bit {bit} de 0x{cab:X}")
+                self.assertFalse(criou)
+                self.assertTrue(intacta)
+
+    # R1 (achado BAIXA): saída que é a própria entrada por link não pode ser gravada.
+    def test_r1_saida_link_para_entrada(self):
+        o = open(ORIGINAL, "rb").read()
+        for ferramenta in FERRAMENTAS:
+            for tipo in ("symlink", "hardlink"):
+                tmp = tempfile.mkdtemp(prefix="openpod_link_")
+                src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
+                open(src, "wb").write(o)
+                (os.symlink if tipo == "symlink" else os.link)(src, dst)
+                r = subprocess.run([sys.executable, os.path.join(RAIZ, "tools", ferramenta),
+                                    "--in", src, "--out", dst], capture_output=True, text=True, cwd=RAIZ)
+                self.assertNotEqual(r.returncode, 0, f"{ferramenta} aceitou saida {tipo} da entrada")
+                self.assertEqual(open(src, "rb").read(), o, f"{ferramenta} alterou a entrada via {tipo}")
+
     def test_d3_aceita_o_original(self):
         o = open(ORIGINAL, "rb").read()
         for f in FERRAMENTAS:
