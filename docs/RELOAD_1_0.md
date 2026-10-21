@@ -35,7 +35,7 @@ foi gravado e relatado.** Se algo quebrar, sabemos qual passo foi.
 | RC2 | `reload_1.0_rc2` | + 2, 3 | **APROVADA no aparelho em 2026-10-21** (pelo cartão). Imagem `fcca5fdc…`, carimbada `da3398d1…`, `.up` `2adb53ed…` CRC 0x91F1 |
 | RC3 | — | + 4, 5 | não gerada |
 | RC4 | — | + 6, 7 | não gerada; ferramenta dos ícones pronta |
-| RC5 | — | + capa do álbum na Tocando Agora | **pedido 2026-10-21; começa por ficha de análise** (ver §6) |
+| RC5 | — | + capa do álbum (de dentro do MP3) na Tocando Agora | **pedido 2026-10-21; caminho escolhido (D05); começa por ficha de análise** (ver §6) |
 
 Instalação: **1ª gravação por cabo**; todo kit leva também o `.up` para as
 seguintes pelo cartão.
@@ -117,3 +117,32 @@ Dois caminhos, do mais barato ao mais caro:
 Tipo: **Pesada** (código novo, várias partes). Primeiro passo: ficha de
 análise (sem imagem gravável) que responda RAM, saída do JpegDec e onde
 enganchar na Tocando Agora.
+
+### 6.1 Decisão: capa de dentro do MP3 (D05)
+
+O decisor escolheu o caminho 2. Segunda varredura (2026-10-21) achou que a
+fábrica **já tem leitor de ID3**, o que barateia o caminho:
+
+| Endereço | O que faz | Confiança |
+|---|---|---|
+| `0xD71C94` | lê o cabeçalho ID3v2 (10 B), tamanho synchsafe; versão 2 → `0xD719D8`, versões 3–4 → `0xD71B34`, outra → `-1` | CONFIRMADO (desmontagem) |
+| `0xD71B34` | percorre os quadros de 10 B: `TALB` → buffer+0 (máx. 256 B, tamanho em +0x104); `TPE1` → buffer+0x108 (tamanho em +0x20C); outro quadro → pula com seek | CONFIRMADO |
+| `0xD719D8` | o mesmo para ID3v2.2 (quadros de 3 letras) | PROVÁVEL |
+| `0xD71D1C` | lê ID3v1 (últimos 128 B) | PROVÁVEL |
+| `0xD76854` / `0xD76C0A` | leitura / posicionamento no arquivo (assinaturas de `f_read`/`f_lseek`) | PROVÁVEL |
+| único chamador de `0xD71B34` | `0xD71D16` | CONFIRMADO (varredura de `bl`) |
+
+Observação: o tamanho do quadro é lido como inteiro comum (correto na
+v2.3; na v2.4 o certo seria synchsafe). Capas grandes em v2.4 podem ser
+puladas errado — HIPÓTESE a medir.
+
+Plano de alto nível (HIPÓTESE até a ficha de análise):
+1. Gancho no ramo "outro quadro" de `0xD71B34`: se for `APIC`, guardar
+   posição e tamanho da imagem no arquivo (não copiar), e seguir pulando.
+2. Na Tocando Agora, se houver posição guardada e for JPEG: ler, decodificar
+   com o `JpegDec` da fábrica, reduzir para o tamanho do quadro e desenhar
+   no lugar do papel de parede; sem capa → papel de parede de sempre.
+3. Perguntas da ficha de análise: RAM livre durante a reprodução; o
+   `JpegDec` aceita memória ou só arquivo, e em que formato entrega os
+   pixels; tamanho máximo de capa aceitável; onde a Tocando Agora monta a
+   imagem; capas PNG (sem decodificador → ignoradas).
