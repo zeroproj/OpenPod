@@ -1,9 +1,0 @@
-before.bin e after.bin NAO foram copiados para ca: sao byte-identicos ao
-arquivo ja preservado em firmware/READBACK/GN438_readback_2026-09-12.bin.
-
-  before.bin sha256 : 0b97ef5169791acd8c8ca85ebab16a89c1b96847ba9a3e4d3f42f051cd2d72d0
-  after.bin  sha256 : 0b97ef5169791acd8c8ca85ebab16a89c1b96847ba9a3e4d3f42f051cd2d72d0
-  readback   sha256 : 0b97ef5169791acd8c8ca85ebab16a89c1b96847ba9a3e4d3f42f051cd2d72d0
-  before == after == readback : True
-
-Guardar tres copias de 2 MiB identicas nao acrescenta evidencia.
