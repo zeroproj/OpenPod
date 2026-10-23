@@ -4,7 +4,7 @@
 - Desenvolvedor: MiniMax M3 (opencode.json do worktree)
 - Analista: gpt-6-astra, esforço high
 - Depende de: RC2 (aprovada no aparelho em 2026-10-21)
-- Status: ficha escrita — aguardando revisão astra e aprovação do decisor
+- Status: **aprovada pelo decisor em 2026-10-22** ("Pode fazer a RC3"), revisão R0 incorporada
 
 ## Objetivo
 A barra superior ganha um degradê vertical (cinza-azulado no topo → quase
@@ -82,7 +82,7 @@ do `draw/sw/` da 8.2); IDs de propriedade batem com a 8.1.
 ## O que cada ferramenta escreve
 
 ### `fab_barra_degrade.py`
-- **Rotina em `0x1A7000`** (XIP `0xDA7000`), exatamente esta, 44 bytes, o
+- **Rotina em `0x1A7000`** (XIP `0xDA7000`), exatamente esta, 56 bytes, o
   resto do lote fica `0xFF`:
   ```
   push  {r4, lr}
@@ -90,6 +90,11 @@ do `draw/sw/` da 8.2); IDs de propriedade batem com a 8.1.
   movw  r1, #0x2A42      ; topo  RGB(64,70,82)  pré-invertido (LV_COLOR_16_SWAP)
   movs  r2, #0
   bl    0xD4D092         ; bg_color = topo
+  mov   r0, r4
+  movs  r1, #0x21        ; BG_OPA (revisão R0: não depender do tema)
+  movs  r2, #0xFF        ; LV_OPA_COVER
+  movs  r3, #0
+  bl    0xD4CAC4
   mov   r0, r4
   movs  r1, #0x22        ; BG_GRAD_COLOR
   movw  r2, #0x8208      ; base  RGB(14,16,19)  pré-invertido
@@ -115,7 +120,7 @@ do `draw/sw/` da 8.2); IDs de propriedade batem com a 8.1.
 
 ### `fab_barra_titulo.py`
 - Texto `b"OpenPod\0"` em `0x1A7040` (XIP `0xDA7040`), resto do lote `0xFF`.
-- `0x1226BA` → `00 22 00 bf` (`movs r2,#0 ; nop`, centro exato);
+- `0x1226BA` → `04 22 00 bf` (`movs r2,#4 ; nop`: +4 px, afasta do relógio — revisão R0);
   `0x1226BE` → `02 21` (TOP_MID); `0x1226CA` → `00 bf 00 bf` (sem fonte de
   ícones: herda a do tema, como o relógio); `0x1226F4` → `0x00DA7040`.
 - Premissas: tamanho 2 MiB; `0x1226AC..0x1226F8` igual à fábrica (inclui os
@@ -158,6 +163,12 @@ setores dos ganchos (`0x121000`, `0x122000`). O engenheiro confere no
   telas (nada quebra). PROVÁVEL que apareça: a faixa da fábrica pinta preto
   com o mesmo mecanismo.
 - A Tocando Agora fica sem degradê nesta RC.
+- Quantização da home: linhas 13–15 com leve matiz (esverdeado/arroxeado,
+  ±10 por canal) e topo da home (66,76,81) ≠ topo dos menus (64,70,82).
+- Ordem dos setores no cabo é crescente (`0x0CE`, `0x121`, `0x122`, `0x1A7`):
+  se a gravação parar entre `0x121000` e `0x1A7000`, os menus travam até
+  regravar. Mesma situação aceita na RC1/RC2; boot, home e recuperação por
+  cabo não dependem desses setores.
 
 ## Roteiro no aparelho (decisor, antes de aprovar)
 | Fluxo | Passos | ✔/✘ |
@@ -167,6 +178,8 @@ setores dos ganchos (`0x121000`, `0x122000`). O engenheiro confere no
 | Menus | Música, Configurar, Pastas, Rádio, Gravador: faixa com degradê; títulos e seleção legíveis | |
 | Cartão | tirar o cartão na home → título some; recolocar → volta | |
 | Tocando Agora | toca normal, fundo preto | |
+| Título × relógio | "OpenPod" não encosta no relógio nem na bateria | |
+| Página `0x51` | se alcançável (cria o mesmo rótulo): título aparece sem sobrepor nada | |
 | Configurar | Informações = "Reload 1.0 RC3"; "Atualizar por SD" funciona | |
 
 ## Bytes permitidos
@@ -177,8 +190,17 @@ Além dos da RC2: `0x121724..0x121728`, `0x1A7000..0x1A7050`,
 ## Arquivos de teste protegidos
 - `tests/test_rc2.py`, `tests/test_rc3.py`, `tools/ci.sh` (hash em `tests/PROTEGIDOS.sha256`)
 
-## Revisão da ficha (Codex)
-(pendente)
+## Revisão da ficha
+R0 — Claude Sonnet (substituto do astra; Codex sem cota até 23/10, autorizado
+pelo decisor), 2026-10-22: APROVADO COM RESSALVA (0 ALTA, 3 MÉDIA, 6 BAIXA).
+Verificou no binário gancho, registradores, wrapper, IDs de propriedade,
+rotina, cores, lote, rótulo do SD e folha da home (CONFIRMADO). Incorporado:
+`bg_opa = COVER` na rotina (não depender do tema); recusa testada nas bordas
+de cada região (primeiro/último byte) e no 2º chamador `0x123E9C`;
+`--out` = `--in` e `--dry-run` com entrada adulterada recusam; título com
++4 px; roteiro com margem do relógio e página `0x51`; ordem de setores e
+matiz da home como riscos aceitos. Não incorporado: teste semântico da
+rotina (sem `unicorn`), limite de croma (estética, aceito).
 
 ## Entrega (preenchida pelo desenvolvedor)
 

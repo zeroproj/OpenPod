@@ -47,7 +47,7 @@ HOME_LINHAS = 16                                            # y 0..15, todas ín
 
 SD_LABEL, SD_LABEL_FIM = 0x1226AC, 0x1226F8          # cria view_p[0x14] (só home/0x51, com cartão)
 TITULO = {   # endereço: (bytes de fábrica, bytes da RC3)
-    0x1226BA: (bytes.fromhex("6ff01d02"), bytes.fromhex("002200bf")),  # x_ofs -30 -> movs r2,#0; nop
+    0x1226BA: (bytes.fromhex("6ff01d02"), bytes.fromhex("042200bf")),  # x_ofs -30 -> movs r2,#4; nop (revisão R0)
     0x1226BE: (bytes.fromhex("0321"), bytes.fromhex("0221")),          # align 3 -> 2 (TOP_MID)
     0x1226CA: (None, bytes.fromhex("00bf00bf")),                       # bl set_style_text_font -> nop nop
     0x1226F4: (struct.pack("<I", 0x00C5D614), struct.pack("<I", XIP + TEXTO)),  # ponteiro do texto
@@ -61,6 +61,11 @@ ROTINA_ESPERADA = [
     ("movw", "r1, #0x2a42"),
     ("movs", "r2, #0"),
     ("bl", "#0xd4d092"),
+    ("mov", "r0, r4"),
+    ("movs", "r1, #0x21"),
+    ("movs", "r2, #0xff"),
+    ("movs", "r3, #0"),
+    ("bl", "#0xd4cac4"),
     ("mov", "r0, r4"),
     ("movs", "r1, #0x22"),
     ("movw", "r2, #0x8208"),
@@ -297,6 +302,11 @@ class Recusa(unittest.TestCase):
                            capture_output=True, text=True, cwd=RAIZ)
         return r.returncode, os.path.exists(dst), open(src, "rb").read() == entrada
 
+    def inverte(self, a):
+        b = bytearray(self.o)
+        b[a] ^= 0xFF
+        return bytes(b)
+
     def troca(self, a, v):
         b = bytearray(self.o)
         b[a:a + len(v)] = v
@@ -337,6 +347,36 @@ class Recusa(unittest.TestCase):
             "chamador": self.troca(0x123898, b"\0\xbf\0\xbf"),
             "lote_ocupado": self.troca(TEXTO + 9, b"\x00"),
         })
+
+    def test_d3_degrade_recusa_bordas(self):
+        # revisão R0: as premissas valem para a faixa inteira, não para um byte
+        pontos = [CRIA_FAIXA, CRIA_FAIXA_FIM - 1,
+                  SET_BG_COLOR - XIP, SET_BG_COLOR - XIP + 0x21,
+                  SET_LOCAL_PROP - XIP + 0x20, SET_LOCAL_PROP - XIP + 0x3F,
+                  HOME_CAB, HOME_CAB + 11, HOME_PAL, HOME_PAL + 4 * 255,
+                  HOME_PX, HOME_PX + 128 * 15 + 127,
+                  ROTINA, ROTINA + ROTINA_LOTE - 1]
+        self.confere_recusa("fab_barra_degrade.py", {hex(a): self.inverte(a) for a in pontos})
+
+    def test_d3_titulo_recusa_bordas(self):
+        pontos = [SD_LABEL, SD_LABEL_FIM - 1, 0x1226D0, 0x123E9C, TEXTO, TEXTO + TEXTO_LOTE - 1]
+        self.confere_recusa("fab_barra_titulo.py", {hex(a): self.inverte(a) for a in pontos})
+
+    def test_d3_saida_igual_a_entrada(self):
+        for f in FERRAMENTAS:
+            tmp = tempfile.mkdtemp(prefix="openpod_mesmo3_")
+            src = os.path.join(tmp, "in.bin")
+            open(src, "wb").write(self.o)
+            r = subprocess.run([sys.executable, os.path.join(RAIZ, "tools", f), "--in", src, "--out", src],
+                               capture_output=True, text=True, cwd=RAIZ)
+            self.assertNotEqual(r.returncode, 0, f"{f} aceitou --out igual a --in")
+            self.assertEqual(open(src, "rb").read(), self.o, f"{f} alterou a entrada")
+
+    def test_d3_dry_run_recusa_adulterado(self):
+        for f, a in (("fab_barra_degrade.py", GANCHO_BG), ("fab_barra_titulo.py", 0x1226F4)):
+            rc, criou, _ = self.roda(f, self.inverte(a), ["--dry-run"])
+            self.assertNotEqual(rc, 0, f"{f} --dry-run aceitou entrada adulterada")
+            self.assertFalse(criou)
 
     def test_d3_em_diferente_do_mapa_recusa(self):
         self.confere_recusa("fab_barra_degrade.py", {"em_errado": self.o}, ["--em", "0x1a7100"])
