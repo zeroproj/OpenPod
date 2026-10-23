@@ -4,7 +4,7 @@
 - Desenvolvedor: MiniMax M3 (opencode.json do worktree)
 - Analista: gpt-6-astra, esforço high
 - Depende de: RC4 (rodando no aparelho, foto de 2026-10-23; vira catraca `74e8cb31…`)
-- Status: ficha escrita — aguardando revisão astra. Decisor: "Faz a RC4.1 e 5 tudo junto" (2026-10-23)
+- Status: revisão R0 incorporada; liberada para implementação. Decisor: "Faz a RC4.1 e 5 tudo junto" (2026-10-23)
 
 ## Objetivo
 1. Os nomes da home cabem nos 40 px do rótulo, sem corte nem rolagem:
@@ -29,7 +29,7 @@ Fora: outros idiomas, fontes, tamanho dos rótulos, capa do álbum (RC6).
 - Único texto com `%`: id 96, mantém `%%` (string de formato).
 
 ## Conteúdo
-`assets/textos_pt.tsv` (sha `44e82c41…`): `id<TAB>texto`, `\n` = quebra.
+`assets/textos_pt.tsv` (sha `c9cc64bd…`): `id<TAB>texto`, `\n` = quebra.
 180 ids: os 175 da revisão (menos 40 e 91, da RC1) + os 8 da home. Total
 ~2,9 KB.
 
@@ -39,12 +39,14 @@ Fora: outros idiomas, fontes, tamanho dos rótulos, capa do álbum (RC6).
 - Grava as strings UTF-8 com NUL no lote `0x1A5000..0x1A6000` (novo no
   `MAPA`, sem cruzar ninguém) e reaponta só as entradas da tabela dos ids
   da lista. Nunca edita string de fábrica no lugar.
-- Premissas (recusa antes de escrever): 2 MiB; literal `0x121104` =
+- Premissas (recusa antes de escrever): **sha256 da entrada = RC4
+  `74e8cb31…`** (revisão R0: RC1–RC3 passariam nas outras premissas); 2 MiB; literal `0x121104` =
   `0x00C53B84`; cada id da lista aponta para a string de FÁBRICA (ponteiro
   igual ao ORIGINAL); ids 40 e 91 com os ponteiros da RC1 (≠ fábrica, na
   área livre); lote todo `0xFF`; cmap e tabela de avanços iguais ao
   ORIGINAL; todo caractere com glifo; especificadores `%` iguais aos de
-  fábrica; ids da home ≤ 40 px.
+  fábrica; ids da home ≤ 40 px; cada linha ≤ 113 px ou não mais larga que
+  a de fábrica.
 - `--in/--out/--dry-run/--textos`; recusa `--out` igual/symlink/hardlink de
   `--in` e 2ª passagem. Não usa nem copia código de `aplica_textos.py`,
   `patch_menu_text.py`, `relocate_lang_table.py`, `propoe_textos.py`.
@@ -64,7 +66,7 @@ Fora: outros idiomas, fontes, tamanho dos rótulos, capa do álbum (RC6).
 | D2 | caractere sem glifo → quadrado ou texto cortado | C4 glifos |
 | D3 | ponteiro para fora / string sem NUL | C3 (lê pelo ponteiro até o NUL dentro do lote) |
 | D4 | desfaz a RC1 ("Atualizar por SD") | ids 40/91 fora da lista e como premissa |
-| D5 | texto novo grande demais para a tela | home testada (40 px); demais medidos na revisão (113 px), roteiro |
+| D5 | texto novo grande demais para a tela | home ≤ 40 px; demais: cada linha ≤ 113 px ou ≤ a largura de fábrica (C4); roteiro |
 | D6 | outro idioma afetado | só a tabela 8 muda (C5) |
 | D7 | gravação interrompida entre `0x053000` e `0x1A5000` → textos lixo | risco aceito (mesmo da RC1–RC4); recuperação pelo cartão/cabo |
 
@@ -92,7 +94,13 @@ Além dos da RC4: as entradas `0x053B84 + 4·id` dos ids da lista e
 - `tests/test_rc2.py` … `tests/test_rc5.py`, `tools/ci.sh`
 
 ## Revisão da ficha (Codex)
-(pendente)
+R0 — gpt-6-astra high, 2026-10-23: REPROVADO (1 ALTA, 1 MÉDIA). Incorporado:
+- ALTA: entrada tem de ser a RC4 exata (sha); teste recusa a RC3.
+- MÉDIA: 3 textos ficavam mais largos que os de fábrica (52, 154, 161) e
+  foram encurtados ("Nenhum arquivo", "Lendo arquivos.\nNão desligue.",
+  "Carregue 10 min\nantes de usar"); teste novo: nenhuma linha passa de
+  113 px a não ser que a de fábrica já passasse (avisos longos de fábrica
+  quebram no widget; o novo nunca é mais largo).
 
 ## Entrega (preenchida pelo desenvolvedor)
 

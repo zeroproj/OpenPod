@@ -40,7 +40,7 @@ LOTE, LOTE_TAM = 0x1A5000, 0x1000
 HOME_IDS = (1, 2, 3, 4, 5, 8, 9, 10)               # rótulos da home: largura 40 px (0xD2ED5E)
 HOME_LARGURA = 40
 TEXTOS = os.path.join(RAIZ, "assets/textos_pt.tsv")
-SHA_TEXTOS = "44e82c4153000a6eb0b25f3579b918760153dedd6bfbeaa1eb03aa6ed4ea50c3"
+SHA_TEXTOS = "c9cc64bda98520f0e690ef746a6efad156ef3f39804186c06a0673884c1ad2e2"
 FORMATO = re.compile(r"%[-+ #0]*\d*(?:\.\d+)?[a-zA-Z%]")
 
 FERRAMENTA = "fab_textos.py"
@@ -164,6 +164,14 @@ class RC5(unittest.TestCase):
             self.assertIn(i, self.t)
             self.assertLessEqual(self.largura(self.t[i]), HOME_LARGURA, f"id {i} {self.t[i]!r}")
 
+    def test_c4_nao_alarga_alem_da_fabrica(self):
+        # revisão R0: cada linha cabe em 113 px OU não é mais larga que a de fábrica
+        def maior(t):
+            return max(self.largura(x) for x in t.replace("%%", "%").split("\n"))
+        for i, t in self.t.items():
+            fab = string(self.orig, ponteiro(self.orig, i)).decode("utf-8")
+            self.assertLessEqual(maior(t), max(113, maior(fab)), f"id {i} {t!r}")
+
     def test_c4_home_nomes(self):
         esperado = {1: "Música", 2: "Livros", 3: "Vídeo", 4: "Fotos", 5: "Gravar",
                     8: "Pastas", 9: "BT", 10: "Config"}
@@ -190,6 +198,9 @@ class Recusa(unittest.TestCase):
         p4 = os.path.join(cls.tmp, "rc4.bin")
         constroi("reload_1.0_rc4", p4)
         cls.rc4 = le(p4)
+        p3 = os.path.join(cls.tmp, "rc3.bin")
+        constroi("reload_1.0_rc3", p3)
+        cls.rc3 = le(p3)
 
     def roda(self, entrada, extra=(), dst=None):
         tmp = tempfile.mkdtemp(prefix="openpod_r5_")
@@ -225,6 +236,7 @@ class Recusa(unittest.TestCase):
             "fonte_cmap": self.muda(CMAP + 2 * 100),
             "literal_tabela": self.muda(0x121104),
             "original": le(ORIGINAL),          # sem a RC1, os ids 40/91 não batem
+            "rc3": self.rc3,                   # revisão R0: só a RC4 exata (sha) é entrada válida
         }
         for nome, entrada in casos.items():
             rc, criou, intacta = self.roda(entrada)
