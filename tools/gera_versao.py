@@ -215,6 +215,13 @@ def main():
         falhas.append("o bootloader dentro do .up difere do de fabrica")
     if pay[BOOT:BOOT + 0x1000] != orig[BOOT:BOOT + 0x1000]:
         falhas.append("o setor 0xD000 dentro do .up difere do de fabrica (regra R1)")
+    # o .up tem de ser a imagem pedida, byte a byte, e cobrir tudo o que ela muda
+    # (achado ALTA da revisao da ficha 006)
+    if pay != img[:tam]:
+        falhas.append("o payload do .up difere da imagem %s" % a.imagem)
+    dif = [i for i in range(len(org)) if img[i] != org[i]]
+    if dif and dif[-1] >= tam:
+        falhas.append("o .up nao cobre a ultima mudanca da imagem (0x%X)" % dif[-1])
     mal = 0
     for f in glob.glob(os.path.join(publico, "cabo", "setores", "%s_*.bin" % up)):
         end = int(re.search(r"_([0-9A-F]+)\.bin$", os.path.basename(f)).group(1), 16)

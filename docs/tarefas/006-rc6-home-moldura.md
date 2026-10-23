@@ -4,7 +4,7 @@
 - Desenvolvedor: MiniMax M3 (opencode.json do worktree)
 - Analista: gpt-6-astra, esforço high
 - Depende de: RC5 (rodando no aparelho, foto 2026-10-23; catraca `f9f2e059…`)
-- Status: ficha escrita — aguardando revisão astra. Decisor: "tirar o texto…
+- Status: revisão R0 incorporada; liberada para implementação. Decisor: "tirar o texto…
   os ícones já falam", "deixar … mais centralizado", "a moldura vai ficar
   legal" (2026-10-23)
 
@@ -110,7 +110,10 @@ Além dos da RC5: `0x0CE95C..0x0D315C` (linhas 16..159 da folha),
 - `tests/test_rc2.py` … `tests/test_rc6.py`, `tools/ci.sh`
 
 ## Revisão da ficha (Codex)
-(pendente)
+R0 — gpt-6-astra high, 2026-10-23: APROVADO COM RESSALVAS (1 ALTA). Incorporado
+(kit, do engenheiro): `gera_versao.py` agora exige payload do `.up` igual à
+imagem pedida byte a byte e cobertura até a última mudança (já conferia
+CRC, cabeçalho, setores do cabo, bootloader, `0xD000` e PSMP).
 
 ## Entrega (preenchida pelo desenvolvedor)
 
