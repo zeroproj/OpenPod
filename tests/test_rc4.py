@@ -152,7 +152,9 @@ class RC4(unittest.TestCase):
                 c, a = pal[i][:3], px[x, y]
                 if a == (0, 0, 0):
                     self.assertEqual(c, (0, 0, 0), f"fundo preto do PNG virou {c} em ({x},{y})")
-                erro += sum(abs(c[k] - a[k]) for k in range(3))
+                e = [abs(c[k] - a[k]) for k in range(3)]
+                self.assertLessEqual(max(e), 64, f"pixel ({x},{y}): {c} longe de {a}")
+                erro += sum(e)
                 n += 3
         self.assertLessEqual(erro / n, 2.0, f"erro medio {erro / n:.2f} por canal")
 
@@ -209,7 +211,9 @@ class Recusa(unittest.TestCase):
     def test_d3_centro_recusa(self):
         pontos = [0x1217D6, 0x1217D2, 0x1217D8, 0x1217DA,      # relógio: y, align, x, bl align
                   0x1226B6, 0x1226BA, 0x1226BE, 0x1226C0,      # título:  y, x, align, bl align
-                  0x12260E, 0x122612, 0x122614]                # bateria: y, x, bl set_pos
+                  0x12260E, 0x122612, 0x122614,                # bateria: y, x, bl set_pos
+                  0x1226CA, 0x1226F4, 0x1226F7,                # título RC3: sem fonte, ponteiro do texto
+                  0x1A7040, 0x1A7047]                          # "OpenPod\0"
         casos = {hex(a): self.inverte(self.rc3, a) for a in pontos}
         casos["truncado"] = self.rc3[:0x100000]
         casos["original"] = self.o            # só roda sobre a RC3 (título e bateria da RC3.1)

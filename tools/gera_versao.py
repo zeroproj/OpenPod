@@ -108,6 +108,14 @@ def main():
 
     if not os.path.isfile(os.path.join(RAIZ, a.imagem)):
         parar("nao achei %s" % a.imagem)
+    # bootloader + setor 0xD000 (regra R1) e PSMP: iguais ao ORIGINAL, sempre
+    # (achado ALTA da revisao da ficha 004)
+    with open(os.path.join(RAIZ, a.imagem), "rb") as f:
+        img = f.read()
+    with open(os.path.join(RAIZ, ORIGINAL), "rb") as f:
+        org = f.read()
+    if len(img) != len(org) or img[:BOOT + 0x1000] != org[:BOOT + 0x1000] or img[PSMP:] != org[PSMP:]:
+        parar("a imagem mexe no bootloader, no setor 0xD000 ou na PSMP. PARE.")
 
     curto = a.versao.replace("OpenPod-Core-", "").replace("-", " ")   # "5.7 Public Beta 3"
     beta = re.sub(r".*?(Beta\s*\d+).*", r"\1", curto) or "Beta"        # "Beta 3"
@@ -205,6 +213,8 @@ def main():
         falhas.append("a cobertura alcanca a PSMP")
     if pay[:BOOT] != orig[:BOOT]:
         falhas.append("o bootloader dentro do .up difere do de fabrica")
+    if pay[BOOT:BOOT + 0x1000] != orig[BOOT:BOOT + 0x1000]:
+        falhas.append("o setor 0xD000 dentro do .up difere do de fabrica (regra R1)")
     mal = 0
     for f in glob.glob(os.path.join(publico, "cabo", "setores", "%s_*.bin" % up)):
         end = int(re.search(r"_([0-9A-F]+)\.bin$", os.path.basename(f)).group(1), 16)

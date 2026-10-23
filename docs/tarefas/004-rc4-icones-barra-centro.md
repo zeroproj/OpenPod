@@ -4,7 +4,7 @@
 - Desenvolvedor: MiniMax M3 (opencode.json do worktree)
 - Analista: gpt-6-astra, esforço high
 - Depende de: RC3.1 (gravada 2026-10-23: "Ficou alinhado"; vira catraca, sha `286e8ba8…`)
-- Status: ficha escrita — aguardando revisão astra
+- Status: revisão R0 incorporada; liberada para implementação (decisor: "ja faz também a alteração dos icones")
 
 ## Objetivo
 1. Relógio, "OpenPod" e bateria sobem 2 px e ficam no meio da barra
@@ -43,7 +43,9 @@ navegação.
 - Premissas (recusa se não bater): 2 MiB; os três pontos com os bytes da
   RC3 acima; `0x1217D2`=`0121`, `0x1217D8`=`0322`, `0x1217DA` = `bl 0xD4A3A2`;
   `0x1226BA`=`062200bf`, `0x1226BE`=`0221`, `0x1226C0` = `bl 0xD4A3A2`;
-  `0x122612`=`6b21`, `0x122614` = `bl 0xD4A2D4`. Recusa o ORIGINAL.
+  `0x122612`=`6b21`, `0x122614` = `bl 0xD4A2D4`; título da RC3 inteiro:
+  `0x1226CA`=`00bf00bf`, `0x1226F4` = `0x00DA7040`, `0x1A7040` =
+  `"OpenPod\0"`. Recusa o ORIGINAL.
 
 ### `fab_icones_home.py`
 - Lê `--png` (padrão `assets/IconesHome.png`); recusa se o sha não for
@@ -54,7 +56,8 @@ navegação.
   presente. Todas com alfa 255. Formato BGRA.
 - Pixels: linha y (0..15) toda índice y; linhas 16..159 = índice da cor
   mais próxima; pixel `(0,0,0)` do PNG → entrada `(0,0,0)`. Erro médio
-  ≤ 2,0 por canal.
+  ≤ 2,0 por canal **e nenhum pixel com erro > 64 num canal** (pega glifo
+  apagado; quantização simples dá máx. 58).
 - Cabeçalho intocado. Escreve só `0x0CDD5C..0x0D315C`.
 - Premissas: 2 MiB; cabeçalho e paleta iguais à fábrica; linhas 16..159
   iguais à fábrica; cada linha 0..15 uniforme (aceita ORIGINAL e RC3).
@@ -109,7 +112,16 @@ Além dos da RC3: `0x1217D6..0x1217D8`, `0x1226B6..0x1226B8`,
 - `tests/test_rc2.py`, `tests/test_rc3.py`, `tests/test_rc4.py`, `tools/ci.sh`
 
 ## Revisão da ficha (Codex)
-(pendente)
+R0 — gpt-6-astra high, 2026-10-23: REPROVADO (1 ALTA, 2 MÉDIA). Incorporado:
+- ALTA (kit, fora das ferramentas da ficha): `gera_versao.py` agora para se
+  a imagem ou o `.up` mexerem no setor `0xD000` (antes só conferia o
+  bootloader até `0xD000`) e se a imagem tocar na PSMP. Feito pelo
+  engenheiro, que é dono do kit.
+- MÉDIA: premissas do `fab_barra_centro` cobrem o título inteiro da RC3
+  (fonte, ponteiro, texto) — testes de recusa em `0x1226CA`, `0x1226F4`,
+  `0x1A7040`.
+- MÉDIA: erro máximo por pixel ≤ 64 (microfone apagado passaria só com a
+  média).
 
 ## Entrega (preenchida pelo desenvolvedor)
 
