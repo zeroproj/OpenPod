@@ -160,6 +160,12 @@ MAPA = {
     # sao gravados no mesmo setor do cabo.
     "fab_barra_degrade.py":  (0x001A7000, 0x0040),
     "fab_barra_titulo.py":   (0x001A7040, 0x0010),
+    # Ficha 006 (RC6). O lote e das ROTINAS da moldura (DESEL/SEL/CRIA),
+    # em endereco FIXO: os oito ganchos da home apontam para elas, e os
+    # enderecos ficam gravados no proprio codigo. O lote 0x001A6400 fica
+    # logo depois do `make_extras_menu` (que termina em 0x001A6400) e
+    # antes do degradê (0x001A7000) — nao cruza nenhum lote acima.
+    "fab_home_moldura.py":   (0x001A6400, 0x0080),
 }
 AREA_INI, AREA_FIM = 0x001A3040, 0x001A8000
 
@@ -451,6 +457,37 @@ RELOAD_1_0_RC5 = RELOAD_1_0_RC4 + [
      "os 180 textos revisados em portugues + os nomes da home"),
 ]
 
+# ---------------------------------------------------------------------------
+# RELOAD 1.0 RC6 — a RC5 mais a home sem nomes, a grade centralizada e a
+# moldura branca no icone selecionado (ficha 006, tipo Risco + Pesada).
+#
+# Os passos da RC5 vem primeiro, na ordem dela: a RC5 foi aprovada no
+# aparelho em 2026-10-23 e virou catraca (sha f9f2e059..., em
+# tests/test_rc5.py), entao a RC6 tem que conter a RC5 byte a byte.
+#
+# A ferramenta nova e a UNICA da RC, e ela exige a RC5 EXATA na entrada
+# (sha conferido): a RC6 e a RC5 mais ela, e nao ha outro caminho. Ela
+# escreve em quatro lugares:
+#
+#     0x0CE95C..0x0D315C  as linhas 16..159 da folha da home (a grade)
+#     0x0486A0..0x0486C4  a tabela de posicoes dos rotulos (as molduras)
+#     0x12ED5C..0x12ED60  o tamanho do rotulo (35 x 35 em vez de 40 x 15)
+#     0x12E9CA 0x12EA26 0x12EABA 0x12EB12 0x12EB4C 0x12ED30 0x12ED46
+#     0x12EDBC              os oito ganchos da selecao (4 bytes cada)
+#     0x1A6400..0x1A6480    as rotinas DESEL/SEL/CRIA e a string vazia
+#
+# ORDEM NO KIT: fora do escopo desta receita (o kit e do engenheiro). O
+# `gera_versao` monta os setores em ordem crescente de endereco; o setor
+# novo e o 0x1A6000, e nenhum deles e lido pelo bootloader. O risco e o
+# mesmo da RC1 a RC5 (interromper entre 0x0D3000 e 0x1A6000 deixa a home
+# sem moldura ou com a moldura parada), e quem confere e o engenheiro, no
+# [4/4] do `gera_versao`.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC6 = RELOAD_1_0_RC5 + [
+    ("fab_home_moldura.py", [],
+     "a home sem nomes, a grade centralizada e a moldura no selecionado"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -460,6 +497,7 @@ RECEITAS = {
     "reload_1.0_rc3": RELOAD_1_0_RC3,
     "reload_1.0_rc4": RELOAD_1_0_RC4,
     "reload_1.0_rc5": RELOAD_1_0_RC5,
+    "reload_1.0_rc6": RELOAD_1_0_RC6,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
