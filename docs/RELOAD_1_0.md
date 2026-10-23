@@ -33,7 +33,7 @@ foi gravado e relatado.** Se algo quebrar, sabemos qual passo foi.
 |---|---|---|---|
 | RC1 | `reload_1.0_rc1` | 1 | **APROVADA no aparelho em 2026-10-21** (Flashloader, Windows; update por SD testado) |
 | RC2 | `reload_1.0_rc2` | + 2, 3 | **APROVADA no aparelho em 2026-10-21** (pelo cartão). Imagem `fcca5fdc…`, carimbada `da3398d1…`, `.up` `2adb53ed…` CRC 0x91F1 |
-| RC3 | `reload_1.0_rc3` | + 4, 5 | ficha 002 escrita, testes vermelhos (`tests/test_rc3.py`); revisão astra pendente (cota do Codex até 27/10) |
+| RC3 | `reload_1.0_rc3` | + 4, 5 (ferramentas novas da ficha 002) | **kit gerado 2026-10-23, aguardando gravação.** Imagem `411b2484…`, carimbada `3421773b…` (carimbo `--em 0x1A4F00`), `.up` `91ed2db7…` CRC 0xF6E4 |
 | RC4 | — | + 6, 7 | não gerada; ferramenta dos ícones pronta |
 | RC5 | — | + capa do álbum (de dentro do MP3) na Tocando Agora | **pedido 2026-10-21; caminho escolhido (D05); análise em `docs/tarefas/003-rc5-analise-capa.md`** (ver §6) |
 
