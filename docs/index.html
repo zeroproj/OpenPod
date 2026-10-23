@@ -29,6 +29,7 @@ main{max-width:860px;margin:0 auto;padding:40px 16px 80px}
 h1{font-size:clamp(34px,7vw,56px);line-height:1.05;margin:0 0 12px;font-weight:800;letter-spacing:-.02em}
 h2{font-size:24px;margin:56px 0 12px;font-weight:800}
 h3{font-size:18px;margin:28px 0 8px}
+h4{font-size:16px;margin:0 0 8px}
 p,li{color:var(--ink)}
 .sub{color:var(--soft);font-size:18px;max-width:560px}
 .ver{font-family:"IBM Plex Mono",monospace;font-size:13px;background:var(--code);padding:3px 8px;border-radius:6px;color:var(--soft)}
@@ -83,54 +84,82 @@ footer{margin-top:64px;color:var(--soft);font-size:13px;border-top:1px solid var
 </ul>
 
 <h2 id="instalar">Como instalar</h2>
-<p>A <strong>primeira</strong> instalação é pelo cabo, num computador com Windows. Depois disso, as atualizações são pelo cartão SD.</p>
+<p><strong>Só na primeira vez</strong> você precisa de um computador com Windows e do cabo USB. Depois, as próximas versões entram <strong>pelo cartão SD</strong>, direto no aparelho.</p>
 
 <div class="aviso">
   <strong>Antes de começar</strong><br>
-  · Só para o <strong>Iigenai GN-438</strong> (firmware de fábrica yp3_2.0.43). Em outro aparelho, não grave.<br>
-  · Notebook <strong>na tomada</strong> e cabo USB <strong>de dados</strong> (não só de carga).<br>
+  · Só para o <strong>Iigenai GN-438</strong>. Em outro aparelho, não grave.<br>
+  · Computador <strong>na tomada</strong> e cabo USB <strong>de dados</strong> (cabo só de carga não funciona).<br>
   · Deixe conectado <strong>só</strong> o aparelho que vai gravar.<br>
-  · Suas configurações (volume, EQ, idioma) voltam ao padrão. As músicas do cartão não são tocadas.
+  · As configurações (volume, equalizador, idioma) voltam ao padrão. As músicas do cartão continuam lá.
 </div>
 
-<h3>1ª vez — pelo cabo (Windows)</h3>
+<h3>Primeira instalação — pelo cabo, no Windows</h3>
+
+<div class="card">
+<h4>1. Baixe os dois arquivos</h4>
+<div class="botoes">
+  <a class="btn" href="https://github.com/zeroproj/OpenPod/raw/main/release/OpenPod-Reload-1.0-RC6/OpenPod_OpenPodReload1.0RC6.up">OpenPod RC6 (.up)</a>
+  <a class="btn sec" href="https://github.com/zeroproj/OpenPod/raw/main/release/OpenPod-Reload-1.0-RC6/windows/FlashloaderSL-DEV-6.9.5.exe">Gravador Flashloader 6.9.5 (.exe)</a>
+</div>
+<p><small>O gravador é o programa oficial da Shenju, fabricante do chip do aparelho. Não é do OpenPod.</small></p>
+</div>
+
+<div class="card">
+<h4>2. Abra o gravador e deixe em inglês</h4>
+<p>Abra o <code>FlashloaderSL-DEV-6.9.5.exe</code>. Ele abre em chinês. No menu, vá em <code>setting → Language → English</code>.</p>
+</div>
+
+<div class="card">
+<h4>3. Configure (uma vez só)</h4>
+<p>No menu, vá em <code>setting → Develp setting...</code>. Essa janela continua em chinês, então siga pela posição das caixas:</p>
+<table>
+  <tr><td>✅ Marque</td><td><strong>as três primeiras</strong> caixas:<br>1. 自动下载 — gravar automático<br>2. 烧录完后自动重启 — reiniciar depois de gravar<br>3. 烧录完重启后恢复出厂设置 — voltar ao padrão ao reiniciar</td></tr>
+  <tr><td>⛔ Não marque</td><td>4. 仅擦除 — só apagar<br>6. 频偏校准 — apaga dados de calibração</td></tr>
+  <tr><td>✋ Não mexa</td><td>no tamanho da flash e nos campos de endereço Bluetooth</td></tr>
+</table>
+<p>Clique em <code>Save</code>.</p>
+</div>
+
+<div class="card">
+<h4>4. Escolha o arquivo do OpenPod</h4>
+<p>Clique em <code>Select .up file</code> (canto superior direito) e escolha o <code>OpenPod_OpenPodReload1.0RC6.up</code> que você baixou. Confira se o caminho mostrado termina com esse nome.</p>
+</div>
+
+<div class="card">
+<h4>5. Coloque o aparelho no modo de gravação</h4>
+<ol type="a">
+  <li>Ligue o aparelho no USB do computador.</li>
+  <li><strong>Segure</strong> o botão de <strong>volume para baixo</strong>.</li>
+  <li>Sem soltar o volume, aperte o botão <strong>RESET</strong> (o furinho na lateral).</li>
+  <li><strong>Continue segurando o volume por uns 5 segundos.</strong></li>
+</ol>
+<p>A tela do aparelho fica <strong>apagada</strong> — é assim mesmo. Se o Windows perguntar se quer <strong>formatar</strong>, responda <strong>não</strong> e feche a janela.</p>
+</div>
+
+<div class="card">
+<h4>6. Grave</h4>
+<p>Clique em <code>Burn</code> e espere a barra chegar a <strong>100%</strong>. <strong>Não desconecte nada</strong> enquanto grava. No fim, o aparelho reinicia sozinho.</p>
+</div>
+
+<div class="card">
+<h4>7. Confira</h4>
+<p>No aparelho, abra <code>Config → Informações</code>. Tem que aparecer <code>Reload 1.0 RC6</code>. Pronto!</p>
+</div>
+
+<h3>Próximas versões — pelo cartão SD (sem computador)</h3>
 <div class="card">
 <ol class="passos">
-  <li><strong>Baixe</strong> o arquivo <a href="https://github.com/zeroproj/OpenPod/raw/main/release/OpenPod-Reload-1.0-RC6/OpenPod_OpenPodReload1.0RC6.up"><code>OpenPod_OpenPodReload1.0RC6.up</code></a>.</li>
-  <li><strong>Abra o gravador</strong> <code>FlashloaderSL-DEV-6.9.5.exe</code> ("Firmware tool 6.9.5"). Ele abre em chinês: menu <code>setting → Language → English</code>.<br>
-      <small>É o programa oficial da Shenju, fabricante do chip, e não é distribuído aqui. Peça ao vendedor do aparelho ou procure por <em>FlashloaderSL-DEV 6.9.5</em>.</small></li>
-  <li><strong>Configure</strong>: menu <code>setting → Develp setting...</code>. A janela fica em chinês.
-    <table>
-      <tr><td>Marque</td><td>1. 自动下载 (download automático) · 2. 烧录完后自动重启 (reinicia depois de gravar) · 3. 烧录完重启后恢复出厂设置 (restaura o padrão ao reiniciar)</td></tr>
-      <tr><td>Não marque</td><td>4. 仅擦除 (só apagar) · 6. 频偏校准 (apaga as variáveis PSM)</td></tr>
-      <tr><td>Não mexa</td><td>Flash size e os campos de endereço Bluetooth</td></tr>
-    </table>
-    Clique <code>Save</code>.</li>
-  <li><strong>Escolha o firmware</strong>: botão <code>Select .up file</code> e selecione o <code>.up</code> baixado. Confira que o caminho termina em <code>OpenPod_OpenPodReload1.0RC6.up</code>.</li>
-  <li><strong>Coloque o aparelho no modo de gravação</strong>: <ol type="a">
-        <li>Ligue o aparelho no USB do computador.</li>
-        <li><strong>Segure</strong> o botão de <strong>volume para baixo</strong>.</li>
-        <li>Sem soltar o volume, aperte o botão <strong>RESET</strong> (o furinho lateral).</li>
-        <li><strong>Continue segurando o volume</strong> por uns <strong>5 segundos</strong>: ele entra no modo de gravação.</li>
-      </ol><br>
-      A tela fica apagada — é o esperado. <strong>Se o Windows oferecer formatar: não.</strong> Feche a janela.</li>
-  <li><strong>Grave</strong>: clique <code>Burn</code> e espere a barra chegar a 100%. Não desconecte nada. O aparelho reinicia sozinho.</li>
-  <li><strong>Confira</strong>: <code>Config → Informações</code> mostra <code>Reload 1.0 RC6</code>.</li>
+  <li>Baixe o arquivo <code>.up</code> da versão nova.</li>
+  <li>Copie para a <strong>raiz</strong> do cartão (fora de qualquer pasta) e renomeie para <code>update.up</code>.</li>
+  <li>Coloque o cartão no aparelho e vá em <code>Config → Atualizar por SD → Sim</code>.</li>
+  <li>O aparelho reinicia, atualiza e volta sozinho.</li>
+  <li><strong>Apague o <code>update.up</code> do cartão.</strong> Se ficar lá, ele tenta atualizar toda vez que liga.</li>
 </ol>
 </div>
 
-<h3>Próximas versões — pelo cartão SD</h3>
-<div class="card">
-<ol class="passos">
-  <li>Baixe o <code>.up</code> da versão nova.</li>
-  <li>Copie para a <strong>raiz</strong> do cartão com o nome <code>update.up</code>.</li>
-  <li>No aparelho: <code>Config → Atualizar por SD → Sim</code>. Ele reinicia, atualiza e volta.</li>
-  <li><strong>Apague o <code>update.up</code> do cartão</strong> — senão ele tenta atualizar toda vez que liga.</li>
-</ol>
-</div>
-
-<h3>Se não ligar</h3>
-<p>Não entre em pânico: o modo de gravação fica na memória do chip e roda antes de qualquer firmware. Repita o passo 5 e grave de novo.</p>
+<h3>Deu algo errado?</h3>
+<p>Calma: o modo de gravação (passo 5) fica na memória do próprio chip e funciona mesmo se o aparelho não ligar. Repita os passos 5 e 6 para gravar de novo.</p>
 
 <footer>
   OpenPod é um projeto independente, sem ligação com a Smartlink, a Shenju ou o fabricante do aparelho. Use por sua conta e risco.

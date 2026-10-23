@@ -32,7 +32,7 @@ DEPENDENCIAS
     git, e a ferramenta tools/organiza_pacote.py
 
 O QUE NUNCA SOBE
-    release/*/windows/*.exe   gravador proprietario da Shenju
+    release/*/windows/*.exe   gravador proprietario da Shenju (so com --com-flashloader)
     qualquer coisa fora de release/<versao>/ e da pagina
 
 LIMITACOES
@@ -48,6 +48,9 @@ import sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BRANCH = "publico"
+# O gravador da Shenju (proprietario). So sobe com --com-flashloader, por
+# decisao do mantenedor (2026-10-23), conferido pelo sha.
+FLASHLOADER = "FlashloaderSL-DEV-6.9.5.exe"
 REMOTO = "origin"
 
 
@@ -68,6 +71,8 @@ def main():
     ap.add_argument("--nome-tela", default=None,
                     help="o que a tela Informacao mostra, ex 'OpenPod 5.7 Beta 2'")
     ap.add_argument("--push", action="store_true")
+    ap.add_argument("--com-flashloader", action="store_true",
+                    help="inclui windows/FlashloaderSL-DEV-6.9.5.exe (decisao do mantenedor, 2026-10-23)")
     a = ap.parse_args()
 
     pac = os.path.join(RAIZ, "release", a.versao)
@@ -116,10 +121,15 @@ def main():
         shutil.copy2(os.path.join(RAIZ, "LICENSE"), wt)
         os.makedirs(os.path.join(wt, "release"), exist_ok=True)
         shutil.copytree(pac, os.path.join(wt, "release", a.versao),
-                        ignore=shutil.ignore_patterns("*.exe"))
-        open(os.path.join(wt, ".gitignore"), "w").write(
-            "# Gravador da Shenju: proprietario, sem licenca para redistribuir.\n"
-            "release/*/windows/*.exe\n")
+                        ignore=None if a.com_flashloader else shutil.ignore_patterns("*.exe"))
+        if a.com_flashloader:
+            exes = [f for f in os.listdir(os.path.join(wt, "release", a.versao, "windows"))
+                    if f.endswith(".exe")]
+            exigir(exes == [FLASHLOADER], "esperava so %s em windows/, achei %s" % (FLASHLOADER, exes))
+        else:
+            open(os.path.join(wt, ".gitignore"), "w").write(
+                "# Gravador da Shenju: proprietario.\n"
+                "release/*/windows/*.exe\n")
 
         readme = os.path.join(RAIZ, "docs", "README_PUBLICO.md")
         if os.path.isfile(readme):
@@ -145,7 +155,8 @@ def main():
         print("  release/%s/cabo/setores/  -> %d arquivos" % (a.versao, len(setores)))
 
         vaza = [f for f in arqs if re.search(r"\.exe$|B27|CLAUDE\.md|^tools/|^analysis/"
-                                             r"|^firmware/|^docs/.*\.md$", f)]
+                                             r"|^firmware/|^docs/.*\.md$", f)
+                and not (a.com_flashloader and f.endswith("/windows/" + FLASHLOADER))]
         exigir(not vaza, "isto NAO pode subir:\n  " + "\n  ".join(vaza))
         print("\nconferido: nada de codigo-fonte, analise ou .exe")
 

@@ -30,8 +30,8 @@ Projeto independente, sem ligação com a Smartlink, a Shenju ou o
 fabricante do aparelho.
 
 Gravador Linux/macOS: **smartlink_flash**, de Ilya Kurdyukov.
-Gravador Windows: **Flashloader SL-DEV**, da Shenju — não vem no
-pacote: é software proprietário que não podemos redistribuir.
+Gravador Windows: **Flashloader SL-DEV 6.9.5**, da Shenju (programa
+proprietário do fabricante do chip), em `windows/` do pacote.
 Direção visual referenciada no tema **NanoClone**, de Billy Blair
 (CC-BY-SA 3.0) — apenas valores de cor medidos, nenhum pixel copiado.
 
