@@ -1,7 +1,7 @@
 # OpenPod
 
-Firmware baseado no **yp3_2.0.43** (Smartlink/YP3) que reescreve a
-interface de players MP3 baratos com a navegação do iPod nano.
+Um firmware novo para o **Iigenai GN-438**: visual limpo e moderno, foco
+em música, feito a partir do sistema de fábrica (yp3_2.0.43).
 
 **Site:** https://zeroproj.github.io/OpenPod/
 
@@ -26,8 +26,8 @@ atualização e a página do projeto.
 
 ## Créditos
 
-**iPod** e **iPod nano** são marcas da Apple. Este projeto não usa código
-nem arte da Apple — reproduz apenas princípios de interface.
+Projeto independente, sem ligação com a Smartlink, a Shenju ou o
+fabricante do aparelho.
 
 Gravador Linux/macOS: **smartlink_flash**, de Ilya Kurdyukov.
 Gravador Windows: **Flashloader SL-DEV**, da Shenju — não vem no
