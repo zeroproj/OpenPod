@@ -204,4 +204,93 @@ rotina (sem `unicorn`), limite de croma (estética, aceito).
 
 ## Entrega (preenchida pelo desenvolvedor)
 
+MiniMax M3 (opencode.json do worktree), 2026-10-22. `sh tools/ci.sh` **verde**
+(1 ORIGINAL, 2 protegidos, 3 sintaxe, 4 testes: 19 + 30 OK, 5 gitleaks).
+
+### O que foi feito
+
+- `tools/fab_barra_degrade.py` (itens 1 e 2). Monta a rotina de 56 bytes com
+  encoders Thumb-2 que moram na própria ferramenta, troca o `bl` do gancho
+  (0x121724) e pinta as 16 linhas da folha da home. 2105 bytes em 0x0CE000,
+  0x121000 e 0x1A7000.
+- `tools/fab_barra_titulo.py` (item 3). `b"OpenPod\0"` em 0x1A7040 e os quatro
+  pontos do rótulo (0x1226BA, 0x1226BE, 0x1226CA, 0x1226F4). 20 bytes em
+  0x122000 e 0x1A7000.
+- `tools/build.py`: os dois lotes no `MAPA` (0x1A7000/0x40 e 0x1A7040/0x10) e a
+  receita `reload_1.0_rc3` = `reload_1.0_rc2` + as duas ferramentas, nessa ordem.
+- Resultado: `reload_1.0_rc3` = `411b24844d17e987bf808fd59293390d4c7c3501c63c9fea9574e707c159fdb1`
+  (reprodutível: duas execuções, mesmo sha). A RC2 continua em
+  `fcca5fdc99b828fb135cae77f5915c42cfddf1a537eb0a619f0c135313ccd123` e a RC3
+  contém todos os bytes dela. Validação estrutural e binary diff do build: OK,
+  menor offset 0x053C24, nada abaixo de 0xE000, 0xD000 e PSMP intocados.
+
+Nada fora disso foi tocado: `firmware/ORIGINAL/` intacto (sha conferido pelo
+ci), nenhuma ferramenta da lista de proibidas usada, importada ou citada nas
+fontes novas, sem USB, sem gravação no aparelho.
+
+### Decisões
+
+1. **Premissas presas por sha256** (`CRIA_FAIXA` 0x1216F0..0x121764, os dois
+   wrappers, e cabeçalho+paleta da folha 0x0CDD50..0x0CE15C) em vez de bytes
+   colados no fonte: 1 KiB de paleta e 0x74 de código seriam ruido, e o sha
+   cobre as bordas que a revisão R0 pediu (primeiro e último byte de cada
+   região). Byte a byte continua valendo para o que a ferramenta escreve.
+2. **A rotina tem dois caminhos independentes.** Os encoders a montam; um
+   literal de 56 bytes fixado no fonte é conferido contra ela e a ferramenta
+   recusa se divergirem. Foi o que pegou dois erros meus de digitação no meio
+   do caminho (`movs r1,#0x22` e `movs r1,#0x23` saíram com o registrador
+   trocado) — que é exatamente o dano D1, e nenhum teste de efeito pegaria.
+3. **`enc_bl`/`enc_b`/`movw` conferidos fora do projeto.** `enc_bl` reproduz
+   byte a byte o `bl` de fábrica em 0x121724; `enc_b` reproduz os 413 saltos
+   largos incondicionais do ORIGINAL; `movw` foi conferido contra o assembler
+   do LLVM (o bit `i` do MOVW T3 é imm16[11], não imm16[15]).
+4. **Índice de paleta por linha:** menor distância de Chebyshev (que é o próprio
+   limite da ficha), desempate por soma de quadrados e depois pelo índice —
+   determinístico entre execuções. Sai exatamente o degradê dos riscos
+   aceitos: 7 cores, topo (66,76,81), linhas 13–15 com matiz, erro máximo 10
+   por canal (limite 12), luminância sem nunca subir.
+5. **`--em` é conferido contra o MAPA** (0x1a7000 / 0x1a7040); sem `--em` usa o
+   endereço fixo. Recusa sai com código 2, antes de ler a entrada.
+6. **`--out` = `--in` por qualquer via** (`os.path.samefile`, herdado da RC2).
+   Mesma conferir de saída que a RC2: relê o que escreveu, compara com a
+   entrada, e recusa se algum byte saiu da lista permitida.
+
+### Pendências (fora do escopo desta tarefa)
+
+- Roteiro no aparelho (a tabela da ficha) —inclusive o cartão, a página 0x51 e
+  o "OpenPod × relógio".
+- Kit e carimbo: é do engenheiro; o `gera_versao` monta os setores em ordem
+  crescente, então o lote 0x1A7000 sai **depois** dos setores dos ganchos
+  (0x121000, 0x122000). Isso é o risco já aceito na ficha e o mesmo da
+  RC1/RC2, mas contraria a linha "setor 0x1A7000 antes dos ganchos" do item
+  R2 — deixei o fato registrado no comentário da receita, para quem confere
+  no `[4/4]`.
+- Docs (`docs/CHANGELOG.md`, `docs/RELOAD_1_0.md`, `docs/metricas.md`): a RC2
+  só os ganhou depois de aprovada no aparelho, então ficam para o mesmo
+  momento.
+
+### Danos notados e não cobertos
+
+- **O pool 0x1226F4 é lido duas vezes.** O `ldr r1,[pc,#0x28]` de 0x1226C6 o
+  joga no `set_style_text_font` (que a RC3 transforma em `nop nop`), e o
+  `ldr r1,[pc,#0x14]` de 0x1226DE o passa para a chamada 0x00D5ED94, que a
+  ficha não descreve. Se essa segunda chamada usar o ponteiro como texto —
+  que é o que a ficha presume — o título aparece; se ela usar como estilo ou
+  fonte, o aparelho mostra outra coisa. Os testes são de efeito estático e não
+  pegam isso: é a primeira coisa a olhar na linha "Home" do roteiro.
+- **Sem `unicorn` não há teste semântico da rotina** (já registrado na revisão
+  R0): o que se confere é que as 20 instruções são as da ficha, não que elas
+  pintem o degradê.
+- **Quantização da home:** o topo da home é (66,76,81) e o dos menus é
+  (64,70,82); as linhas 13–15 ficam com matiz (13,23,22) e (17,10,17). Já é
+  risco aceito, e a ferramenta imprime as 16 linhas para o olho do engenheiro
+  decidir se o matiz incomoda.
+- **A degradação dos menus depende do tema**: se o tema não der opacidade ao
+  fundo da faixa, nada aparece. A rotina põe `BG_OPA = LV_OPA_COVER` (R0)
+  justamente para não depender disso — mas isso é garantido só por leitura do
+  código, não por execução.
+
 ## Rodadas
+
+- (nenhuma) — a revisão R0 foi incorporada à ficha antes da implementação; não
+  houve rodada de correção com testes novos.

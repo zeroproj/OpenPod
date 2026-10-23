@@ -149,6 +149,14 @@ MAPA = {
     # 4 KiB virgens. O que nao cabe antes vai para depois dele.
     "make_extras_menu.py":     (0x001A6000, 0x0400),
     "patch_faixa_degrade.py": (0x001A6000, 0x0040),
+    # Ficha 002 (RC3). A rotina do degradê e a string "OpenPod" recebem
+    # endereco FIXO: a primeira e chamada por um `bl` dentro da CRIA_FAIXA e
+    # a segunda por um ponteiro dentro do rotulo, entao os dois enderecos
+    # estao gravados no proprio codigo da fabrica. 0x1A7000 fica logo depois
+    # do ultimo lote acima, e o texto vem colado na rotina (16 bytes) porque
+    # sao gravados no mesmo setor do cabo.
+    "fab_barra_degrade.py":  (0x001A7000, 0x0040),
+    "fab_barra_titulo.py":   (0x001A7040, 0x0010),
 }
 AREA_INI, AREA_FIM = 0x001A3040, 0x001A8000
 
@@ -346,12 +354,43 @@ RELOAD_1_0_RC2 = RELOAD_1_0_RC1 + [
     ("fab_fundo_preto.py", [], "fundo preto: abertura, display e papel de parede"),
 ]
 
+# ---------------------------------------------------------------------------
+# RELOAD 1.0 RC3 — a RC2 mais o degradê da barra e o "OpenPod" no centro
+# (ficha 002, tipo Risco).
+#
+# Os passos da RC2 vem primeiro, na ordem dela: a RC2 foi aprovada no
+# aparelho em 2026-10-21 e virou catraca (sha fcca5fdc..., em
+# tests/test_rc2.py), entao a RC3 tem que conter a RC2 byte a byte.
+#
+# As duas ferramentas novas escrevem em tres lugares:
+#
+#     0x121724  o `bl` do gancho, dentro da CRIA_FAIXA (4 bytes)
+#     0x1A7000  a rotina do degradê + o texto "OpenPod" (0x50 bytes)
+#     0x0CE15C  as 16 linhas da barra da folha da home (2048 bytes)
+#     0x1226BA  os quatro pontos do rotulo do cartao (14 bytes)
+#
+# ORDEM NO KIT: fora do escopo desta receita (o kit e do engenheiro). O
+# `gera_versao` monta os setores em ordem crescente de endereco, entao o
+# lote 0x1A7000 sai DEPOIS dos setores dos ganchos (0x121000, 0x122000):
+# se a gravacao parar no meio, sobram menus com o `bl` apontando para o
+# 0xFF do lote. O risco esta na lista de riscos aceitos da ficha e e o
+# mesmo da RC1/RC2 — boot, home e recuperacao por cabo nao dependem desses
+# setores. Quem confere e o engenheiro, no [4/4] do `gera_versao`.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC3 = RELOAD_1_0_RC2 + [
+    ("fab_barra_degrade.py", [],
+     "degradê na barra: as 52 telas e a home"),
+    ("fab_barra_titulo.py",  [],
+     '"OpenPod" no centro da barra da home'),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
     "reload_alpha_0.2": RELOAD_ALPHA_0_2,
     "reload_1.0_rc1": RELOAD_1_0_RC1,
     "reload_1.0_rc2": RELOAD_1_0_RC2,
+    "reload_1.0_rc3": RELOAD_1_0_RC3,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
