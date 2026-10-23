@@ -58,3 +58,12 @@ diagnóstico (ficha Risco) que mostra a memória livre na tela.
 Com E1 e E2: P10 (caminho da faixa atual), ponto de gancho no presenter
 (troca de faixa) e na view (onde criar o `lv_img`), e então a ficha 004 —
 implementação, tipo Pesada + Risco, com testes vermelhos e revisão astra.
+
+## Modelo aprovado pelo decisor (2026-10-23) — agora RC7
+`docs/img/rc7_tocando_modelo.png`. "Mantendo tudo, só a capa no meio":
+capa **64×64** centralizada em x 32..96, y 42..106, no vão vazio entre o
+título (y≈25..37) e a fileira de ícones (y≈113), medido na foto do
+aparelho. Sem capa (ou progressiva/PNG/sem memória): quadrado cinza
+`(52,52,52)` com nota musical `(150,150,150)`. Nada mais da tela muda.
+Referência visual extra do decisor: capa com leve perspectiva (opcional,
+dá para gerar na nossa rotina de redução).
