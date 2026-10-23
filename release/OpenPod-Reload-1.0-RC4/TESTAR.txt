@@ -1,0 +1,25 @@
+OpenPod Reload 1.0 RC4 — TESTAR
+
+Base: RC3.1 (aprovada). Receita reload_1.0_rc4 = RC3 + fab_barra_centro.py + fab_icones_home.py
+Imagem carimbada: 08ad6043... · .up CRC 0x8750 · sha 633768fb...
+Muda em relacao a RC3.1: folha da home (0x0CD000..0x0D3000), barra (0x121000, 0x122000) + carimbo
+
+INSTALAR (pelo cartao)
+  1. Copie OpenPod_OpenPodReload1.0RC4.up para a RAIZ do cartao com o nome update.up
+  2. Configurar -> Atualizar por SD -> Sim
+  3. O aparelho reinicia, atualiza e volta
+  4. APAGUE o update.up do cartao
+
+ROTEIRO (marque ok / falhou)
+  [ ] Home: icones novos (quadrados arredondados coloridos), fundo preto
+  [ ] Barra: degrade; relogio, "OpenPod" e bateria no meio da barra, mesma altura
+  [ ] Cada icone abre a tela certa: Musica, Video, Gravacao, Radio, Livro, Imagem, Bluetooth, Configurar, Pastas
+  [ ] Destaque do icone selecionado aparece e anda certo
+  [ ] Nomes embaixo dos icones legiveis
+  [ ] Menus: bateria sem cortar no topo
+  [ ] Tocando Agora toca normal
+  [ ] Configurar: Informacoes = "Reload 1.0 RC4"; Atualizar por SD funciona
+  [ ] Mande uma foto da home
+
+SE ALGO DER ERRADO
+  Volte a RC3.1 pelo cartao.

@@ -34,7 +34,7 @@ foi gravado e relatado.** Se algo quebrar, sabemos qual passo foi.
 | RC1 | `reload_1.0_rc1` | 1 | **APROVADA no aparelho em 2026-10-21** (Flashloader, Windows; update por SD testado) |
 | RC2 | `reload_1.0_rc2` | + 2, 3 | **APROVADA no aparelho em 2026-10-21** (pelo cartão). Imagem `fcca5fdc…`, carimbada `da3398d1…`, `.up` `2adb53ed…` CRC 0x91F1 |
 | RC3 | `reload_1.0_rc3` | + 4, 5 (ferramentas novas da ficha 002) | RC3 gravada 2026-10-23 (degradê e título ok; pedido de alinhamento → R1). **RC3.1**: imagem `286e8ba8…`, carimbada `3b76b307…` (carimbo `--em 0x1A4F00`), `.up` `98aa9c9d…` CRC 0x1E32 — **APROVADA no aparelho 2026-10-23** ("ficou alinhado"); catraca em `tests/test_rc4.py` |
-| RC4 | `reload_1.0_rc4` | + 6 (ícones) e barra no meio (pedido 2026-10-23); a bateria (7) fica para depois | ficha 004 + testes vermelhos; revisão astra |
+| RC4 | `reload_1.0_rc4` | + 6 (ícones) e barra no meio (pedido 2026-10-23); a bateria (7) fica para depois | **kit gerado 2026-10-23, aguardando gravação.** Imagem `74e8cb31…`, carimbada `08ad6043…`, `.up` `633768fb…` CRC 0x8750 |
 | RC5 | — | + capa do álbum (de dentro do MP3) na Tocando Agora | **pedido 2026-10-21; caminho escolhido (D05); análise em `docs/tarefas/003-rc5-analise-capa.md`** (ver §6) |
 
 Instalação: **1ª gravação por cabo**; todo kit leva também o `.up` para as
