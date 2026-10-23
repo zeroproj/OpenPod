@@ -47,10 +47,12 @@ HOME_LINHAS = 16                                            # y 0..15, todas ín
 
 SD_LABEL, SD_LABEL_FIM = 0x1226AC, 0x1226F8          # cria view_p[0x14] (só home/0x51, com cartão)
 TITULO = {   # endereço: (bytes de fábrica, bytes da RC3)
-    0x1226BA: (bytes.fromhex("6ff01d02"), bytes.fromhex("042200bf")),  # x_ofs -30 -> movs r2,#4; nop (revisão R0)
+    0x1226BA: (bytes.fromhex("6ff01d02"), bytes.fromhex("062200bf")),  # x_ofs -30 -> movs r2,#6; nop (R1: centro entre relógio e bateria)
     0x1226BE: (bytes.fromhex("0321"), bytes.fromhex("0221")),          # align 3 -> 2 (TOP_MID)
     0x1226CA: (None, bytes.fromhex("00bf00bf")),                       # bl set_style_text_font -> nop nop
     0x1226F4: (struct.pack("<I", 0x00C5D614), struct.pack("<I", XIP + TEXTO)),  # ponteiro do texto
+    # R1 (foto do decisor, 2026-10-23): bateria 1-2 px acima do relógio e do título (y=2)
+    0x12260E: (bytes.fromhex("0022"), bytes.fromhex("0222")),          # set_pos(bat, 107, y) y 0 -> 2
 }
 
 FERRAMENTAS = ("fab_barra_degrade.py", "fab_barra_titulo.py")   # nomes e ordem fixados pela ficha
@@ -359,7 +361,8 @@ class Recusa(unittest.TestCase):
         self.confere_recusa("fab_barra_degrade.py", {hex(a): self.inverte(a) for a in pontos})
 
     def test_d3_titulo_recusa_bordas(self):
-        pontos = [SD_LABEL, SD_LABEL_FIM - 1, 0x1226D0, 0x123E9C, TEXTO, TEXTO + TEXTO_LOTE - 1]
+        pontos = [SD_LABEL, SD_LABEL_FIM - 1, 0x1226D0, 0x123E9C, TEXTO, TEXTO + TEXTO_LOTE - 1,
+                  0x12260E, 0x122612, 0x122614]   # R1: y da bateria, x=107 e o bl set_pos
         self.confere_recusa("fab_barra_titulo.py", {hex(a): self.inverte(a) for a in pontos})
 
     def test_d3_saida_igual_a_entrada(self):

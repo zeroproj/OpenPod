@@ -294,3 +294,19 @@ fontes novas, sem USB, sem gravação no aparelho.
 
 - (nenhuma) — a revisão R0 foi incorporada à ficha antes da implementação; não
   houve rodada de correção com testes novos.
+
+### R1 — 2026-10-23, achado do decisor no aparelho (foto)
+RC3 gravada: degradê e "OpenPod" funcionam. Pedido: "alinhar a hora com
+nome openpod e bateria — está desalinhado". Medido na foto (CONFIRMADO):
+relógio e título na mesma altura (y_ofs 2); a bateria ~1,5 px acima
+(`set_pos(bat, 107, 0)` em `0xD2260E`, `view_icon_create` da bateria
+`0xD225B0`); título 8 px do relógio e 13 px da bateria.
+Mudanças (em `fab_barra_titulo.py`):
+- `0x1226BA` → `06 22 00 bf` (`movs r2,#6`): título em x 44..96, ~10 px de
+  cada lado.
+- `0x12260E` `00 22` → `02 22` (`movs r2,#2`): bateria em y=2, como o
+  relógio. Premissas: `0x12260E` = `0022`, `0x122612` = `6b21` (x=107),
+  `0x122614` = `bl 0xD4A2D4` (set_pos). Vale para todas as telas com
+  bateria.
+Testes: `TITULO` atualizado; recusa em `0x12260E`, `0x122612`, `0x122614`.
+
