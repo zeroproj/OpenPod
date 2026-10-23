@@ -145,8 +145,11 @@ MAPA = {
     # receita, mas o slot fica reservado aqui para nao ser dado a
     # ninguem: a constante vive em make_install_kit.EM_VERSAO.
     #
-    # 0x001A5000..0x001A6000 e reservado: o `patch_titulos` exige esses
-    # 4 KiB virgens. O que nao cabe antes vai para depois dele.
+    # 0x001A5000..0x001A6000 eram do `patch_titulos` (ferramenta da linha
+    # Core, removida em 2026-09-14). A ficha 005 (RC5) tomou o lote para os
+    # textos em portugues: 4 KiB virgens, logo depois do carimbo e antes
+    # das rotinas de endereco fixo de baixo — e nao cruza nenhum lote acima.
+    "fab_textos.py":           (0x001A5000, 0x1000),
     "make_extras_menu.py":     (0x001A6000, 0x0400),
     "patch_faixa_degrade.py": (0x001A6000, 0x0040),
     # Ficha 002 (RC3). A rotina do degradê e a string "OpenPod" recebem
@@ -417,6 +420,37 @@ RELOAD_1_0_RC4 = RELOAD_1_0_RC3 + [
      "os nove icones novos da home, fundo preto"),
 ]
 
+# ---------------------------------------------------------------------------
+# RELOAD 1.0 RC5 — a RC4 mais os textos em portugues revisados e os nomes
+# curtos da home (ficha 005, tipo Risco).
+#
+# Os passos da RC4 vem primeiro, na ordem dela: a RC4 foi aprovada no aparelho
+# em 2026-10-23 e virou catraca (sha 74e8cb31..., em tests/test_rc5.py), entao
+# a RC5 tem que conter a RC4 byte a byte.
+#
+# A ferramenta nova e a UNICA que mexe na tabela de textos, e mexe de um jeito
+# que as ferramentas antigas de texto nao faziam: nada e escrito na string de
+# fabrica. As strings novas sao gravadas no lote 0x001A5000..0x001A6000 (virgem
+# na RC4) e so as entradas da tabela dos ids da lista passam a apontar para
+# ca. Isso mantem a RC1 de pe (os ids 40 e 91, "Atualizar por SD", ficam como
+# a RC1 os deixou) e nao desfaz nada da RC2 a RC4.
+#
+# POR QUE NAO DA PARA ESCREVER NO LUGAR: em fabrica tres strings sao
+# compartilhadas por dois ids, e em cada par o parceiro esta FORA da lista
+# (40/90, 78/155, 9/29). Editar no lugar mudaria um id que a ficha manda
+# deixar como esta. O detalhe esta no cabecalho do `fab_textos.py`.
+#
+# ORDEM NO KIT: fora do escopo desta receita (o kit e do engenheiro). O
+# `gera_versao` monta os setores em ordem crescente de endereco; o setor novo
+# e o 0x1A5000, o mais alto desta RC, e o nenhum deles e lido pelo bootloader.
+# O risco e o mesmo da RC1 a RC4 (interromper entre 0x053000 e 0x1A5000 deixa
+# textos lixo), e quem confere e o engenheiro, no [4/4] do `gera_versao`.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC5 = RELOAD_1_0_RC4 + [
+    ("fab_textos.py", [],
+     "os 180 textos revisados em portugues + os nomes da home"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -425,6 +459,7 @@ RECEITAS = {
     "reload_1.0_rc2": RELOAD_1_0_RC2,
     "reload_1.0_rc3": RELOAD_1_0_RC3,
     "reload_1.0_rc4": RELOAD_1_0_RC4,
+    "reload_1.0_rc5": RELOAD_1_0_RC5,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
