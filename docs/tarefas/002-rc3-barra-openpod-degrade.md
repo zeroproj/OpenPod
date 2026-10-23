@@ -209,6 +209,9 @@ MiniMax M3 (opencode.json do worktree), 2026-10-22. `sh tools/ci.sh` **verde**
 
 ### O que foi feito
 
+> Números da primeira entrega (R0). A R1 mudou só o
+> `fab_barra_titulo.py` — o que ela mexeu está em **Rodadas**.
+
 - `tools/fab_barra_degrade.py` (itens 1 e 2). Monta a rotina de 56 bytes com
   encoders Thumb-2 que moram na própria ferramenta, troca o `bl` do gancho
   (0x121724) e pinta as 16 linhas da folha da home. 2105 bytes em 0x0CE000,
@@ -292,8 +295,11 @@ fontes novas, sem USB, sem gravação no aparelho.
 
 ## Rodadas
 
-- (nenhuma) — a revisão R0 foi incorporada à ficha antes da implementação; não
-  houve rodada de correção com testes novos.
+- R0 (revisão da ficha, 2026-10-22): incorporada **antes** da implementação —
+  não foi rodada de correção com testes novos, e por isso não tem registro
+  aqui.
+- R1 (2026-10-23): achado do decisor no aparelho, com os testes atualizados
+  pelo mesmo commit. Resposta do desenvolvedor abaixo.
 
 ### R1 — 2026-10-23, achado do decisor no aparelho (foto)
 RC3 gravada: degradê e "OpenPod" funcionam. Pedido: "alinhar a hora com
@@ -309,4 +315,43 @@ Mudanças (em `fab_barra_titulo.py`):
   `0x122614` = `bl 0xD4A2D4` (set_pos). Vale para todas as telas com
   bateria.
 Testes: `TITULO` atualizado; recusa em `0x12260E`, `0x122612`, `0x122614`.
+
+**Resposta do desenvolvedor (R1):** corrigido em `tools/fab_barra_titulo.py`.
+`sh tools/ci.sh` **verde** (30 + 19 testes OK, gitleaks OK); os dois testes
+que estavam vermelhos (`test_c5_titulo_bytes`, `test_d3_titulo_recusa_bordas`)
+passam. Só esse arquivo mudou — `tools/fab_barra_degrade.py` e
+`tools/build.py` não precisaram de nada, e o teste continua verde.
+
+O que mudou na ferramenta:
+- `PONTOS` passou de quatro para cinco: 0x1226BA com `06 22 00 bf` (x_ofs 6) e
+  o ponto novo 0x12260E com `02 22`. `PERMITIDO` é derivado de `PONTOS`,
+  então a lista de bytes autorizados acompanhou sozinha.
+- Três premissas novas, todas antes de qualquer escrita: sha256 da função da
+  bateria inteira (0x1225B0..0x1226AC, do `push` até o pool) mais os três
+  fatos legíveis que a ficha nomeia — 0x12260E = `0022`, 0x122612 = `6b21`, e
+  o `bl` de 0x122614 decodificando para 0x00D4A2D4. O sha pega a região toda
+  (bordas inclusas); os três checks dão a mensagem do que era aquele lugar.
+- Conferência de saída: além dos cinco pontos, a função da bateria é relida e
+  comparada com a entrada — só o y pode ter mudado.
+
+Imagem: `reload_1.0_rc3` = `286e8ba8ed66f9fdb51af8d6c94a8dbc3e43513c6d554c85e2ea5f772363faa9`
+(reprodutível, duas execuções com o mesmo sha). Setor 0x122000: 14 → 15 bytes;
+em toda a função da bateria muda **um** byte, 0x12260E. A RC2 continua
+`fcca5fdc…` e a RC3 contém todos os bytes dela.
+
+**Pendência que sobrou (fora do escopo, é do engenheiro):** o kit em
+`release/OpenPod-Reload-1.0-RC3/` e a linha de `docs/RELOAD_1_0.md` estão com a
+imagem anterior (carimbada `3421773b…`, `.up` CRC 0xF6E4). A RC3 R1 muda a
+imagem e o setor 0x122000, então o kit precisa ser regerado antes da próxima
+gravação; o `.up` novo vai ter outro CRC.
+
+**O que continua valendo do risco da entrega anterior:** o pool 0x1226F4 é lido
+por dois `ldr` (0x1226C6 e 0x1226DE) e a ficha não descreve a segunda
+consumidora (0x00D5ED94). Na foto o título apareceu, então na prática deu
+certo — mas continua sem teste que garanta.
+
+**Medida que a R1 ensina:** +4 px não centralizou. O `+6` da R1 é número de
+foto, não número medido por conta própria; se na foto seguinte o título ainda
+ficar torto, o próximo passo é medir x em vez de chutar — a largura do texto
+com a fonte do tema não é um número que a imagem tem.
 
