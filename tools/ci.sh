@@ -11,6 +11,9 @@ shasum -a 256 -c tests/PROTEGIDOS.sha256
 echo "== 3. sintaxe das ferramentas"
 python3 -m py_compile tools/*.py tests/*.py
 echo "== 4. testes"
+# os testes criam muitas copias de 2 MiB; tudo vai para uma pasta so, apagada no fim
+TMPDIR="$(mktemp -d -t openpod_ci)"; export TMPDIR
+trap 'rm -rf "$TMPDIR"' EXIT
 python3 tests/test_roundtrip.py
 python3 tools/patch_icones_home.py --autoteste
 python3 tests/test_rc2.py
