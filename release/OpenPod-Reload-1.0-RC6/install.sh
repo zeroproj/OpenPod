@@ -113,8 +113,9 @@ if [ "$LANG_SEL" = en ]; then cat <<'TXT'
 
       1. Connect the USB cable to the computer
       2. HOLD the VOLUME button (bottom of the wheel)
-      3. While holding it, press RESET
-      4. Release VOLUME
+      3. While holding VOLUME, press RESET
+      4. KEEP holding VOLUME for about 5 seconds:
+         it enters flashing mode
 
   The screen stays DARK. That is expected.
 
@@ -126,8 +127,9 @@ else cat <<'TXT'
 
       1. Conecte o cabo USB no computador
       2. SEGURE o botao de VOLUME (o de baixo da roda)
-      3. Sem soltar, aperte RESET
-      4. Solte o VOLUME
+      3. Sem soltar o VOLUME, aperte RESET
+      4. CONTINUE segurando o VOLUME por uns 5 segundos:
+         ele entra no modo de gravacao
 
   A tela fica APAGADA. Isso e o esperado.
 

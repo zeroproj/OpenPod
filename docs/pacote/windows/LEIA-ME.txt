@@ -119,11 +119,13 @@ PASSO 4 - MODO DE GRAVACAO / FLASHING MODE
       2. SEGURE o botao de VOLUME PARA BAIXO
          HOLD the VOLUME DOWN button
 
-      3. Sem soltar, aperte RESET (o furinho lateral)
-         While holding it, press RESET (the small side hole)
+      3. Sem soltar o VOLUME, aperte RESET (o furinho lateral)
+         While holding VOLUME, press RESET (the small side hole)
 
-      4. Solte o VOLUME
-         Release VOLUME
+      4. CONTINUE segurando o VOLUME por uns 5 segundos.
+         Ele entra no modo de gravacao.
+         KEEP holding VOLUME for about 5 seconds.
+         It enters flashing mode.
 
   A tela fica APAGADA. Isso e o esperado.
   The screen stays DARK. That is expected.
