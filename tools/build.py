@@ -384,6 +384,39 @@ RELOAD_1_0_RC3 = RELOAD_1_0_RC2 + [
      '"OpenPod" no centro da barra da home'),
 ]
 
+# ---------------------------------------------------------------------------
+# RELOAD 1.0 RC4 — a RC3 mais os icones novos da home e a barra centrada
+# (ficha 004, tipo Risco).
+#
+# Os passos da RC3 vem primeiro, na ordem dela: a RC3.1 foi aprovada no
+# aparelho em 2026-10-23 e virou catraca (sha 286e8ba8..., em
+# tests/test_rc4.py), entao a RC4 tem que conter a RC3 byte a byte.
+#
+# As duas ferramentas novas nao alocam nada e nao usam area livre:
+#
+#     0x1217D6  0x1226B6  0x12260E   o y do relogio, do titulo e da
+#                                     bateria: 2 -> 0, o centro da barra
+#     0x0CDD5C  0x0D315C   a paleta e os pixels da folha da home
+#
+# ORDEM ENTRE ELAS: a da ficha. Nenhuma das duas depende da outra — a
+# primeira mexe em codigo, a segunda em imagem — mas a `fab_icones_home`
+# aceita tanto o ORIGINAL quanto a RC3 na premissa, e a
+# `fab_barra_centro` aceita SO a RC3. A ordem mantem o porquao legivel.
+#
+# ORDEM NO KIT: fora do escopo desta receita (o kit e do engenheiro). O
+# `gera_versao` monta os setores em ordem crescente de endereco; nesta RC
+# os setores novos sao os de codigo (0x121000, 0x122000) e os da folha da
+# home (0x0CD000..0x0D3000), e nenhum deles e lido pelo bootloader. O
+# risco e o mesmo da RC1/RC2/RC3, e quem confere e o engenheiro, no
+# [4/4] do `gera_versao`.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC4 = RELOAD_1_0_RC3 + [
+    ("fab_barra_centro.py", [],
+     "relogio, 'OpenPod' e bateria no meio da barra"),
+    ("fab_icones_home.py",  [],
+     "os nove icones novos da home, fundo preto"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -391,6 +424,7 @@ RECEITAS = {
     "reload_1.0_rc1": RELOAD_1_0_RC1,
     "reload_1.0_rc2": RELOAD_1_0_RC2,
     "reload_1.0_rc3": RELOAD_1_0_RC3,
+    "reload_1.0_rc4": RELOAD_1_0_RC4,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
