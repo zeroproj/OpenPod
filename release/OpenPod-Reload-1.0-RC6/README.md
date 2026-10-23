@@ -1,9 +1,9 @@
 # OpenPod — OpenPod Reload 1.0 RC6
 
-An iPod nano–inspired interface for the **Iigenai GN-438** player
-(Smartlink/YP3, stock firmware `yp3_2.0.43`).
+A new firmware for the **Iigenai GN-438** player: clean, modern look,
+focused on music, built from the stock system (`yp3_2.0.43`).
 
-*Uma interface inspirada no iPod nano para o player **Iigenai GN-438**.*
+*Um firmware novo para o **Iigenai GN-438**: visual limpo e moderno, foco em música, feito a partir do sistema de fábrica.*
 
 > ⚠️ **Beta.** Tested on one device only.
 > *Testada em um único aparelho.*
@@ -136,8 +136,9 @@ firmware.
 
 ## Credits / Créditos
 
-- **iPod nano** is an Apple trademark. This project uses **no Apple code
-  or artwork** — it reproduces interface principles only.
+- Independent project, not affiliated with Smartlink, Shenju or the
+  device maker. / Projeto independente, sem ligação com a Smartlink, a
+  Shenju ou o fabricante do aparelho.
 - Flashing tool (Linux/macOS): **smartlink_flash**, by **Ilya Kurdyukov**.
 - Flashing tool (Windows): **Flashloader SL-DEV 6.9.5**, by **Shenju**,
   the chip maker. Redistributed unmodified, as a convenience. Not ours,

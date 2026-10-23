@@ -126,6 +126,12 @@ def main():
             exes = [f for f in os.listdir(os.path.join(wt, "release", a.versao, "windows"))
                     if f.endswith(".exe")]
             exigir(exes == [FLASHLOADER], "esperava so %s em windows/, achei %s" % (FLASHLOADER, exes))
+        # links fixos: atual/update.up sempre e a versao mais recente (o nome ja
+        # e o que o aparelho espera no cartao); o git guarda o conteudo uma vez so
+        os.makedirs(os.path.join(wt, "atual"))
+        shutil.copy2(os.path.join(pac, up[0]), os.path.join(wt, "atual", "update.up"))
+        if a.com_flashloader:
+            shutil.copy2(os.path.join(pac, "windows", FLASHLOADER), os.path.join(wt, "atual", FLASHLOADER))
         else:
             open(os.path.join(wt, ".gitignore"), "w").write(
                 "# Gravador da Shenju: proprietario.\n"
@@ -156,7 +162,8 @@ def main():
 
         vaza = [f for f in arqs if re.search(r"\.exe$|B27|CLAUDE\.md|^tools/|^analysis/"
                                              r"|^firmware/|^docs/.*\.md$", f)
-                and not (a.com_flashloader and f.endswith("/windows/" + FLASHLOADER))]
+                and not (a.com_flashloader and (f.endswith("/windows/" + FLASHLOADER)
+                                                or f == "atual/" + FLASHLOADER))]
         exigir(not vaza, "isto NAO pode subir:\n  " + "\n  ".join(vaza))
         print("\nconferido: nada de codigo-fonte, analise ou .exe")
 
