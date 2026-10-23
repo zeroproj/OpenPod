@@ -125,4 +125,119 @@ R0 — gpt-6-astra high, 2026-10-23: REPROVADO (1 ALTA, 2 MÉDIA). Incorporado:
 
 ## Entrega (preenchida pelo desenvolvedor)
 
+MiniMax M3 (opencode.json do worktree), 2026-10-23. `sh tools/ci.sh` **verde**
+(1 ORIGINAL, 2 protegidos, 3 sintaxe, 4 testes: round-trip OK, autoteste OK,
+rc2 19 + rc3 30 + rc4 18 OK, 5 gitleaks).
+
+### O que foi feito
+
+- `tools/fab_barra_centro.py` (item 1). Três bytes, um em cada `y`:
+  `0x1217D6` (relógio), `0x1226B6` (título) e `0x12260E` (bateria), todos
+  `02 -> 00`. Nada mais na imagem muda — nem a CRIA_FAIXA, nem o rótulo, nem o
+  degradê.
+- `tools/fab_icones_home.py` (item 2). Reescreve `0x0CDD5C..0x0D315C`: as 1024
+  bytes da paleta e os 20480 bytes dos pixels da folha da home. Cabeçalho
+  intocado. 21229 bytes em 7 setores (0x0CD000 a 0x0D3000).
+- `tools/build.py`: a receita `reload_1.0_rc4` = `reload_1.0_rc3` +
+  `fab_barra_centro.py` + `fab_icones_home.py`, nessa ordem, sem `MAPA` (as
+  duas não alocam nada).
+- Resultado: `reload_1.0_rc4` =
+  `74e8cb315958b053f9e36e366a32f103ba995f7a18316c1c01e3de89e3f3b6d4`
+  (reprodutível: duas execuções, mesmo sha). A RC3.1 continua
+  `286e8ba8…` e a RC4 contém todos os bytes dela — 21232 bytes de diferença,
+  3 em código e os outros na folha, nenhum fora dos bytes permitidos.
+  Validação estrutural e binary diff do build: OK, menor offset 0x053C24,
+  nada abaixo de 0xE000, setor 0xD000 e PSMP intocados.
+
+Nada fora disso foi tocado: `firmware/ORIGINAL/` intacto (sha conferido pelo
+ci), nenhuma ferramenta da lista de proibidas usada, importada ou citada nas
+fontes novas, sem USB, sem gravação no aparelho. `DESPACHO-004.md` e
+`opencode.json` seguem fora do commit.
+
+### Decisões
+
+1. **As entradas 0..15 da paleta são as 16 cores do degradê, exatas.** A
+   RC3 escolhia, para cada linha, o índice mais próximo entre as 256 cores que
+   já existiam, e por isso o topo da barra da home ficava em (66,76,81) e as
+   pontas ganhavam matiz (erro máximo 10). Aqui a paleta é reescrita, então
+   cada linha tem uma cor só, igual à conta dos menus: `topo + (base - topo) *
+   y / 15`, arredondado — a mesma fórmula de `alvo_linha()` do critério C4,
+   escrita aqui como fonte única e reconferida na leitura final. O dano D4
+   (a barra da home perder o degradê) fica sem chão.
+2. **A quantização é corte mediano com peso de população, escrito na
+   ferramenta** — e não `Image.quantize()` como no `fab_logo.py`. Motivo: são
+   240 entradas exatas (não 256), o preto (0,0,0) tem de ser uma entrada
+   exata, e o resultado não pode depender da versão do Pillow. Está no fonte
+   porque é onde dá para ler. Resultado no PNG aprovado: erro médio **1,13**
+   por canal e máximo **36** (limites 2,0 e 64). O Pillow daria 1,51 e 58 —
+   passa, mas com a metade da folga; a ficha já esperava "máx. 58" da
+   quantização simples.
+3. **O índice do pixel é o mais próximo da paleta INTEIRA (256 entradas)**, não
+   só das 240 dos ícones. É o que o critério C4 mede, e evita que um pixel
+   perto de uma cor da barra caia num índice de ícone e apareça com a cor
+   errada. O preto do PNG cai no (0,0,0) exato da entrada 16.
+4. **Métrica de distância: Chebyshev (o máximo por canal), desempate pelo menor
+   índice**, com cache por cor distinta (o PNG tem 2974 cores em 18432 pixels).
+   Determinístico entre execuções.
+5. **Premissas presas por sha256, bytes crus para o que a ficha nomeia.** Na
+   `fab_barra_centro` a cobertura pedida na R0 (título inteiro da RC3) virou
+   sha256 de três regiões — o `align` do relógio (0x1217D0..0x1217DE), a
+   função da bateria (0x1225B0..0x1226AC) e o rótulo do título
+   (0x1226AC..0x1226F8) — mais os cinco "fatos" legíveis (`0121`, `0322`,
+   `062200bf`, `0221`, `6b21`), os três `bl` lidos por **alvo** e o lote do
+   texto. Na `fab_icones_home`: cabeçalho (palavra por palavra, como no
+   `fab_logo`) + paleta por sha, as 144 linhas dos ícones por sha, e as 16
+   linhas da barra apenas **uniformes** — assim a ferramenta aceita o ORIGINAL
+   e a RC3, como a ficha pede, e recusa assim que a paleta não for a de
+   fábrica (2ª passagem).
+6. **Conferência de saída nas duas ferramentas**: relê do binário o que
+   escreveu (bytes, alvos de `bl`, paleta, pixels) e compara com a entrada e
+   com o PNG; depois confere que nada saiu da lista de bytes permitidos e
+   recusa sem gravar se sair.
+7. **`--out` = `--in` por qualquer via** (`os.path.samefile`), herdado da RC2;
+   a recusa sai com código 2, antes de ler a entrada.
+
+### Pendências (fora do escopo desta tarefa)
+
+- Roteiro no aparelho (a tabela da ficha), inclusive o corte do texto no topo
+  (dano D5) e a bateria nos menus (dano D6).
+- Kit e carimbo: é do engenheiro. O `gera_versao` monta os setores em ordem
+  crescente de endereço; nesta RC os setores novos são os de código
+  (0x121000, 0x122000) e os da folha da home (0x0CD000..0x0D3000), e nenhum
+  deles é lido pelo bootloader. **Ponto para o `[4/4]`:** a folha da home é
+  um bloco só de 7 setores, e os setores 0x121000/0x122000 (o y do relógio,
+  do título e da bateria) entram **antes** dele. Se a gravação parar no meio,
+  sobra uma home com ícones novos e a barra ainda na altura da RC3 — que é o
+  inverso do risco da RC3 (lá o gancho podia ficar apontando para o 0xFF do
+  lote). Boot, recuperação por cabo e as outras telas não dependem de nenhum
+  dos dois blocos.
+- Docs (`docs/CHANGELOG.md`, `docs/RELOAD_1_0.md`): como na RC2/RC3, ficam
+  para depois de a RC4 ser aprovada no aparelho.
+
+### Danos notados e não cobertos
+
+- **As linhas 14 e 15 do PNG são perdidas.** O approved tem 63 pixels de
+  conteúdo na linha 14 e 12 na 15 (franja de antialiasing, cores como
+  `(4,1,1)`), e a ficha manda que a barra sejam as linhas 0..15. Como a RC3
+  já pinta ali o degradê, essa franja é descartada de qualquer modo — mas é a
+  única arte do PNG que não chega à tela. Nenhum glifo é afetado (a grade
+  começa em y=16).
+- **A paleta nova invalida qualquer código que escolhesse cor por índice.** A
+  navegação da home é por tecla e por índice e a seleção pinta o rótulo pelo
+  array B (`docs/PLANO_HOME.md` §1.2 e §1.3), então hoje não há problema; e a
+  troca de paleta inteira da V002 (CHANGELOG) prova que nada no firmware
+  prende um índice. Se um dia existir leitura de índice de paleta para a home,
+  essa leitura passa a estar errada — não há teste que pegue isso.
+- **O home fica com 240 cores em vez de 2974.** É o que a folha
+  INDEXED_8 permite; o erro máximo por pixel é 36 num canal. A verificação é
+  numérica (média e máximo), não visual — conferi a folha renderizada contra
+  o PNG e a grade 3×3 cai nas mesmas posições da de fábrica, na mesma ordem.
+- **O deslocamento do y vale para todas as telas**, não só para a home: as
+  duas rotinas que posicionam relógio e bateria são compartilhadas (é o mesmo
+  `view_icon_create` da R1 da ficha 002). Nas telas com outros elementos na
+  faixa o deslocamento é o de 2 px que a foto pediu, mas o único lugar onde dá
+  para ver o resultado é a home.
+- **Sem `unicorn` não há teste semântico** do que o aparelho faz com esses 6
+  bytes: o que se confere é que os bytes são os da ficha.
+
 ## Rodadas
