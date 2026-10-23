@@ -36,7 +36,7 @@ foi gravado e relatado.** Se algo quebrar, sabemos qual passo foi.
 | RC3 | `reload_1.0_rc3` | + 4, 5 (ferramentas novas da ficha 002) | RC3 gravada 2026-10-23 (degradê e título ok; pedido de alinhamento → R1). **RC3.1**: imagem `286e8ba8…`, carimbada `3b76b307…` (carimbo `--em 0x1A4F00`), `.up` `98aa9c9d…` CRC 0x1E32 — **APROVADA no aparelho 2026-10-23** ("ficou alinhado"); catraca em `tests/test_rc4.py` |
 | RC4 | `reload_1.0_rc4` | + 6 (ícones) e barra no meio (pedido 2026-10-23); a bateria (7) fica para depois | **kit gerado 2026-10-23, aguardando gravação.** Imagem `74e8cb31…`, carimbada `08ad6043…`, `.up` `633768fb…` CRC 0x8750 — rodando no aparelho 2026-10-23 (foto); catraca em `tests/test_rc5.py` |
 | RC5 | `reload_1.0_rc5` | + textos revisados e nomes curtos na home (ficha 005) | **kit gerado 2026-10-23, aguardando gravação.** Imagem `f9f2e059…`, carimbada `19afbbf3…`, `.up` `0d4843f8…` CRC 0xD4C4 — rodando no aparelho 2026-10-23 (foto); catraca em `tests/test_rc6.py` |
-| RC6 | `reload_1.0_rc6` | + home sem nomes, grade centralizada, moldura no selecionado (ficha 006) | ficha + testes vermelhos |
+| RC6 | `reload_1.0_rc6` | + home sem nomes, grade centralizada, moldura no selecionado (ficha 006) | **kit gerado 2026-10-23, aguardando gravação.** Imagem `af3a2b6d…`, carimbada `21769bd4…`, `.up` `e70a8938…` CRC 0xA64D |
 | RC7 | — | + capa do álbum (de dentro do MP3) na Tocando Agora — semana que vem | **pedido 2026-10-21; caminho escolhido (D05); análise em `docs/tarefas/003-rc5-analise-capa.md`** (ver §6) |
 
 Instalação: **1ª gravação por cabo**; todo kit leva também o `.up` para as

@@ -1,0 +1,23 @@
+OpenPod Reload 1.0 RC6 — TESTAR
+
+Base: RC5 (rodando). Receita reload_1.0_rc6 = RC5 + fab_home_moldura.py
+Imagem carimbada: 21769bd4... · .up CRC 0xA64D · sha e70a8938...
+Muda em relacao a RC5: posicoes (0x048000), folha da home (0x0CE000..0x0D2000), navegacao da home (0x12E000), rotinas (0x1A6000) + carimbo
+
+INSTALAR (pelo cartao)
+  1. Copie OpenPod_OpenPodReload1.0RC6.up para a RAIZ do cartao com o nome update.up
+  2. Config -> Atualizar por SD -> Sim
+  3. O aparelho reinicia, atualiza e volta
+  4. APAGUE o update.up do cartao
+
+ROTEIRO (marque ok / falhou)
+  [ ] Home: sem nomes; grade centralizada; moldura branca no icone inicial
+  [ ] Navegar <- -> e para cima/baixo, inclusive passando pelas bordas: moldura sempre em UM icone so
+  [ ] Abrir cada app e voltar: moldura no icone certo
+  [ ] Menus e titulos das telas com texto normal
+  [ ] Tocando Agora toca normal
+  [ ] Config: Informacoes = "Reload 1.0 RC6"; Atualizar por SD funciona
+  [ ] Mande uma foto da home
+
+SE ALGO DER ERRADO
+  Volte a RC5 pelo cartao (update.up da RC5). Se a home travar, use o cabo (Flashloader) com o kit da RC5.

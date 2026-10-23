@@ -270,3 +270,9 @@ CRC, cabeçalho, setores do cabo, bootloader, `0xD000` e PSMP).
   20 (RC5) + 14 (RC6) testes, `CI OK`.
   Imagem `reload_1.0_rc6`: sha256 `af3a2b6d…`, 2 MiB, reprodutível.
 
+
+### Análise do diff (Codex)
+R0 — gpt-6-astra high, 2026-10-23: APROVADO COM RESSALVAS. [BAIXA]
+`confere_resultado` não confere o terminador `00` em `0x1A6448`. Não
+corrigido nesta RC: a imagem produzida é conferida pelo `test_c4_rotinas`
+(`rc6[0x1A6448] == 0`). Fica para a próxima rodada da ferramenta.
