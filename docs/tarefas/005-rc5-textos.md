@@ -104,4 +104,81 @@ R0 — gpt-6-astra high, 2026-10-23: REPROVADO (1 ALTA, 1 MÉDIA). Incorporado:
 
 ## Entrega (preenchida pelo desenvolvedor)
 
+### O que foi feito
+- **`tools/fab_textos.py`** (739 linhas): a receita `reload_1.0_rc5`. Le a RC4,
+  grava as 180 strings novas em UTF-8 com NUL no lote `0x1A5000..0x1A6000`
+  (2799 bytes; 1297 sobram em 0xFF) e reponta **só** as 180 entradas da tabela
+  (`0x053B84 + 4·id`) que a lista manda. Nenhuma string de fábrica é editada no
+  lugar, nenhum outro id muda, nada fora dos bytes da ficha é tocado.
+- **`tools/build.py`**: `RELOAD_1_0_RC5 = RELOAD_1_0_RC4 + [fab_textos.py]` e o
+  lote `(0x001A5000, 0x1000)` no `MAPA`. O comentário do `MAPA` sobre o
+  0x1A5000 (reserva do `patch_titulos`, ferramenta removida em 2026-09-14) foi
+  corrigido: o lote agora é da ficha 005, e continua sem cruzar nenhum lote
+  declarado.
+- Nenhum teste, `tools/ci.sh` ou `assets/textos_pt.tsv` tocado.
+  `sh tools/ci.sh`: **verde** (19 + 30 + 18 + 20 testes, `CI OK`).
+
+### Imagem
+    receita   reload_1.0_rc5  (RC4 catraca 74e8cb31... + fab_textos.py)
+    sha256    f9f2e05990adb5d3882bbf093a6251673139004571af7698f3514b02f1e08f50
+    2 MiB, validate_firmware: 21 OK + a falha esperada da regra R1 (CRC da FIRM)
+    binary diff vs ORIGINAL: 30684 bytes, menor offset 0x053B88, 17 setores;
+      o passo novo sozinho mexe 3337 bytes em 2 setores (0x053000, 0x1A5000)
+    PSMP intacta, setor 0x00D000 intacto, nada abaixo de 0x00E000
+
+### Decisões
+- **Entrada pela premissa do sha256 da RC4 exata** (revisão R0). Ela é o que
+  recusa a RC3 e a segunda passagem; as outras dez premissas continuam todas no
+  código e todas nomeadas — só que, com o sha em cima, elas servem para dizer
+  *o que* está errado, não apenas *que* está.
+- **A tabela é comparada pelo sha256, não entrada a entrada.** Colar 216
+  ponteiros no fonte seria ruído. O truque é comparar o sha da tabela com os
+  ids 40 e 91 restaurados para fábrica: isso prova de uma vez que **todo** id da
+  lista aponta para a string de fábrica dele (D4), e os dois ids da RC1 são
+  conferidos à parte, nomeados, para a recusa dizer qual deles divergiu.
+- **A string de fábrica é lida da própria entrada**, não do ORIGINAL: o sha da
+  entrada já garante que a imagem *é* a RC4, e a RC1–RC4 não tocaram em string
+  de fábrica. Assim a ferramenta não precisa abrir `firmware/ORIGINAL/`.
+- **Todas as premissas rodam e todas as falhas voltam juntas** (inclusive as da
+  fonte, que vêm antes das medidas de largura: medir com fonte adulterada daria
+  um número bonito e falso).
+- **Nada de alinhamento no lote.** O aparelho lê pelo ponteiro até o NUL; 4 KiB
+  para 2,8 KB não pedem byte gasto.
+
+### Por que o lote, e não a string no lugar (achado novo, não previsto)
+Em fábrica **três strings são compartilhadas por dois ids cada**, e em cada par
+o parceiro está **fora** da lista:
+
+    0x00C54440  ids 40 e 90   → o 40 é o "Atualizar por SD" da RC1
+    0x00C547E0  ids 78 e 155  → o 155 não é da RC5
+    0x00C550B4  ids  9 e  29   → o 29 não é da RC5
+
+Escrever no lugar mudaria três ids que a ficha manda deixar como estão — um
+deles o "Atualizar por SD". Isso confirma, com nome e número, o D4 da ficha, e
+vale para qualquer texto novo que vier na RC6.
+
+### Pendências / não coberto
+- **Nada foi gravado no aparelho**: o roteiro da ficha continua inteiro. A
+  conferência das medidas (40 px, 113 px, glifos, `%`) é estática e está no
+  `test_rc5.py`; se algum texto ficar estranho em contexto, isso só aparece na
+  foto.
+- O lote `0x1A5000` fica na **área livre**, fora de FIRM/TONE/PSMP — como todo
+  código das RC1–RC4. O `make_install_kit` deriva os setores do diff, então o
+  setor `0x1A5000` entra sozinho no kit; nenhuma ação extra é preciso do kit.
+- **Sugestão (fora do escopo, não fiz)**: o `MANIFEST.sha256` da raiz parou na
+  linha Core 2.4 (não cita `tools/`, `assets/` nem as RCs) e hoje não confere
+  nada. Bastaria um utilitário que varresse a árvore e reescrevesse o arquivo.
+- **Sugestão**: o `docs/TEXTOS_REVISAO.md` é a fonte do conteúdo, mas o
+  `.tsv` + o sha fixado são a verdade; a revisão R1 da ficha (`RC5.1`) vai
+  exigir um sha novo na ficha e na ferramenta — o caminho já existe.
+
+### Danos notados
+- Nenhum dano causado. `firmware/ORIGINAL/` intacto (sha confere no ci.sh),
+  nada gravado no aparelho, nenhum arquivo protegido tocado, nenhum byte fora
+  dos 180×4 + 4 KiB do lote.
+- Dano **possível** herdado da ficha (D7, aceito pelo decisor): interromper a
+  gravação entre `0x053000` e `0x1A5000` deixa textos apontando para lixo.
+  Como a área livre vem por último na ordem de endereços, o caminho mais seguro
+  é o mesmo das RCs anteriores: gravar tudo e conferir por cabo.
+
 ## Rodadas
