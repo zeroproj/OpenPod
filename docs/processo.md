@@ -8,7 +8,9 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 
 - **RC6 APROVADA no aparelho (2026-10-30)** e publicada; catraca em
   `tests/test_catraca.py` (sha `af3a2b6d…`).
-- **Próximo:** RC7 (primeira ficha com **sessão por ficha**, `docs/prompts/sessao-da-ficha.md`) = capa do álbum de dentro do MP3 (análise em
+- **Em andamento:** RC7 (ficha 007) no worktree `tarefa-007-rc7-capa`: sessão Claude "CL | Tarefa 007" nas
+  Fases A/B até `FASEB-007`; depois sessão GLM 5.3 (D10/D11, `docs/prompts/sessao-da-ficha-glm.md`).
+- **RC7** = capa do álbum de dentro do MP3 (análise em
   `docs/tarefas/003-rc5-analise-capa.md`, modelo aprovado 64×64; **E1 e E2 feitos — memória OK**;
   falta P10 — caminho da faixa atual no presenter `0xD08A90` — e os pontos de gancho).
   Depois: bateria prata/verde (refeita da fábrica).
