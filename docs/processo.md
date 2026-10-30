@@ -9,10 +9,10 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 - **RC6 APROVADA no aparelho (2026-10-30)** e publicada; catraca em
   `tests/test_catraca.py` (sha `af3a2b6d…`).
 - **Próximo:** RC7 (primeira ficha com **sessão por ficha**, `docs/prompts/sessao-da-ficha.md`) = capa do álbum de dentro do MP3 (análise em
-  `docs/tarefas/003-rc5-analise-capa.md`, modelo aprovado 64×64; falta P10 —
-  caminho da faixa atual no presenter `0xD08A90` — e os experimentos E1/E2).
+  `docs/tarefas/003-rc5-analise-capa.md`, modelo aprovado 64×64; **E1 e E2 feitos — memória OK**;
+  falta P10 — caminho da faixa atual no presenter `0xD08A90` — e os pontos de gancho).
   Depois: bateria prata/verde (refeita da fábrica).
-- **Com o decisor:** experimento E1 da RC7 (foto grande em Fotos com música tocando); teste do fundo pálido (olhar a
+- **Com o decisor:** teste do fundo pálido (olhar a
   Tocando Agora de frente: se o preto também parecer azul, é a tela).
 - **Pendências técnicas:**
   - [BAIXA 006] `fab_home_moldura.confere_resultado` não confere o `00` em

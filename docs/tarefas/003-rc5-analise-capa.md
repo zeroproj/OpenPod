@@ -67,3 +67,13 @@ aparelho. Sem capa (ou progressiva/PNG/sem memória): quadrado cinza
 `(52,52,52)` com nota musical `(150,150,150)`. Nada mais da tela muda.
 Referência visual extra do decisor: capa com leve perspectiva (opcional,
 dá para gerar na nossa rotina de redução).
+
+## Resultado do E1 (2026-10-30, decisor, RC6 no aparelho)
+JPG baseline 1000×1000 (78 KB) e 2000×2000 (236 KB) abertos em **Fotos com
+música tocando**: os dois abriram e a música **não parou nem engasgou**.
+CONFIRMADO: a fábrica decodifica JPEG durante a reprodução, então o contexto
+do TJpgDec (`calloc(0x4180)`, ~16,4 KiB) cabe com a música tocando (P8).
+E2 respondido pela foto da Tocando Agora (modelo 64×64, D08).
+Falta para a ficha 007: P10 (caminho da faixa atual, a partir do presenter
+`0xD08A90`) e os pontos de gancho (troca de faixa; criação do `lv_img`).
+
