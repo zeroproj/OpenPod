@@ -10,6 +10,13 @@ echo "== 2. arquivos protegidos"
 shasum -a 256 -c tests/PROTEGIDOS.sha256
 echo "== 3. sintaxe das ferramentas"
 python3 -m py_compile tools/*.py tests/*.py
+echo "== 3b. tamanho (D06): ferramenta nova ate 350 linhas"
+for f in tools/*.py; do
+  n=$(wc -l < "$f")
+  if [ "$n" -gt 350 ] && ! grep -qx "$f" tests/LIMITE_EXCECOES.txt; then
+    echo "  $f tem $n linhas (limite 350; divida em modulos)"; exit 1
+  fi
+done
 echo "== 4. testes"
 # os testes criam muitas copias de 2 MiB; tudo vai para uma pasta so, apagada no fim
 TMPDIR="$(mktemp -d -t openpod_ci)"; export TMPDIR
