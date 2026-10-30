@@ -10,7 +10,8 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   `tests/test_catraca.py` (sha `af3a2b6d…`).
 - **Em andamento:** RC7 (ficha 007, capa do álbum): Fases A/B feitas pelo Claude (ficha
   `docs/tarefas/007-rc7-capa-album.md`, `tests/test_rc7.py` + `tests/emu_rc7.py` vermelhos e
-  protegidos, MP3 de teste em `tests/assets/rc7/`); **Fases C/D com glm-5.3 no OpenCode (D10)**.
+  protegidos, MP3 de teste em `tests/assets/rc7/`); **Fases C/D com glm-5.3 no OpenCode (D10/D12)**,
+  terminal "GLM | Tarefa 007", pedido `docs/prompts/sessao-da-ficha-glm.md`; GLM substitui o Codex.
   Depois: bateria prata/verde (refeita da fábrica).
 - **Com o decisor:** teste do fundo pálido (olhar a
   Tocando Agora de frente: se o preto também parecer azul, é a tela).

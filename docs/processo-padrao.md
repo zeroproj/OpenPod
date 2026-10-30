@@ -63,7 +63,16 @@ engenheiro antes do merge. Bloqueio de merge: **por regra**.
 
 Na dúvida, Risco. Toda RC é Risco.
 
-## 5. Mapa de modelos (D06 = v1.8/D48 do kit)
+## 5. Mapa de modelos
+
+> **Desde a ficha 007 (D10, D12):** Claude só faz análise do ORIGINAL, ficha e
+> testes protegidos. **`opencode-go/glm-5.3`** substitui o Codex em toda
+> revisão (R0, 1ª análise, correções, conferência final) e coordena as Fases
+> C/D; **`opencode-go/minimax-m3`** implementa. Cada um abre com `opencode -m
+> <modelo>` no próprio terminal. Pedido pronto: `docs/prompts/sessao-da-ficha-glm.md`.
+> A tabela abaixo (D06) fica como histórico das fichas 001–006.
+
+### Até a ficha 006 (D06 = v1.8/D48 do kit)
 
 | Etapa | Comum | Risco | Pesada |
 |---|---|---|---|
