@@ -4,7 +4,7 @@
 - Desenvolvedor: MiniMax M3 (opencode.json do worktree)
 - Analista: gpt-6-astra, esforço high
 - Depende de: RC5 (rodando no aparelho, foto 2026-10-23; catraca `f9f2e059…`)
-- Status: revisão R0 incorporada; liberada para implementação. Decisor: "tirar o texto…
+- Status: **APROVADA no aparelho em 2026-10-30** (decisor: "já gravei, está tudo certo"); catraca em `tests/test_catraca.py` Decisor: "tirar o texto…
   os ícones já falam", "deixar … mais centralizado", "a moldura vai ficar
   legal" (2026-10-23)
 
@@ -276,3 +276,13 @@ R0 — gpt-6-astra high, 2026-10-23: APROVADO COM RESSALVAS. [BAIXA]
 `confere_resultado` não confere o terminador `00` em `0x1A6448`. Não
 corrigido nesta RC: a imagem produzida é conferida pelo `test_c4_rotinas`
 (`rc6[0x1A6448] == 0`). Fica para a próxima rodada da ferramenta.
+
+## Pacote — Ficha 006 / Reload 1.0 RC6
+- Fase: 0
+- ci.sh: verde (inclui catraca RC1..RC6)   Codex: R0 aprovado c/ ressalva (1 ALTA no kit, corrigida) · diff aprovado c/ ressalva (1 BAIXA, coberta pelo C4)
+- Imagem `af3a2b6d…` · carimbada `21769bd4…` · `.up` `e70a8938…` CRC 0xA64D · setores: 0x048000, 0x0CE000–0x0D2000, 0x12E000, 0x1A6000 + carimbo
+- Danos cobertos: desvio para rotina inexistente, rótulo errado em r6, caminho de seleção sem gancho, moldura fora do ícone, ícone cortado, nomes sumindo em outras telas
+- Roteiro no aparelho: ✔ (decisor, 2026-10-30)
+- Riscos aceitos: home só com ícones; moldura branca fixa
+- Rodadas: R0   Recomendação: aprovar → **aprovada**
+
