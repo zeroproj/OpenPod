@@ -18,7 +18,7 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 - **Pendências técnicas:**
   - [BAIXA 006] `fab_home_moldura.confere_resultado` não confere o `00` em
     `0x1A6448` (coberto pelo `test_c4_rotinas`).
-  - Pacote ppós-QA pendente na ficha 006 (`## Pacote`), métricas de custo.
+  - Seção `## Pacote` da ficha 006 e custo nas métricas, quando a RC6 for aprovada.
   - Auditoria do toolchain (D06) ainda não rodada.
   - Créditos "NanoClone" no README do pacote: confirmar com o decisor se sai.
   - Worktrees e branches `tarefa-002/004/005/006` a apagar depois da aprovação da RC6.
