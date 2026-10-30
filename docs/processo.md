@@ -8,7 +8,7 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 
 - **RC6 APROVADA no aparelho (2026-10-30)** e publicada; catraca em
   `tests/test_catraca.py` (sha `af3a2b6d…`).
-- **Próximo:** RC7 = capa do álbum de dentro do MP3 (análise em
+- **Próximo:** RC7 (primeira ficha com **sessão por ficha**, `docs/prompts/sessao-da-ficha.md`) = capa do álbum de dentro do MP3 (análise em
   `docs/tarefas/003-rc5-analise-capa.md`, modelo aprovado 64×64; falta P10 —
   caminho da faixa atual no presenter `0xD08A90` — e os experimentos E1/E2).
   Depois: bateria prata/verde (refeita da fábrica).

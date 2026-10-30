@@ -187,10 +187,13 @@ O contexto da conversa é reprocessado a cada resposta. Por isso:
 
 - **Sessão de coordenação** (a conversa com o decisor): fichas, decisões,
   kit e publicação. Não lê diff, código nem saída longa.
-- **Sessão da ficha** (opcional, para fichas Pesadas): Claude aberto no
-  worktree (`orca terminal create --worktree path:<wt> --title "CL | Tarefa
-  NNN" --command claude`) roda o ciclo até o pacote e termina com
-  `PRONTO-NNN` sozinho numa linha. Não faz merge, não gera kit, não publica.
+- **Sessão da ficha — padrão a partir da ficha 007:** Claude aberto no
+  worktree roda o ciclo até o pacote (despacho, `ci.sh`, Codex, revisão das
+  correções) e termina com `PRONTO-NNN` sozinho numa linha; `ESCALADA-NNN`
+  depois de 2 reprovações com MÉDIO; `PERGUNTA-DECISOR NNN` quando só o
+  decisor responde. Não faz merge, não gera kit, não publica. Pedido pronto
+  e comandos: `docs/prompts/sessao-da-ficha.md`. A coordenação fecha com
+  `orca terminal close --all` e `orca worktree rm`.
 - **Leitura em subagente de resposta curta:** correção R1/R2 contra o
   achado → "fecha / não fecha" em até 5 linhas; saída de testes → contagem
   e só as falhas.
