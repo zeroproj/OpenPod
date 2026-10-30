@@ -20,3 +20,4 @@ Todo patch, antes de virar RC:
 - [ ] rotina que lê arquivo do usuário (ID3/JPEG) é **rodada no emulador** com entradas hostis (tamanhos falsos, truncado, flags) e não pode travar, ler além do quadro, vazar memória ou deixar arquivo aberto (007)
 - [ ] premissa sobre biblioteca da fábrica é **provada por emulação**, não pela documentação da biblioteca: o `jd_prepare` desta build aceita JPEG progressivo (007, A12)
 - [ ] código novo só chama a lista de funções de fábrica da ficha; o arnês de emulação recusa qualquer outra (007)
+- [ ] laço sobre dados do arquivo: o tamanho lido é comparado com o que resta **antes** de avançar, nunca `ptr += cab + tam` em 32 bits (wrap → laço infinito); teste com `0xFFFFFFF6` e synchsafe inválido (achado 007-R0, MÉDIA)

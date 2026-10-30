@@ -333,6 +333,10 @@ class Comportamento(Base):
         a = ativo("capa_a_300.jpg")
         corpo = b"\x00image/jpeg\x00\x03\x00" + a
         maior = b"APIC" + struct.pack(">I", len(corpo) + 5000) + b"\0\0" + corpo
+        # R0 (glm-5.3, MÉDIA): tamanho de quadro que dá a volta em 32 bits com "10 + tam"
+        wrap23 = b"APIC" + struct.pack(">I", 0xFFFFFFF6) + b"\0\0" + corpo
+        wrap_tit = b"TIT2" + struct.pack(">I", 0xFFFFFFF6) + b"\0\0" + b"\0x"
+        wrap24 = b"APIC" + b"\xff\xff\xff\xf6" + b"\0\0" + corpo     # synchsafe inválido
         casos = {
             "progressiva": ativo("04_capa_progressiva.mp3"),
             "png": ativo("05_capa_png.mp3"),
@@ -348,6 +352,10 @@ class Comportamento(Base):
             "jpeg_truncado": E.tag_id3(3, [E.apic(3, a[:len(a) * 6 // 10])]),
             "frame_maior_que_tag": b"ID3\x03\x00\x00" + E.synchsafe(len(maior)) + maior,
             "synchsafe_invalido": b"ID3\x03\x00\x00\x00\x00\x80\x00" + E.apic(3, a),
+            "v23_quadro_wrap": b"ID3\x03\x00\x00" + E.synchsafe(len(wrap23)) + wrap23,
+            "v23_tit2_wrap_antes": b"ID3\x03\x00\x00" + E.synchsafe(len(wrap_tit) + len(E.apic(3, a)))
+                                   + wrap_tit + E.apic(3, a),
+            "v24_quadro_synchsafe_invalido": b"ID3\x04\x00\x00" + E.synchsafe(len(wrap24)) + wrap24,
             "1o_apic_png": E.tag_id3(3, [E.apic(3, ativo("capa_a.png"), mime=b"image/png"), E.apic(3, a)]),
             "vazio": b"",
         }

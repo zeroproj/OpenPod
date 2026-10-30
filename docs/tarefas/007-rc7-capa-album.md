@@ -98,7 +98,7 @@ por dentro. Registradores `r4..r11` preservados; pilha balanceada.
      v2.4: tamanho synchsafe, que já o inclui); tamanho do tag **synchsafe** (byte ≥ `0x80` → cinza).
    - Quadros a partir do fim do cabeçalho enquanto couber um cabeçalho de 10 B no tag; id começando
      com `00` = padding → fim. Tamanho do quadro: v2.3 **BE32 normal**, v2.4 **synchsafe**; quadro que
-     passa do fim do tag → cinza. **Só o 1º `APIC` conta.** Flags do APIC: v2.3 `flags[1] & 0xE0`
+     passa do fim do tag → cinza. **Antes de avançar**, conferir `tam ≤ resto do tag − 10` (sem somar `10 + tam` em 32 bits); v2.4 com byte ≥ `0x80` no tamanho do quadro → cinza (R0 glm-5.3, MÉDIA: `0xFFFFFFF6` dava a volta e laçava; casos `v23_quadro_wrap`, `v23_tit2_wrap_antes`, `v24_quadro_synchsafe_invalido`). **Só o 1º `APIC` conta.** Flags do APIC: v2.3 `flags[1] & 0xE0`
      (comprimido/cifrado/grupo) ≠ 0 → cinza; v2.4 `flags[1] & 0x4F` ≠ 0 → cinza.
    - Corpo: codificação (0..3; outra → cinza), MIME até `00` (ignorado), tipo (1 B), descrição até
      `00` (codificação 0/3) ou `00 00` em pares (1/2). Imagem = resto do quadro; tem de começar com
@@ -199,3 +199,11 @@ Se um teste protegido parecer errado: **PERGUNTA-DECISOR 007** (não alterar).
 
 ## Pacote — Ficha 007 / Reload 1.0 RC7
 (a preencher)
+
+## Revisão da ficha (R0, glm-5.3 — D12)
+REPROVADO (1 MÉDIA, 2 BAIXAS), `docs/tarefas/007-revisao-r0.md`. Decisor escolheu a opção A
+(2026-10-30): o arquiteto acrescentou os casos hostis de tamanho de quadro (wrap em 32 bits e
+synchsafe inválido no quadro) ao `test_d3_recusas` e a regra explícita no laço de quadros.
+BAIXAS registradas, sem bloquear: pilha da ViewTask não medida pelo arnês (A15 segue PROVÁVEL; o
+E1 no aparelho é evidência parcial); RAM sem vigia de escrita no arnês (D11, global `0x81CDE8`).
+
