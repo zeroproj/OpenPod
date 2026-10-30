@@ -17,3 +17,6 @@ Todo patch, antes de virar RC:
 - [ ] texto novo: mesmos especificadores `%`, todo caractere com glifo, nunca mais largo que o de fábrica além de 113 px (005)
 - [ ] premissas cobrem o que a RC anterior deixou e que a ferramenta depende (fonte/ponteiro/texto do título, achado 004-R0)
 - [ ] imagem: erro máximo por pixel, não só a média (achado 004-R0: glifo apagado passava)
+- [ ] rotina que lê arquivo do usuário (ID3/JPEG) é **rodada no emulador** com entradas hostis (tamanhos falsos, truncado, flags) e não pode travar, ler além do quadro, vazar memória ou deixar arquivo aberto (007)
+- [ ] premissa sobre biblioteca da fábrica é **provada por emulação**, não pela documentação da biblioteca: o `jd_prepare` desta build aceita JPEG progressivo (007, A12)
+- [ ] código novo só chama a lista de funções de fábrica da ficha; o arnês de emulação recusa qualquer outra (007)

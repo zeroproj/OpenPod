@@ -8,9 +8,9 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 
 - **RC6 APROVADA no aparelho (2026-10-30)** e publicada; catraca em
   `tests/test_catraca.py` (sha `af3a2b6d…`).
-- **Próximo:** RC7 (primeira ficha com **sessão por ficha**, `docs/prompts/sessao-da-ficha.md`) = capa do álbum de dentro do MP3 (análise em
-  `docs/tarefas/003-rc5-analise-capa.md`, modelo aprovado 64×64; **E1 e E2 feitos — memória OK**;
-  falta P10 — caminho da faixa atual no presenter `0xD08A90` — e os pontos de gancho).
+- **Em andamento:** RC7 (ficha 007, capa do álbum): Fases A/B feitas pelo Claude (ficha
+  `docs/tarefas/007-rc7-capa-album.md`, `tests/test_rc7.py` + `tests/emu_rc7.py` vermelhos e
+  protegidos, MP3 de teste em `tests/assets/rc7/`); **Fases C/D com glm-5.3 no OpenCode (D10)**.
   Depois: bateria prata/verde (refeita da fábrica).
 - **Com o decisor:** teste do fundo pálido (olhar a
   Tocando Agora de frente: se o preto também parecer azul, é a tela).
