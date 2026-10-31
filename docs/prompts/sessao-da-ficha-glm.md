@@ -1,4 +1,4 @@
-# Sessão da ficha com GLM 5.3 (OpenCode Go) — Fases C e D (D10, D11)
+# Sessão da ficha com GLM 5.3 (OpenCode Go) — Fases C e D (D10, D12)
 
 Claude fez a análise, a ficha e os testes protegidos (Fases A e B, sinal `FASEB-NNN`). A
 coordenação junta a base no branch da tarefa e abre a sessão GLM no mesmo worktree. O GLM
@@ -16,7 +16,7 @@ Pedido (texto simples, sem crases):
 ```
 Voce e a SESSAO DA FICHA NNN do OpenPod nas Fases C e D (coordenador e revisor; voce NAO implementa). Responda em
 portugues. Leia CLAUDE.md, AGENTS.md (Review guidelines), docs/processo-padrao.md (secoes 5, 6, 8, 10, 13, 14, 16, 17,
-18), docs/seguranca.md, docs/decisoes.md (D10, D11) e a ficha docs/tarefas/NNN-*.md. FASE C: revise a FICHA e os testes
+18), docs/seguranca.md, docs/decisoes.md (D10, D12) e a ficha docs/tarefas/NNN-*.md. FASE C: revise a FICHA e os testes
 como analista em MODO FICHA (secao 18): que dano nao esta coberto? Escreva o relatorio em docs/tarefas/NNN-revisao-r0.md
 (primeira linha APROVADO ou REPROVADO). Achado ALTA ou MEDIA: escreva a pergunta e embaixo, sozinho numa linha,
 PERGUNTA-DECISOR NNN, e pare (a ficha e os testes protegidos so mudam pelo engenheiro). FASE D: abra o desenvolvedor

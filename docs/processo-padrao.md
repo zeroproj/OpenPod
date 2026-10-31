@@ -65,7 +65,7 @@ Na dúvida, Risco. Toda RC é Risco.
 
 ## 5. Mapa de modelos
 
-> **Desde a ficha 007 (D10, D11):** Claude só faz análise do ORIGINAL, ficha e
+> **Desde a ficha 007 (D10, D12):** Claude só faz análise do ORIGINAL, ficha e
 > testes protegidos. **`opencode-go/glm-5.3`** substitui o Codex em toda
 > revisão (R0, 1ª análise, correções, conferência final) e coordena as Fases
 > C/D; **`opencode-go/minimax-m3`** implementa. Cada um abre com `opencode -m

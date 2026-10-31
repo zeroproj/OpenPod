@@ -17,3 +17,8 @@ Todo patch, antes de virar RC:
 - [ ] texto novo: mesmos especificadores `%`, todo caractere com glifo, nunca mais largo que o de fábrica além de 113 px (005)
 - [ ] premissas cobrem o que a RC anterior deixou e que a ferramenta depende (fonte/ponteiro/texto do título, achado 004-R0)
 - [ ] imagem: erro máximo por pixel, não só a média (achado 004-R0: glifo apagado passava)
+- [ ] rotina que lê arquivo do usuário (ID3/JPEG) é **rodada no emulador** com entradas hostis (tamanhos falsos, truncado, flags) e não pode travar, ler além do quadro, vazar memória ou deixar arquivo aberto (007)
+- [ ] premissa sobre biblioteca da fábrica é **provada por emulação**, não pela documentação da biblioteca: o `jd_prepare` desta build aceita JPEG progressivo (007, A12)
+- [ ] código novo só chama a lista de funções de fábrica da ficha; o arnês de emulação recusa qualquer outra (007)
+- [ ] laço sobre dados do arquivo: o tamanho lido é comparado com o que resta **antes** de avançar, nunca `ptr += cab + tam` em 32 bits (wrap → laço infinito); teste com `0xFFFFFFF6` e synchsafe inválido (achado 007-R0, MÉDIA)
+- [ ] código novo não usa instrução cuja presença no núcleo não foi evidenciada no firmware de fábrica: divisão por hardware `udiv`/`sdiv` tem **zero** ocorrências na flash inteira (0xC00000..0xDA0000) e o emulador (QEMU) executa divisão em qualquer ARMv7 — o verde não prova nada para o aparelho; dividir por **software** (achado 007-D1, MÉDIA)

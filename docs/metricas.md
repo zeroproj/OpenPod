@@ -7,3 +7,4 @@
 | 004 RC4 ícones + barra no meio | Risco | MiniMax M3 | astra high | R0 | ficha 1/2/0 · diff 0/0/0 | 0 | — |
 | 005 RC5 textos + nomes da home | Risco | MiniMax M3 | astra high | R0 | ficha 1/1/0 · diff 0/0/0 | 0 | — |
 | 006 RC6 home sem nomes + moldura | Risco + Pesada | MiniMax M3 | astra high | R0 | ficha 1/0/0 · diff 0/0/1 | 0 | — |
+| 007 RC7 capa do álbum (APIC) | Risco + Pesada | MiniMax M3 | glm-5.3 (R0, diff, final — D12) | R1 (udiv→div_soft) | ficha 0/1/2 · diff 0/1/1 · final 0/0/0 | 0 (nada gravado ainda) | MiniMax ≈ $4,2 |

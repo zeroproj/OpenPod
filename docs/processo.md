@@ -8,11 +8,10 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 
 - **RC6 APROVADA no aparelho (2026-10-30)** e publicada; catraca em
   `tests/test_catraca.py` (sha `af3a2b6d…`).
-- **Em andamento:** RC7 (ficha 007) no worktree `tarefa-007-rc7-capa`: sessão Claude "CL | Tarefa 007" nas
-  Fases A/B até `FASEB-007`; depois sessão GLM 5.3 (D10/D11, `docs/prompts/sessao-da-ficha-glm.md`).
-- **RC7** = capa do álbum de dentro do MP3 (análise em
-  `docs/tarefas/003-rc5-analise-capa.md`, modelo aprovado 64×64; **E1 e E2 feitos — memória OK**;
-  falta P10 — caminho da faixa atual no presenter `0xD08A90` — e os pontos de gancho).
+- **Em andamento:** RC7 (ficha 007, capa do álbum): Fases A/B feitas pelo Claude (ficha
+  `docs/tarefas/007-rc7-capa-album.md`, `tests/test_rc7.py` + `tests/emu_rc7.py` vermelhos e
+  protegidos, MP3 de teste em `tests/assets/rc7/`); **Fases C/D com glm-5.3 no OpenCode (D10/D12)**,
+  terminal "GLM | Tarefa 007", pedido `docs/prompts/sessao-da-ficha-glm.md`; GLM substitui o Codex.
   Depois: bateria prata/verde (refeita da fábrica).
 - **Com o decisor:** teste do fundo pálido (olhar a
   Tocando Agora de frente: se o preto também parecer azul, é a tela).
