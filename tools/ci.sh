@@ -30,6 +30,7 @@ python3 tests/test_rc5.py
 python3 tests/test_rc6.py
 python3 -c 'import unicorn' || { echo "  falta o unicorn: python3 -m pip install --user unicorn"; exit 1; }
 python3 tests/test_rc7.py
+python3 tests/test_rc7_trava.py
 python3 tests/test_catraca.py
 echo "== 5. segredos"
 if command -v gitleaks >/dev/null; then gitleaks detect --no-banner --redact --log-level error; else echo "gitleaks ausente (pulado)"; fi

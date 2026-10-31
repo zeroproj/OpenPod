@@ -8,10 +8,12 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 
 - **RC6 APROVADA no aparelho (2026-10-30)** e publicada; catraca em
   `tests/test_catraca.py` (sha `af3a2b6d…`).
-- **Em andamento:** RC7 (ficha 007, capa do álbum): Fases A/B feitas pelo Claude (ficha
-  `docs/tarefas/007-rc7-capa-album.md`, `tests/test_rc7.py` + `tests/emu_rc7.py` vermelhos e
-  protegidos, MP3 de teste em `tests/assets/rc7/`); **Fases C/D com glm-5.3 no OpenCode (D10/D12)**,
-  terminal "GLM | Tarefa 007", pedido `docs/prompts/sessao-da-ficha-glm.md`; GLM substitui o Codex.
+- **RC7 PRONTA, aguardando o aparelho (2026-10-31):** ficha 007 (capa do álbum) fechada pela
+  sessão GLM (PRONTO-007; R0 opção A, 1ª análise REPROVADO udiv + id APIC → R1 div_soft,
+  conferência final APROVADO). Merge no privado-completo; regressão protegida
+  `tests/test_rc7_trava.py` (sem UDIV/SDIV no lote; id do quadro inteiro). Imagem `3af97713…`,
+  carimbada `a184dd07…`, `.up` `bd3c3640…` CRC 0x82C0, kit `release/OpenPod-Reload-1.0-RC7`
+  (TESTAR.txt). Aprovada no aparelho → catraca com a RC7 e publicar com o "pode".
   Depois: bateria prata/verde (refeita da fábrica).
 - **Com o decisor:** teste do fundo pálido (olhar a
   Tocando Agora de frente: se o preto também parecer azul, é a tela).

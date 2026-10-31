@@ -21,7 +21,7 @@ como analista em MODO FICHA (secao 18): que dano nao esta coberto? Escreva o rel
 (primeira linha APROVADO ou REPROVADO). Achado ALTA ou MEDIA: escreva a pergunta e embaixo, sozinho numa linha,
 PERGUNTA-DECISOR NNN, e pare (a ficha e os testes protegidos so mudam pelo engenheiro). FASE D: abra o desenvolvedor
 num terminal proprio com orca terminal create --worktree <este worktree> --title "OC | Tarefa NNN" --command "opencode
--m opencode-go/minimax-m3"; pegue o handle em orca terminal list; escreva DESPACHO-NNN.md com a secao 17 e as regras da
+-m minimax/MiniMax-M3"; pegue o handle em orca terminal list; escreva DESPACHO-NNN.md com a secao 17 e as regras da
 secao 15; mande a mensagem em texto simples terminando em FIM-NNN sozinho numa linha; responda PERGUNTA NNN pela ficha.
 Com FIM-NNN: rode sh tools/ci.sh; faca a 1a analise do diff (git diff privado-completo...HEAD, tres pontos) em MODO
 DIFF; achado vira pedido de correcao ao desenvolvedor (R1, maximo R2) e voce confere so o diff da correcao; no fim, uma
