@@ -127,6 +127,31 @@ def enc(desde, para, largo):
 # o codigo das rotinas
 # ---------------------------------------------------------------------------
 
+# A divisao por hardware (udiv/sdiv) e OPCIONAL no ARMv7-M, e o firmware
+# de fabrica visivel (0xC00000..0xDA0000) NAO TEM NENHUMA ocorrencia dela:
+# nada evidencia que o nucleo do SL6801tenha a instrucao. O emulador
+# (QEMU/unicorn) executa udiv em qualquer ARMv7, entao o verde dos testes
+# nao prova nada para o aparelho (achado 007-D1). O codigo divide por
+# software (div_soft, em tools/capa_album.s) e esta verificacao recusa a
+# montagem se alguma divisao por hardware aparecer.
+DIVISAO_HW = ((0xFB90, 0xFB9F),      # sdiv (T32)
+              (0xFBB0, 0xFBBF))      # udiv (T32)
+
+
+def tem_divisao_hardware(cod):
+    """Os deslocamentos do .text onde ha divisao por hardware (udiv/sdiv).
+
+    O texto montado e lido como meia-palavras (as instrucoes do Thumb-2
+    comecam em endereco par)."""
+    achados = []
+    for i in range(0, len(cod) - 1, 2):
+        h = cod[i] | (cod[i + 1] << 8)
+        for ini, fim in DIVISAO_HW:
+            if ini <= h <= fim:
+                achados.append(i)
+    return achados
+
+
 def monta_codigo():
     """Monta tools/capa_album.s e devolve os bytes do .text."""
     with open(FONTE, "r") as f:
@@ -152,6 +177,10 @@ def confere_codigo(cod):
                          f"fora do lote")
     if CODIGO + len(cod) > LOTE + LOTE_TAM:
         erros.append(f"o codigo tem {len(cod)} bytes e nao cabe no lote")
+    for off in tem_divisao_hardware(cod):
+        erros.append(f"o codigo tem divisao por hardware em 0x{off:04X} "
+                     f"(udiv/sdiv): o nucleo do SL6801 pode nao ter a "
+                     f"instrucao — divida por software (achado 007-D1)")
     return erros
 
 

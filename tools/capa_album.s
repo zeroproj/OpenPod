@@ -565,7 +565,8 @@ leitor_nada:
 //
 //   Para não caber a imagem inteira na memória, cada pedaço é lido uma vez
 //   só: as faixas de ox e oy que caem no retângulo são calculadas com
-//   divisão (udiv) e os pixels são copiados direto para o contexto.
+//   divisão (POR SOFTWARE, ver div_soft) e os pixels são copiados direto
+//   para o contexto.
 // ===================================================================
 saida:
     push {r4-r11, lr}
@@ -585,37 +586,47 @@ saida:
     str r0, [sp, #12]
 
     // ox_lo = (left*64 + W - 1) / W
-    ldr r0, [sp, #8]
+    ldr r2, [sp, #8]            // W
     mov r1, r8
     lsls r1, r1, #6
-    add r1, r1, r0
+    add r1, r1, r2
     subs r1, r1, #1
-    udiv r1, r1, r0
-    str r1, [sp, #16]
+    mov r0, r1
+    mov r1, r2
+    bl div_soft
+    str r0, [sp, #16]
     // ox_hi = ((right+1)*64 + W - 1) / W - 1
+    ldr r2, [sp, #8]            // W
     add r1, r9, #1
     lsls r1, r1, #6
-    add r1, r1, r0
+    add r1, r1, r2
     subs r1, r1, #1
-    udiv r1, r1, r0
-    subs r1, r1, #1
-    str r1, [sp, #20]
+    mov r0, r1
+    mov r1, r2
+    bl div_soft
+    subs r0, r0, #1
+    str r0, [sp, #20]
     // oy_lo = (top*64 + H - 1) / H
-    ldr r0, [sp, #12]
+    ldr r2, [sp, #12]           // H
     mov r1, r10
     lsls r1, r1, #6
-    add r1, r1, r0
+    add r1, r1, r2
     subs r1, r1, #1
-    udiv r1, r1, r0
-    str r1, [sp, #24]
+    mov r0, r1
+    mov r1, r2
+    bl div_soft
+    str r0, [sp, #24]
     // oy_hi = ((bottom+1)*64 + H - 1) / H - 1
+    ldr r2, [sp, #12]           // H
     add r1, r11, #1
     lsls r1, r1, #6
-    add r1, r1, r0
+    add r1, r1, r2
     subs r1, r1, #1
-    udiv r1, r1, r0
-    subs r1, r1, #1
-    str r1, [sp, #28]
+    mov r0, r1
+    mov r1, r2
+    bl div_soft
+    subs r0, r0, #1
+    str r0, [sp, #28]
     // a largura da linha do pedaço
     sub r1, r9, r8
     add r1, r1, #1
@@ -674,6 +685,48 @@ saida_fim:
     add sp, #40
     add sp, #4
     pop {r4-r11, pc}
+
+// ===================================================================
+// div_soft(r0 = o dividendo, r1 = o divisor) -> r0 = o quociente
+//
+//   DIVISÃO POR SOFTWARE, de propósito.
+//
+//   A divisão por hardware (udiv/sdiv) é OPCIONAL no ARMv7-M, e o
+//   firmware de fábrica visível (0xC00000..0xDA0000, 1,75 MiB) NÃO TEM
+//   NENHUMA ocorrência de udiv/sdiv: nada evidencia que o núcleo do
+//   SL6801 implemente a instrução. O emulador (QEMU/unicorn) executa
+//   udiv em qualquer ARMv7, então o verde dos testes não provaria nada
+//   no aparelho — e um UsageFault no meio da reescala derrubaria a
+//   Tocando Agora ao tocar qualquer MP3 com capa.
+//
+//   Aqui a divisão é o laço clássico: o dividendo é girado um bit por
+//   vez (do mais alto para o mais baixo); o resto dobra e recebe o bit;
+//   se o resto alcançar o divisor, ele subtrai e o quociente ganha o
+//   bit. São 32 passos, com o dividendo < 2^23 e o divisor >= 64: sem
+//   estouro de 32 bits (o resto é sempre < divisor antes de dobrar).
+//
+//   Preserva r4..r11 (o chamador, `saida`, guarda o jd, o bitmap e o
+//   rect neles); r0 e r2 são destruídos, r1 e r3 saem do jeito que
+//   entraram (o divisor e o resto).
+// ===================================================================
+div_soft:
+    push {r4, lr}
+    mov r2, #0                // o quociente
+    mov r3, #0                // o resto
+    movs r4, #32              // os 32 bits do dividendo
+div_soft_loop:
+    lsls r2, r2, #1           // o quociente dobra
+    lsls r0, r0, #1           // o bit mais alto vai para o carry
+    adcs r3, r3               // o resto = resto + resto + o bit (2*resto + bit)
+    cmp r3, r1
+    blo div_soft_sem
+    sub r3, r3, r1            // o resto -= o divisor
+    orr r2, r2, #1            // e o quociente ganha o bit
+div_soft_sem:
+    subs r4, r4, #1
+    bne div_soft_loop
+    mov r0, r2                // o quociente
+    pop {r4, pc}
 
 // ===================================================================
 // procura_apic(r0 = fil) -> r0 = 1 (r1 = o início da imagem, r2 = o fim)
@@ -859,7 +912,10 @@ apic_tam_pronto:
     cmp r8, r11
     bhi apic_falha              // o quadro passa do fim da tag
 
-    // ---- é APIC?
+    // ---- é APIC? (os QUATRO bytes do id: 'A','P','I','C')
+    ldrb r0, [sp, #24]
+    cmp r0, #0x41               // 'A'
+    bne apic_proximo
     ldrb r0, [sp, #25]
     cmp r0, #0x50               // 'P'
     bne apic_proximo

@@ -244,15 +244,15 @@ Se um teste protegido parecer errado: **PERGUNTA-DECISOR 007** (não alterar).
 
 ### Imagem
     receita   reload_1.0_rc7  (RC6 catraca af3a2b6d... + fab_capa_album.py)
-    sha256    a74d3386abd3301a0c695f5fc9ed72e55228ca4c15370c39a0e96adb18ad1971
+    sha256    3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab645678237d9e
     2 MiB; build reprodutível: duas execuções seguidas, o mesmo sha
-    RC6 → RC7: 10645 bytes, menor offset 0x131E80, maior 0x1AA995
+    RC6 → RC7: 10711 bytes, menor offset 0x131E80, maior 0x1AA9D7
       0x131E80..0x131E82  o tamanho da view (0x30 -> 0x34)
       0x131E9E..0x131EA0  o memset da view (0x30 -> 0x34)
       0x131EB6..0x131EBA  o `bl` do lv_img_create -> CRIA
       0x13225E..0x132262  o `b.w` do lv_label_set_text -> TITULO
-      0x1A8000..0x1AA996  o lote: dsc, placeholder, tabela e código
-                           (o resto do lote, 0x1AA997..0x1AB000, fica 0xFF)
+      0x1A8000..0x1AA9D7  o lote: dsc, placeholder, tabela e código
+                           (o resto do lote, 0x1AA9D8..0x1AB000, fica 0xFF)
     nada abaixo de 0x00E000; setor 0x00D000 e PSMP (0x1FC000+) intocados
 
 ### Decisões
@@ -283,6 +283,14 @@ Se um teste protegido parecer errado: **PERGUNTA-DECISOR 007** (não alterar).
   como a ficha) e o `FIL` (0x25C) são alocados e liberados em volta da
   chamada; o global 0x81CDE8 do visualizador de fotos não aparece no
   código (D11).
+- **A divisão da reescala é por software** (achado 007-D1): o núcleo do
+  SL6801 pode não ter UDIV/SDIV (a divisão por hardware é opcional no
+  ARMv7-M e o firmware de fábrica visível não usa nenhuma), e o
+  emulador executa `udiv` em qualquer ARMv7 — ou seja, o verde do
+  teste não provaria nada no aparelho. A rotina `div_soft` faz a
+  divisão no laço de 32 passos, e a **ferramenta recusa a montagem** se
+  alguma meia-palavra de `udiv`/`sdiv` aparecer no `.text` (a
+  verificação é estática porque a dinâmica não pega).
 - **O leitor do TJpgDec é nosso e limitado**: ele guarda a posição e o
   fim da imagem no contexto e nunca lê depois do fim do quadro; o
   arquivo é reposicionado no começo da imagem antes do `jd_prepare`,
@@ -295,15 +303,23 @@ Se um teste protegido parecer errado: **PERGUNTA-DECISOR 007** (não alterar).
   lv_obj_add_event_cb, lv_label_set_text, memset) — conferido no `.s`.
 - **Pilha**: a maior descida do SP medida no emulador do arnês
   (`tests/emu_rc7.py`, com um hook por instrução por cima) durante o
-  `TITULO` com capa foi de **384 bytes (0x180)**, contando as rotinas da
-  fábrica (jd_prepare/jd_decomp). A pilha da ViewTask é de 0x1000 (4096):
-  9% dela. É a medição que o R0 pediu (BAIXA): o **arnês** continua não
-  medindo (protegido, não tocado).
+  `TITULO` com capa foi de **392 bytes (0x188)**, contando as rotinas da
+  fábrica (jd_prepare/jd_decomp) e a divisão por software. A pilha da
+  ViewTask é de 0x1000 (4096): 10% dela. É a medição que o R0 pediu
+  (BAIXA): o **arnês** continua não medindo (protegido, não tocado).
 - **Memória**: o pico vivo durante a busca da capa é de 4500 B
   (FIL 604 + JDEC/contexto 312 + pool 3584), contra o teto de 0x1800
   da ficha; e o contexto tem 8720 B, contra o teto de 0x2400.
 - **Os pixels batem byte a byte** com o TJpgDec da fábrica emulado
   (erro máximo 0 por pixel) nos seis casos de capa do `test_d2_capas`.
+- **Nenhuma instrução opcional no código novo**: o `.text` montado foi
+  varrido instrução a instrução — não há `udiv`/`sdiv` (e nem DSP nem
+  saturação); só o conjunto obrigatório do ARMv7-M. A rotina de
+  divisão por software foi conferida contra 13 pares de dividendo e
+  divisor (incluindo os casos de teto, 0 e 1).
+- **Um quadro `ZPIC` hostil** (o id com o primeiro byte trocado, o
+  corpo parseando como imagem) dá quadrado cinza, sem travar e sem
+  ler fora do quadro.
 
 ### Pendências / não coberto
 - **Nada foi gravado no aparelho**: o roteiro da ficha continua inteiro
@@ -373,6 +389,57 @@ Se um teste protegido parecer errado: **PERGUNTA-DECISOR 007** (não alterar).
   erro máximo 0 por pixel nos seis casos de capa; as 18 recusas do D3
   viram quadrado cinza, sem laço, sem arquivo aberto, sem vazamento e
   com o pico de memória medido).
+- **Rodada 2 (2026-10-31, MiniMax M3) — correção R1 da 1ª análise do
+  diff** (`docs/tarefas/007-analise-diff.md`, glm-5.3: 1 MÉDIA + 1 BAIXA;
+  o resto do diff foi aprovado):
+  - **[MÉDIA] a divisão por hardware saiu do código.** A reescala usava
+    `udiv` quatro vezes, e **nada evidencia que o núcleo do SL6801 tenha
+    UDIV/SDIV**: a divisão por hardware é **opcional** no ARMv7-M, e o
+    firmware de fábrica visível (0xC00000..0xDA0000, 1,75 MiB) **não tem
+    nenhuma ocorrência** de `udiv`/`sdiv`. O emulador (QEMU/unicorn)
+    executa `udiv` em qualquer ARMv7, então **o verde dos testes não
+    provava nada para o aparelho**: um UsageFault no meio da reescala
+    derrubaria a Tocando Agora ao tocar qualquer MP3 com capa (dano D1
+    da ficha, fora dos testes).
+    **O que mudou:** a rotina nova `div_soft` (em `tools/capa_album.s`)
+    faz a divisão **por software** — o laço clássico de 32 passos: o
+    dividendo é deslocado um bit por vez (do mais alto para o mais
+    baixo), o resto dobra e recebe o bit, e se alcançar o divisor ele
+    subtrai e o quociente ganha o bit. Os dividendos aqui são < 2^23 e
+    os divisores são W/H ≥ 64, então não há estouro de 32 bits (o resto
+    é sempre < divisor antes de dobrar) e o custo é desprezível (4
+    divisões por retângulo do TJpgDec). A rotina preserva r4..r11 (o
+    chamador `saida` guarda o jd, o bitmap e o rect neles) e a pilha
+    fica balanceada e alinhada em 8 bytes.
+    **O que garante que não volta:** a própria ferramenta passou a
+    **ler o `.text` montado e recusar a montagem** se aparecer uma
+    meia-palavra de `udiv` (0xFBB0..0xFBBF) ou `sdiv`
+    (0xFB90..0xFB9F) — o `confere_codigo` do `capa_album_asm.py` faz
+    essa varredura e a receita sai sem arquivo se ela acusar. O
+    emulador não pegaria isso (o QEMU implementa a divisão em todo
+    ARMv7), por isso a verificação é estática e mora na ferramenta.
+    Conferência: o `.text` montado foi varrido instrução a instrução e
+    **não tem nenhuma divisão por hardware**; as únicas instruções
+    usadas são do conjunto obrigatório do ARMv7-M (nada de DSP, nem de
+    saturação).
+  - **[BAIXA] o id do quadro agora é conferido inteiro.** Antes só se
+    olhava o "não começa com 0" e os bytes 1..3 (`P`,`I`,`C`); agora o
+    byte 0 também é conferido (`0x41`, o `A` do `APIC`). Um MP3 hostil
+    com quadro `ZPIC` cujo corpo por acaso parseia como imagem deixa de
+    ser tratado como capa (a ficha: "só o 1º APIC conta") — conferido
+    no emulador: o `ZPIC` dá quadrado cinza, sem travar e sem ler fora
+    do quadro.
+  - **Nada mais foi mexido**: os testes protegidos, o `tools/ci.sh`, o
+    `firmware/ORIGINAL/` e o resto do diff estão como a 1ª análise
+    aprovou.
+- **Rodada 2 — resultado**: `sh tools/ci.sh` **verde** (os 23 testes da
+  RC7 continuam passando; **os pixels continuam com erro máximo 0** por
+  pixel contra o TJpgDec da fábrica emulado, agora com a divisão por
+  software). A imagem mudou (o código é outro): RC7 sha256
+  `3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab645678237d9e`
+  (RC6 → RC7: 10711 bytes, de 0x131E80 a 0x1AA9D7, só nas regiões
+  permitidas; nada abaixo de 0x00E000, setor 0x00D000 e PSMP
+  intocados).
 
 ## Pacote — Ficha 007 / Reload 1.0 RC7
 (a preencher)
