@@ -21,3 +21,4 @@ Todo patch, antes de virar RC:
 - [ ] premissa sobre biblioteca da fábrica é **provada por emulação**, não pela documentação da biblioteca: o `jd_prepare` desta build aceita JPEG progressivo (007, A12)
 - [ ] código novo só chama a lista de funções de fábrica da ficha; o arnês de emulação recusa qualquer outra (007)
 - [ ] laço sobre dados do arquivo: o tamanho lido é comparado com o que resta **antes** de avançar, nunca `ptr += cab + tam` em 32 bits (wrap → laço infinito); teste com `0xFFFFFFF6` e synchsafe inválido (achado 007-R0, MÉDIA)
+- [ ] código novo não usa instrução cuja presença no núcleo não foi evidenciada no firmware de fábrica: divisão por hardware `udiv`/`sdiv` tem **zero** ocorrências na flash inteira (0xC00000..0xDA0000) e o emulador (QEMU) executa divisão em qualquer ARMv7 — o verde não prova nada para o aparelho; dividir por **software** (achado 007-D1, MÉDIA)

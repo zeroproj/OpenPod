@@ -6,7 +6,9 @@
 - Desenvolvedor: **MiniMax M3** (`opencode-go/minimax-m3`, opencode.json do worktree, skip-worktree)
 - Analista: Codex **gpt-6-sol high** (R0 e 1ª análise do diff), **gpt-6-astra medium** (conferência final)
 - Depende de: RC6 (catraca `af3a2b6d…`), `docs/tarefas/003-rc5-analise-capa.md` (E1/E2 feitos), D05, D08, D10, D11
-- Status: **ficha + testes vermelhos prontos (2026-10-30)**; falta R0
+- Status: **implementada e revisada (2026-10-31); falta o roteiro no aparelho (decisor)**
+  (R0 glm-5.3 REPROVADO 1 MÉDIA → opção A do decisor aplicada; 1ª análise do
+  diff REPROVADO 1 MÉDIA → R1 corrigida; conferência final APROVADO; Pacote abaixo)
 
 ## Objetivo
 Na Tocando Agora, mostrar a capa do álbum lida **de dentro do MP3** (ID3v2 `APIC`,
@@ -442,7 +444,42 @@ Se um teste protegido parecer errado: **PERGUNTA-DECISOR 007** (não alterar).
   intocados).
 
 ## Pacote — Ficha 007 / Reload 1.0 RC7
-(a preencher)
+- Fase: 0
+- ci.sh: **verde** (RC2..RC7 + catraca; rodado pela sessão antes e depois da R1).
+  Analista (glm-5.3, D12): R0 REPROVADO 1 MÉDIA (opção A do decisor, casos
+  hostis no `test_d3_recusas`) · 1ª análise do diff REPROVADO 1 MÉDIA (udiv) +
+  1 BAIXA (id "APIC") → R1 corrigiu ambos · conferência final APROVADO
+  (`docs/tarefas/007-analise-diff.md`, `docs/tarefas/007-conferencia-final.md`).
+- Imagem `reload_1.0_rc7` (2 MiB, build reprodutível): sha256
+  `3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab645678237d9e`.
+  `.up`: a coordenação gera após o `PRONTO-007` (a sessão não gera kit).
+  Passo RC6→RC7: 10711 B em **0x131000, 0x132000, 0x1A8000, 0x1A9000,
+  0x1AA000** (0x131E80..0x131E82, 0x131E9E..0x131EA0, 0x131EB6..0x131EBA,
+  0x13225E..0x132262 e o lote 0x1A8000..0x1AB000); vs ORIGINAL são 25 setores
+  (o acumulado RC1..RC7). Nada abaixo de 0xE000; setor 0xD000 e PSMP intactos
+  (reconferido contra o ORIGINAL pela sessão).
+- Danos cobertos (linguagem simples): desvio para lugar errado reiniciando a
+  Tocando Agora; título/tempos/letra deixando de sair; MP3 hostil laçando,
+  lendo fora do quadro ou deixando arquivo aberto; progressivo como lixo;
+  vazamento a cada troca de faixa; uso depois de liberar; falta de memória;
+  cores trocadas; colisão com o visualizador de fotos; escrita fora dos bytes
+  permitidos; **instrução de divisão por hardware que o núcleo pode não ter**
+  (achado 007-D1: `udiv` zero vezes na fábrica — agora `div_soft` + trava
+  estática na ferramenta); quadro não-APIC ("ZPIC") tratado como capa.
+- Roteiro no aparelho (decisor preenche ✔/✘): a tabela acima com os 7 MP3 de
+  `tests/assets/rc7/` (01 capa v2.3 · 02 capa v2.4 · 03 cabeçalho estendido ·
+  04 progressiva → cinza · 05 PNG → cinza · 06 sem capa → cinza · 07 sem tag
+  → cinza; troca de faixa 01→04→02; sair/entrar 10×; Fotos com música tocando;
+  `.lrc` por cima; Config = "Reload 1.0 RC7").
+- Riscos aceitos: letra por cima da capa (D11); capa não quadrada esticada;
+  só o 1º APIC; capas < 64×64 ficam cinza; breve pausa ao trocar faixa com
+  capa grande; get_path/FatFs da ViewTask; gravação interrompida entre
+  0x132000 e 0x1A8000 → Tocando Agora reinicia até regravar.
+- Rodadas: R1 (retomada do rascunho com 11 defeitos corrigidos pelo dev;
+  1ª análise → div_soft + id 'A' + trava udiv/sdiv). Pendência para o
+  arquiteto: teste de regressão permanente (ausência de udiv/sdiv no lote e
+  id APIC inteiro) é protegido — a trava da ferramenta cobre o build.
+  Recomendação: **aprovar**.
 
 ## Revisão da ficha (R0, glm-5.3 — D12)
 REPROVADO (1 MÉDIA, 2 BAIXAS), `docs/tarefas/007-revisao-r0.md`. Decisor escolheu a opção A
