@@ -166,8 +166,14 @@ MAPA = {
     # logo depois do `make_extras_menu` (que termina em 0x001A6400) e
     # antes do degradê (0x001A7000) — nao cruza nenhum lote acima.
     "fab_home_moldura.py":   (0x001A6400, 0x0080),
+    # Ficha 007 (RC7). O lote e das ROTINAS da capa do album (CRIA, TITULO
+    # e APAGA), em endereco FIXO: os tres ganchos da Tocando Agora apontam
+    # para elas e os enderecos ficam gravados no proprio codigo. O lote
+    # 0x001A8000 fica logo depois do `fab_home_moldura` (que termina em
+    # 0x001A6480) e nao cruza nenhum lote acima.
+    "fab_capa_album.py":      (0x001A8000, 0x3000),
 }
-AREA_INI, AREA_FIM = 0x001A3040, 0x001A8000
+AREA_INI, AREA_FIM = 0x001A3040, 0x001AB000
 
 
 # ---------------------------------------------------------------------------
@@ -488,6 +494,40 @@ RELOAD_1_0_RC6 = RELOAD_1_0_RC5 + [
      "a home sem nomes, a grade centralizada e a moldura no selecionado"),
 ]
 
+# ---------------------------------------------------------------------------
+# RELOAD 1.0 RC7 — a RC6 mais a capa do album na Tocando Agora (ficha 007,
+# tipo Risco + Pesada).
+#
+# Os passos da RC6 vem primeiro, na ordem dela: a RC6 foi aprovada no
+# aparelho em 2026-10-30 e virou catraca (sha af3a2b6d..., em
+# tests/test_rc7.py), entao a RC7 tem que conter a RC6 byte a byte.
+#
+# A ferramenta nova e a UNICA da RC, e ela exige a RC6 EXATA na entrada
+# (sha conferido): a RC7 e a RC6 mais ela, e nao ha outro caminho. Ela
+# escreve em cinco lugares:
+#
+#     0x131E80..0x131E82  o tamanho da view da Tocando Agora (0x30 -> 0x34)
+#     0x131E9E..0x131EA0  o memset da view (0x30 -> 0x34)
+#     0x131EB6..0x131EBA  o `bl` do lv_img_create do papel de parede
+#     0x13225E..0x132262  o `b.w` do lv_label_set_text das mensagens
+#     0x1A8000..0x1AB000  o lote: o quadrado cinza, a tabela de entradas
+#                         e as rotinas (CRIA, TITULO e APAGA)
+#
+# O codigo das rotinas e ASSEMBLY Thumb-2 (tools/capa_album.s, montado
+# pelo clang): sem compilador C, para a saida ser reprodutivel (catraca).
+#
+# ORDEM NO KIT: fora do escopo desta receita (o kit e o engenheiro). O
+# `gera_versao` monta os setores em ordem crescente de endereco, entao o
+# lote novo (0x1A8000) sai DEPOIS dos setores de codigo (0x131000 e
+# 0x132000): se a gravacao parar no meio, sobram menus com o `bl` apontando
+# para o 0xFF do lote. O risco esta na lista de riscos aceitos da ficha e e
+# o mesmo da RC1-RC6; so a pagina 4 depende dos ganchos.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC7 = RELOAD_1_0_RC6 + [
+    ("fab_capa_album.py", [],
+     "a capa do album (ID3v2 APIC) na Tocando Agora"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -498,6 +538,7 @@ RECEITAS = {
     "reload_1.0_rc4": RELOAD_1_0_RC4,
     "reload_1.0_rc5": RELOAD_1_0_RC5,
     "reload_1.0_rc6": RELOAD_1_0_RC6,
+    "reload_1.0_rc7": RELOAD_1_0_RC7,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.

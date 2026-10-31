@@ -195,7 +195,184 @@ Se um teste protegido parecer errado: **PERGUNTA-DECISOR 007** (não alterar).
 
 ## Entrega (preenchida pelo desenvolvedor)
 
+### O que foi feito
+- **Três arquivos novos** (a regra do projeto é 350 linhas por ferramenta, D06):
+  - **`tools/fab_capa_album.py`** (322 linhas) — a ferramenta da receita:
+    as premissas, a escrita, a conferência do resultado e a linha de
+    comando (`--in/--out/--em/--dry-run`);
+  - **`tools/capa_album_asm.py`** (161 linhas) — o módulo do layout do
+    lote, dos encoders do Thumb-2 (o mesmo par encoder/leitor que o
+    `test_rc7.py` usa), da montagem do `.text` e da conferência dele;
+  - **`tools/capa_album.s`** (assembly Thumb-2, montado pelo clang via
+    `tools/asm.py`). **Sem compilador C**: a saída muda com a versão do
+    compilador e a catraca quebraria.
+- **`tools/build.py`**: `RELOAD_1_0_RC7 = RELOAD_1_0_RC6 + [fab_capa_album.py]`,
+  `RECEITAS["reload_1.0_rc7"]`, `MAPA["fab_capa_album.py"] = (0x001A8000,
+  0x3000)` e `AREA_FIM` de `0x001A8000` para `0x001AB000` (o vigia do
+  pipeline passa a cobrir o lote novo). O lote não cruza nenhum lote
+  declarado acima (o `fab_home_moldura` termina em 0x001A6480).
+- **O que o código novo faz** (as três rotinas do lote, em
+  `tools/capa_album.s`):
+  - `CRIA` (0x00DAA01C): cria o fundo (o 1º `lv_img`, para a capa ficar
+    acima do papel de parede), o contexto (`calloc(1, 0x2210)` = dsc 12 B +
+    img 4 B + dois caminhos de 256 B + 8192 B de pixels; a ficha limita a
+    0x2400), a imagem da capa, `lv_img_set_src(img, 0x00DA8000)`,
+    `lv_obj_align(img, 2, 0, 42)` e o `lv_obj_add_event_cb(img, 0x00DAA019,
+    0x21, ext)`. Sem memória ou sem objeto: o quadrado cinza e
+    `[view+0x30] = 0`. Devolve `r0 = fundo`.
+  - `TITULO` (0x00DAA020): `lv_label_set_text` **primeiro e uma vez só**;
+    depois, se a view existir, se o rótulo for o do título (`[view+4]`) e
+    se o contexto existir, `get_path(origem, índice, buf)`; caminho igual
+    ao último → nada; caminho novo → guarda, mostra o quadrado cinza e
+    tenta a capa; só se tudo der certo é que a imagem passa a ser a do
+    contexto.
+  - `APAGA` (0x00DAA024): cb do `LV_EVENT_DELETE`; se a view atual ainda
+    aponta para o contexto, zera `[view+0x30]` e libera o contexto.
+  - A capa: `f_open` (só leitura), tag ID3v2 v3/v4 (unsync recusado,
+    cabeçalho estendido pulado, tamanho synchsafe), laço de quadros com a
+    **regra do R0** (o tamanho é comparado com o que resta da tag **antes**
+    de qualquer avanço; nada de `10 + tam` em 32 bits), corpo do APIC
+    (codificação, MIME, tipo, descrição), só JPEG **baseline** (o SOF0
+    é procurado marcador a marcador; `C1..CF` menos `C4/C8/CC` e
+    `D9/DA` antes do SOF → cinza), decodificação com o **TJpgDec da
+    fábrica** e leitor próprio (limitado ao fim do quadro; pular =
+    `f_lseek`), escala `s` = maior de 0..3 com `w>>s ≥ 64` e `h>>s ≥ 64`,
+    e a saída 64×64 com o pixel `(ox,oy)` = `(ox·W/64, oy·H/64)` da
+    imagem reduzida e **os bytes trocados** (`LV_COLOR_16_SWAP`).
+- **Nenhum teste, `tools/ci.sh` ou arquivo protegido tocado.**
+  `sh tools/ci.sh`: **verde** (round-trip + RC2..RC7 + catraca, `CI OK`).
+
+### Imagem
+    receita   reload_1.0_rc7  (RC6 catraca af3a2b6d... + fab_capa_album.py)
+    sha256    a74d3386abd3301a0c695f5fc9ed72e55228ca4c15370c39a0e96adb18ad1971
+    2 MiB; build reprodutível: duas execuções seguidas, o mesmo sha
+    RC6 → RC7: 10645 bytes, menor offset 0x131E80, maior 0x1AA995
+      0x131E80..0x131E82  o tamanho da view (0x30 -> 0x34)
+      0x131E9E..0x131EA0  o memset da view (0x30 -> 0x34)
+      0x131EB6..0x131EBA  o `bl` do lv_img_create -> CRIA
+      0x13225E..0x132262  o `b.w` do lv_label_set_text -> TITULO
+      0x1A8000..0x1AA996  o lote: dsc, placeholder, tabela e código
+                           (o resto do lote, 0x1AA997..0x1AB000, fica 0xFF)
+    nada abaixo de 0x00E000; setor 0x00D000 e PSMP (0x1FC000+) intocados
+
+### Decisões
+- **A entrada é a RC6 pelo sha256** (`af3a2b6d…`), como a ficha manda: é a
+  premissa única, e as outras conferências (os bytes de fábrica dos
+  ganchos e dos tamanhos, o lote virgem, o TJpgDec intacto, o sha do
+  quadrado cinza e a conferência do `.text` montado) continuam todas no
+  código, nomeadas, para dizer *o que* está errado.
+- **O código é assembly e não C** (a ficha): o `.text` é montado pelo
+  clang, que só faz o Thumb-2; sem linkador, toda chamada para fora é
+  `movw/movt + blx` (o bit do Thumb no endereço) e toda chamada interna
+  é um `bl` relativo, resolvido pelo montador.
+- **O `.text` começa pelos três trampolins** (`CRIA`, `TITULO`, `APAGA`)
+  em endereços fixos (0x00DAA01C/20/24) e a **tabela de entradas** do
+  lote (0x00DAA010/14/18) aponta para eles com `b.w`. O cb do
+  `LV_EVENT_DELETE` é registrado como **0x00DAA019** — a entrada da
+  tabela, como a ficha diz — e não o trampolim.
+- **O contexto tem dois caminhos** (o guardado e o novo, 256 B cada):
+  o `get_path` pode não terminar a string (o `strncpy` da fábrica
+  copia até 0xFF bytes sem o `0`), e a comparação "é a mesma faixa?"
+  precisa do caminho novo separado do guardado. 8720 B no total, contra
+  o teto de 0x2400 da ficha.
+- **O descritor do quadrado cinza** fica em 0x001A8000 com o `data`
+  apontando para os pixels (0x00DA8010), e os pixels são os 8192 bytes
+  do modelo aprovado, byte a byte.
+- **A decodificação acontece no contexto, não no global**: o `JDEC` (0x138
+  B = o `JDEC` da fábrica 0x118 + 0x20 do nosso contexto), o pool (0xE00,
+  como a ficha) e o `FIL` (0x25C) são alocados e liberados em volta da
+  chamada; o global 0x81CDE8 do visualizador de fotos não aparece no
+  código (D11).
+- **O leitor do TJpgDec é nosso e limitado**: ele guarda a posição e o
+  fim da imagem no contexto e nunca lê depois do fim do quadro; o
+  arquivo é reposicionado no começo da imagem antes do `jd_prepare`,
+  porque o TJpgDec lê o cabeçalho desde o FFD8.
+
+### Verificações feitas (além dos testes protegidos)
+- **As únicas funções de fábrica chamadas são as 15 da ficha**
+  (calloc, free, get_path, f_open, f_read, f_lseek, f_close, jd_prepare,
+  jd_decomp, lv_img_create, lv_img_set_src, lv_obj_align,
+  lv_obj_add_event_cb, lv_label_set_text, memset) — conferido no `.s`.
+- **Pilha**: a maior descida do SP medida no emulador do arnês
+  (`tests/emu_rc7.py`, com um hook por instrução por cima) durante o
+  `TITULO` com capa foi de **384 bytes (0x180)**, contando as rotinas da
+  fábrica (jd_prepare/jd_decomp). A pilha da ViewTask é de 0x1000 (4096):
+  9% dela. É a medição que o R0 pediu (BAIXA): o **arnês** continua não
+  medindo (protegido, não tocado).
+- **Memória**: o pico vivo durante a busca da capa é de 4500 B
+  (FIL 604 + JDEC/contexto 312 + pool 3584), contra o teto de 0x1800
+  da ficha; e o contexto tem 8720 B, contra o teto de 0x2400.
+- **Os pixels batem byte a byte** com o TJpgDec da fábrica emulado
+  (erro máximo 0 por pixel) nos seis casos de capa do `test_d2_capas`.
+
+### Pendências / não coberto
+- **Nada foi gravado no aparelho**: o roteiro da ficha continua inteiro
+  (os 7 MP3, a troca de faixa, as 10 entradas e saídas, o E1 com a
+  música tocando). Toda a conferência aqui é de emulação.
+- **D14 (trava da GUI enquanto decodifica)**: o risco é aceito pela
+  ficha, mas o código novo roda na ViewTask e o tempo de decodificação
+  de uma capa grande (500×500, escala 2) **não foi medido** — o roteiro
+  mede.
+- **A BAIXA do R0 sobre a RAM sem vigia de escrita** continua em pé como
+  vigia: o código não toca o global 0x81CDE8 (nem o cita), e o
+  contexto é próprio, mas isso é contrato + revisão do diff, não
+  medição.
+- **Sugestão (fora do escopo, não implementada)**: na troca de faixa o
+  `lv_img_set_src` do quadrado cinza é chamado **duas** vezes (uma antes
+  de tentar a capa, outra só se a capa falhar; no caminho feliz a capa
+  entra no mesmo instante, sem redesenho intermediário). A ordem é a que
+  a ficha descreve ("caminho novo → guarda; `lv_img_set_src(img,
+  0xDA8000)`; tenta a capa"), e por isso fica como está; se quem mantiver
+  a ficha quiser o set_src só no fracasso, é uma linha a menos.
+
+### Danos notados
+- **Nenhum dano novo** encontrado: o que o rascunho anterior tinha
+  (ver Rodadas) era defeito de implementação, não de projeto — e
+  nenhum deles chegou a ser gravado em aparelho.
+- **D13 (gravação interrompida)** e **D14 (pausa na tela)**: inalterados
+  (riscos aceitos pela ficha). O lote novo é o mais alto da RC7: se a
+  gravação parar entre 0x132000 e 0x1A8000, a Tocando Agora reinicia
+  (como nas RCs anteriores).
+
 ## Rodadas
+- **Rodada 1 (retomada, 2026-10-31, MiniMax M3)**: o trabalho começou
+  de um **rascunho sem commit** (`tools/fab_capa_album.py` com 419 linhas,
+  acima do limite de 350, e `tools/capa_album.s` com 1105). O rascunho
+  **não foi aproveitado como está**: conferido contra a ficha, ele tinha
+  **onze defeitos**, todos corrigidos aqui (e nenhum deles apareceu num
+  aparelho, porque nada foi gravado):
+  1. `get_path` era chamado com **quatro** argumentos
+     (`AUDIO, origem, índice, buf`) em vez de `(origem, índice, buf)`: a
+     origem virava o endereço da struct e o índice, a origem;
+  2. o descritor do quadrado cinza apontava o `data` para **o próprio
+     descritor** (0x00DA8000) em vez dos pixels (0x00DA8010);
+  3. o cb do `LV_EVENT_DELETE` era registrado como 0x00DAA025 (o
+     trampolim) em vez de **0x00DAA019** (a entrada da tabela), como a
+     ficha e o teste pedem;
+  4. o **leitor do TJpgDec deixava a pilha desbalanceada em 8 bytes** no
+     caminho de "pular" (o `sub sp` do contador do `f_read` não era
+     desfeito): o `pop` trazia lixo e o PC saltava para dentro do JPEG
+     (0xFFD8) — trava na hora de decodificar;
+  5. a varredura dos marcadores do JPEG começava **2 bytes antes** da
+     posição real do arquivo: cada salto de segmento caía 2 bytes antes
+     e o SOF nunca era achado (nenhuma capa aparecia);
+  6. ao pular um quadro que não é APIC, **só o contador andava**: o
+     ponteiro do arquivo ficava no corpo do quadro e a leitura seguinte
+     era do lugar errado (a tag ficava ilegível);
+  7. o arquivo **não voltava para o começo da imagem** antes do
+     `jd_prepare`: o TJpgDec lia do meio do JPEG;
+  8. em `saida`, o destino **não somava `ox_lo*2`**: todos os blocos do
+     TJpgDec escreviam no começo da linha (só 4 dos 64 pixels de cada
+     linha saíam, e o resto, zero);
+  9. em `saida`, `ox_lo`/`ox_hi` eram calculados com **H no lugar de
+     W** (imagem não quadrada saía errada);
+  10. a conferência do código montado lia a tabela de entradas no
+      deslocamento errado — ela jamais teria passado;
+  11. sem memória, `[view+0x30]` não era zerado (a ficha pede).
+- **Rodada 1 — resultado**: `sh tools/ci.sh` **verde** (23 testes da RC7,
+  erro máximo 0 por pixel nos seis casos de capa; as 18 recusas do D3
+  viram quadrado cinza, sem laço, sem arquivo aberto, sem vazamento e
+  com o pico de memória medido).
 
 ## Pacote — Ficha 007 / Reload 1.0 RC7
 (a preencher)
