@@ -51,21 +51,29 @@ SHA_RC6 = ("af3a2b6d8aaa1bf9d709c20e3ccd8d3f1aeb37cc6843a6070938e122"
 XIP = 0x00C00000
 TABELA = 0x1AA010
 SET_TEXT = 0x00D5ED94
-FALHA = b"\x01\x20"
 CRIA, TITULO = 0x00DAA010, 0x00DAA014
 TELA = 0x5E000000
 ROT_CONT, ROT_TIT, ROT_LETRA = 0x5F000000, 0x5F000100, 0x5F000200
 PH_DSC = 0x00DA8000                # o descritor do quadrado cinza
 ATIVOS = os.path.join(RAIZ, "tests/assets/rc7")
 
-# nivel: (receita, quantos bytes, os deslocamentos que mudam)
+# nivel: (receita, quantos bytes, a regiao do patch)
 NIVEL = {
     "a": ("reload_1.0_rc7_diag_a", 4, (0x1AA014,)),
-    "b": ("reload_1.0_rc7_diag_b", 2, (0x1AA294,)),
+    "b": ("reload_1.0_rc7_diag_b", 4, (0x1AA188,)),
     "c": ("reload_1.0_rc7_diag_c", 2, (0x1AA31E,)),
 }
-# o par movw/movt de cada chamada (2 bytes antes do blx) e o alvo
-CHAMADA = {"b": (0x1AA28C, 0x00D777CD), "c": (0x1AA316, 0x00D10B21)}
+# o que fica no lugar, byte a byte (o nivel A e conferido pela decodificacao
+# do b.w, que depende do endereco de execucao)
+ESPERADO = {
+    "a": None,
+    "b": b"\x00\x20\x00\xbf",     # movs r0, #0 + nop
+    "c": b"\x01\x20",             # movs r0, #1
+}
+# o par movw/movt da chamada externa do nivel C e o alvo
+CHAMADA = {"c": (0x1AA316, 0x00D10B21)}
+# o `carrega_capa` (nivel B): o prologo unico e o `bl` que o chama
+CARREGA_CAPA = (0x1AA256, 0x1AA188)
 
 
 def le(p):
@@ -173,10 +181,12 @@ class Imagens(Base):
         for n, (_receita, tam, offs) in NIVEL.items():
             img = self.diags[n][2]
             dif = [i for i in range(len(img)) if img[i] != self.rc7[i]]
-            esperado = []
-            for o in offs:
-                esperado += list(range(o, o + tam))
-            self.assertEqual(dif, esperado, n)
+            off = offs[0]
+            fora = [i for i in dif if not (off <= i < off + tam)]
+            self.assertEqual(fora, [], f"{n}:_byte fora do patch")
+            self.assertLessEqual(len(dif), tam, n)
+            if ESPERADO[n] is not None:
+                self.assertEqual(img[off:off + tam], ESPERADO[n], n)
 
     def test_4_decodificacao_de_volta(self):
         # A: a entrada TITULO virou b.w para o lv_label_set_text da fabrica
@@ -185,12 +195,23 @@ class Imagens(Base):
         # as outras duas entradas do lote continuam como estavam
         self.assertEqual(desvio(a, TABELA), 0x00DAA01C)
         self.assertEqual(desvio(a, TABELA + 8), 0x00DAA024)
-        # B e C: os 2 bytes novos sao `movs r0, #1` e o par movw/movt do
+        # B: o bl virou `movs r0, #0` + `nop` (e deixou de ser um branch)
+        b = self.diags["b"][2]
+        off = NIVEL["b"][2][0]
+        self.assertEqual(b[off:off + 4], ESPERADO["b"], "b")
+        h1 = struct.unpack_from("<H", b, off)[0]
+        h2 = struct.unpack_from("<H", b, off + 2)[0]
+        self.assertEqual((h1 & 0xF800), 0x2000, "b")     # movs
+        self.assertEqual(((h1 >> 8) & 0x7), 0, "b")     # r0
+        self.assertEqual(h1 & 0xFF, 0, "b")             # #0
+        self.assertEqual(h2, 0xBF00, "b")               # nop
+        self.assertIsNone(desvio(b, off), "b: o bl nao pode ter virado outro branch")
+        # C: os 2 bytes novos sao `movs r0, #1` e o par movw/movt do
         # alvo continua logo antes (a chamada e que foi desligada)
         for n, (par, valor) in CHAMADA.items():
             img = self.diags[n][2]
             off = NIVEL[n][2][0]
-            self.assertEqual(img[off:off + 2], FALHA, n)
+            self.assertEqual(img[off:off + 2], ESPERADO[n], n)
             h = struct.unpack_from("<H", img, off)[0]
             self.assertEqual(h & 0xF800, 0x2000, n)      # movs
             self.assertEqual((h >> 8) & 0x7, 0, n)       # r0
@@ -258,8 +279,14 @@ class Recusa(Base):
         b[TABELA] ^= 0xFF                      # a tabela do lote mexida
         casos["lote_mexido"] = bytes(b)
         b = bytearray(self.rc7)
-        b[0x1AA28C + 2] ^= 0x01                # o movw do f_open mexido
+        b[0x1AA316 + 2] ^= 0x01                # o movw do jd_prepare mexido
         casos["chamada_mexida"] = bytes(b)
+        b = bytearray(self.rc7)
+        b[CARREGA_CAPA[0] + 4] ^= 0x01        # o sub sp,#12 do carrega_capa
+        casos["prologo_mexido"] = bytes(b)
+        b = bytearray(self.rc7)
+        b[CARREGA_CAPA[1]] ^= 0xFF             # o bl do carrega_capa mexido
+        casos["bl_mexido"] = bytes(b)
         for nome, entrada in casos.items():
             for n in NIVEL:
                 rc, criou, intacta = self.roda(entrada, n)
@@ -310,28 +337,59 @@ class Premissas(Base):
         d = bytearray(self.rc7)
         d[TABELA + 4:TABELA + 8] = F.A.enc(XIP + TABELA + 4, SET_TEXT, False)
         erros = F.confere_premissas(d, "a")
-        self.assertTrue(any("patcheada" in e for e in erros), erros)
+        self.assertTrue(any("patchead" in e for e in erros), erros)
 
-    def test_14_chamada_ja_patcheada(self):
-        for n, off in (("b", 0x1AA294), ("c", 0x1AA31E)):
-            d = bytearray(self.rc7)
-            d[off:off + 2] = FALHA
-            erros = F.confere_premissas(d, n)
-            self.assertTrue(any("patcheada" in e for e in erros), erros)
+    def test_14_bl_do_carrega_capa_ja_patcheado(self):
+        """O nivel B: o `bl` ja cortado e recusado (reprocessar)."""
+        d = bytearray(self.rc7)
+        off = CARREGA_CAPA[1]
+        d[off:off + 4] = ESPERADO["b"]
+        erros = F.confere_premissas(d, "b")
+        self.assertTrue(any("patchead" in e for e in erros), erros)
+
+    def test_14b_chamada_ja_patcheada(self):
+        """O nivel C: o `blx` ja cortado e recusado (reprocessar)."""
+        d = bytearray(self.rc7)
+        off = NIVEL["c"][2][0]
+        d[off:off + 2] = ESPERADO["c"]
+        erros = F.confere_premissas(d, "c")
+        self.assertTrue(any("patchead" in e for e in erros), erros)
 
     def test_15_chamada_inexistente(self):
         """O par movw/movt do alvo tem de aparecer exatamente uma vez."""
         d = bytearray(self.rc7)
-        d[0x1AA28C + 2] ^= 0x01             # o imm8 do movw do f_open
-        erros = F.confere_premissas(d, "b")
+        d[0x1AA316 + 2] ^= 0x01             # o imm8 do movw do jd_prepare
+        erros = F.confere_premissas(d, "c")
         self.assertTrue(any("aparece 0x" in e for e in erros), erros)
-        self.assertEqual(G.acha_pares(d, 0x00D777CD), [])
+        self.assertEqual(G.acha_pares(d, 0x00D10B21), [])
+
+    def test_15b_carrega_capa_inexistente(self):
+        """O nivel B: o prologo tem de ser unico, e o `bl` tambem."""
+        d = bytearray(self.rc7)
+        d[CARREGA_CAPA[0] + 4] ^= 0x01      # o sub sp,#12 do prologo
+        erros = F.confere_premissas(d, "b")
+        self.assertTrue(any("prologo" in e for e in erros), erros)
+        self.assertEqual(G.acha_carrega_capa(d), [])
+        d = bytearray(self.rc7)
+        d[CARREGA_CAPA[1]] ^= 0xFF           # o bl do carrega_capa
+        erros = F.confere_premissas(d, "b")
+        self.assertTrue(any("bl interno" in e for e in erros), erros)
 
     def test_16_scanner(self):
-        self.assertEqual(G.acha_pares(self.rc7, 0x00D777CD), [0x1AA28C])
         self.assertEqual(G.acha_pares(self.rc7, 0x00D10B21), [0x1AA316])
-        self.assertEqual(G.achado_unico(self.rc7, 0x00D777CD), 0x1AA294)
         self.assertEqual(G.achado_unico(self.rc7, 0x00D10B21), 0x1AA31E)
+        # o carrega_capa: o prologo unico e o bl que o chama
+        self.assertEqual(G.acha_carrega_capa(self.rc7), [CARREGA_CAPA[0]])
+        self.assertEqual(G.acha_bl_para(self.rc7, CARREGA_CAPA[0] + XIP),
+                         [CARREGA_CAPA[1]])
+        self.assertEqual(G.acha_bl_para(self.rc7, 0x00DAA020), [])
+        # o patch de cada nivel
+        for n, (_r, tam, offs) in NIVEL.items():
+            off, t, novos = G.bytes_do_patch(self.rc7, n)
+            self.assertEqual(off, offs[0], n)
+            self.assertEqual(t, tam, n)
+            if ESPERADO[n] is not None:
+                self.assertEqual(novos, ESPERADO[n], n)
         # o detector nao aceita meia-palavra qualquer
         self.assertFalse(G.e_blx(0x2800))
         self.assertFalse(G.e_mov(0x2800, 0x0000, 0xF240))
@@ -388,17 +446,26 @@ class Comportamento(Base):
         self.assertEqual(novas[0][1], ROT_TIT)
 
     def test_21_b_get_path_sem_arquivo(self):
-        """B: o get_path de verdade, mas NENHUM f_open."""
+        """B: o get_path de verdade e NADA mais — nem heap, nem arquivo.
+
+        A sequencia tem de ser EXATA: `label_set_text`, `get_path` e o
+        `img_set_src` do quadrado cinza. Zero calloc, zero free, zero
+        f_open (e o `free(NULL)` do caminho de erro da RC7 nao aparece
+        aqui — e o que a R1 da analise do diff apontou)."""
         m = self.aparelho(self.diags["b"][2])
         novas = self.titulo(m, self.ativo("01_capa_v23.mp3"))
         nomes = [c[0] for c in novas]
-        self.assertEqual(nomes.count("get_path"), 1)
-        self.assertNotIn("f_open", nomes)
-        self.assertNotIn("f_read", nomes)
-        self.assertNotIn("f_close", nomes)
-        # o quadrado cinza aparece (o caminho de erro)
+        self.assertEqual(nomes, ["label_set_text", "get_path", "img_set_src"])
+        self.assertEqual(nomes.count("calloc"), 0)
+        self.assertEqual(nomes.count("free"), 0)
+        self.assertEqual(nomes.count("f_open"), 0)
+        self.assertEqual(nomes.count("f_read"), 0)
+        self.assertEqual(nomes.count("f_close"), 0)
+        # o quadrado cinza (e so ele) e o caminho novo guardado
         srcs = [c[2] for c in novas if c[0] == "img_set_src"]
         self.assertEqual(set(srcs), {PH_DSC})
+        gp = [c for c in novas if c[0] == "get_path"]
+        self.assertEqual(gp[0][1:3], (2, 7))
 
     def test_22_c_f_open_e_f_close_sem_jpeg(self):
         """C: o f_open e o f_close de verdade, mas o jd_prepare nao roda."""

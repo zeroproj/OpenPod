@@ -56,22 +56,35 @@ tocado:
 | degrau | o que muda | bytes | onde |
 |---|---|---|---|
 | **A** | a entrada `TITULO` da tabela do lote passa a apontar para o `lv_label_set_text` da fábrica (`0x00D5ED94`) | **4** | `0x1AA014` |
-| **B** | o `blx` da **única** chamada externa ao `f_open` (`0x00D777CD`) vira `movs r0, #1` | **2** | `0x1AA294` |
+| **B** | o `bl` **interno** que chama o `carrega_capa` vira `movs r0, #0` + `nop` (`00 20 00 BF`): o TITULO para depois do `get_path` | **4** | `0x1AA188` |
 | **C** | o `blx` da **única** chamada externa ao `jd_prepare` (`0x00D10B21`) vira `movs r0, #1` | **2** | `0x1AA31E` |
 
-- **`tools/fab_diag_trava.py`** (323 linhas) — a ferramenta da receita:
+> **R1 (análise do diff, glm-5.3):** o degrau **B** foi **redesenhado**.
+> Antes ele desligava o `blx` do `f_open`, e o caminho de erro do
+> `carrega_capa` chamava `free(NULL)` **duas vezes** (o JDEC e o pool nunca
+> tinham sido alocados) — o `free` da fábrica desvia para a ROM (`0x9E3C`),
+> fora do dump, e se ele não tolerar `NULL` o fault **congela** o aparelho:
+> um falso positivo no degrau que existe justamente para medir o
+> `get_path`. Agora o B corta o **`bl` do `carrega_capa`**: o TITULO faz o
+> `get_path` de verdade, compara o caminho, guarda-o e mostra o quadrado
+> cinza, e o `cmp r0,#0; beq fim_titulo` que já existe logo depois termina
+> o TITULO — **sem `calloc`, sem `free`, sem arquivo**. A e C não mudaram.
+
+- **`tools/fab_diag_trava.py`** (329 linhas) — a ferramenta da receita:
   `--in/--out/--nivel a|b|c/--em/--dry-run`, premissas nomeadas conferidas
   **antes** de escrever, recusa sem criar saída, conferência do resultado
-  (decodifica o `b.w` novo de volta) e **diff final** contra a entrada
-  (tem de ser exatamente 4/2/2 bytes, nos lugares certos).
-- **`tools/diag_trava_asm.py`** (133 linhas) — o módulo com o layout do lote
-  e o **scanner Thumb-2** que acha o par `movw/movt` que carrega um
-  endereço (com o bit do Thumb) e o `blx` que o usa; usa o
+  (decodifica o `b.w` novo de volta, e os bytes novos como instrução) e
+  **diff final** contra a entrada (nenhum byte pode mudar **fora** da
+  região do patch: 4/4/2 bytes).
+- **`tools/diag_trava_asm.py`** (243 linhas) — o módulo com o layout do lote
+  e os **scanners Thumb-2**: o par `movw/movt` + `blx` (chamadas externas),
+  os `bl` **internos** e a assinatura do `carrega_capa`; e o patch de cada
+  nível (onde é, quantos bytes, o que fica no lugar). Usa o
   `tools/capa_album_asm.py` (o mesmo par encoder/leitor do `test_rc7.py`).
 - **`tools/build.py`** — três receitas novas: `reload_1.0_rc7_diag_a`,
   `_b` e `_c` (= `reload_1.0_rc7` + `fab_diag_trava.py`), em `RECEITAS`.
   `AREA_FIM` **não muda** (`0x1AB000`).
-- **`tests/test_diag_trava.py`** (novo, **não** protegido) — 24 testes.
+- **`tests/test_diag_trava.py`** (novo, **não** protegido) — 26 testes.
 - **Nenhum teste protegido, `tools/ci.sh`, `firmware/ORIGINAL/` ou
   ferramenta da receita RC7 foi tocado.** `sh tools/ci.sh`: **verde**
   (`CI OK`).
@@ -81,12 +94,14 @@ tocado:
 | | receita | sha256 (sem carimbo) | sha256 (carimbada) | sha256 do `.up` | CRC |
 |---|---|---|---|---|---|
 | **A** | `reload_1.0_rc7_diag_a` | `66c678b59e47808921e546b8666613cb3dc9b7f8046ad9c1af7bb77aed3ca7f4` | `cceb3edb39939a0ca3e5a42fd4fcc84788dd375a26cee0942b0978027d027209` | `91fcb645f0d7beab2e73c518b664b01ed6fb3466913705ebd72dd49d853d1295` | `0x58EE` |
-| **B** | `reload_1.0_rc7_diag_b` | `a2979126c8b18896d364f753570f06dcf676be32c5cb0ff0d2f65b5861efa402` | `20598de38d93f72292e717858255b35ac40fb7d033272e3e30d83f79d8ba814f` | `3a98b9917aff906c45b1ee83f898eec0ad13cbb124354fefebd358fea5b1d660` | `0x4478` |
+| **B** | `reload_1.0_rc7_diag_b` | `952c79fb3e6a4d2bdd2ae477060795ce8ea7e88c8523384bb62e468234844896` | `eab560c9008e164b9968d6e002fc5e4c4eeffd33b5467a220fedd796c0000b91` | `3986e7417ce2691c3bc96dbc3abef3865dd40a66a8c1eb455ebadd97452945df` | `0x3768` |
 | **C** | `reload_1.0_rc7_diag_c` | `c51ec6e0d73684a7f249eb968a331d8ddcb77d2afc3f162b710b532230261fbb` | `88d1ddb1204ca05d78e593569bba8a2e087fbcda4e3853e21e3478975441c25d` | `c1046cee3767a1e52972ec4c65f12e71a72c0d3ec9140311a3abe3b9e78a6a26` | `0x6D8D` |
 
 - RC7 (o degrau **D**, já existia): `3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab645678237d9e`.
 - **RC7 → diag:** exatamente os bytes da tabela acima e **nada mais**:
-  A = 4 bytes em `0x1AA014`; B = 2 bytes em `0x1AA294`; C = 2 bytes em `0x1AA31E`.
+  A = 4 bytes em `0x1AA014`; B = 4 bytes em `0x1AA188` (o `bl` cortado:
+  `00 20 00 BF`; 3 deles mudam de valor, o primeiro já era `00`);
+  C = 2 bytes em `0x1AA31E`.
 - **Carimbo:** `patch_versao --em 0x1A4F00` com o texto `RC7 diag A/B/C`
   (11 B de texto no slot + 4 B do literal em `0x10A59C`; a string de
   fábrica fica intacta). O nome que aparece em Config → Informações é
@@ -107,17 +122,26 @@ tocado:
   a chamada alvo aparecendo **exatamente uma vez** no código do lote, a
   região não estar já patcheada) continuam no código, nomeadas, para dizer
   *o que* está errado.
-- **A chamada é achada pelo código, não por endereço fixo.** O scanner
+- **O alvo é achado pelo código, não por endereço fixo.** O scanner
   procura, no código do lote (`0x1AA01C` até o fim, os `0xFF` marmam o
-  fim), o par `movw/movt` que carrega o alvo **com o bit do Thumb** e o
-  `blx` logo depois; a tool recusa se aparecer ≠ 1 vez. Os `blx` são de 2
-  bytes (`blx r12` = `0x47E0`), então "desligar a chamada" são 2 bytes
-  (`01 20` = `movs r0, #1`) — e é isso que a RC7 gasta.
+  fim): no nível C, o par `movw/movt` que carrega o alvo **com o bit do
+  Thumb** e o `blx` logo depois; no nível B, a **assinatura do
+  `carrega_capa`** — `push {r4-r11,lr}` + `sub sp,#12` (`2D E9 F0 4F
+  83 B0`), a única rotina do lote com nove registradores e `sub sp,#12`
+  (as outras seis usam `sub sp,#4`) — e o `bl` **interno** que a chama.
+  Em ambos a tool recusa se aparecer ≠ 1 vez, e o alvo é **decodificado do
+  binário** (o `bl` é relido e conferido antes de escrever).
 - **O `movs r0, #1` no lugar do `blx` é seguro quanto ao `lr`:** o
   `blx` é o que grava o `lr` de retorno, e a sua ausência foi conferida no
   código desmontado — o caminho de erro termina em `CHAMAR FREE` (que
   grava o `lr`) antes do `pop {…, pc}` de cada rotina. Nos três degraus o
   retorno é o certo (conferido no emulador: `m.erros == []`).
+- **O nível B corta o `bl` interno, não a chamada externa (R1).** O
+  `bl` (4 bytes) vira `movs r0, #0` + `nop` (`00 20 00 BF`): o `cmp
+  r0,#0; beq fim_titulo` que já existe logo depois termina o TITULO. O
+  `bl` é um branch relativo: o montador grava o **deslocamento**, e o
+  destino é lido de volta do binário (`desvio`) — é isso que a
+  conferência do patch confere.
 - **A ferramenta nova NÃO entra no `MAPA`** (desvio do despacho, com
   motivo): o `tests/test_rc7.py` **protegido** (C2) recusa qualquer lote
   do `MAPA` que cruze o lote da RC7
@@ -143,30 +167,36 @@ tocado:
   cada stub registra a chamada):
   - **A**: a sequência é **só** `label_set_text` — nenhum `get_path`,
     nenhum `f_open`. É o comportamento de fábrica.
-  - **B**: `label_set_text`, `get_path` (o de verdade), `img_set_src` (o
-    quadrado cinza), `calloc` (o FIL) e 3 `free` — **nenhum `f_open`**,
-    nenhum `f_read`, nenhum `f_close`.
+  - **B**: a sequência é **exata** — `label_set_text`, `get_path` (o de
+    verdade) e `img_set_src` (o quadrado cinza). **Zero `calloc`, zero
+    `free`, zero `f_open`**: o TITULO para depois do `get_path` e não
+    entra no `carrega_capa` (é o que a R1 pediu: o degrau que mede o
+    `get_path` não arrasta mais o heap nem o `free(NULL)`).
   - **C**: `label_set_text`, `get_path`, `calloc` ×3 (FIL, JDEC, pool),
     `f_open` **real**, as leituras da tag (`f_read`/`f_lseek`), `f_close`
     **real** — e **nenhum JPEG**: o `jd_prepare` não roda (o único `src`
     é o quadrado cinza).
   - **D** (a RC7, para contraste): o mesmo caminho com a capa no fim (o
     último `img_set_src` **não** é o quadrado cinza).
-- **O diff RC7 → diag** é conferido byte a byte pelo teste (4/2/2 bytes e
-  nada mais) e a **decodificação de volta**: o `b.w` novo da entrada
-  `TITULO` é lido e aponta para `0x00D5ED94`; os 2 bytes novos são
-  `01 20` e decodificam como `movs r0, #1`.
-- **`tests/test_diag_trava.py`** (24 testes, rodado a mao — o `ci.sh`
+- **O diff RC7 → diag** é conferido byte a byte pelo teste (nenhum byte
+  fora da região do patch: 4/4/2 bytes) e a **decodificação de volta**: o
+  `b.w` novo da entrada `TITULO` é lido e aponta para `0x00D5ED94`; os 4
+  bytes novos do B são `00 20 00 BF` e decodificam como `movs r0, #0` +
+  `nop`; os 2 do C são `01 20` e decodificam como `movs r0, #1`.
+- **`tests/test_diag_trava.py`** (26 testes, rodado a mao — o `ci.sh`
   protegido roda só a lista fixa dele):
   - a RC7 exata e as três receitas constroem;
   - **build reprodutível**: duas execuções de cada receita, o mesmo sha;
   - o diff exato e nada fora do lote;
   - as recusas: RC6, **RC6 carimbada**, RC7 truncada, RC7 com o lote
-    mexido, RC7 com o `movw` do `f_open` mexido, `--dry-run` (não grava),
-    `--out` igual/symlink/hardlink da entrada, `--em` errado e o
-    reprocessamento de uma saída — **nenhuma** delas cria arquivo;
-  - as premissas, uma por uma (inclusive "já patcheada" e "a chamada não
-    existe"), no branco sobre preto.
+    mexido, RC7 com o `movw` do `jd_prepare` mexido, RC7 com o prólogo do
+    `carrega_capa` mexido, RC7 com o `bl` do `carrega_capa` mexido,
+    `--dry-run` (não grava), `--out` igual/symlink/hardlink da entrada,
+    `--em` errado e o reprocessamento de uma saída — **nenhuma** delas
+    cria arquivo;
+  - as premissas, uma por uma (inclusive "já patcheada" — a entrada
+    `TITULO`, o `bl` do `carrega_capa` e o `blx` do `jd_prepare` — e
+    "o alvo não existe"), no branco sobre preto.
 - **`sh tools/ci.sh`: verde** (`CI OK`) — round-trip + RC2..RC7 + a
   regressão da RC7 (`test_rc7_trava.py`) + a catraca.
 
@@ -176,14 +206,16 @@ tocado:
   a conferência aqui é de emulação (e os stubs do arnês trocam justamente o
   heap, o FatFs e o LVGL — o **tempo real** de cada degrau não foi
   medido).
-- **O `free(NULL)` do degrau B.** No B o `f_open` "falha" e o caminho de
-  erro libera o JDEC e o pool, que **nunca foram alocados** → dois
-  `free(NULL)`. O `free` da fábrica (`0xCF7884`) desvia para a **ROM
-  baixa** (`0x9E3C`), que **não está no dump**: não dá para saber se ela
-  tolera ponteiro nulo. Se não tolerar, a imagem **B reinicia o aparelho**
-  no primeiro título (e não trava) — o que é distinguível na hora (veja o
-  roteiro). O mesmo `free(NULL)` já existia na RC7 (caminho "sem memória"),
-  então não é novidade do patch.
+- **O `free(NULL)` saiu do degrau B (R1)** — o B agora não entra no
+  `carrega_capa`, e portanto não há `calloc`, nem `free`, nem arquivo
+  nele. Mas o **`free(NULL)` da própria RC7 continua nos degraus C e D**:
+  quando o MP3 **não tem capa** (ou o APIC é inválido), o `procura_apic`
+  falha **antes** do `calloc` do JDEC e do pool, e o caminho de erro
+  libera os dois (nulos). O `free` da fábrica (`0xCF7884`) desvia para a
+  **ROM baixa** (`0x9E3C`), que **não está no dump**: não dá para saber se
+  ela tolera ponteiro nulo, e num firmware sem handler dedicado um fault
+  é **loop mortal (congela)**, não reinício. Isso virou **H5** e está no
+  roteiro (tocar um MP3 **sem capa** no C e no D).
 - **A bisseção mede a LENTIDÃO, não um sim/não.** H1 (PROVÁVEL) diz que o
   ring enche porque o TITULO ficou lento (dezenas de ms por título). A, B e
   C são degraus de lentidão crescente; **se B e C não travarem, isso não
@@ -198,13 +230,14 @@ tocado:
 ### Danos notados
 
 - **Nenhum dano novo** no firmware: os três degraus só desligam trabalho
-  (o `f_open` no B, o `jd_prepare` no C) ou devolvem o TITULO ao da
+  (o `carrega_capa` no B, o `jd_prepare` no C) ou devolvem o TITULO ao da
   fábrica (no A). Nada é escrito fora do lote, nada muda o comportamento
   de outra tela, e o **D14** (pausa na tela ao decodificar) e o **D13**
   (gravação interrompida) seguem como na RC7.
-- **O único risco novo é o `free(NULL)` do degrau B** (acima): no pior
-  caso, um reinício do aparelho em vez de um travamento — e é justamente
-  no degrau B, o que pode ser lido errado como "B travou".
+- **O risco do `free(NULL)` saiu do degrau B** (R1) — ele é da **RC7** e
+  fica nos degraus **C e D**, e só no caminho "MP3 **sem capa**". Não é
+  novidade do patch (o `capa_falha` da RC7 já liberava o JDEC e o pool,
+  que nesse caminho nunca foram alocados), e é o que o roteiro mede.
 
 ### Roteiro para o decisor (A → B → C → D)
 
@@ -212,9 +245,17 @@ Grava pelo cartão (o `.up` de cada um, em `firmware/RELEASE/OpenPod Reload
 1.0 RC7 Diag A|B|C/`). Antes de cada degrau, anota o que o aparelho mostra
 em Config → Informações (é `RC7 diag A`, `RC7 diag B`, `RC7 diag C`; no D
 é a RC7). Depois de gravar: **Config → Atualizar por SD**, reiniciar,
-abrir a **Tocando Agora** e **tocar** uma faixa (o `01_capa_v23.mp3` de
-`tests/assets/rc7/` é o melhor caso: tem capa). Repete com **trocar de
-faixa** (`>>|`).
+abrir a **Tocando Agora** e **tocar** uma faixa. **Toca as DUAS:**
+
+1. `01_capa_v23.mp3` (o kit 007) — **com capa**: é o caminho longo (JPEG,
+   reescala), o que a H1 acusa;
+2. `06_sem_capa.mp3` (o kit 007) — **sem capa**: é o caminho que, na RC7,
+   termina no `capa_falha` **antes** do `calloc` do JDEC e do pool → dois
+   `free(NULL)` (o `free` da fábrica está na ROM fora do dump). Se o
+   aparelho **congelar** só no MP3 sem capa, a causa é esse `free(NULL)`
+   (achado novo, **H5**) — e não o tempo do JPEG.
+
+Repete com **trocar de faixa** (`>>|`).
 
 Anota, para cada degrau: **(1)** o player abre? **(2)** a música toca?
 **(3)** a capa aparece (ou fica o quadrado cinza)? **(4)** o aparelho
@@ -224,15 +265,59 @@ Anota, para cada degrau: **(1)** o player abre? **(2)** a música toca?
 | degrau | o que ele mede | se TRAVAR | se REINICIAR | se ficar NORMAL |
 |---|---|---|---|---|
 | **A** | o TITULO é o de fábrica (nem `get_path`, nem FatFs) | H1 e o `get_path`/banco **não** são a causa: a lentidão do banco não é o gatilho | idem A | o degrau é rápido demais: **vá para B** |
-| **B** | `get_path` de verdade (mutex do banco + FatFs do db), **sem** abrir o MP3 | o **banco/mutex** (`0x81DC00+0x5C`) ou o FatFs **é** a causa | provavelmente o `free(NULL)` do B (veja "Danos notados") | vá para **C** |
+| **B** | `get_path` de verdade (mutex do banco + FatFs do db), **sem** abrir o MP3 (nem heap, nem `free`) | o **banco/mutex** (`0x81DC00+0x5C`) ou o FatFs **é** a causa | idem B (o B não tem `free(NULL)`) | vá para **C** |
 | **C** | `f_open`/`f_close` reais, **sem** JPEG | o **FatFs** (abrir/fechar o arquivo do usuário) é a causa | idem C | vá para **D** |
-| **D** | a RC7 inteira (o degrau que trava hoje) | a causa está **depois** do `jd_prepare` (o JPEG, a reescala, o `jd_decomp`) | idem D | a trava **não** é da capa: oculpado é outro (H1-ring, que é tempo, não a capa) |
+| **D** | a RC7 inteira (o degrau que trava hoje) | a causa está **depois** do `jd_prepare` (o JPEG, a reescala, o `jd_decomp`) | idem D | a trava **não** é da capa: o culpado é outro (H1-ring, que é tempo, não a capa) |
 
 - Se **A** já travar, o problema **não** é a capa: é o ring de mensagens
   (H1) exposto por **qualquer** mensagem de título, e a correção muda
   (tirar o `get_path`/FatFs da ViewTask é a via da ficha 008).
 - Se só o **D** travar, a causa está no JPEG (e aí o conserto é outro:
   cachear a capa, ou procurar o APIC no presenter).
-- Congelamento com a tela viva que **não volta** = o deadlock do ring
-  (H1). **Reinício** no B = o `free(NULL)`. **Normal** até o D = outra
-  coisa.
+- **Congelamento com a tela viva que não volta** = o deadlock do ring
+  (H1) — ou o `free(NULL)` (H5), se só acontece com o MP3 **sem capa**
+  (e então é no C e no D, nunca no A nem no B).
+- **Reinício** do aparelho = falha com tratador, não o deadlock do ring.
+  **Normal** até o D = outra coisa.
+
+## Rodadas
+
+- **Rodada 1 (2026-11-01, MiniMax M3)** — a entrega inicial: as três
+  imagens de bisseção (A, B e C, com 4/2/2 bytes), a ferramenta
+  `tools/fab_diag_trava.py` (+ o módulo `tools/diag_trava_asm.py`), as três
+  receitas, os três kits e o teste `tests/test_diag_trava.py`.
+  `sh tools/ci.sh` verde.
+- **Rodada 2 (2026-11-01, MiniMax M3) — R1 da análise do diff**
+  (`docs/tarefas/008-analise-diff.md`, glm-5.3: **1 MÉDIA** + 1 BAIXA):
+  - **[MÉDIA] o degrau B media mais do que o `get_path`.** Ele desligava o
+    `blx` do `f_open`, e o caminho de erro do `carrega_capa` chamava
+    `free(NULL)` **duas vezes** (o JDEC e o pool nunca tinham sido
+    alocados). O `free` real da fábrica (`0xCF7884`) desvia para a ROM
+    (`0x9E3C`), **fora do dump**: se ela não tolerar `NULL`, o fault é
+    **loop mortal (congela)** — num firmware sem handler dedicado, fault
+    não é reinício — e o roteiro diria "o banco/mutex é a causa": **falso
+    positivo** no degrau que existe justamente para medir o `get_path`.
+    **O que mudou:** o B agora corta o **`bl` interno** que chama o
+    `carrega_capa` (4 bytes em `0x1AA188`): `movs r0, #0` + `nop`
+    (`00 20 00 BF`). O `cmp r0,#0; beq fim_titulo` que já existe logo
+    depois termina o TITULO — depois do `get_path`, da comparação do
+    caminho, do caminho guardado e do quadrado cinza. **Sem `calloc`, sem
+    `free`, sem arquivo**: "A + get_path, sem arquivo" literal.
+    O scanner acha o alvo pela **assinatura** do `carrega_capa`
+    (`push {r4-r11,lr}` + `sub sp,#12` — a única rotina do lote assim; as
+    outras seis usam `sub sp,#4`) e pelo **`bl` interno** que a chama
+    (decodificado do binário), e exige exatamente 1 de cada; o `bl` já
+    patcheado é recusado.
+    **Conferência:** no arnês, a sequência do B é **exata** —
+    `label_set_text`, `get_path`, `img_set_src` (o quadrado cinza) — e
+    **zero** `calloc`, `free`, `f_open`, `f_read` e `f_close`.
+  - **[BAIXA]** o typo "oculpado" do roteiro, corrigido.
+  - **Nada mais foi mexido:** **A e C não mudaram** (os mesmos shas e os
+    mesmos `.up`), e o `tests/PROTEGIDOS.sha256`, o `tools/ci.sh`, o
+    `firmware/ORIGINAL/` e as ferramentas da receita RC7 estão como
+    estavam. O kit do **B** foi regenerado (imagem, carimbo "RC7 diag B"
+    em `0x1A4F00` e `.up` pelo `gera_versao`).
+  - **Rodada 2 — resultado:** `sh tools/ci.sh` **verde** (`CI OK`) e
+    `tests/test_diag_trava.py` **26 testes verdes** (o do B exige a
+    sequência exata e zero `calloc`/`free`/`f_open`; a recusa com o `bl`
+    do `carrega_capa` já patcheado está no teste).

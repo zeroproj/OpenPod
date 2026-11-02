@@ -13,32 +13,34 @@ PROPOSITO
     para a view.
 
     Para fechar a duvida no aparelho, tres imagens, cada uma um degrau a
-    mais. As tres sao PATCHES CIRURGICOS no lote JA MONTADO da RC7 (4/2/2
+    mais. As tres sao PATCHES CIRURGICOS no lote JA MONTADO da RC7 (4/4/2
     bytes): nada e remontado, nada fora dos bytes da RC7 e mexido.
 
-      A  "TITULO so faz o set_text"
-         A entrada TITULO da tabela do lote (0x001AA014) deixa de apontar
-         para o TITULO_impl e passa a apontar para o lv_label_set_text da
+      A  "TITULO so faz o set_text" — 4 bytes em 0x001AA014.
+         A entrada TITULO da tabela do lote deixa de apontar para o
+         TITULO_impl e passa a apontar para o lv_label_set_text da
          fabrica (0x00D5ED94). O `b.w` do gancho (0x13225E) cai na entrada
          e repassa direto: o comportamento e o de fabrica (sem get_path,
          sem FatFs, sem JPEG). CRIA e APAGA ficam intactos: o quadrado
-         cinza continua e o contexto continua criado e liberado. 4 bytes.
+         cinza continua e o contexto continua criado e liberado.
 
-      B  "A + get_path, sem arquivo"
+      B  "A + get_path, sem arquivo" — 4 bytes (o `bl` do carrega_capa).
          A entrada TITULO fica ORIGINAL (o TITULO_impl inteiro roda: o
          get_path de verdade, com o mutex do banco e o FatFs do db_audio
-         .db) e a UNICA chamada externa ao f_open (0x00D777CD) dentro do
-         codigo do lote e desligada: o `blx` vira `movs r0, #1`. O f_open
-         "falha" (r0 = 1) e o codigo entra no caminho de erro ja testado
-         (cinza, sem f_close, sem jd_*). Sem decodificacao. 2 bytes.
+         .db) e o que e cortado e o `bl` interno que chama o
+         `carrega_capa`: ele vira `movs r0, #0` + `nop`. O `cmp r0,#0;
+         beq fim_titulo` que ja existe logo depois termina o TITULO — de
+         pois do get_path, da comparacao do caminho, do caminho guardado e
+         do quadrado cinza. **Sem calloc, sem free, sem arquivo**: e
+         literalmente "A + get_path, sem arquivo".
 
-      C  "B + f_open/f_close"
+      C  "B + f_open/f_close" — 2 bytes (o `blx` do jd_prepare).
          A entrada TITULO fica ORIGINAL e a vitima e a UNICA chamada
          externa ao jd_prepare (0x00D10B21): o `blx` vira `movs r0, #1`.
          O f_open do MP3 roda DE VERDADE (o arquivo abre), o jd_prepare
          "falha", e o caminho de erro fecha o arquivo (f_close real) e
          mostra o cinza. Sem leitura de JPEG, sem jd_decomp, sem
-         reescala. 2 bytes.
+         reescala.
 
     (D e a RC7 inteira, que ja existe.)
 
@@ -54,25 +56,29 @@ PREMISSAS, conferidas ANTES de escrever qualquer byte
         decodificam como `b.w` para o CRIA/TITULO/APAGA (0xDAA01C/20/24);
       - nivel a: a entrada TITULO (0x001AA014) ainda e o `b.w` para o
         TITULO_impl (0x00DAA020) — nao foi patcheada antes;
-      - nivel b/c: o par `movw/movt` que carrega o alvo (0x00D777CD do
-        f_open, 0x00D10B21 do jd_prepare, com o bit do Thumb) aparece
-        EXATAMENTE UMA vez no codigo do lote, e o `blx` que o segue ainda
-        esta la (nao foi patcheado antes).
+      - nivel b: o `carrega_capa` e a UNICA rotina do lote com o prologo
+        `push {r4-r11,lr}` + `sub sp,#12` (as outras seis usam `sub
+        sp,#4`), e o `bl` interno que a chama aparece EXATAMENTE UMA vez
+        (o alvo e decodificado do binario) — e esse `bl` ainda esta la
+        (nao foi patcheado antes);
+      - nivel c: o par `movw/movt` que carrega o jd_prepare
+        (0x00D10B21, com o bit do Thumb) aparece EXATAMENTE UMA vez no
+        codigo do lote, e o `blx` que o segue ainda esta la.
 
 CONFERENCIA DE SAIDA
 
     Depois de escrever, a ferramenta RELE o que escreveu e confere: o
-    `b.w` novo da entrada TITULO decodificado de volta (alvo 0x00D5ED94) ou
-    os 2 bytes novos (`movs r0, #1` = 01 20) lidos de volta como
-    instrucao. Depois faz o diff final contra a entrada: A tem de ser
-    4 bytes em 0x001AA014, B e C tem de ser 2 bytes (o `blx` escolhido).
-    Qualquer byte a mais ou a menos e recusa, sem gravar a saida.
+    `b.w` novo da entrada TITULO decodificado de volta (alvo 0x00D5ED94),
+    os 4 bytes novos do nivel B lidos de volta (`movs r0, #0` + `nop`) ou
+    os 2 bytes novos do nivel C (`movs r0, #1` = 01 20). Depois faz o diff
+    final contra a entrada: nenhum byte pode mudar FORA da regiao do patch
+    (4/4/2 bytes). Qualquer byte a mais e recusa, sem gravar a saida.
 
 SEGURANCA DA ESCRITA
 
     `--out` e recusado quando aponta para a propria entrada — mesmo
     caminho, symlink ou hardlink (`os.path.samefile`). E so se escreve
-    DENTRO do lote 0x001A8000..0x001AB000 (4/2/2 bytes). Nada abaixo de
+    DENTRO do lote 0x001A8000..0x001AB000 (4/4/2 bytes). Nada abaixo de
     0x00E000, e o setor 0x00D000 e a PSMP (0x001FC000+) ficam intocados.
 
 USO
@@ -95,13 +101,12 @@ LIMITACOES
 
     - so serve na RC7 exata: qualquer outra imagem e recusada;
     - o codigo do lote NAO e remontado: as tres imagens sao a RC7 com 4,
-      2 ou 2 bytes trocados. O que o lote faz alem do ponto cortado
+      4 ou 2 bytes trocados. O que o lote faz alem do ponto cortado
       continua igual (e o que a bissecao mede);
-    - no nivel B o `f_open` e substituido por `movs r0, #1`: o caminho de
-      erro chama `free` duas vezes com ponteiro NULO (o JDEC e o pool nunca
-      foram alocados). Se a libc da ROM nao tolerar free(NULL), a imagem B
-      REINICIA o aparelho no primeiro titulo — e nao trava (diferenca
-      observavel na hora);
+    - o nivel B NAO entra no `carrega_capa` (e nao tem `calloc`, `free`
+      nem arquivo): e por isso que ele mede so o `get_path` — o
+      `free(NULL)` do caminho de erro da RC7 (que fica no nivel C e no D)
+      nao aparece nele;
     - depois de aplicada, rodar de novo sobre a saida e recusado (o sha da
       entrada ja nao e o da RC7 e a regiao ja esta patcheada).
 """
@@ -145,8 +150,35 @@ def confere_premissas(d, nivel):
             erros.append("a entrada TITULO ja aponta para o lv_label_set_text "
                          "da fabrica: a imagem ja foi patcheada")
         return erros
-    # nivel b/c: a chamada alvo tem de existir exatamente uma vez
-    valor = G.NIVEL[nivel][1]
+    if nivel == "b":
+        # o carrega_capa: o prologo e unico, e o bl que o chama tambem
+        prologos = G.acha_carrega_capa(d)
+        if len(prologos) != 1:
+            erros.append(f"o prologo do carrega_capa aparece {len(prologos)}x "
+                         f"no codigo do lote, esperado 1")
+            return erros
+        alvo = prologos[0] + G.XIP
+        bls = G.acha_bl_para(d, alvo)
+        if len(bls) != 1:
+            if G.acha_bytes(d, G.FALHA_BL):
+                erros.append("o bl do carrega_capa ja esta patcheado "
+                             "(movs r0, #0 + nop)")
+            else:
+                erros.append(f"o bl interno que chama o carrega_capa aparece "
+                             f"{len(bls)}x no codigo do lote, esperado 1")
+            return erros
+        off = bls[0]
+        if bytes(d[off:off + 4]) == G.FALHA_BL:
+            erros.append(f"o bl em 0x{off:06X} ja esta patcheado "
+                         f"(movs r0, #0 + nop)")
+            return erros
+        lido = A.desvio(d, off)
+        if lido is None or lido[0] != "bl" or lido[1] != alvo:
+            erros.append(f"em 0x{off:06X} nao ha um bl para o carrega_capa "
+                         f"(0x{alvo:08X}) — o codigo do lote mudou")
+        return erros
+    # nivel c: a chamada ao jd_prepare tem de existir exatamente uma vez
+    valor = G.JD_PREP
     pares = G.acha_pares(d, valor)
     if len(pares) != 1:
         erros.append(f"o par movw/movt que carrega 0x{valor:08X} aparece "
@@ -168,42 +200,6 @@ def confere_premissas(d, nivel):
 # ---------------------------------------------------------------------------
 # a escrita
 # ---------------------------------------------------------------------------
-
-def alvo_do_patch(d, nivel):
-    """(deslocamento, tamanho) do que o patch do nivel vai mexer."""
-    if nivel == "a":
-        return G.TABELA + 4, 4
-    off = G.achado_unico(d, G.NIVEL[nivel][1])
-    if off is None:
-        return None, 0
-    return off, 2
-
-
-def escreve(d, nivel, off, tam):
-    """Escreve o patch do nivel (4 bytes no nivel a, 2 nos niveis b e c)."""
-    if nivel == "a":
-        d[off:off + 4] = A.enc(A.XIP + off, G.SET_TEXT, False)
-    else:
-        d[off:off + 2] = G.FALHA
-    return tam
-
-
-def confere_resultado(d, nivel, off, tam):
-    """Rele o que foi escrito e confere, sem confiar na montagem."""
-    erros = []
-    if nivel == "a":
-        lido = A.desvio(d, off)
-        if lido is None or lido[0] != "b.w" or lido[1] != G.SET_TEXT:
-            erros.append(f"a entrada TITULO nao ficou um b.w para "
-                         f"0x{G.SET_TEXT:08X}")
-    else:
-        if bytes(d[off:off + 2]) != G.FALHA:
-            erros.append("os 2 bytes novos nao sao 01 20 (movs r0, #1)")
-        h = struct.unpack_from("<H", d, off)[0]
-        if (h & 0xF800) != 0x2000 or ((h >> 8) & 0x7) != 0:
-            erros.append("os 2 bytes novos nao decodificam como movs r0, #1")
-    return erros
-
 
 def mesma_entrada(src, dst):
     """--out aponta para a propria entrada? (mesmo caminho, symlink, hardlink)"""
@@ -251,7 +247,7 @@ def main():
 
     orig = open(a.src, "rb").read()
     d = bytearray(orig)
-    medido = G.NIVEL[a.nivel][0]
+    medido = G.NIVEL[a.nivel]
     print("=" * 72)
     print("OpenPod — RC7: a imagem de bisseção da ficha 008")
     print("=" * 72)
@@ -271,23 +267,28 @@ def main():
     print("    - a tabela de entradas do lote esta no lugar (CRIA/TITULO/APAGA)")
     if a.nivel == "a":
         print("    - a entrada TITULO ainda e o TITULO_impl (nao patcheada)")
+    elif a.nivel == "b":
+        print("    - o carrega_capa (prologo unico) e o bl que o chama: 1x")
     else:
-        print(f"    - a chamada a 0x{G.NIVEL[a.nivel][1]:08X} aparece 1x no lote")
+        print(f"    - a chamada a 0x{G.JD_PREP:08X} aparece 1x no lote")
 
-    off, tam = alvo_do_patch(d, a.nivel)
+    off, tam, novos = G.bytes_do_patch(d, a.nivel)
     if off is None:
-        print("\n  RECUSADO: a chamada alvo nao foi achada no codigo do lote.")
+        print("\n  RECUSADO: o alvo do patch nao foi achado no codigo do lote.")
         print(f"\n  nada foi escrito em {a.dst}")
         return 1
     print(f"\n  PATCH\n    0x{off:06X}..0x{off + tam:06X}  {tam} byte(s)")
     if a.nivel == "a":
         print(f"    a entrada TITULO vira b.w 0x{G.SET_TEXT:08X} "
               f"(o lv_label_set_text da fabrica)")
+    elif a.nivel == "b":
+        print("    o bl do carrega_capa vira movs r0, #0 + nop "
+              "(o TITULO para depois do get_path)")
     else:
         print("    o blx da chamada vira movs r0, #1 (a chamada falha)")
 
-    escreve(d, a.nivel, off, tam)
-    erros = confere_resultado(d, a.nivel, off, tam)
+    d[off:off + tam] = novos
+    erros = G.confere_patch(d, a.nivel, off, tam, novos)
     if erros:
         print("\n  RECUSADO — a conferencia do resultado falhou:")
         for m in erros:
@@ -296,10 +297,10 @@ def main():
         return 1
 
     dif = [i for i in range(len(orig)) if orig[i] != d[i]]
-    esperado = list(range(off, off + tam))
-    if dif != esperado:
-        print(f"\n  RECUSADO: o diff final nao e o esperado — {len(dif)} byte(s) "
-              f"diferentes, esperado {tam} em 0x{off:06X}..0x{off + tam:06X}")
+    fora = [i for i in dif if not (off <= i < off + tam)]
+    if fora:
+        print(f"\n  RECUSADO: o diff final tem {len(fora)} byte(s) FORA do "
+              f"patch (0x{min(fora):06X}..0x{max(fora):06X})")
         print(f"\n  nada foi escrito em {a.dst}")
         return 1
     if any(not (G.LOTE <= i < G.LOTE + G.LOTE_TAM) for i in dif):
@@ -310,9 +311,10 @@ def main():
         print("  RECUSADO: tocou o bootloader, o setor 0xD000 ou a PSMP.",
               file=sys.stderr)
         return 1
-    print(f"\n  bytes alterados: {len(dif)}   em 0x{min(dif):06X}.."
-          f"0x{max(dif):06X}")
-    print("  nada abaixo de 0x00E000; setor 0xD000 e PSMP intocados   OK")
+    print(f"\n  bytes alterados: {len(dif)} (de {tam} da regiao "
+          f"0x{off:06X}..0x{off + tam:06X})")
+    print("  nada fora do patch, nada abaixo de 0x00E000; setor 0xD000 e "
+          "PSMP intocados   OK")
 
     if a.dry_run:
         print("\n  --dry-run: nada foi gravado.")

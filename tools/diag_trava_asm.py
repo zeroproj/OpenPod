@@ -19,8 +19,13 @@ PROPOSITO
         para fora do codigo da RC7 sao todas assim (o montador nao tem
         linkador, entao o endereco vai em `movw/movt` e a chamada e um
         `blx` para o registrador);
-      - os alvos de cada nivel (o f_open e o jd_prepare) e o codigo que
-        substitui a chamada: `movs r0, #1` (a chamada "falhada").
+      - o SCANNER dos `bl` INTERNOS do lote (o montador resolve o
+        deslocamento) e a assinatura do `carrega_capa`, a rotina que o
+        nivel B corta;
+      - o PATCH de cada nivel: onde ele e, quantos bytes sao e o que fica
+        no lugar (`movs r0, #1` — a chamada externa "falhada" — ou
+        `movs r0, #0` + `nop` — o `bl` interno, cortado) e a conferencia
+        desses bytes lidos de volta.
 
     O leitor e o encoder do `b.w` vem do `capa_album_asm.py` (o mesmo par
     que o `tests/test_rc7.py` usa).
@@ -57,15 +62,25 @@ SHA_RC7 = ("3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab6456"
 
 # os alvos dos niveis
 SET_TEXT = 0x00D5ED94        # o lv_label_set_text da fabrica (nivel A)
-F_OPEN = 0x00D777CD          # f_open | Thumb (nivel B)
 JD_PREP = 0x00D10B21         # jd_prepare | Thumb (nivel C)
-FALHA = b"\x01\x20"          # movs r0, #1 (a chamada "falhada")
+FALHA = b"\x01\x20"          # movs r0, #1 (a chamada externa "falhada")
+FALHA_BL = b"\x00\x20\x00\xBF"   # movs r0, #0 + nop (o bl interno, cortado)
 
-# nivel: (o que o degrau mede, o alvo da chamada a desligar)
+# o `carrega_capa` (nivel B): a UNICA rotina do lote que guarda nove
+# registradores e tem `sub sp,#12` no prologo — as outras seis (CRIA,
+# TITULO, APAGA, comparou_caminho, copia_caminho e o leitor) usam
+# `sub sp,#4`. O TITULO o chama com um `bl` interno de 4 bytes; e esse
+# `bl` que o nivel B corta: o `cmp r0,#0; beq fim_titulo` que ja existe
+# logo depois dele termina o TITULO (depois do get_path, da comparacao,
+# do caminho guardado e do quadrado cinza) — sem calloc, sem free e sem
+# arquivo.
+PROLOGO_CARREGA_CAPA = (0xE92D, 0x4FF0, 0xB083)   # push {r4-r11,lr}; sub sp,#12
+
+# nivel: o que o degrau mede
 NIVEL = {
-    "a": ("TITULO so faz o set_text", None),
-    "b": ("A + get_path, sem arquivo", F_OPEN),
-    "c": ("B + f_open/f_close", JD_PREP),
+    "a": "TITULO so faz o set_text",
+    "b": "A + get_path, sem arquivo",
+    "c": "B + f_open/f_close",
 }
 
 
@@ -131,3 +146,98 @@ def achado_unico(d, valor):
     if not e_blx(h) or ((h >> 3) & 0xF) != ((h2 >> 8) & 0xF):
         return None
     return off
+
+
+# ---------------------------------------------------------------------------
+# os `bl` internos do lote (o nivel B)
+# ---------------------------------------------------------------------------
+
+def acha_carrega_capa(d):
+    """Os deslocamentos do prologo do `carrega_capa` (tem de ser 1).
+
+    A assinatura e `push {r4-r11,lr}` + `sub sp,#12`: as outras seis
+    rotinas do lote que guardam nove registradores usam `sub sp,#4`."""
+    achados = []
+    for i in range(CODIGO, fim_do_codigo(d) - 6, 2):
+        if struct.unpack_from("<HHH", d, i) == PROLOGO_CARREGA_CAPA:
+            achados.append(i)
+    return achados
+
+
+def acha_bl_para(d, alvo):
+    """Os deslocamentos dos `bl` INTERNOS cujo alvo (XIP) e `alvo`.
+
+    O `bl` interno e um Thumb-2 de 4 bytes (T1); o alvo e decodificado do
+    proprio binario (o mesmo leitor do `b.w`, o `desvio` do
+    `capa_album_asm.py`)."""
+    achados = []
+    for i in range(CODIGO, fim_do_codigo(d) - 4, 2):
+        lido = A.desvio(d, i)
+        if lido is not None and lido[0] == "bl" and lido[1] == alvo:
+            achados.append(i)
+    return achados
+
+
+def acha_bytes(d, alvo):
+    """Os deslocamentos onde `alvo` (bytes) aparece no codigo do lote.
+
+    Serve para dizer "ja esta patcheado" quando o `bl` do `carrega_capa`
+    ja virou `movs r0, #0` + `nop` (e o branch sumiu do codigo)."""
+    achados = []
+    for i in range(CODIGO, fim_do_codigo(d) - len(alvo), 2):
+        if bytes(d[i:i + len(alvo)]) == alvo:
+            achados.append(i)
+    return achados
+
+
+# ---------------------------------------------------------------------------
+# o patch de cada nivel: onde ele e, quantos bytes, e o que fica no lugar
+# ---------------------------------------------------------------------------
+
+def bytes_do_patch(d, nivel):
+    """(deslocamento, tamanho, bytes novos) do patch do nivel.
+
+    Devolve (None, 0, b"") quando o alvo nao e encontrado — quem decide
+    (a ferramenta) e o que recusar."""
+    if nivel == "a":
+        return TABELA + 4, 4, A.enc(XIP + TABELA + 4, SET_TEXT, False)
+    if nivel == "b":
+        prologo = acha_carrega_capa(d)
+        if len(prologo) != 1:
+            return None, 0, b""
+        bls = acha_bl_para(d, prologo[0] + XIP)
+        if len(bls) != 1:
+            return None, 0, b""
+        return bls[0], 4, FALHA_BL
+    if achado_unico(d, JD_PREP) is None:
+        return None, 0, b""
+    return achado_unico(d, JD_PREP), 2, FALHA
+
+
+def confere_patch(d, nivel, off, tam, novos):
+    """Rele o patch e confere: os bytes novos e a decodificacao deles.
+
+    O `b.w` do nivel A e lido de volta (o alvo tem de ser o
+    lv_label_set_text da fabrica); os bytes do nivel B tem de decodificar
+    como `movs r0, #0` + `nop`; os do nivel C como `movs r0, #1`."""
+    erros = []
+    if bytes(d[off:off + tam]) != novos:
+        erros.append(f"os {tam} bytes do patch nao ficaram como o esperado")
+        return erros
+    if nivel == "a":
+        lido = A.desvio(d, off)
+        if lido is None or lido[0] != "b.w" or lido[1] != SET_TEXT:
+            erros.append(f"a entrada TITULO nao ficou um b.w para "
+                         f"0x{SET_TEXT:08X}")
+    elif nivel == "b":
+        h1 = struct.unpack_from("<H", d, off)[0]
+        h2 = struct.unpack_from("<H", d, off + 2)[0]
+        if (h1 & 0xF800) != 0x2000 or ((h1 >> 8) & 0x7) != 0 or (h1 & 0xFF):
+            erros.append("os 2 primeiros bytes nao decodificam como movs r0, #0")
+        if h2 != 0xBF00:
+            erros.append("os 2 ultimos bytes nao decodificam como nop")
+    else:
+        h = struct.unpack_from("<H", d, off)[0]
+        if (h & 0xF800) != 0x2000 or ((h >> 8) & 0x7) != 0:
+            erros.append("os 2 bytes novos nao decodificam como movs r0, #1")
+    return erros
