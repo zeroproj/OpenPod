@@ -172,6 +172,12 @@ MAPA = {
     # 0x001A8000 fica logo depois do `fab_home_moldura` (que termina em
     # 0x001A6480) e nao cruza nenhum lote acima.
     "fab_capa_album.py":      (0x001A8000, 0x3000),
+    # Ficha 008 (RC7 trava ao tocar). A ferramenta das BISSECOES
+    # (`fab_diag_trava.py`) NAO entra no MAPA de proposito: ela nao aloca
+    # nada, so patcha 4/2/2 bytes DENTRO do lote que a RC7 ja montou, e o
+    # `tests/test_rc7.py` (protegido, C2) recusa qualquer lote do MAPA que
+    # cruze o lote da RC7. O endereco do lote viaja na receita (--em), e a
+    # ferramenta recusa se nao for 0x001A8000.
 }
 AREA_INI, AREA_FIM = 0x001A3040, 0x001AB000
 
@@ -528,6 +534,43 @@ RELOAD_1_0_RC7 = RELOAD_1_0_RC6 + [
      "a capa do album (ID3v2 APIC) na Tocando Agora"),
 ]
 
+# ---------------------------------------------------------------------------
+# RELOAD 1.0 RC7 DIAG A/B/C — as imagens de BISSECAO da ficha 008 (a RC7
+# trava ao tocar).
+#
+# Os passos da RC7 vem primeiro, na ordem dela: a RC7 e a base medida (sha
+# 3af97713...), entao cada diag e a RC7 mais UM patch cirurgico no lote
+# JA MONTADO — nada e remontado:
+#
+#     A  4 bytes  a entrada TITULO (0x1AA014) vira b.w para o
+#                lv_label_set_text da fabrica (0x00D5ED94)
+#     B  2 bytes  o blx da chamada do f_open (0x00D777CD) vira movs r0, #1
+#     C  2 bytes  o blx da chamada do jd_prepare (0x00D10B21) vira
+#                movs r0, #1
+#
+# O `--em 0x1a8000` vai na receita (e nao pelo MAPA) porque a ferramenta
+# nao aloca nada: ela patcha dentro do lote que a RC7 ja montou, e o
+# `tests/test_rc7.py` (protegido) recusa um lote do MAPA que cruze o lote
+# da RC7. A ferramenta confere o `--em` de qualquer jeito.
+#
+# RECETAS DE DIAGNOSTICO: nao entram na catraca (o sha delas e o do
+# aparelho, nao o de uma RC aprovada) e nao mexem em teste nenhum.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC7_DIAG_A = RELOAD_1_0_RC7 + [
+    ("fab_diag_trava.py", ["--nivel", "a", "--em", "0x1a8000"],
+     "diag A: TITULO so set_text"),
+]
+
+RELOAD_1_0_RC7_DIAG_B = RELOAD_1_0_RC7 + [
+    ("fab_diag_trava.py", ["--nivel", "b", "--em", "0x1a8000"],
+     "diag B: A + get_path, sem arquivo"),
+]
+
+RELOAD_1_0_RC7_DIAG_C = RELOAD_1_0_RC7 + [
+    ("fab_diag_trava.py", ["--nivel", "c", "--em", "0x1a8000"],
+     "diag C: B + f_open/f_close"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -539,6 +582,10 @@ RECEITAS = {
     "reload_1.0_rc5": RELOAD_1_0_RC5,
     "reload_1.0_rc6": RELOAD_1_0_RC6,
     "reload_1.0_rc7": RELOAD_1_0_RC7,
+    # as bissecoes da ficha 008 (diagnostico: nao entram na catraca)
+    "reload_1.0_rc7_diag_a": RELOAD_1_0_RC7_DIAG_A,
+    "reload_1.0_rc7_diag_b": RELOAD_1_0_RC7_DIAG_B,
+    "reload_1.0_rc7_diag_c": RELOAD_1_0_RC7_DIAG_C,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
