@@ -50,3 +50,38 @@ Teste sugerido: no `tests/test_diag_trava.py`, o teste do comportamento do B
 deve afirmar a sequência **exata** de chamadas (`label_set_text`, `get_path`,
 `img_set_src` do cinza) com **zero** `calloc`/`free`/`f_open`, e o teste de
 recusa deve incluir uma RC7 com o `bl carrega_capa` já patcheado.
+
+---
+
+## Conferência final (R1) — glm-5.3, 2026-11-01
+
+APROVADO — só o diff desde a 1ª análise (`3751817…cec68a1`), e reconferido
+por esta sessão de forma independente (build das receitas, carimbos e
+payloads dos `.up` recomputados, `ci.sh` e o teste do dev reexecutados):
+
+- o nível B agora corta o **`bl` interno** do `carrega_capa` (4 bytes em
+  `0x1AA188`, `00 20 00 BF` = `movs r0,#0` + `nop`), achado pela
+  **assinatura única** do prólogo (`push {r4-r11,lr}` + `sub sp,#12` =
+  `2D E9 4F F0 83 B0` — conferido no `.s` e no lote montado; `sub sp,#12`
+  é `0xB083` porque o imediato do encoding T1 é múltiplo de 4) e pelo
+  `bl` decodificado de volta (alvo `0x00DAA256`, o prólogo);
+- o diff real RC7→B são **3 bytes** (`0x1AA189..0x1AA18B`) — o primeiro
+  byte do `bl` já era `00` e não muda; a ferramenta passou a conferir
+  "nenhum byte fora da região do patch", que é o correto para esse caso;
+- **sem** `calloc`/`free`/`f_open`/`f_read`/`f_close` no B (o teste exige
+  a sequência exata `label_set_text`, `get_path`, `img_set_src` do
+  cinza); o `free(NULL)` saiu do degrau B e ficou coberto pelo **roteiro**
+  (MP3 sem capa no C e no D — o achado **H5** sobre a própria RC7, com o
+  `free` real na ROM fora do dump, registrado na ficha e no Pacote);
+- imagens reconferidas: A `66c678b5…`, B `952c79fb…` (carimbada
+  `eab560c9…`), C `c51ec6e0…` (carimbada `88d1ddb1…`); os três `.up`
+  commitados (A `91fcb645…`, B `3986e741…`, C `c1046cee…`) têm o payload
+  igual à imagem carimbada **byte a byte** (CRC 0x58EE / 0x3768 /
+  0x6D8D), cobertura `0x1AB000`, bootloader e setor 0xD000 iguais aos de
+  fábrica, PSMP fora;
+- `tests/test_diag_trava.py`: **26 testes OK** (reexecutado por esta
+  sessão); `sh tools/ci.sh`: **CI OK** (rodado por esta sessão antes e
+  depois da R1); nenhum arquivo protegido mudou (o hash de
+  `tests/PROTEGIDOS.sha256` é conferido pelo próprio `ci.sh`).
+
+Sem achados novos.

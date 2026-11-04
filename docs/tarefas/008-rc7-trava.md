@@ -239,46 +239,48 @@ tocado:
   novidade do patch (o `capa_falha` da RC7 já liberava o JDEC e o pool,
   que nesse caminho nunca foram alocados), e é o que o roteiro mede.
 
-### Roteiro para o decisor (A → B → C → D)
+### Roteiro de gravação (decisor) — A → B → C, nesta ordem
 
-Grava pelo cartão (o `.up` de cada um, em `firmware/RELEASE/OpenPod Reload
-1.0 RC7 Diag A|B|C/`). Antes de cada degrau, anota o que o aparelho mostra
-em Config → Informações (é `RC7 diag A`, `RC7 diag B`, `RC7 diag C`; no D
-é a RC7). Depois de gravar: **Config → Atualizar por SD**, reiniciar,
-abrir a **Tocando Agora** e **tocar** uma faixa. **Toca as DUAS:**
+O `.up` de cada degrau está em `firmware/RELEASE/OpenPod Reload 1.0 RC7
+Diag A|B|C/`. Grava como a RC7: `.up` no cartão → **Config → Atualizar por
+SD** → reiniciar. Antes de começar, confira o carimbo em **Config →
+Informações** (`RC7 diag A` / `RC7 diag B` / `RC7 diag C`).
 
-1. `01_capa_v23.mp3` (o kit 007) — **com capa**: é o caminho longo (JPEG,
-   reescala), o que a H1 acusa;
-2. `06_sem_capa.mp3` (o kit 007) — **sem capa**: é o caminho que, na RC7,
-   termina no `capa_falha` **antes** do `calloc` do JDEC e do pool → dois
-   `free(NULL)` (o `free` da fábrica está na ROM fora do dump). Se o
-   aparelho **congelar** só no MP3 sem capa, a causa é esse `free(NULL)`
-   (achado novo, **H5**) — e não o tempo do JPEG.
+Em **cada** degrau, o mesmo roteiro (os MP3 são os do kit 007,
+`tests/assets/rc7/`):
 
-Repete com **trocar de faixa** (`>>|`).
+| # | passo | ✔/✘ |
+|---|---|---|
+| 1 | tocar `01_capa_v23.mp3` (**com** capa) | |
+| 2 | tocar `06_sem_capa.mp3` (**sem** capa) | |
+| 3 | trocar de faixa 3× (`>>|` / `|<<`) com música tocando | |
 
-Anota, para cada degrau: **(1)** o player abre? **(2)** a música toca?
-**(3)** a capa aparece (ou fica o quadrado cinza)? **(4)** o aparelho
-**trava** (tela viva, relógio/medidor parado, não volta — só desligando),
-**reinicia** (volta sozinho ao logo), ou **continua normal**?
+Anotar a cada passo: **(1)** o player abre? **(2)** toca? **(3)** capa ou
+quadrado cinza? — e o desfecho: **normal** / **travou** (tela parada que
+não volta nem depois de 30 s) / **reiniciou** (voltou sozinho ao logo).
 
-| degrau | o que ele mede | se TRAVAR | se REINICIAR | se ficar NORMAL |
-|---|---|---|---|---|
-| **A** | o TITULO é o de fábrica (nem `get_path`, nem FatFs) | H1 e o `get_path`/banco **não** são a causa: a lentidão do banco não é o gatilho | idem A | o degrau é rápido demais: **vá para B** |
-| **B** | `get_path` de verdade (mutex do banco + FatFs do db), **sem** abrir o MP3 (nem heap, nem `free`) | o **banco/mutex** (`0x81DC00+0x5C`) ou o FatFs **é** a causa | idem B (o B não tem `free(NULL)`) | vá para **C** |
-| **C** | `f_open`/`f_close` reais, **sem** JPEG | o **FatFs** (abrir/fechar o arquivo do usuário) é a causa | idem C | vá para **D** |
-| **D** | a RC7 inteira (o degrau que trava hoje) | a causa está **depois** do `jd_prepare` (o JPEG, a reescala, o `jd_decomp`) | idem D | a trava **não** é da capa: o culpado é outro (H1-ring, que é tempo, não a capa) |
+| degrau | carimbo | o que o TITULO já faz nele | se travar aí, a causa é… |
+|---|---|---|---|
+| **A** | RC7 diag A | só o `set_text` (o de fábrica) | não é a capa: é o envio de mensagens à view (H1) — **avisar a coordenação** |
+| **B** | RC7 diag B | + `get_path` (mutex do banco + `db_audio.db`), sem heap e sem arquivo | o `get_path`/mutex do banco (H1) |
+| **C** | RC7 diag C | + `f_open`/`f_close` do MP3, sem JPEG | o FatFs do arquivo do usuário |
+| **D** | RC7 (a que trava hoje) | tudo (JPEG + reescala) | o tempo do JPEG/reescala (H1/D14) |
 
-- Se **A** já travar, o problema **não** é a capa: é o ring de mensagens
-  (H1) exposto por **qualquer** mensagem de título, e a correção muda
-  (tirar o `get_path`/FatFs da ViewTask é a via da ficha 008).
-- Se só o **D** travar, a causa está no JPEG (e aí o conserto é outro:
-  cachear a capa, ou procurar o APIC no presenter).
-- **Congelamento com a tela viva que não volta** = o deadlock do ring
-  (H1) — ou o `free(NULL)` (H5), se só acontece com o MP3 **sem capa**
-  (e então é no C e no D, nunca no A nem no B).
-- **Reinício** do aparelho = falha com tratador, não o deadlock do ring.
-  **Normal** até o D = outra coisa.
+**Como ler o resultado** (as quatro linhas que importam):
+
+- **Trava a partir do B** (com capa ou sem) → `get_path`/FatFs chamado da
+  ViewTask (H1): a correção é o presenter mandar o **caminho** junto com a
+  mensagem do título (a view para de tocar no banco).
+- **Trava só no D** → o JPEG: cachear a capa ou decodificar fora da
+  ViewTask.
+- **Trava só com o `06_sem_capa.mp3`** (no C ou no D, nunca no A/B) → o
+  `free(NULL)`×2 do caminho de erro da RC7 (**H5**, achado da R1): a
+  correção é na ferramenta da capa, e a RC7 travaria até com MP3 sem capa.
+- **Tudo normal até o D** (e o D também) → a trava não é da capa: reabrir
+  com o decisor.
+
+Ao terminar, **volte à RC6** (o kit que você já tem) e mande a tabela
+preenchida para a coordenação.
 
 ## Rodadas
 
@@ -321,3 +323,39 @@ Anota, para cada degrau: **(1)** o player abre? **(2)** a música toca?
     `tests/test_diag_trava.py` **26 testes verdes** (o do B exige a
     sequência exata e zero `calloc`/`free`/`f_open`; a recusa com o `bl`
     do `carrega_capa` já patcheado está no teste).
+
+## Pacote — Ficha 008 / diagnóstico da RC7 (bisseção A/B/C)
+
+- Fase: 0. `sh tools/ci.sh`: **verde** (rodado pela sessão antes e depois
+  da R1). Analista (glm-5.3, D12): 1ª análise do diff REPROVADO com
+  **1 MÉDIA** (o degrau B arrastava `free(NULL)`×2 indecidível — o `free`
+  real está na ROM fora do dump) + 1 BAIXA (typo) → **R1** corrigiu (o B
+  corta o `bl carrega_capa`); conferência final **APROVADO**
+  (`docs/tarefas/008-analise-diff.md`).
+- Imagens (2 MiB, **sobre a RC7 exata** `3af97713…`, builds reprodutíveis,
+  só o lote `0x1A8000..0x1AB000` + o carimbo `0x1A4F00`/literal
+  `0x10A59C`): A `66c678b5…` (carimbada `cceb3edb…`) · B `952c79fb…`
+  (carimbada `eab560c9…`) · C `c51ec6e0…` (carimbada `88d1ddb1…`).
+  `.up` de cada uma em `firmware/RELEASE/OpenPod Reload 1.0 RC7 Diag
+  A|B|C/` (CRC 0x58EE / 0x3768 / 0x6D8D; payload = imagem carimbada byte
+  a byte, PSMP fora, bootloader e setor 0xD000 intactos — reconferidos
+  pela sessão).
+- Bytes: A = 4 B em `0x1AA014`; B = 4 B em `0x1AA188` (diff real de 3 B —
+  o 1º byte do `bl` já é `00`); C = 2 B em `0x1AA31E`. Receitas
+  `reload_1.0_rc7_diag_a|b|c`: diagnóstico, **fora da catraca**; nenhum
+  teste protegido mudou (hash em `tests/PROTEGIDOS.sha256` conferido pelo
+  `ci.sh`).
+- Roteiro acima (decisor preenche ✔/✘, com capa e sem capa). Onde cada
+  degrau trava diz a causa: B → `get_path`/mutex do banco; C → FatFs do
+  arquivo; D → JPEG/tempo; só sem capa (C/D) → `free(NULL)` (H5); A →
+  não é a capa.
+- Riscos aceitos: os das RCs anteriores na gravação (D13); as imagens de
+  diagnóstico não são de produção e o aparelho volta à RC6 ao fim.
+- Rodadas: R1. **Recomendação: gravar A → B → C e reportar a tabela**;
+  a correção da causa sai na próxima ficha, com o resultado na mão.
+  Pendências para o arquiteto: (1) entrada da `fab_diag_trava.py` no
+  `MAPA` (o C2 protegido recusa lote que cruze o da RC7 — uma linha no
+  teste, se o arquiteto preferir o MAPA ao `--em` na receita); (2) o
+  achado **H5** (`free(NULL)`×2 no caminho "sem capa" da RC7, invisível
+  ao arnês porque o `free` real é ROM) entra como regra nova em
+  `docs/seguranca.md` + teste quando a correção da causa for fichada.
