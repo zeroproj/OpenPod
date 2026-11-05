@@ -337,3 +337,17 @@ como viva e o watchdog é sempre alimentado. Uma gravação separa as três poss
 
 Sem watchdog, um congelamento só sai pelo botão de reset. Por isso o B2 é só diagnóstico: esse patch nunca entra na versão final.
 O kit B1 fica de reserva.
+
+---
+
+## D5. Resultado do B2 no aparelho (decisor, 2 gravações do mesmo teste)
+
+Depois de clicar na música o aparelho congela por cerca de 15 s, o player nem aparece, e ele **reinicia sozinho**.
+Repetiu igual ao tocar de novo.
+
+- **CONFIRMADO (aparelho):** com o teste de tarefa morta neutralizado, o reinício continua. Logo, a checagem da ViewTask no
+  monitor **não é a causa**. A explicação "só o monitor cortou o refresh" (D3) cai.
+- **Correção da tabela de D4:** a linha "Reinicia = fault de verdade" foi simplista. O atraso de ~15 s aponta mais para
+  prazo vencido do que para fault imediato, mas o fault atrasado não está descartado.
+- **PROVÁVEL:** o refresh parou mesmo assim, ou seja, a MainTask ou o que dispara o comando de timer também parou.
+- **HIPÓTESE:** o mecanismo. Ver ficha 011.
