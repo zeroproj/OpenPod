@@ -10,7 +10,7 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   `tests/test_catraca.py` (sha `af3a2b6d…`).
 - **Ficha 008 (RC7 trava ao tocar) — resultado no aparelho (2026-11-05):** A tocou; B reiniciou; C não
   gravada. O defeito está na rotina TITULO ou no `get_path` chamado por ela (ver fim da ficha 008). RC6
-  segue de referência. **Ficha 009 entregue** (`docs/tarefas/009-analise.md`, MiniMax com conferência da coordenação): fault e MainTask parada reiniciam; causa principal é HIPÓTESE (ring da view). Diag B0 **toca** no aparelho. **Em andamento: ficha 010** (Diag B1 = B + bug do ring corrigido, MiniMax).
+  segue de referência. **Ficha 009 entregue** (`docs/tarefas/009-analise.md`, MiniMax com conferência da coordenação): fault e MainTask parada reiniciam; causa principal é HIPÓTESE (ring da view). Diag B0 **toca** no aparelho. **Ficha 010 entregue** (`docs/tarefas/010-analise.md`, MiniMax): o degrau B1 (Diag B + o bug do ring da fábrica corrigido, 2 bytes em `0x0F843A`) está pronto, com o kit `release/OpenPod-Reload-1.0-RC7-Diag-B1` (TESTAR.txt; a volta de segurança é a RC6). **Aguardando o decisor gravar o Diag B1**: se tocar, o elo do ring está provado (o próximo degrau é o C + a correção); se reiniciar, o ring não é a causa (ou não é a única).
 - **RC7 REPROVADA no aparelho (trava ao tocar, 2026-11-01; ver ficha 008):** ficha 007 (capa do álbum) fechada pela
   sessão GLM (PRONTO-007; R0 opção A, 1ª análise REPROVADO udiv + id APIC → R1 div_soft,
   conferência final APROVADO). Merge no privado-completo; regressão protegida
