@@ -29,6 +29,23 @@
 máximo ao longo da cadeia; as chamadas para fora do dump entram com quadro 0,
 então o número que ele imprime é um **mínimo**.
 
+## Achado avulso que muda o quadro (CONFIRMADO)
+
+**A fábrica tem 1072 `udiv`/`sdiv`** — o que a ficha 007 usou como
+premissa ("a fábrica não tem nenhuma ocorrência de udiv/sdiv") e a ficha 008
+repetiu no H3 **é falsa**. Varredura de capstone do dump inteiro
+(`0x00C00000..0x00DA0000`): **1072** ocorrências, a primeira em
+`0x00C00BF6` (`udiv r1, r6, r7`). E há uma **no caminho do play**:
+`0x00D087F2  udiv r3, r6, r2` (dentro do presenter que formata
+`"%02d:%02d:%02d"`).
+
+**Consequências:** (1) o **núcleo do SL6801 tem a divisão por hardware** — o
+`div_soft` da ficha 007 (a reescala por software) foi **desnecessário**
+(inofensivo: continua correto e mais lento); (2) o H3 da 008 se apoiava
+numa premissa falsa — a conclusão dele ("o lote não usa divisão, logo não
+há risco") continua válida, mas pelo motivo certo: **o núcleo tem
+`udiv`**.
+
 ---
 
 # Pergunta 1 — O que causa o REINÍCIO neste aparelho?
