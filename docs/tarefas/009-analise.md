@@ -838,3 +838,5 @@ No `TESTAR.txt`, a volta de segurança apontava para a RC7, que é a que reinici
 diferem em: (1) a chamada ao `get_path` na ViewTask; (2) o ramo de sucesso depois dela (comparar e guardar o caminho),
 que o B0 não executa. Fica entre esses dois, e (2) é o menos provável por ser um laço limitado sem chamada externa.
 Próximo degrau: ficha 010 (B1 = B + bug do ring corrigido).
+
+> **Atualização (ficha 010):** o ring tem 15360 B e a ViewTask é monitorada pelo watchdog. C3 deixa de ser a causa principal; ver `010-analise.md`, D1 a D4.

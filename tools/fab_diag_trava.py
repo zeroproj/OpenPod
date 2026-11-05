@@ -12,10 +12,6 @@ PROPOSITO
     ring sem give no caminho "cheio") trava toda tarefa que manda mensagem
     para a view.
 
-    Para fechar a duvida no aparelho, tres imagens, cada uma um degrau a
-    mais. As tres sao PATCHES CIRURGICOS no lote JA MONTADO da RC7 (4/4/2
-    bytes): nada e remontado, nada fora dos bytes da RC7 e mexido.
-
       A  "TITULO so faz o set_text" — 4 bytes em 0x001AA014.
          A entrada TITULO da tabela do lote deixa de apontar para o
          TITULO_impl e passa a apontar para o lv_label_set_text da
@@ -43,12 +39,23 @@ PROPOSITO
          reescala.
 
       B0 "TITULO ligado, get_path cortado" — 2 bytes (ficha 009).
-         A entrada TITULO fica ORIGINAL (a rotina INTEIRA roda, com o
-         set_text, a leitura da view/ext, a comparacao do caminho e o
-         quadrado cinza) e a vitima e a chamada ao `get_path`
-         (0x00CFEFC5): o `blx` vira `movs r0, #0` — o get_path "falha",
-         o caminho guardado fica vazio e o quadrado cinza aparece. E o
-         degrau que separa "a ROTINA" de "o get_path".
+         A entrada TITULO fica ORIGINAL (a rotina INTEIRA roda) e a vitima
+         e a chamada ao `get_path` (0x00CFEFC5): o `blx` vira `movs r0,
+         #0` — o get_path "falha", o caminho guardado fica vazio e o
+         quadrado cinza aparece. E o degrau que separa "a ROTINA" de "o
+         get_path".
+
+      B1 "B + o bug do ring corrigido" — 2 bytes (ficha 010).
+         Com o ring CHEIO, o caminho de erro (`0x00CF8438`, `movs r4,#0`)
+         salta o give do mutex (`0x00CF842E`) e devolve 0 com o mutex
+         `0x81BBCC` PRESO. O B1 troca o `b` de `0x00CF843A` (arquivo
+         `0x00F843A`: `fa e7`, `b 0x00CF8432`) por `f7 e7` (`b 0x00CF842C`).
+
+      B2 "B + o monitor do watchdog neutralizado" — 2 bytes (ficha 010).
+         O monitor (`0x00D46B18`) confere as tarefas registradas e, se
+         alguma nao bateu, salta para `0x00D46B68` ("-task %d is dead") e
+         RETORNA sem alimentar o watchdog. O B2 troca o `bpl` de
+         `0x00D46B30` (arquivo `0x146B30`: `1a d5`) por `00 bf` (`nop`).
 
     (D e a RC7 inteira, que ja existe.)
 
@@ -58,8 +65,10 @@ PREMISSAS, conferidas ANTES de escrever qualquer byte
     sem criar o arquivo de saida e sem tocar na entrada:
 
       - a imagem tem 2 MiB;
-      - o sha256 da entrada e o da RC7 exata (3af97713...). A receita e a
-        RC7 mais esta ferramenta; qualquer outra imagem e recusada;
+      - o sha256 da entrada e o da imagem exata do nivel: a RC7 exata
+        (3af97713...) nos niveis A, B, C e B0; o Diag B exato
+        (952c79fb...) no nivel B1. A receita e a imagem medida mais esta
+        ferramenta; qualquer outra imagem e recusada;
       - a tabela de entradas do lote esta no lugar: 0x001AA010/14/18
         decodificam como `b.w` para o CRIA/TITULO/APAGA (0xDAA01C/20/24);
       - nivel a: a entrada TITULO (0x001AA014) ainda e o `b.w` para o
@@ -70,56 +79,59 @@ PREMISSAS, conferidas ANTES de escrever qualquer byte
         (o alvo e decodificado do binario) — e esse `bl` ainda esta la
         (nao foi patcheado antes);
       - nivel c: o par `movw/movt` que carrega o jd_prepare
-        (0x00D10B21, com o bit do Thumb) aparece EXATAMENTE UMA vez no
-        codigo do lote, e o `blx` que o segue ainda esta la;
-      - nivel b0: o par `movw/movt` que carrega o get_path
-        (0x00CFEFC5, com o bit do Thumb) aparece EXATAMENTE UMA vez no
-        codigo do lote, e o `blx` que o segue ainda esta la.
+        (0x00D10B21, com o bit do Thumb) e o que carrega o get_path
+        (0x00CFEFC5) aparecem EXATAMENTE UMA vez cada no codigo do lote,
+        e o `blx` que os segue ainda esta la;
+      - niveis b1 e b2: o branch no codigo da FABRICA ainda e o da
+        fabrica (decodificado do binario: `b 0x00CF8432` e `bpl
+        0x00D46B68`) e o give do mutex (`0x00F842C`) esta no lugar.
 
 CONFERENCIA DE SAIDA
 
     Depois de escrever, a ferramenta RELE o que escreveu e confere: o
     `b.w` novo da entrada TITULO decodificado de volta (alvo 0x00D5ED94),
     os 4 bytes novos do nivel B lidos de volta (`movs r0, #0` + `nop`) ou
-    os 2 bytes novos do nivel C (`movs r0, #1` = 01 20). Depois faz o diff
-    final contra a entrada: nenhum byte pode mudar FORA da regiao do patch
-    (4/4/2 bytes). Qualquer byte a mais e recusa, sem gravar a saida.
+    os 2 bytes novos do nivel C (`movs r0, #1` = 01 20) ou os 2 bytes do
+    nivel B1 (`f7 e7` = `b 0x00CF842C`) ou do B2 (`00 bf` = `nop`). Depois
+    faz o diff final contra a entrada: nenhum byte pode mudar FORA da
+    regiao do patch (4/4/2/2/2 bytes) — qualquer byte a mais e recusa.
 
 SEGURANCA DA ESCRITA
 
     `--out` e recusado quando aponta para a propria entrada — mesmo
     caminho, symlink ou hardlink (`os.path.samefile`). E so se escreve
-    DENTRO do lote 0x001A8000..0x001AB000 (4/4/2 bytes). Nada abaixo de
-    0x00E000, e o setor 0x00D000 e a PSMP (0x001FC000+) ficam intocados.
+    DENTRO do lote 0x001A8000..0x001AB000 (4/4/2 bytes), ou — nos niveis
+    B1 e B2 — nos 2 bytes do branch na FABRICA (0x00F843A / 0x146B30).
+    Nada abaixo de 0x00E000, e o setor 0x00D000 e a PSMP ficam intocados.
 
 USO
 
     python3 tools/fab_diag_trava.py --in <rc7.bin> --out <diag.bin>
-                                    --nivel a|b|c|b0 [--em 0x1a8000] [--dry-run]
+                                    --nivel a|b|c|b0|b1|b2 [--em 0x1a8000]
 
     O `--em` e o endereco do lote onde o patch acontece (0x001A8000, o
-    mesmo da RC7). A receita do build.py passa esse endereco; a
-    ferramenta recusa se vier outro.
+    mesmo da RC7); a receita do build.py passa esse endereco e a
+    ferramenta recusa se nao for.
 
 DEPENDENCIAS
 
     Python 3 (stdlib) + o modulo `tools/diag_trava_asm.py` (o layout do
-    lote e o scanner das chamadas; ele usa o `tools/capa_album_asm.py`, o
-    mesmo par encoder/leitor de Thumb-2 que o `tests/test_rc7.py` usa).
-    Nao abre USB, nao grava no aparelho.
+    lote, o scanner das chamadas e o patch do B1). Nao abre USB, nao grava
+    no aparelho.
 
 LIMITACOES
 
-    - so serve na RC7 exata: qualquer outra imagem e recusada;
-    - o codigo do lote NAO e remontado: as tres imagens sao a RC7 com 4,
-      4 ou 2 bytes trocados. O que o lote faz alem do ponto cortado
+    - so serve na imagem exata do nivel;
+    - o codigo do lote NAO e remontado: as imagens sao a RC7 (ou o Diag B)
+      com 4, 4 ou 2 bytes trocados. O que o lote faz alem do ponto cortado
       continua igual (e o que a bissecao mede);
     - o nivel B NAO entra no `carrega_capa` (e nao tem `calloc`, `free`
       nem arquivo): e por isso que ele mede so o `get_path` — o
-      `free(NULL)` do caminho de erro da RC7 (que fica no nivel C e no D)
-      nao aparece nele;
+      `free(NULL)` do caminho de erro da RC7 nao aparece nele;
+    - os niveis B1 e B2 mexem NO CODIGO DA FABRICA (2 bytes cada): o B1
+      conserta o bug do mutex do ring; o B2 neutraliza o watchdog;
     - depois de aplicada, rodar de novo sobre a saida e recusado (o sha da
-      entrada ja nao e o da RC7 e a regiao ja esta patcheada).
+      entrada ja nao e o da imagem do nivel e a regiao ja esta patcheada).
 """
 
 import argparse
@@ -145,10 +157,11 @@ def confere_premissas(d, nivel):
     if len(d) != TAMANHO:
         return [f"a imagem tem {len(d)} bytes, esperado {TAMANHO} (2 MiB)"]
     sha = hashlib.sha256(bytes(d)).hexdigest()
-    if sha != G.SHA_RC7:
+    esperado = G.sha_esperado(nivel)
+    if sha != esperado:
         erros.append(f"sha256 da entrada {sha[:16]}..., esperado "
-                     f"{G.SHA_RC7[:16]}... — a receita e a RC7 exata mais esta "
-                     f"ferramenta, e so a RC7 entra")
+                     f"{esperado[:16]}... — a receita e a imagem exata do "
+                     f"nivel mais esta ferramenta, e so ela entra")
     for i, alvo in enumerate(G.ENTRADAS):
         lido = A.desvio(d, G.TABELA + 4 * i)
         if lido is None or lido[0] != "b.w" or lido[1] != alvo:
@@ -188,6 +201,10 @@ def confere_premissas(d, nivel):
             erros.append(f"em 0x{off:06X} nao ha um bl para o carrega_capa "
                          f"(0x{alvo:08X}) — o codigo do lote mudou")
         return erros
+    # os niveis que mexem no codigo da FABRICA (fora do lote): o `b` do
+    # ring cheio (b1) e o `bpl` do monitor do watchdog (b2)
+    if nivel in G.FORA_LOTE:
+        return erros + G.premissa_fora(d, nivel)
     # niveis c e b0: a chamada externa tem de existir exatamente uma vez
     valor = G.GET_PATH if nivel == "b0" else G.JD_PREP
     pares = G.acha_pares(d, valor)
@@ -268,24 +285,17 @@ def main():
 
     erros = confere_premissas(d, a.nivel)
     if erros:
-        print("\n  RECUSADO — a entrada nao e a RC7 que a ficha mediu:")
+        print("\n  RECUSADO — a entrada nao e a imagem que este nivel mediu:")
         for m in erros:
             print(f"    - {m}")
         print(f"\n  nada foi escrito em {a.dst}")
         return 1
     print("  entrada conferida:")
     print("    - 2 MiB")
-    print(f"    - sha256 {G.SHA_RC7[:16]}... (a RC7 exata)")
+    print(f"    - sha256 {G.sha_esperado(a.nivel)[:16]}... "
+          f"(a imagem exata do nivel)")
     print("    - a tabela de entradas do lote esta no lugar (CRIA/TITULO/APAGA)")
-    if a.nivel == "a":
-        print("    - a entrada TITULO ainda e o TITULO_impl (nao patcheada)")
-    elif a.nivel == "b":
-        print("    - o carrega_capa (prologo unico) e o bl que o chama: 1x")
-    elif a.nivel == "b0":
-        print(f"    - a chamada ao get_path (0x{G.GET_PATH:08X}) aparece 1x "
-              f"no lote")
-    else:
-        print(f"    - a chamada a 0x{G.JD_PREP:08X} aparece 1x no lote")
+    print(f"    - {G.PREMISSA[a.nivel]}")
 
     off, tam, novos = G.bytes_do_patch(d, a.nivel)
     if off is None:
@@ -293,18 +303,7 @@ def main():
         print(f"\n  nada foi escrito em {a.dst}")
         return 1
     print(f"\n  PATCH\n    0x{off:06X}..0x{off + tam:06X}  {tam} byte(s)")
-    if a.nivel == "a":
-        print(f"    a entrada TITULO vira b.w 0x{G.SET_TEXT:08X} "
-              f"(o lv_label_set_text da fabrica)")
-    elif a.nivel == "b":
-        print("    o bl do carrega_capa vira movs r0, #0 + nop "
-              "(o TITULO para depois do get_path)")
-    elif a.nivel == "b0":
-        print("    o blx do get_path vira movs r0, #0 "
-              "(o get_path 'falha': o caminho guardado fica vazio e o "
-              "quadrado cinza aparece)")
-    else:
-        print("    o blx da chamada vira movs r0, #1 (a chamada falha)")
+    print(f"    {G.DESCRICAO[a.nivel]}")
 
     d[off:off + tam] = novos
     erros = G.confere_patch(d, a.nivel, off, tam, novos)
@@ -322,8 +321,9 @@ def main():
               f"patch (0x{min(fora):06X}..0x{max(fora):06X})")
         print(f"\n  nada foi escrito em {a.dst}")
         return 1
-    if any(not (G.LOTE <= i < G.LOTE + G.LOTE_TAM) for i in dif):
-        print("  RECUSADO: escreveu fora do lote.", file=sys.stderr)
+    if any(not G.byte_permitido(a.nivel, i) for i in dif):
+        print("  RECUSADO: escreveu fora da regiao do patch.",
+              file=sys.stderr)
         return 1
     if any(i < 0x00E000 for i in dif) or any(0xD000 <= i < 0xE000 for i in dif) \
             or any(i >= 0x1FC000 for i in dif):

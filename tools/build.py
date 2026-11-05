@@ -592,6 +592,46 @@ RELOAD_1_0_RC7_DIAG_B0 = RELOAD_1_0_RC7 + [
      "diag B0: TITULO ligado, get_path cortado (cinza)"),
 ]
 
+# ---------------------------------------------------------------------------
+# RELOAD 1.0 RC7 DIAG B1 — a ficha 010 (o bug do ring da fabrica).
+#
+# O B (ficha 008) e o B0 (ficha 009) mediram a ROTINA do TITULO e a
+# CHAMADA do get_path na ViewTask. Nenhum dos dois mediu o BUG DA FABRICA
+# no envio ao ring: quando o ring da view esta CHEIO, o caminho de erro
+# salta o give do mutex e devolve 0 com o mutex `0x81BBCC` PRESO.
+#
+# O B1 e o Diag B (o nivel B, que e o que REINICIA o aparelho) mais 2 bytes
+# no codigo da FABRICA: o `b` de `0x00CF843A` (arquivo `0x00F843A`,
+# `fa e7` = `b 0x00CF8432`) vira `f7 e7` (= `b 0x00CF842C`) — o caminho
+# "cheio" passa pelo give do mutex e a mensagem e descartada (0).
+#
+# Sao 2 bytes, e nada mais: o resto do lote e o do Diag B, byte a byte.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC7_DIAG_B1 = RELOAD_1_0_RC7_DIAG_B + [
+    ("fab_diag_trava.py", ["--nivel", "b1", "--em", "0x1a8000"],
+     "diag B1: B + o bug do ring corrigido (o mutex e solto)"),
+]
+
+# ---------------------------------------------------------------------------
+# RELOAD 1.0 RC7 DIAG B2 — a ficha 010 (adendo da coordenacao).
+#
+# O B1 media o BUG DO RING; a conferencia da coordenacao (D1-D4) mostrou que
+# o ring tem 15360 B (a rajada do play nao o enche) e que a ViewTask e
+# MONITORADA pelo watchdog: se ela nao bate, o monitor retorna sem alimentar
+# o watchdog (e o aparelho reinicia).
+#
+# O B2 neutraliza o monitor: o `bpl` de `0x00D46B30` (arquivo `0x146B30`,
+# `1a d5` = `bpl 0x00D46B68`) vira `00 bf` (`nop`). Toda tarefa conta como
+# viva e o watchdog e sempre alimentado — assim o aparelho DIZ se o
+# `get_path` da ViewTask e so lento (toca) ou se ele trava (congela).
+#
+# Sao 2 bytes, e nada mais: o resto do Diag B fica byte a byte.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC7_DIAG_B2 = RELOAD_1_0_RC7_DIAG_B + [
+    ("fab_diag_trava.py", ["--nivel", "b2", "--em", "0x1a8000"],
+     "diag B2: B + o monitor do watchdog neutralizado (sem watchdog)"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -609,6 +649,10 @@ RECEITAS = {
     "reload_1.0_rc7_diag_c": RELOAD_1_0_RC7_DIAG_C,
     # o degrau B0 da ficha 009 (diagnostico: nao entra na catraca)
     "reload_1.0_rc7_diag_b0": RELOAD_1_0_RC7_DIAG_B0,
+    # o degrau B1 da ficha 010 (diagnostico: nao entra na catraca)
+    "reload_1.0_rc7_diag_b1": RELOAD_1_0_RC7_DIAG_B1,
+    # o degrau B2 da ficha 010 (adendo; diagnostico: nao entra na catraca)
+    "reload_1.0_rc7_diag_b2": RELOAD_1_0_RC7_DIAG_B2,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
