@@ -359,3 +359,14 @@ preenchida para a coordenação.
   achado **H5** (`free(NULL)`×2 no caminho "sem capa" da RC7, invisível
   ao arnês porque o `free` real é ROM) entra como regra nova em
   `docs/seguranca.md` + teste quando a correção da causa for fichada.
+
+## Resultado no aparelho (decisor, 2026-11-05)
+- **A: funcionou, tocou a música.** **B: não funcionou, reiniciou o aparelho.** C não gravada: contém o
+  B inteiro, não acrescenta informação enquanto o B reinicia.
+- **CONFIRMADO no aparelho:** o defeito está no que o B liga e o A não liga. O A desvia a entrada TITULO
+  direto para o `lv_label_set_text`, logo **pula a rotina inteira**. Portanto o B liga mais do que o
+  `get_path`: a rotina `corpo_titulo` (leitura da view/ext, chamada, comparação, guarda do caminho) e o
+  `lv_img_set_src` do quadrado cinza. **Não está provado que seja o `get_path` sozinho.**
+- **Reinício, não congelamento:** o mecanismo da H1 (mutex do ring preso) prevê congelar, então H1 não
+  explica este resultado sozinha e volta a ser HIPÓTESE. O sintoma da RC7 era "trava / abre e não toca".
+- A tabela "se travar aí, a causa é" do roteiro simplificou demais a linha do B; vale o texto acima.
