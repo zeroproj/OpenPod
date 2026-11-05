@@ -1,31 +1,21 @@
 #!/usr/bin/env python3
 """
 diag_trava_asm.py — o layout do lote e o scanner das chamadas externas, para
-as imagens de bissecao da ficha 008 (a RC7 trava ao tocar).
+as imagens de bissecao da ficha 008 e o degrau B1 da ficha 010 (o bug do
+ring da fabrica).
 
 PROPOSITO
 
-    O modulo que o `fab_diag_trava.py` usa para achar, no codigo JA
-    MONTADO do lote 0x001A8000..0x001AB000, a chamada externa que cada
-    nivel de bissecao desliga. Ele mora aqui (e nao dentro da
-    ferramenta) por causa da regra do projeto: uma ferramenta nova tem no
-    maximo 350 linhas (D06).
-
-    O que este modulo sabe:
-
-      - o LAYOUT do lote (a tabela das entradas, onde o codigo comeca);
-      - o SCANNER do Thumb-2 que acha o par `movw/movt` que carrega um
-        endereco (com o bit do Thumb) e o `blx` que o usa — as chamadas
-        para fora do codigo da RC7 sao todas assim (o montador nao tem
-        linkador, entao o endereco vai em `movw/movt` e a chamada e um
-        `blx` para o registrador);
-      - o SCANNER dos `bl` INTERNOS do lote (o montador resolve o
-        deslocamento) e a assinatura do `carrega_capa`, a rotina que o
-        nivel B corta;
-      - o PATCH de cada nivel: onde ele e, quantos bytes sao e o que fica
-        no lugar (`movs r0, #1` — a chamada externa "falhada" — ou
-        `movs r0, #0` + `nop` — o `bl` interno, cortado) e a conferencia
-        desses bytes lidos de volta.
+    O modulo que o `fab_diag_trava.py` usa: ele sabe o LAYOUT do lote
+    (0x001A8000..0x001AB000: a tabela das entradas e onde o codigo
+    comeca), o SCANNER do Thumb-2 que acha o par `movw/movt` que carrega
+    um endereco e o `blx` que o usa (as chamadas para fora do codigo da
+    RC7 sao todas assim: o montador nao tem linkador), o SCANNER dos `bl`
+    INTERNOS do lote e a assinatura do `carrega_capa` (a rotina que o
+    nivel B corta), o PATCH de cada nivel (onde ele e, quantos bytes sao,
+    o que fica no lugar e a conferencia lida de volta) e o BUG DO RING DA
+    FABRICA (o nivel B1: o `b` de 16 bits do caminho "ring cheio", que
+    fica FORA do lote, no codigo da fabrica).
 
     O leitor e o encoder do `b.w` vem do `capa_album_asm.py` (o mesmo par
     que o `tests/test_rc7.py` usa).
@@ -37,8 +27,8 @@ DEPENDENCIAS
 LIMITACOES
 
     - o layout e FIXO: e o layout do lote que a RC7 montou;
-    - o scanner le meia-palavras de 2 em 2: o codigo do lote e Thumb-2
-      com os instrucoes comecando em endereco par (o montador garante);
+    - o scanner le meia-palavras de 2 em 2 (o codigo do lote e Thumb-2 com
+      os instrucoes em endereco par, o montador garante);
     - nada aqui escreve no binario: a escrita e da ferramenta.
 """
 
@@ -59,6 +49,10 @@ ENTRADAS = A.ENTRADAS
 # a entrada: a RC7 exata (catraca, aprovada em 2026-10-31)
 SHA_RC7 = ("3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab6456"
            "78237d9e")
+# a entrada do nivel B1: o Diag B exato (a RC7 + o nivel B), que e o que o
+# B1 consome — a receita monta um a partir do outro.
+SHA_DIAG_B = ("952c79fb3e6a4d2bdd2ae477060795ce8ea7e88c8523384bb62e468"
+              "234844896")
 
 # os alvos dos niveis
 SET_TEXT = 0x00D5ED94        # o lv_label_set_text da fabrica (nivel A)
@@ -69,14 +63,30 @@ FALHA_BL = b"\x00\x20\x00\xBF"   # movs r0, #0 + nop (o bl interno, cortado)
 FALHA_ZERO = b"\x00\x20"     # movs r0, #0 (a chamada externa "falhada" de
                             # verdade: o get_path devolve 0 = falha)
 
+# ---------------------------------------------------------------------------
+# O BUG DO RING DA FABRICA (nivel B1, ficha 010)
+#
+# O envio ao ring da view (`0x00CF83E4`) pega o mutex `0x81BBCC` (take em
+# `0x00CF83FA`, `bl 0x80DB48`) e, quando o ring esta CHEIO (`blo 0x00CF8408`
+# -> `0x00CF8438`, `movs r4,#0`), salta para `0x00CF843A` — um `b 0x00CF8432`
+# que PULA o give do mutex (`0x00CF842E`, `bl 0x80DB6E`): o mutex fica preso
+# e toda a tarefa que manda mensagem para a view trava.
+#
+# O B1 troca esse `b` por `b 0x00CF842C`: o caminho "cheio" passa pelo give
+# e devolve 0 (a mensagem e descartada, o mutex e solto). Sao 2 bytes, no
+# codigo da FABRICA (fora do lote da RC7).
+# ---------------------------------------------------------------------------
+RING_OFF = 0x00F843A          # o deslocamento no arquivo (XIP 0x00CF843A)
+RING_BYTES_ORIG = b"\xfa\xe7"  # b 0x00CF8432 (o bug: sem o give)
+RING_BYTES_NOVO = b"\xf7\xe7"  # b 0x00CF842C (com o give)
+RING_ALVO_ANTES = 0x00CF8432  # o alvo do `b` na fabrica (o bug)
+RING_ALVO_DEPOIS = 0x00CF842C  # o alvo novo (o give)
+GIVE_OFF = 0x00F842C          # ldr r0,[pc,#0x10] + bl 0x80DB6E (o give)
+GIVE_BYTES = b"\x04\x48\x15\xf7\x9e\xf3"   # o give da fabrica, byte a byte
+
 # o `carrega_capa` (nivel B): a UNICA rotina do lote que guarda nove
-# registradores e tem `sub sp,#12` no prologo — as outras seis (CRIA,
-# TITULO, APAGA, comparou_caminho, copia_caminho e o leitor) usam
-# `sub sp,#4`. O TITULO o chama com um `bl` interno de 4 bytes; e esse
-# `bl` que o nivel B corta: o `cmp r0,#0; beq fim_titulo` que ja existe
-# logo depois dele termina o TITULO (depois do get_path, da comparacao,
-# do caminho guardado e do quadrado cinza) — sem calloc, sem free e sem
-# arquivo.
+# registradores e tem `sub sp,#12` no prologo — as outras seis usam
+# `sub sp,#4`. O nivel B corta o `bl` interno que a chama.
 PROLOGO_CARREGA_CAPA = (0xE92D, 0x4FF0, 0xB083)   # push {r4-r11,lr}; sub sp,#12
 
 # nivel: o que o degrau mede
@@ -85,12 +95,37 @@ NIVEL = {
     "b": "A + get_path, sem arquivo",
     "c": "B + f_open/f_close",
     "b0": "TITULO ligado, get_path cortado (cinza)",
+    "b1": "B + o bug do ring corrigido (o mutex e solto)",
+}
+
+# o texto do patch de cada nivel (a conferencia de saida da ferramenta)
+DESCRICAO = {
+    "a": f"a entrada TITULO vira b.w 0x{SET_TEXT:08X} (o lv_label_set_text)",
+    "b": "o bl do carrega_capa vira movs r0, #0 + nop (o TITULO para depois "
+         "do get_path)",
+    "c": "o blx da chamada vira movs r0, #1 (a chamada falha)",
+    "b0": "o blx do get_path vira movs r0, #0 (o get_path 'falha': o "
+          "caminho guardado fica vazio e o quadrado cinza aparece)",
+    "b1": f"o `b` do ring cheio vira b 0x{RING_ALVO_DEPOIS:08X} (o caminho "
+          f"'cheio' passa pelo give do mutex)",
+}
+# a premissa ja conferida, no texto da ferramenta
+PREMISSA = {
+    "a": "a entrada TITULO ainda e o TITULO_impl (nao patcheada)",
+    "b": "o carrega_capa (prologo unico) e o bl que o chama: 1x",
+    "c": f"a chamada a 0x{JD_PREP:08X} aparece 1x no lote",
+    "b0": f"a chamada ao get_path (0x{GET_PATH:08X}) aparece 1x no lote",
+    "b1": f"o `b` do ring cheio (0x{RING_OFF:06X}) ainda e o da fabrica "
+          f"(b 0x{RING_ALVO_ANTES:08X}) e o give esta no lugar",
 }
 
 
-# ---------------------------------------------------------------------------
+def sha_esperado(nivel):
+    """O sha256 da entrada que a ferramenta consome neste nivel."""
+    return SHA_DIAG_B if nivel == "b1" else SHA_RC7
+
+
 # Thumb-2: o par movw/movt que carrega um endereco, e o blx que o usa
-# ---------------------------------------------------------------------------
 
 def imm16(h1, h2):
     """O imm16 de um MOVW (T3) ou de um MOVT (T1)."""
@@ -106,6 +141,17 @@ def e_mov(h1, h2, esp):
 def e_blx(h):
     """A meia-palavra e um BLX (registro)? (0x4780 | Rm<<3)"""
     return (h & 0xFF80) == 0x4780
+
+
+def alvo_b16(d, off):
+    """O alvo de um `b` de 16 bits (T1) no deslocamento `off`; None se nao for."""
+    h = struct.unpack_from("<H", d, off)[0]
+    if (h & 0xF800) != 0xE000:
+        return None
+    imm = h & 0x7FF
+    if imm & 0x400:
+        imm -= 0x800
+    return XIP + off + 4 + 2 * imm
 
 
 def fim_do_codigo(d):
@@ -172,8 +218,7 @@ def acha_bl_para(d, alvo):
     """Os deslocamentos dos `bl` INTERNOS cujo alvo (XIP) e `alvo`.
 
     O `bl` interno e um Thumb-2 de 4 bytes (T1); o alvo e decodificado do
-    proprio binario (o mesmo leitor do `b.w`, o `desvio` do
-    `capa_album_asm.py`)."""
+    proprio binario (o `desvio` do `capa_album_asm.py`)."""
     achados = []
     for i in range(CODIGO, fim_do_codigo(d) - 4, 2):
         lido = A.desvio(d, i)
@@ -192,6 +237,41 @@ def acha_bytes(d, alvo):
         if bytes(d[i:i + len(alvo)]) == alvo:
             achados.append(i)
     return achados
+
+
+# ---------------------------------------------------------------------------
+# o nivel B1: o bug do ring da fabrica (FORA do lote, no codigo da fabrica)
+# ---------------------------------------------------------------------------
+
+def premissa_b1(d):
+    """As premissas do nivel B1: o `b` do ring cheio e o give do mutex.
+
+    Devolve a lista de erros (vazia = a entrada e a imagem exata do nivel)."""
+    erros = []
+    if bytes(d[RING_OFF:RING_OFF + 2]) == RING_BYTES_NOVO:
+        erros.append(f"o `b` do ring ja esta patcheado "
+                     f"(b 0x{RING_ALVO_DEPOIS:08X})")
+        return erros
+    if bytes(d[RING_OFF:RING_OFF + 2]) != RING_BYTES_ORIG:
+        erros.append(f"em 0x{RING_OFF:06X} nao esta o `b` da fabrica "
+                     f"({RING_BYTES_ORIG.hex(' ')})")
+        return erros
+    alvo = alvo_b16(d, RING_OFF)
+    if alvo != RING_ALVO_ANTES:
+        erros.append(f"o `b` em 0x{RING_OFF:06X} decodifica para "
+                     f"0x{alvo:08X}, esperado 0x{RING_ALVO_ANTES:08X} "
+                     f"— o codigo da fabrica mudou")
+    if bytes(d[GIVE_OFF:GIVE_OFF + len(GIVE_BYTES)]) != GIVE_BYTES:
+        erros.append(f"o give do mutex (0x{GIVE_OFF:06X}..) nao e o da "
+                     f"fabrica (ldr r0,[pc,#0x10] + bl 0x80DB6E)")
+    return erros
+
+
+def byte_permitido(nivel, i):
+    """O byte `i` pode mudar neste nivel?"""
+    if nivel == "b1":
+        return RING_OFF <= i < RING_OFF + 2
+    return LOTE <= i < LOTE + LOTE_TAM
 
 
 # ---------------------------------------------------------------------------
@@ -216,12 +296,15 @@ def bytes_do_patch(d, nivel):
     if nivel == "b0":
         # a chamada ao get_path: o par movw/movt que carrega o endereco e o
         # blx que a usa. O blx vira `movs r0, #0`: o get_path "devolve
-        # falha", e o TITULO cai no caminho que ja existe (o caminho
-        # guardado fica vazio e o quadrado cinza aparece).
+        # falha" e o TITULO cai no caminho que ja existe (o quadrado cinza).
         off = achado_unico(d, GET_PATH)
         if off is None:
             return None, 0, b""
         return off, 2, FALHA_ZERO
+    if nivel == "b1":
+        # o `b` do caminho "ring cheio": ele pula o give do mutex. O B1
+        # aponta para o give (0xCF842C), e a mensagem e descartada (0).
+        return RING_OFF, 2, RING_BYTES_NOVO
     if achado_unico(d, JD_PREP) is None:
         return None, 0, b""
     return achado_unico(d, JD_PREP), 2, FALHA
@@ -253,6 +336,11 @@ def confere_patch(d, nivel, off, tam, novos):
         h = struct.unpack_from("<H", d, off)[0]
         if (h & 0xF800) != 0x2000 or ((h >> 8) & 0x7) != 0 or (h & 0xFF):
             erros.append("os 2 bytes novos nao decodificam como movs r0, #0")
+    elif nivel == "b1":
+        alvo = alvo_b16(d, off)
+        if alvo != RING_ALVO_DEPOIS:
+            erros.append(f"o `b` novo nao decodifica para "
+                         f"0x{RING_ALVO_DEPOIS:08X} (o give do mutex)")
     else:
 
         h = struct.unpack_from("<H", d, off)[0]
