@@ -1,0 +1,42 @@
+OpenPod Reload 1.0 RC7 Diag B0 — TESTAR
+
+O que e: a RC7 (a que REINICIA o aparelho ao tocar) com a CHAMADA do get_path
+cortada. A rotina do titulo continua inteira (o texto, a leitura da tela, a
+comparacao do caminho e o quadrado cinza). O get_path "falha" por fora, entao
+o caminho fica vazio e aparece o quadrado cinza com a nota.
+
+Por que: a bissecao B (ficha 008) religou DUAS coisas de uma vez — a rotina
+do titulo e o get_path. O B0 separa as duas.
+
+Base: a RC7 exata (3af97713...). Imagem 63afb46a... · carimbada 61872fc2...
+.up CRC 0xA27E · sha 70f5dc14...
+Muda em relacao a RC7: 2 bytes em 0x1AA14C (o blx do get_path vira movs r0,#0)
++ o carimbo em 0x1A4F00.
+
+INSTALAR (pelo cartao)
+  1. Copie OpenPod_OpenPodReload1.0RC7DiagB0.up para a RAIZ do cartao com o nome update.up
+  2. Config -> Atualizar por SD -> Sim
+  3. O aparelho reinicia, atualiza e volta
+  4. APAGUE o update.up do cartao
+
+MUSICAS DE TESTE: tests/assets/rc7/01..07 (copie para uma pasta de musica no cartao)
+
+ROTEIRO (marque ok / falhou)
+  [ ] O aparelho NAO reinicia ao tocar (o quadrado cinza com a nota aparece)
+  [ ] 01_capa_v23            -> quadrado cinza com nota (esperado no B0)
+  [ ] 02_capa_v24            -> quadrado cinza com nota
+  [ ] 03_capa_v24_cabecalho_estendido -> quadrado cinza com nota
+  [ ] 04_capa_progressiva    -> quadrado cinza com nota
+  [ ] 05_capa_png            -> quadrado cinza com nota
+  [ ] 06_sem_capa            -> quadrado cinza com nota
+  [ ] 07_sem_tag             -> quadrado cinza com nota
+  [ ] Trocar de faixa 01 -> 04 -> 02: sem reiniciar
+  [ ] Sair e entrar na Tocando Agora 10 vezes: sem travar nem reiniciar
+  [ ] Titulo, tempos e barra continuam normais
+  [ ] Uma musica sua (a capa NAO aparece no B0: e o esperado)
+  [ ] Fotos abrindo com musica tocando: normal
+  [ ] Config: Informacoes = "RC7 diag B0"; Atualizar por SD funciona
+
+SE ALGUEM DER ERRADO
+  Volte para a RC6 ou para a RC7 pelo cartao (update.up). Se a Tocando Agora
+  reiniciar o aparelho, use o cabo (Flashloader) com o kit da RC7.
