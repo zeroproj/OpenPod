@@ -1,5 +1,9 @@
 # Ficha 009 — RC7: a causa do REINÍCIO (análise estática do ORIGINAL)
 
+> **LEIA ANTES:** a coordenação conferiu esta análise no binário e **derrubou duas conclusões marcadas como
+> CONFIRMADO**: "o handler de fault está fora do dump" e "o B não é deadlock". Valem as correções da seção
+> **Conferência da coordenação**, no fim deste arquivo. Onde houver conflito, ela prevalece.
+
 - Tipo: **Risco**. Objeto: **só leitura** de `firmware/ORIGINAL/GN438_original.bin`
   (sha256 `b7cd5eb9…`, confere). Nada foi gravado no aparelho, nada foi
   empurrado, nenhum merge.
@@ -741,3 +745,88 @@ formato da mensagem), mas tem uma janela (o caminho global pode ser do
 - Nada foi escrito abaixo de `0x00E000`, no setor `0x00D000` ou na PSMP.
 - A **correção não foi implementada**: ela depende da resposta do decisor
   (e do resultado do B0 no aparelho).
+
+---
+
+# Conferência da coordenação (leitura direta do ORIGINAL)
+
+Refaz por desmontagem as afirmações de que a conclusão depende. Mapa usado: os 4 KiB carregados em RAM têm
+**RAM `0x804C00` = arquivo `0xE430`** (a tabela de vetores em `0xE030` ocupa 0x400 B antes deles), não
+`0xE030`. Com esse mapa, Reset (`0x804C40`, arquivo `0xE470`) e o handler (`0x804C90`, arquivo `0xE4C0`)
+desmontam em código coerente. O engano do mapa causou os erros C1 e C2.
+
+## C1. Fault reinicia o aparelho (CONFIRMADO; a análise dizia "não dá para saber")
+
+O handler ativo **está no dump**. `0x804C90`: `cpsid f; tst lr,#4; mrs r0,msp/psp; stmdb r0!,{r4-r11};
+mov r1,lr; bl 0xCF5734`. O `bl` só "caía numa tabela" (1.2) porque foi calculado com endereço de XIP.
+
+`0xCF5734` imprime o estado ("thread:%s", "exception:%d happen", "hard fault happen, HFSR", etc.) e termina em:
+
+```
+00CF5908  movs r1,#0 ; mov r0,r1
+00CF590C  bl 0xCF6634        ; acerta o registrador 0x4D do PMU
+00CF5910  bl 0x80CF9E        ; REINICIA
+00CF5914  b  0xCF5914
+```
+
+`0x80CF9E` é a rotina de reinício da própria fábrica: em `0xCF9D4E` a string `"-update set pc and restart ...."`
+vem logo antes de `b.w 0x80CF9E`. O app reinicia por ela, e não pelo `NVIC_SystemReset`, o que torna a seção 1.3 irrelevante.
+
+## C2. O watchdog é alimentado pela MainTask (CONFIRMADO; a análise dizia o contrário)
+
+A entrada do monitor é `0xD46B14` (`ldr r2,=0x81D120`), um `ldr` antes do `0xD46B16` que a análise varreu.
+Ela **tem chamador**, no laço principal da mesma função que abre `/dev/wdog` (`0xCF7EAA`) e foi criada como
+MainTask em `0xCF8078`:
+
+```
+00CF7EC0  bl 0xD7DADE        ; espera o próximo comando (timeout -1)
+...
+00CF7FBE  bl 0xD46B14        ; comando de timer -> monitor -> refresh do watchdog
+```
+
+Logo: **se a MainTask parar, o watchdog deixa de ser alimentado.** Prazo e ação na expiração seguem fora do
+dump (reinício é o PROVÁVEL). **Cai a conclusão "travamento puro congela, logo o B não é deadlock"** (1.4, 1.6 e
+itens 2 e 5 do veredito). "Reiniciou" não separa fault de travamento: **os dois caminhos reiniciam**.
+
+## C3. A causa principal volta a ser o ring da view (HIPÓTESE principal, gatilho não provado)
+
+Cada elo, com a classificação própria:
+
+1. **CONFIRMADO, desmontado de novo:** `0xCF83E4` pega o mutex `0x81BBCC` (`0xCF83FA`). Com o ring cheio, `blo 0xCF8438`
+   (`0xCF8408`) → `movs r4,#0` → `0xCF8432` retorna **sem o give** de `0xCF842E`.
+2. **PROVÁVEL:** o presenter da MainTask manda a rajada do play por esse caminho (008, B4).
+3. **HIPÓTESE:** o `get_path` na ViewTask deixa a view lenta o bastante para o ring encher. Falta medir: capacidade
+   do ring, tamanho da rajada, tempo do `get_path`.
+4. **HIPÓTESE:** a MainTask fica presa no take seguinte. Falta saber se o mutex é recursivo e qual o timeout do take
+   (`0x80DB48`, RAM fora dos 4 KiB).
+5. **Por C2:** MainTask presa → watchdog sem alimento → reinício.
+
+Isso explica o que o decisor viu na RC7 ("às vezes abre o player, mas não toca"): a tela vive e a tarefa que
+toca está parada. Não é prova. **Fault dentro do `get_path` chamado pela ViewTask segue possível** (C1).
+
+## C4. Outras correções
+
+- **"A única diferença é a tarefa" (veredito, item 4): rebaixado a PROVÁVEL.** Os valores de origem e índice
+  no instante da chamada não foram observados, e o tempo que a view fica ocupada também muda.
+- **Pilha em palavras (3.1): rebaixado a PROVÁVEL.** `xTaskCreate` está na ROM, e o argumento depende de a
+  MainTask rodar esse caminho. O resultado é coerente com o FreeRTOS, mas não é leitura direta.
+- **"O B e o C provaram que o get_path sozinho já reinicia" (proposta, riscos): falso.** O C não foi gravado, e o B
+  liga a rotina junto com o `get_path`; separar os dois é a razão do B0.
+- **`udiv` na fábrica: CONFIRMADO** (`0xD087F2`, `b6fb f2f3`; 1064 na FIRM pela varredura da coordenação).
+  A premissa da 007 estava errada. `tests/test_rc7_trava.py` continua válido, mas o motivo escrito no cabeçalho não.
+- **A base do `tbb` (2.1) está certa** (`0xCFEFEE + 4`); o motivo está mal escrito: é a regra PC+4 do Thumb-2.
+
+## C5. O que muda na proposta de correção
+
+- **Pôr o trabalho lento na MainTask é perigoso:** ela alimenta o watchdog (C2). O `get_path` rápido a fábrica já
+  faz lá; a decodificação de JPEG não pode ir para lá sem medir o tempo.
+- **Entra a correção do bug do ring** (soltar o mutex quando estiver cheio). A decidir: descartar a mensagem ou
+  esperar e tentar de novo. Descartar pode perder uma atualização de tela; esperar segura a MainTask.
+- **Próximo degrau depois do B0, se ele tocar:** B + bug do ring corrigido. Se tocar, o elo fica provado.
+
+## Conferência da imagem B0 (refeita de forma independente)
+
+Reconstruída pela receita: RC7 `3af97713…`, B0 `63afb46a…`. Diferença entre as duas: **só `0x1AA14C..D`**
+(`e0 47` → `00 20`). Payload do `.up` igual à imagem, salvo os 15 bytes de carimbo e etapa. Abaixo de `0xE000` e setor
+`0xD000` iguais ao ORIGINAL. `sh tools/ci.sh`: CI OK. **O B0 segue válido**: nenhum dos erros acima o afeta.
+No `TESTAR.txt`, a volta de segurança apontava para a RC7, que é a que reinicia; corrigida para a RC6.

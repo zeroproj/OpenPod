@@ -37,6 +37,5 @@ ROTEIRO (marque ok / falhou)
   [ ] Fotos abrindo com musica tocando: normal
   [ ] Config: Informacoes = "RC7 diag B0"; Atualizar por SD funciona
 
-SE ALGUEM DER ERRADO
-  Volte para a RC6 ou para a RC7 pelo cartao (update.up). Se a Tocando Agora
-  reiniciar o aparelho, use o cabo (Flashloader) com o kit da RC7.
+SE ALGO DER ERRADO
+  Volte para a RC6 pelo cartao (update.up da RC6). Se nao der, use o cabo (Flashloader) com o kit da RC6.
