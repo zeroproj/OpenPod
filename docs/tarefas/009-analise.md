@@ -173,21 +173,28 @@ driver do watchdog ou da mask ROM (ver 1.4).
   `ldr r0, [pc,#0x30] ; = 0x00CD9049` (a string **`"/dev/wdog"`**),
   `movs r1,#0`, e chama `0x00D636F0` (o `open`). O handle fica em
   `0x0081D148`.
-- Um **monitor** (`0x00D46B16`) alimenta o watchdog (`bl 0x00D637AA`, que é
-  um despachante: `ldr r0,[r0,#4]; ldr r4,[r0,#4]; bx ip` — o driver está
-  **fora do dump**) e, no mesmo passe, confere o "batimento" de cada tarefa
-  (a tabela `0x0081D68C`, entradas de `0x58`, o bit em `+0x50`); quando uma
-  tarefa não bate, imprime **`"-task %d (%s)is dead"`** ou
-  **`"-task %d is dead"`**, e imprime **`"-watch_watchdog_refresh"`** quando
-  o modo de depuração (`0x00823EB0`) é `0x16`.
-- O watchdog é alimentado **incondicionalmente** pelo monitor (o `bl` de
-  refresh está antes do teste das tarefas mortas): **uma tarefa travada não
-  deixa o watchdog expirar** — ela só aparece no log.
+- Um **monitor** (`0x00D46B16`) alimenta o watchdog: `bl 0x00D637AA`, que é
+  um despachante (`ldr r0,[r0,#4]; ldr r4,[r0,#4]; bx ip` — o driver está
+  **fora do dump**). O mesmo monitor imprime **`"-watch_watchdog_refresh"`**
+  quando o modo de depuração (`0x00823EB0`) é `0x16`.
+- Uma rotina **ao lado** (`0x00D46B6E`) confere o "batimento" de cada
+  tarefa (a tabela `0x0081D68C`, entradas de `0x58`, o bit em `+0x50`) e
+  imprime **`"-task %d (%s)is dead"`** / **`"-task %d is dead"`** quando uma
+  tarefa não bate.
+- **O refresh do watchdog não depende do teste das tarefas mortas**: o
+  `bl` de refresh (`0x00D46B52`) está no caminho normal do monitor, e o
+  `cbz` que precede o ramo das tarefas mortas **salta para ele** — ou
+  seja, o watchdog é alimentado **incondicionalmente**.
+- Nem `0x00D46B16` nem `0x00D46B6E` têm chamador visível (varredura de
+  `bl`): são alcançados por uma tabela (timer/callback), que não está no
+  dump.
 
 **Não dá para saber:** o prazo do watchdog e o que o driver faz quando ele
 expira (o driver está na mask ROM/RAM). Também não dá para saber se o
 monitor, ao ver uma tarefa morta, faz alguma coisa além de imprimir — no
 código visível, **ele só imprime e volta** (sem reset, sem `abort`).
+**E, como o watchdog é alimentado incondicionalmente pelo monitor, uma
+tarefa travada não o deixa expirar**: ela só aparece no log.
 
 ## 1.5 `0x9E3C` e o resto que está fora do dump
 
