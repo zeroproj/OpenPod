@@ -63,8 +63,11 @@ SHA_RC7 = ("3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab6456"
 # os alvos dos niveis
 SET_TEXT = 0x00D5ED94        # o lv_label_set_text da fabrica (nivel A)
 JD_PREP = 0x00D10B21         # jd_prepare | Thumb (nivel C)
+GET_PATH = 0x00CFEFC5        # pstr_audio_get_path | Thumb (nivel B0)
 FALHA = b"\x01\x20"          # movs r0, #1 (a chamada externa "falhada")
 FALHA_BL = b"\x00\x20\x00\xBF"   # movs r0, #0 + nop (o bl interno, cortado)
+FALHA_ZERO = b"\x00\x20"     # movs r0, #0 (a chamada externa "falhada" de
+                            # verdade: o get_path devolve 0 = falha)
 
 # o `carrega_capa` (nivel B): a UNICA rotina do lote que guarda nove
 # registradores e tem `sub sp,#12` no prologo — as outras seis (CRIA,
@@ -81,6 +84,7 @@ NIVEL = {
     "a": "TITULO so faz o set_text",
     "b": "A + get_path, sem arquivo",
     "c": "B + f_open/f_close",
+    "b0": "TITULO ligado, get_path cortado (cinza)",
 }
 
 
@@ -209,6 +213,15 @@ def bytes_do_patch(d, nivel):
         if len(bls) != 1:
             return None, 0, b""
         return bls[0], 4, FALHA_BL
+    if nivel == "b0":
+        # a chamada ao get_path: o par movw/movt que carrega o endereco e o
+        # blx que a usa. O blx vira `movs r0, #0`: o get_path "devolve
+        # falha", e o TITULO cai no caminho que ja existe (o caminho
+        # guardado fica vazio e o quadrado cinza aparece).
+        off = achado_unico(d, GET_PATH)
+        if off is None:
+            return None, 0, b""
+        return off, 2, FALHA_ZERO
     if achado_unico(d, JD_PREP) is None:
         return None, 0, b""
     return achado_unico(d, JD_PREP), 2, FALHA
@@ -236,7 +249,12 @@ def confere_patch(d, nivel, off, tam, novos):
             erros.append("os 2 primeiros bytes nao decodificam como movs r0, #0")
         if h2 != 0xBF00:
             erros.append("os 2 ultimos bytes nao decodificam como nop")
+    elif nivel == "b0":
+        h = struct.unpack_from("<H", d, off)[0]
+        if (h & 0xF800) != 0x2000 or ((h >> 8) & 0x7) != 0 or (h & 0xFF):
+            erros.append("os 2 bytes novos nao decodificam como movs r0, #0")
     else:
+
         h = struct.unpack_from("<H", d, off)[0]
         if (h & 0xF800) != 0x2000 or ((h >> 8) & 0x7) != 0:
             erros.append("os 2 bytes novos nao decodificam como movs r0, #1")
