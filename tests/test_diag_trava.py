@@ -22,6 +22,10 @@ O QUE ESTE TESTE COBRE
       decodificacao do caminho "ring cheio" em 0x00CF8438 (`movs r4,#0` +
       o `b` que agora aponta para o give do mutex), a recusa de entrada
       errada e a recusa da imagem ja patcheada;
+    - o nivel B2 (ficha 010, adendo): o diff de 2 bytes contra o Diag B, a
+      decodificacao do `bpl` do monitor do watchdog em 0x00D46B30 (que no
+      B2 e um `nop`), a recusa de entrada errada e a da imagem ja
+      patcheada;
     - as recusas: entrada errada (RC6, RC6 carimbada, truncada, lote
       mexido), `--dry-run` (nao grava), `--out` igual/symlink/hardlink da
       entrada e o reprocessamento de uma saida;
@@ -69,9 +73,10 @@ NIVEL = {
     "c": ("reload_1.0_rc7_diag_c", 2, (0x1AA31E,)),
     "b0": ("reload_1.0_rc7_diag_b0", 2, (0x1AA14C,)),
     "b1": ("reload_1.0_rc7_diag_b1", 2, (0x0F843A,)),
+    "b2": ("reload_1.0_rc7_diag_b2", 2, (0x146B30,)),
 }
 # o nivel que cada nivel consome (a entrada da ferramenta): None = a RC7
-BASE = {"a": None, "b": None, "c": None, "b0": None, "b1": "b"}
+BASE = {"a": None, "b": None, "c": None, "b0": None, "b1": "b", "b2": "b"}
 # o que fica no lugar, byte a byte (o nivel A e conferido pela decodificacao
 # do b.w, que depende do endereco de execucao)
 ESPERADO = {
@@ -80,6 +85,7 @@ ESPERADO = {
     "c": b"\x01\x20",             # movs r0, #1
     "b0": b"\x00\x20",            # movs r0, #0 (o get_path "falha")
     "b1": b"\xf7\xe7",            # b 0x00CF842C (o give do mutex)
+    "b2": b"\x00\xbf",            # nop (o monitor do watchdog)
 }
 # o par movw/movt da chamada externa do nivel C e o alvo
 CHAMADA = {"c": (0x1AA316, 0x00D10B21),
@@ -96,6 +102,13 @@ RING_CHEIO = 0x0F8438        # movs r4,#0 (o caminho do ring cheio)
 RING_CHEIO_BYTES = b"\x00\x24"
 RING_ALVO_ANTES = 0x00CF8432  # o `b` da fabrica: pula o give (o bug)
 RING_ALVO_DEPOIS = 0x00CF842C  # o `b` novo: o give do mutex
+
+# o nivel B2 (ficha 010, adendo): o `bpl` do monitor do watchdog
+# (0x00D46B30), no codigo da FABRICA (fora do lote da RC7)
+MON_OFF = 0x146B30            # o `bpl` (XIP 0x00D46B30)
+MON_ALVO_ANTES = 0x00D46B68   # o alvo do `bpl` na fabrica
+# a regiao que cada nivel pode mexer FORA do lote (no codigo da fabrica)
+FORA_LOTE = {"b1": (RING_OFF, 2), "b2": (MON_OFF, 2)}
 
 
 def le(p):
@@ -136,13 +149,20 @@ def imm16(h1, h2):
 
 
 def b16(b, a):
-    """Alvo de um `b` de 16 bits (T1) no deslocamento `a`; None se nao for."""
+    """Alvo de um branch de 16 bits (T1) no deslocamento `a`.
+
+    Aceita o `b` incondicional e o condicional (`bpl`); None se nao for."""
     h = struct.unpack_from("<H", b, a)[0]
-    if (h & 0xF800) != 0xE000:
+    if (h & 0xF000) == 0xD000:               # condicional: 1101 cond imm8
+        imm = h & 0xFF
+        if imm & 0x80:
+            imm -= 0x100
+    elif (h & 0xF800) == 0xE000:             # incondicional: 11100 imm11
+        imm = h & 0x7FF
+        if imm & 0x400:
+            imm -= 0x800
+    else:
         return None
-    imm = h & 0x7FF
-    if imm & 0x400:
-        imm -= 0x800
     return XIP + a + 4 + 2 * imm
 
 
@@ -260,9 +280,10 @@ class Imagens(Base):
             img = self.diags[n][2]
             dif = [i for i in range(len(img)) if img[i] != self.base(n)[i]]
             for i in dif:
-                if n == "b1":
-                    # o nivel B1 mexe no codigo da FABRICA (o `b` do ring)
-                    self.assertTrue(RING_OFF <= i < RING_OFF + 2, f"{n}: 0x{i:06X}")
+                if n in FORA_LOTE:
+                    # o nivel mexe no codigo da FABRICA (o branch dele)
+                    o, t = FORA_LOTE[n]
+                    self.assertTrue(o <= i < o + t, f"{n}: 0x{i:06X}")
                 else:
                     self.assertTrue(0x1A8000 <= i < 0x1AB000, f"{n}: 0x{i:06X}")
                 self.assertGreaterEqual(i, 0x00E000)
@@ -333,16 +354,21 @@ class Recusa(Base):
         b = bytearray(self.rc7)
         b[CARREGA_CAPA[1]] ^= 0xFF             # o bl do carrega_capa mexido
         casos["b"]["bl_mexido"] = bytes(b)
-        # o nivel B1 consome o Diag B: a RC7 e o B0 sao entradas erradas
-        casos["b1"]["rc7"] = self.rc7
-        casos["b1"]["b0"] = self.diags["b0"][2]
+        # os niveis B1 e B2 consomem o Diag B: as outras sao entradas erradas
+        for n, outro in (("b1", "b0"), ("b2", "b0")):
+            casos[n]["rc7"] = self.rc7
+            casos[n][outro] = self.diags[outro][2]
         casos["b1"]["b1_ja_patcheada"] = self.diags["b1"][2]
+        casos["b2"]["b2_ja_patcheada"] = self.diags["b2"][2]
         b = bytearray(self.diags["b"][2])
         b[RING_OFF] ^= 0x01                   # o `b` do ring mexido
         casos["b1"]["ring_mexido"] = bytes(b)
         b = bytearray(self.diags["b"][2])
         b[RING_GIVE] ^= 0x01                  # o give do mutex mexido
         casos["b1"]["give_mexido"] = bytes(b)
+        b = bytearray(self.diags["b"][2])
+        b[MON_OFF] ^= 0x01                    # o `bpl` do monitor mexido
+        casos["b2"]["monitor_mexido"] = bytes(b)
         for n in NIVEL:
             for nome, entrada in casos[n].items():
                 rc, criou, intacta = self.roda(entrada, n)
@@ -506,7 +532,7 @@ class B1(Base):
         """A B1 nao entra na B1: nem pelas premissas nem pela ferramenta."""
         d = bytearray(self.diags["b1"][2])
         erros = F.confere_premissas(d, "b1")
-        self.assertTrue(any("patchead" in e for e in erros), erros)
+        self.assertTrue(any("ja esta aplicado" in e for e in erros), erros)
         tmp = tempfile.mkdtemp(prefix="openpod_diag010x_")
         src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
         with open(src, "wb") as f:
@@ -541,6 +567,66 @@ class B1(Base):
         self.assertEqual(b1[RING_OFF:RING_OFF + 2], ESPERADO["b1"])
         # o TITULO do B continua ligado (o B1 nao mexe no lote)
         self.assertEqual(b1[0x1AA014:0x1AA018], b[0x1AA014:0x1AA018])
+
+
+class B2(Base):
+    """O nivel B2 (ficha 010, adendo): o monitor do watchdog neutralizado.
+
+    O B2 mexe no codigo da FABRICA (nao no lote da RC7): o `bpl` do monitor
+    (`0x00D46B30`), que voltaria sem alimentar o watchdog quando alguma
+    tarefa registrada nao bate."""
+
+    def test_30_diff_de_2_bytes_contra_o_b(self):
+        """O B2 e o Diag B + a regiao de 2 bytes do `bpl` do monitor."""
+        b = self.diags["b"][2]
+        b2 = self.diags["b2"][2]
+        dif = [i for i in range(len(b)) if b[i] != b2[i]]
+        self.assertEqual(dif, [MON_OFF, MON_OFF + 1])
+        self.assertEqual(b[MON_OFF:MON_OFF + 2], b"\x1a\xd5")
+        self.assertEqual(b2[MON_OFF:MON_OFF + 2], ESPERADO["b2"])
+        # e nada mais: o resto do Diag B continua byte a byte
+        self.assertEqual(b[:MON_OFF], b2[:MON_OFF])
+        self.assertEqual(b[MON_OFF + 2:], b2[MON_OFF + 2:])
+
+    def test_31_decodificacao_do_bpl(self):
+        """Na fabrica o `bpl` pula a "-task %d is dead"; no B2 ele e um nop."""
+        b = self.diags["b"][2]
+        b2 = self.diags["b2"][2]
+        # o `bpl` da fabrica: 0xD51A -> bpl 0x00D46B68
+        h = struct.unpack_from("<H", b, MON_OFF)[0]
+        self.assertEqual(h, 0xD51A)
+        self.assertEqual(b16(b, MON_OFF), MON_ALVO_ANTES)
+        # no B2: 0xBF00 = nop (e nenhum branch)
+        h2 = struct.unpack_from("<H", b2, MON_OFF)[0]
+        self.assertEqual(h2, 0xBF00)
+        self.assertIsNone(b16(b2, MON_OFF))
+
+    def test_32_imagem_ja_patcheada_recusada(self):
+        """A B2 nao entra na B2: nem pelas premissas nem pela ferramenta."""
+        d = bytearray(self.diags["b2"][2])
+        erros = F.confere_premissas(d, "b2")
+        self.assertTrue(any("ja esta aplicado" in e for e in erros), erros)
+        tmp = tempfile.mkdtemp(prefix="openpod_diag010b2x_")
+        src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
+        with open(src, "wb") as f:
+            f.write(bytes(d))
+        r = subprocess.run([sys.executable,
+                            os.path.join(RAIZ, "tools/fab_diag_trava.py"),
+                            "--in", src, "--out", dst, "--nivel", "b2"],
+                           capture_output=True, text=True, cwd=RAIZ)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertFalse(os.path.exists(dst))
+
+    def test_33_premissas_do_b2(self):
+        """O `bpl` tem de ser o da fabrica."""
+        d = bytearray(self.diags["b"][2])
+        d[MON_OFF] ^= 0x01                    # o `bpl` do monitor mexido
+        erros = F.confere_premissas(d, "b2")
+        self.assertTrue(any("fabrica" in e for e in erros), erros)
+        # a RC7 e o B0 nao sao a entrada do B2
+        for outra in (self.rc7, self.diags["b0"][2], self.diags["b1"][2]):
+            erros = F.confere_premissas(bytearray(outra), "b2")
+            self.assertTrue(erros)
 
 
 class Comportamento(Base):

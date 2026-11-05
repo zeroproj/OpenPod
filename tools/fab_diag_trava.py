@@ -46,13 +46,16 @@ PROPOSITO
          get_path".
 
       B1 "B + o bug do ring corrigido" — 2 bytes (ficha 010).
-         O B e o B0 mediram a ViewTask; o que NINGUM deles mede e o BUG DA
-         FABRICA no envio ao ring: com o ring CHEIO, o caminho de erro
-         (`0x00CF8438`, `movs r4,#0`) salta o give do mutex (`0x00CF842E`)
-         e devolve 0 com o mutex `0x81BBCC` PRESO. O B1 troca o `b` de
-         `0x00CF843A` (arquivo `0x00F843A`: `fa e7`, `b 0x00CF8432`) por
-         `f7 e7` (`b 0x00CF842C`): o caminho "cheio" passa pelo give e a
-         mensagem e descartada. Sao 2 bytes na FABRICA — fora do lote.
+         Com o ring CHEIO, o caminho de erro (`0x00CF8438`, `movs r4,#0`)
+         salta o give do mutex (`0x00CF842E`) e devolve 0 com o mutex
+         `0x81BBCC` PRESO. O B1 troca o `b` de `0x00CF843A` (arquivo
+         `0x00F843A`: `fa e7`, `b 0x00CF8432`) por `f7 e7` (`b 0x00CF842C`).
+
+      B2 "B + o monitor do watchdog neutralizado" — 2 bytes (ficha 010).
+         O monitor (`0x00D46B18`) confere as tarefas registradas e, se
+         alguma nao bateu, salta para `0x00D46B68` ("-task %d is dead") e
+         RETORNA sem alimentar o watchdog. O B2 troca o `bpl` de
+         `0x00D46B30` (arquivo `0x146B30`: `1a d5`) por `00 bf` (`nop`).
 
     (D e a RC7 inteira, que ja existe.)
 
@@ -79,10 +82,9 @@ PREMISSAS, conferidas ANTES de escrever qualquer byte
         (0x00D10B21, com o bit do Thumb) e o que carrega o get_path
         (0x00CFEFC5) aparecem EXATAMENTE UMA vez cada no codigo do lote,
         e o `blx` que os segue ainda esta la;
-      - nivel b1: o `b` do caminho "ring cheio" (`0x00F843A`) ainda e o da
-        fabrica (`fa e7` = `b 0x00CF8432`, decodificado do binario) e o
-        give do mutex (`0x00F842C`: `ldr r0,[pc,#0x10]` + `bl 0x80DB6E`)
-        esta no lugar.
+      - niveis b1 e b2: o branch no codigo da FABRICA ainda e o da
+        fabrica (decodificado do binario: `b 0x00CF8432` e `bpl
+        0x00D46B68`) e o give do mutex (`0x00F842C`) esta no lugar.
 
 CONFERENCIA DE SAIDA
 
@@ -90,23 +92,22 @@ CONFERENCIA DE SAIDA
     `b.w` novo da entrada TITULO decodificado de volta (alvo 0x00D5ED94),
     os 4 bytes novos do nivel B lidos de volta (`movs r0, #0` + `nop`) ou
     os 2 bytes novos do nivel C (`movs r0, #1` = 01 20) ou os 2 bytes do
-    nivel B1 (`f7 e7`, decodificados de volta como `b 0x00CF842C`). Depois
+    nivel B1 (`f7 e7` = `b 0x00CF842C`) ou do B2 (`00 bf` = `nop`). Depois
     faz o diff final contra a entrada: nenhum byte pode mudar FORA da
-    regiao do patch (4/4/2/2 bytes) — qualquer byte a mais e recusa, sem
-    gravar a saida.
+    regiao do patch (4/4/2/2/2 bytes) — qualquer byte a mais e recusa.
 
 SEGURANCA DA ESCRITA
 
     `--out` e recusado quando aponta para a propria entrada — mesmo
     caminho, symlink ou hardlink (`os.path.samefile`). E so se escreve
-    DENTRO do lote 0x001A8000..0x001AB000 (4/4/2 bytes), ou — no nivel
-    B1 — nos 2 bytes do `b` do ring (0x00F843A). Nada abaixo de 0x00E000,
-    e o setor 0x00D000 e a PSMP (0x001FC000+) ficam intocados.
+    DENTRO do lote 0x001A8000..0x001AB000 (4/4/2 bytes), ou — nos niveis
+    B1 e B2 — nos 2 bytes do branch na FABRICA (0x00F843A / 0x146B30).
+    Nada abaixo de 0x00E000, e o setor 0x00D000 e a PSMP ficam intocados.
 
 USO
 
     python3 tools/fab_diag_trava.py --in <rc7.bin> --out <diag.bin>
-                                    --nivel a|b|c|b0|b1 [--em 0x1a8000] [--dry-run]
+                                    --nivel a|b|c|b0|b1|b2 [--em 0x1a8000]
 
     O `--em` e o endereco do lote onde o patch acontece (0x001A8000, o
     mesmo da RC7); a receita do build.py passa esse endereco e a
@@ -120,16 +121,15 @@ DEPENDENCIAS
 
 LIMITACOES
 
-    - so serve na imagem exata do nivel: qualquer outra e recusada;
-    - o codigo do lote NAO e remontado: as imagens sao a RC7 com 4, 4, 2
-      ou 2 bytes trocados. O que o lote faz alem do ponto cortado
+    - so serve na imagem exata do nivel;
+    - o codigo do lote NAO e remontado: as imagens sao a RC7 (ou o Diag B)
+      com 4, 4 ou 2 bytes trocados. O que o lote faz alem do ponto cortado
       continua igual (e o que a bissecao mede);
     - o nivel B NAO entra no `carrega_capa` (e nao tem `calloc`, `free`
       nem arquivo): e por isso que ele mede so o `get_path` — o
-      `free(NULL)` do caminho de erro da RC7 (que fica no nivel C e no D)
-      nao aparece nele;
-    - o nivel B1 mexe NO CODIGO DA FABRICA (2 bytes, `0x00F843A`): ele
-      conserta o bug do mutex no caminho "ring cheio", e nao o TITULO;
+      `free(NULL)` do caminho de erro da RC7 nao aparece nele;
+    - os niveis B1 e B2 mexem NO CODIGO DA FABRICA (2 bytes cada): o B1
+      conserta o bug do mutex do ring; o B2 neutraliza o watchdog;
     - depois de aplicada, rodar de novo sobre a saida e recusado (o sha da
       entrada ja nao e o da imagem do nivel e a regiao ja esta patcheada).
 """
@@ -201,10 +201,10 @@ def confere_premissas(d, nivel):
             erros.append(f"em 0x{off:06X} nao ha um bl para o carrega_capa "
                          f"(0x{alvo:08X}) — o codigo do lote mudou")
         return erros
-    # nivel b1: o `b` do caminho "ring cheio" (no codigo da fabrica, fora
-    # do lote) e o give do mutex tem de estar no lugar
-    if nivel == "b1":
-        return erros + G.premissa_b1(d)
+    # os niveis que mexem no codigo da FABRICA (fora do lote): o `b` do
+    # ring cheio (b1) e o `bpl` do monitor do watchdog (b2)
+    if nivel in G.FORA_LOTE:
+        return erros + G.premissa_fora(d, nivel)
     # niveis c e b0: a chamada externa tem de existir exatamente uma vez
     valor = G.GET_PATH if nivel == "b0" else G.JD_PREP
     pares = G.acha_pares(d, valor)
