@@ -1,3 +1,5 @@
+RESERVA: NAO GRAVE ESTA VERSAO, a menos que a coordenacao peca (ver ficha 010, D4).
+
 OpenPod Reload 1.0 RC7 Diag B1 — TESTAR
 
 O que e: a imagem Diag B (a que REINICIA o aparelho ao tocar) com o BUG DO
@@ -42,6 +44,6 @@ ROTEIRO (marque ok / falhou) — a pergunta principal e a PRIMEIRA
   [ ] Fotos abrindo com musica tocando: normal
   [ ] Config: Informacoes = "RC7 diag B1"; Atualizar por SD funciona
 
-SE ALGUEM DER ERRADO
+SE ALGO DER ERRADO
   A volta de seguranca e SEMPRE a RC6: volte para a RC6 pelo cartao
   (update.up da RC6). Se nao der, use o cabo (Flashloader) com o kit da RC6.

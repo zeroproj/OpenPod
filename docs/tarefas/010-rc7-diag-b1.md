@@ -30,3 +30,13 @@ o envio sai sem soltar o mutex, a MainTask para e o watchdog deixa de ser alimen
 
 Regras de sempre: nunca alterar `firmware/ORIGINAL`, testes protegidos ou `tools/ci.sh`; nunca gravar no aparelho,
 push, merge; ferramenta ≤ 350 linhas; nada abaixo de `0xE000`, setor `0xD000` e PSMP intocados.
+
+## Adendo da coordenação: imagem B2 (substitui o B1 como próximo teste)
+Motivo: seções D1 a D4 de `010-analise.md`. Entregar, nas mesmas regras:
+**B2 = imagem Diag B + exatamente 2 bytes no monitor do watchdog:** arquivo `0x146B30`: `1a d5` (`bpl 0xD46B68`) vira
+`00 bf` (`nop`). Receita `reload_1.0_rc7_diag_b2`, nível novo nas mesmas ferramentas, testes equivalentes aos do B1,
+carimbo `RC7 diag B2`, kit `release/OpenPod-Reload-1.0-RC7-Diag-B2`. O `TESTAR.txt` tem no máximo 25 linhas e pergunta:
+toca, congela ou reinicia? Se reiniciar ou congelar, quantos segundos depois de dar play? Avisa que, se congelar, o aparelho
+sai pelo botão de reset; que a volta de segurança é a RC6; e que a B2 não é para uso normal, porque fica sem a proteção do watchdog.
+Não altere `tools/gera_versao.py`.
+

@@ -8,6 +8,9 @@ decodificado à mão + a varredura de literais `ldr rX,[pc,#imm]`.
 Cada afirmação leva CONFIRMADO / PROVÁVEL / HIPÓTESE. **CONFIRMADO** traz o
 endereço e as instruções desmontadas.
 
+> **LEIA ANTES:** a coordenação conferiu esta análise. A capacidade do ring é **0x3C00 (15360 B)**, não 4096, e a causa
+> principal mudou. Vale a seção **Conferência da coordenação**, no fim deste arquivo. O kit B1 fica de reserva.
+
 ---
 
 ## 0. O que o B1 conserta (o bug) — CONFIRMADO
@@ -178,8 +181,7 @@ Logo: **bytes no ring = `[msg+0xA] + 16`**.
 
 **Consequência (a conta, não a medição):** mesmo no pior caso (2308), a
 rajada **não enche** um ring de 4096 bytes. A rajada sozinha **não** é o
-gatilho — o que reforça que o B1 é um teste decisivo: se o B1 tocar, o ring
-não era a causa; se ele travar/reiniciar, o ring cheio é o caminho.
+gatilho — o que corrigido na Conferência: a conclusão aqui estava invertida e usava a capacidade errada.
 
 ---
 
@@ -271,3 +273,67 @@ intacto — só o bug do ring mudou). A **volta de segurança é sempre a RC6**.
 - Nada foi escrito abaixo de `0x00E000`, no setor `0x00D000` ou na PSMP.
 - A **correção final** não foi implementada (ela depende do resultado do
   B1), e `tools/capa_album.s` não foi tocado.
+
+---
+
+# Conferência da coordenação (leitura direta do ORIGINAL)
+
+Imagem B1 refeita pela receita: `fb0d91dd…`, 1 byte de diferença contra o Diag B (`0xF843A`: `fa` → `f7`). Payload do `.up`
+igual, salvo os 15 bytes de carimbo e etapa. CI OK. A mudança em `tools/gera_versao.py` não alterava o resultado e foi revertida.
+
+## D1. A capacidade do ring é 15360 B (CONFIRMADO; a análise dizia "4096, PROVÁVEL" e "escrita na ROM")
+
+Na entrada da ViewTask, o ring é criado no próprio firmware:
+
+```
+00CF8246  movs r0,#0x14 ; bl 0xD58188   ; aloca o objeto do ring
+00CF824E  str  r0,[r4,#8]               ; [0x81BBC8] = o ring
+00CF82B4  mov.w r0,#0x3C00
+00CF82B8  str  r0,[r5]                  ; [ring+0] = 0x3C00, a capacidade
+00CF82BA  bl   0xD58188                 ; aloca o buffer
+00CF82C0  str  r0,[r5,#0xC]             ; [ring+0xC] = o buffer
+```
+
+`desc+0x24 = 0x1000` é a pilha da tarefa, não o ring. Com 15360 B, a rajada do play (cerca de 300 B, pior caso 2308)
+**não enche o ring em segundos**. O bug do ring é real, mas **deixa de ser o gatilho principal**.
+
+## D2. Tarefa monitorada parada corta o watchdog (CONFIRMADO; corrige a 009, seção 1.4)
+
+O refresh **não é incondicional**. A cada comando de timer, o monitor confere as tarefas registradas:
+
+```
+00D46B18  ldrd r4,r1,[r2]            ; r4 = registradas, r1 = bateram desde a última vez
+00D46B2A  lsr.w r6,r1,r3 ; lsls r6,#0x1f
+00D46B30  bpl 0xD46B68               ; registrada e NÃO bateu -> "-task %d is dead" e RETORNA
+...
+00D46B52  bl  0xD637AA               ; o refresh: nesse caminho, não executa
+```
+
+- **A ViewTask é monitorada:** `0xD46BEC` registra a tarefa (string `"-watch monitor register view error !"`).
+- **Ela bate uma vez por volta do laço:** `0xCF82A4 bl 0xD46BBC`. Enquanto trata uma mensagem, não bate.
+- **A fábrica tira a ViewTask do monitor em dois pontos:** `0xCFCA0E` e `0xCFCBC8`
+  (string `"-view_task unregister failed!"`). O motivo não está no código; o `0xCFCA0E` antecede `"ebook_auto_play"`.
+- **A MainTask não é registrada:** ela é quem roda o monitor (`0xD46BEC` só registra a 3 e a 9, que a string nomeia
+  como view e manager). Por isso a fábrica pode chamar o `get_path` nela sem esse risco.
+
+## D3. Nova causa principal (PROVÁVEL que seja o watchdog; HIPÓTESE o mecanismo exato)
+
+O `get_path` na ViewTask a segura sem bater. Por tempo demais, ou para sempre, o monitor deixa de alimentar o
+watchdog e o aparelho reinicia. Não usa o ring. Encaixa em A toca, B0 toca e B reinicia.
+
+Falta saber: o período do comando de timer e o prazo do watchdog (fora do dump; `0xD46AAA` passa `0x14` ao abrir
+`/dev/wdog`, e o significado é HIPÓTESE), e se o `get_path` é só lento ou não retorna nunca.
+
+## D4. Próximo degrau: B2, no lugar do B1
+
+**B2 = Diag B + 2 bytes:** arquivo `0x146B30`: `1a d5` (`bpl`) vira `00 bf` (`nop`). O monitor passa a tratar toda tarefa
+como viva e o watchdog é sempre alimentado. Uma gravação separa as três possibilidades:
+
+| B2 no aparelho | Leitura | Caminho |
+|---|---|---|
+| **Toca** | O `get_path` só é lento | Tirar a ViewTask do monitor durante o trabalho, como a fábrica faz, ou obter o caminho na MainTask |
+| **Congela, sem reiniciar** | O `get_path` não retorna na ViewTask | Obter o caminho na MainTask |
+| **Reinicia** | Fault de verdade (C1 da 009), não watchdog | Procurar a falha no caminho do `get_path` |
+
+Sem watchdog, um congelamento só sai pelo botão de reset. Por isso o B2 é só diagnóstico: esse patch nunca entra na versão final.
+O kit B1 fica de reserva.

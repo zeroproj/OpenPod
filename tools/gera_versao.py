@@ -118,15 +118,8 @@ def main():
         parar("a imagem mexe no bootloader, no setor 0xD000 ou na PSMP. PARE.")
 
     curto = a.versao.replace("OpenPod-Core-", "").replace("-", " ")   # "5.7 Public Beta 3"
-    if a.versao.startswith("OpenPod-Reload-"):
-        # A LINHA RELOAD (1.0 RCx): o nome do .up e o da versao, sem os
-        # tracos — "OpenPod_OpenPodReload1.0RC7DiagB1". E o {BETA} dos
-        # modelos e o {CURTO} (a linha Reload nao tem "Beta").
-        up = "OpenPod_" + a.versao.replace("-", "")
-        beta = curto
-    else:
-        beta = re.sub(r".*?(Beta\s*\d+).*", r"\1", curto) or "Beta"    # "Beta 3"
-        up = "OpenPod_" + beta.replace(" ", "")                        # "OpenPod_Beta3"
+    beta = re.sub(r".*?(Beta\s*\d+).*", r"\1", curto) or "Beta"        # "Beta 3"
+    up = "OpenPod_" + beta.replace(" ", "")                            # "OpenPod_Beta3"
 
     interno = os.path.join(RAIZ, "firmware", "RELEASE", a.versao.replace("-", " "))
     publico = os.path.join(RAIZ, "release", a.versao)
