@@ -62,6 +62,7 @@ NIVEL = {
     "a": ("reload_1.0_rc7_diag_a", 4, (0x1AA014,)),
     "b": ("reload_1.0_rc7_diag_b", 4, (0x1AA188,)),
     "c": ("reload_1.0_rc7_diag_c", 2, (0x1AA31E,)),
+    "b0": ("reload_1.0_rc7_diag_b0", 2, (0x1AA14C,)),
 }
 # o que fica no lugar, byte a byte (o nivel A e conferido pela decodificacao
 # do b.w, que depende do endereco de execucao)
@@ -69,9 +70,11 @@ ESPERADO = {
     "a": None,
     "b": b"\x00\x20\x00\xbf",     # movs r0, #0 + nop
     "c": b"\x01\x20",             # movs r0, #1
+    "b0": b"\x00\x20",            # movs r0, #0 (o get_path "falha")
 }
 # o par movw/movt da chamada externa do nivel C e o alvo
-CHAMADA = {"c": (0x1AA316, 0x00D10B21)}
+CHAMADA = {"c": (0x1AA316, 0x00D10B21),
+           "b0": (0x1AA144, 0x00CFEFC5)}
 # o `carrega_capa` (nivel B): o prologo unico e o `bl` que o chama
 CARREGA_CAPA = (0x1AA256, 0x1AA188)
 
@@ -270,25 +273,30 @@ class Recusa(Base):
             self.assertTrue(intacta, n)
 
     def test_8_recusa_entradas_erradas(self):
-        casos = {
+        comum = {
             "rc6": self.rc6,
             "rc6_carimbada": self.rc6_carimbada(),
             "truncada": self.rc7[:0x100000],
         }
         b = bytearray(self.rc7)
         b[TABELA] ^= 0xFF                      # a tabela do lote mexida
-        casos["lote_mexido"] = bytes(b)
+        comum["lote_mexido"] = bytes(b)
+        # cada nivel tem o seu alvo: a corrupcao vai no par da chamada dele
+        casos = {n: dict(comum) for n in NIVEL}
         b = bytearray(self.rc7)
         b[0x1AA316 + 2] ^= 0x01                # o movw do jd_prepare mexido
-        casos["chamada_mexida"] = bytes(b)
+        casos["c"]["chamada_mexida"] = bytes(b)
+        b = bytearray(self.rc7)
+        b[0x1AA144 + 2] ^= 0x01                # o movw do get_path mexido
+        casos["b0"]["chamada_mexida"] = bytes(b)
         b = bytearray(self.rc7)
         b[CARREGA_CAPA[0] + 4] ^= 0x01        # o sub sp,#12 do carrega_capa
-        casos["prologo_mexido"] = bytes(b)
+        casos["b"]["prologo_mexido"] = bytes(b)
         b = bytearray(self.rc7)
         b[CARREGA_CAPA[1]] ^= 0xFF             # o bl do carrega_capa mexido
-        casos["bl_mexido"] = bytes(b)
-        for nome, entrada in casos.items():
-            for n in NIVEL:
+        casos["b"]["bl_mexido"] = bytes(b)
+        for n in NIVEL:
+            for nome, entrada in casos[n].items():
                 rc, criou, intacta = self.roda(entrada, n)
                 self.assertNotEqual(rc, 0, f"{n} aceitou {nome}")
                 self.assertFalse(criou, f"{n} criou saida com {nome}")
@@ -353,6 +361,14 @@ class Premissas(Base):
         off = NIVEL["c"][2][0]
         d[off:off + 2] = ESPERADO["c"]
         erros = F.confere_premissas(d, "c")
+        self.assertTrue(any("patchead" in e for e in erros), erros)
+
+    def test_14c_get_path_ja_patcheado(self):
+        """O nivel B0: o `blx` ja cortado e recusado (reprocessar)."""
+        d = bytearray(self.rc7)
+        off = NIVEL["b0"][2][0]
+        d[off:off + 2] = ESPERADO["b0"]
+        erros = F.confere_premissas(d, "b0")
         self.assertTrue(any("patchead" in e for e in erros), erros)
 
     def test_15_chamada_inexistente(self):
@@ -490,6 +506,23 @@ class Comportamento(Base):
         self.assertEqual(nomes.count("f_close"), 1)
         srcs = [c[2] for c in novas if c[0] == "img_set_src"]
         self.assertTrue(srcs and srcs[-1] != PH_DSC, "a RC7 tem de mostrar a capa")
+
+    def test_24_b0_rotina_ativa_sem_get_path(self):
+        """B0: a ROTINA do TITULO roda inteira, mas o get_path NAO.
+
+        A sequencia tem de ser `label_set_text` e o `img_set_src` do
+        quadrado cinza — e NENHUM get_path (a chamada foi cortada e
+        devolve "falha"). E o que separa "a rotina" de "o get_path"."""
+        m = self.aparelho(self.diags["b0"][2])
+        novas = self.titulo(m, self.ativo("01_capa_v23.mp3"))
+        nomes = [c[0] for c in novas]
+        self.assertEqual(nomes, ["label_set_text", "img_set_src"])
+        self.assertEqual(nomes.count("get_path"), 0)
+        self.assertEqual(nomes.count("calloc"), 0)
+        self.assertEqual(nomes.count("free"), 0)
+        self.assertEqual(nomes.count("f_open"), 0)
+        srcs = [c[2] for c in novas if c[0] == "img_set_src"]
+        self.assertEqual(set(srcs), {PH_DSC})
 
 
 class Mapa(Base):

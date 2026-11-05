@@ -571,6 +571,27 @@ RELOAD_1_0_RC7_DIAG_C = RELOAD_1_0_RC7 + [
      "diag C: B + f_open/f_close"),
 ]
 
+# ---------------------------------------------------------------------------
+# RELOAD 1.0 RC7 DIAG B0 — a ficha 009 (a RC7 REINICIA o aparelho).
+#
+# O B (ficha 008) ja provou que o defeito esta no que o B liga e o A nao
+# liga, mas o B liga DUAS coisas: a rotina TITULO inteira e o `get_path`.
+# O B0 separa as duas: a rotina TITULO fica LIGADA (o set_text, a leitura
+# da view/ext, a comparacao do caminho e o quadrado cinza) e o `get_path` e
+# CORTADO — a chamada vira `movs r0, #0`, ou seja, o get_path "falha" e o
+# TITULO cai no caminho que ja existe: caminho guardado vazio e cinza.
+#
+#     B0  2 bytes  o `blx` da chamada ao get_path (0x00CFEFC5) vira
+#                  `movs r0, #0`
+#
+# Nada e remontado: e a RC7 com 2 bytes trocados dentro do lote que a RC7
+# ja montou (o par `movw/movt` + o `blx` da chamada ao get_path).
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC7_DIAG_B0 = RELOAD_1_0_RC7 + [
+    ("fab_diag_trava.py", ["--nivel", "b0", "--em", "0x1a8000"],
+     "diag B0: TITULO ligado, get_path cortado (cinza)"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -586,6 +607,8 @@ RECEITAS = {
     "reload_1.0_rc7_diag_a": RELOAD_1_0_RC7_DIAG_A,
     "reload_1.0_rc7_diag_b": RELOAD_1_0_RC7_DIAG_B,
     "reload_1.0_rc7_diag_c": RELOAD_1_0_RC7_DIAG_C,
+    # o degrau B0 da ficha 009 (diagnostico: nao entra na catraca)
+    "reload_1.0_rc7_diag_b0": RELOAD_1_0_RC7_DIAG_B0,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.

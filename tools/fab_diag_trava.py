@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 fab_diag_trava.py — as tres imagens de BISSECAO da ficha 008 (a RC7 trava
-ao tocar): um degrau a mais a partir da RC7 exata.
+ao tocar) e o degrau B0 da ficha 009 (a RC7 REINICIA o aparelho).
 
 PROPOSITO
 
@@ -42,6 +42,14 @@ PROPOSITO
          mostra o cinza. Sem leitura de JPEG, sem jd_decomp, sem
          reescala.
 
+      B0 "TITULO ligado, get_path cortado" — 2 bytes (ficha 009).
+         A entrada TITULO fica ORIGINAL (a rotina INTEIRA roda, com o
+         set_text, a leitura da view/ext, a comparacao do caminho e o
+         quadrado cinza) e a vitima e a chamada ao `get_path`
+         (0x00CFEFC5): o `blx` vira `movs r0, #0` — o get_path "falha",
+         o caminho guardado fica vazio e o quadrado cinza aparece. E o
+         degrau que separa "a ROTINA" de "o get_path".
+
     (D e a RC7 inteira, que ja existe.)
 
 PREMISSAS, conferidas ANTES de escrever qualquer byte
@@ -63,6 +71,9 @@ PREMISSAS, conferidas ANTES de escrever qualquer byte
         (nao foi patcheado antes);
       - nivel c: o par `movw/movt` que carrega o jd_prepare
         (0x00D10B21, com o bit do Thumb) aparece EXATAMENTE UMA vez no
+        codigo do lote, e o `blx` que o segue ainda esta la;
+      - nivel b0: o par `movw/movt` que carrega o get_path
+        (0x00CFEFC5, com o bit do Thumb) aparece EXATAMENTE UMA vez no
         codigo do lote, e o `blx` que o segue ainda esta la.
 
 CONFERENCIA DE SAIDA
@@ -84,7 +95,7 @@ SEGURANCA DA ESCRITA
 USO
 
     python3 tools/fab_diag_trava.py --in <rc7.bin> --out <diag.bin>
-                                    --nivel a|b|c [--em 0x1a8000] [--dry-run]
+                                    --nivel a|b|c|b0 [--em 0x1a8000] [--dry-run]
 
     O `--em` e o endereco do lote onde o patch acontece (0x001A8000, o
     mesmo da RC7). A receita do build.py passa esse endereco; a
@@ -177,17 +188,17 @@ def confere_premissas(d, nivel):
             erros.append(f"em 0x{off:06X} nao ha um bl para o carrega_capa "
                          f"(0x{alvo:08X}) — o codigo do lote mudou")
         return erros
-    # nivel c: a chamada ao jd_prepare tem de existir exatamente uma vez
-    valor = G.JD_PREP
+    # niveis c e b0: a chamada externa tem de existir exatamente uma vez
+    valor = G.GET_PATH if nivel == "b0" else G.JD_PREP
     pares = G.acha_pares(d, valor)
     if len(pares) != 1:
         erros.append(f"o par movw/movt que carrega 0x{valor:08X} aparece "
                      f"{len(pares)}x no codigo do lote, esperado 1")
         return erros
     off = pares[0] + 8
-    if bytes(d[off:off + 2]) == G.FALHA:
+    if bytes(d[off:off + 2]) == (G.FALHA_ZERO if nivel == "b0" else G.FALHA):
         erros.append(f"a chamada em 0x{off:06X} ja esta patcheada "
-                     f"(movs r0, #1)")
+                     f"({'movs r0, #0' if nivel == 'b0' else 'movs r0, #1'})")
         return erros
     h = struct.unpack_from("<H", d, off)[0]
     _, h2 = struct.unpack_from("<HH", d, pares[0])
@@ -219,7 +230,8 @@ def main():
     ap.add_argument("--in", dest="src", required=True)
     ap.add_argument("--out", dest="dst", required=True)
     ap.add_argument("--nivel", required=True, choices=sorted(G.NIVEL),
-                    help="a: so o set_text | b: + get_path | c: + f_open")
+                    help="a: so o set_text | b: + get_path | c: + f_open "
+                         "| b0: TITULO ligado, get_path cortado")
     ap.add_argument("--em", default=None,
                     help=f"endereco do lote (tem de ser {G.LOTE:#x})")
     ap.add_argument("--dry-run", action="store_true")
@@ -269,6 +281,9 @@ def main():
         print("    - a entrada TITULO ainda e o TITULO_impl (nao patcheada)")
     elif a.nivel == "b":
         print("    - o carrega_capa (prologo unico) e o bl que o chama: 1x")
+    elif a.nivel == "b0":
+        print(f"    - a chamada ao get_path (0x{G.GET_PATH:08X}) aparece 1x "
+              f"no lote")
     else:
         print(f"    - a chamada a 0x{G.JD_PREP:08X} aparece 1x no lote")
 
@@ -284,6 +299,10 @@ def main():
     elif a.nivel == "b":
         print("    o bl do carrega_capa vira movs r0, #0 + nop "
               "(o TITULO para depois do get_path)")
+    elif a.nivel == "b0":
+        print("    o blx do get_path vira movs r0, #0 "
+              "(o get_path 'falha': o caminho guardado fica vazio e o "
+              "quadrado cinza aparece)")
     else:
         print("    o blx da chamada vira movs r0, #1 (a chamada falha)")
 
