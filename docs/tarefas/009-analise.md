@@ -830,3 +830,11 @@ Reconstruída pela receita: RC7 `3af97713…`, B0 `63afb46a…`. Diferença entr
 (`e0 47` → `00 20`). Payload do `.up` igual à imagem, salvo os 15 bytes de carimbo e etapa. Abaixo de `0xE000` e setor
 `0xD000` iguais ao ORIGINAL. `sh tools/ci.sh`: CI OK. **O B0 segue válido**: nenhum dos erros acima o afeta.
 No `TESTAR.txt`, a volta de segurança apontava para a RC7, que é a que reinicia; corrigida para a RC6.
+
+# Resultado no aparelho (decisor, 2026-11-05)
+
+**B0: toca, com o quadrado cinza, sem reiniciar.** CONFIRMADO no aparelho: a rotina do TITULO no caminho de falha
+(set_text, leitura da view/ext, memset, `set_src` do cinza) não causa o reinício. B reinicia e B0 não, e os dois só
+diferem em: (1) a chamada ao `get_path` na ViewTask; (2) o ramo de sucesso depois dela (comparar e guardar o caminho),
+que o B0 não executa. Fica entre esses dois, e (2) é o menos provável por ser um laço limitado sem chamada externa.
+Próximo degrau: ficha 010 (B1 = B + bug do ring corrigido).
