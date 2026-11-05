@@ -10,7 +10,7 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   `tests/test_catraca.py` (sha `af3a2b6d…`).
 - **Ficha 008 (RC7 trava ao tocar) — resultado no aparelho (2026-11-05):** A tocou; B reiniciou; C não
   gravada. O defeito está na rotina TITULO ou no `get_path` chamado por ela (ver fim da ficha 008). RC6
-  segue de referência. **Em andamento: ficha 009** (causa do reinício e proposta de correção, sessão GLM).
+  segue de referência. **Ficha 009 entregue** (`docs/tarefas/009-analise.md`, MiniMax com conferência da coordenação): fault e MainTask parada reiniciam; causa principal é HIPÓTESE (ring da view). **Aguardando o decisor gravar o Diag B0** (`release/OpenPod-Reload-1.0-RC7-Diag-B0`).
 - **RC7 REPROVADA no aparelho (trava ao tocar, 2026-11-01; ver ficha 008):** ficha 007 (capa do álbum) fechada pela
   sessão GLM (PRONTO-007; R0 opção A, 1ª análise REPROVADO udiv + id APIC → R1 div_soft,
   conferência final APROVADO). Merge no privado-completo; regressão protegida
