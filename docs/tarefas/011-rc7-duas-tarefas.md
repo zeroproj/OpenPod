@@ -1,6 +1,6 @@
 # Ficha 011 — RC7: por que o `get_path` na ViewTask para o aparelho, e o caminho sem ele
 
-Tipo: **Risco**. Base: `privado-completo`. Desenvolvedor: `minimax/MiniMax-M3`. Antes: `docs/tarefas/010-analise.md`
+Tipo: **Risco**. Base: `privado-completo`. Desenvolvedor: `opencode/deepseek-v4.1-flash-free` (fluxo em teste, `docs/processo.md`). Antes: `docs/tarefas/010-analise.md`
 (a partir de "Conferência da coordenação", D1 a D5) e `docs/tarefas/009-analise.md` (seção "Conferência da coordenação").
 As partes dessas análises marcadas como corrigidas não valem: use a conferência.
 
