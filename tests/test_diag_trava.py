@@ -51,6 +51,7 @@ sys.path.insert(0, os.path.join(RAIZ, "tests"))
 
 import diag_trava_asm as G  # noqa: E402
 import fab_diag_trava as F  # noqa: E402
+import fab_diag_b3 as F3  # noqa: E402
 import emu_rc7 as E  # noqa: E402
 
 SHA_RC7 = ("3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab6456"
@@ -627,6 +628,230 @@ class B2(Base):
         for outra in (self.rc7, self.diags["b0"][2], self.diags["b1"][2]):
             erros = F.confere_premissas(bytearray(outra), "b2")
             self.assertTrue(erros)
+
+
+class B3(Base):
+    r"""O degrau B3 da ficha 011 (o caminho sem o get_path na ViewTask).
+
+    A MainTask captura o caminho na rajada do play (0x001088D8), o guarda
+    em 0x00DAAB00; o TITULO le esse global (0x001AA144) em vez de chamar o
+    get_path, confere o `0:\`/`0:/` e mostra o cinza."""
+
+    RECEITA = "reload_1.0_rc7_diag_b3"
+    BLOB = 0x1AAA00
+    BLOB_XIP = 0x00DAAA00
+    LE = 0x00DAAA40
+    GLOBAL = 0x1AAB00
+    GLOBAL_XIP = 0x00DAAB00
+    CAPTURA = 0x1088D8
+    GET = 0x1AA144
+    CARREGA = 0x1AA188
+    PH_DSC = 0x00DA8000
+
+    @classmethod
+    def setUpClass(cls):
+        tmp = tempfile.mkdtemp(prefix="openpod_diag011_")
+        p7 = os.path.join(tmp, "rc7.bin")
+        rc7, log7 = constroi("reload_1.0_rc7", p7)
+        cls.rc7_rc, cls.rc7_log = rc7, log7
+        cls.rc7 = le(p7) if os.path.exists(p7) else b""
+        p6 = os.path.join(tmp, "rc6.bin")
+        rc6, log6 = constroi("reload_1.0_rc6", p6)
+        cls.rc6_rc, cls.rc6_log = rc6, log6
+        cls.rc6 = le(p6) if os.path.exists(p6) else b""
+        p3 = os.path.join(tmp, "b3.bin")
+        rc3, log3 = constroi(cls.RECEITA, p3)
+        cls.b3_rc, cls.b3_log = rc3, log3
+        cls.b3 = le(p3) if os.path.exists(p3) else b""
+        cls.tmp = tmp
+        cls.blob = F3.monta_blob()
+
+    def roda(self, entrada, extra=()):
+        tmp = tempfile.mkdtemp(prefix="openpod_diag011x_")
+        src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
+        with open(src, "wb") as f:
+            f.write(entrada)
+        r = subprocess.run([sys.executable,
+                            os.path.join(RAIZ, "tools/fab_diag_b3.py"),
+                            "--in", src, "--out", dst]
+                           + list(extra),
+                           capture_output=True, text=True, cwd=RAIZ)
+        return r.returncode, os.path.exists(dst), le(src) == entrada
+
+    def test_40_b3_construida(self):
+        self.assertEqual(self.rc7_rc, 0, self.rc7_log[-2000:])
+        self.assertEqual(self.b3_rc, 0, self.b3_log[-2000:])
+        self.assertEqual(sha(self.rc7), SHA_RC7)
+        self.assertEqual(len(self.b3), 0x200000)
+
+    def test_41_reprodutivel(self):
+        tmp = tempfile.mkdtemp(prefix="openpod_diag011r_")
+        shas = []
+        for i in range(2):
+            p = os.path.join(tmp, f"{i}.bin")
+            rc, log = constroi(self.RECEITA, p)
+            self.assertEqual(rc, 0, log[-1500:])
+            shas.append(sha(le(p)))
+        self.assertEqual(shas[0], shas[1])
+
+    def test_42_diff_exato(self):
+        dif = [i for i in range(len(self.b3)) if self.b3[i] != self.rc7[i]]
+        regioes = [(self.CAPTURA, 4), (self.GET, 10), (self.CARREGA, 4),
+                   (self.BLOB, len(self.blob))]
+        for i in dif:
+            self.assertTrue(any(o <= i < o + t for o, t in regioes),
+                            f"byte fora do patch: 0x{i:06X}")
+            self.assertGreaterEqual(i, 0x00E000)
+            self.assertFalse(0xD000 <= i < 0xE000)
+            self.assertLess(i, 0x1FC000)
+        self.assertEqual(self.b3[self.GET + 4:self.GET + 10], b"\x00\xbf" * 3)
+        self.assertEqual(self.b3[self.CARREGA:self.CARREGA + 4],
+                         b"\x00\x20\x00\xbf")
+        self.assertEqual(self.b3[self.BLOB:self.BLOB + len(self.blob)],
+                         self.blob)
+
+    def test_43_decodificacao(self):
+        self.assertEqual(desvio(self.b3, self.CAPTURA), self.BLOB_XIP)
+        self.assertEqual(desvio(self.b3, self.GET), self.LE)
+        self.assertEqual(valor_carregado(self.b3, self.BLOB + 0x40),
+                         self.GLOBAL_XIP)
+        self.assertEqual(valor_carregado(self.b3, self.BLOB + 0x26),
+                         0x00D084F9)
+
+    def test_44_recusas(self):
+        for nome, entrada in (("rc6", self.rc6),
+                              ("truncada", self.rc7[:0x100000]),
+                              ("b3", self.b3)):
+            rc, criou, intacta = self.roda(entrada, ["--em", "0x1a8000"])
+            self.assertNotEqual(rc, 0, nome)
+            self.assertFalse(criou, nome)
+            self.assertTrue(intacta, nome)
+        for extra in (["--em", "0x1A9000"], ["--dry-run"]):
+            rc, criou, intacta = self.roda(self.rc7, extra + ["--em", "0x1a8000"]
+                                           if extra[0] == "--dry-run" else extra)
+            if extra[0] == "--dry-run":
+                self.assertEqual((rc, criou), (0, False), extra)
+            else:
+                self.assertNotEqual(rc, 0, extra)
+            self.assertTrue(intacta, extra)
+        for tipo in ("mesmo", "symlink", "hardlink"):
+            tmp = tempfile.mkdtemp(prefix="openpod_diag011l_")
+            src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
+            with open(src, "wb") as f:
+                f.write(self.rc7)
+            if tipo == "mesmo":
+                dst = src
+            else:
+                (os.symlink if tipo == "symlink" else os.link)(src, dst)
+            r = subprocess.run([sys.executable,
+                                os.path.join(RAIZ, "tools/fab_diag_b3.py"),
+                                "--in", src, "--out", dst],
+                               capture_output=True, cwd=RAIZ)
+            self.assertNotEqual(r.returncode, 0, tipo)
+            self.assertEqual(le(src), self.rc7, tipo)
+
+    def test_45_premissas(self):
+        self.assertEqual(F3.confere_premissas(bytearray(self.rc7), self.blob),
+                         [])
+        for outra in (self.rc6, self.b3):
+            self.assertTrue(F3.confere_premissas(bytearray(outra), self.blob))
+        d = bytearray(self.rc7)
+        d[self.CAPTURA + 1] ^= 0x01
+        self.assertTrue(F3.confere_premissas(d, self.blob))
+        d = bytearray(self.rc7)
+        d[self.BLOB] ^= 0xFF
+        self.assertTrue(any("virgem" in e
+                            for e in F3.confere_premissas(d, self.blob)))
+
+    def aparelho(self, img):
+        m = E.Maquina(img)
+        pag, view = m.aloca(0x200, registra=False), m.aloca(0x34, registra=False)
+        m.escreve32(E.PAGINAS, pag)
+        m.escreve32(pag + 0xAC, view)
+        m.escreve32(view + 0, ROT_CONT)
+        m.escreve32(view + 4, ROT_TIT)
+        m.escreve32(view + 8, ROT_LETRA)
+        m.escreve(E.AUDIO, b"\x02")
+        m.escreve32(E.AUDIO + 0x20, 7)
+        salvos = [0x11110000 + i for i in range(8)]
+        salvos[1] = view
+        m.chama(CRIA, (TELA,), salvos=salvos)
+        self.assertEqual(m.erros, [])
+        return m, view
+
+    def titulo_b3(self, m, view, path):
+        ctx = m.le32(view + 0x30)
+        m.escreve(self.GLOBAL_XIP, path + b"\0")
+        m.escreve(ctx + 0x10, b"\0" * 0x100)
+        m.escreve(ctx + 0x110, b"\0" * 0x100)
+        txt = m.aloca(16, registra=False)
+        m.escreve(txt, b"titulo\0")
+        n0 = len(m.chamadas)
+        m.chama(TITULO, (ROT_TIT, txt))
+        self.assertEqual(m.erros, [])
+        return ctx, m.chamadas[n0:]
+
+    def test_46_emulacao_guarda_path(self):
+        m = E.Maquina(self.b3)
+        path = m.aloca(64, registra=False)
+        m.escreve(path, b"0:/A/B.mp3\0")
+        vistos = []
+
+        def fake(mq):
+            vistos.append(mq.r(E.UC_ARM_REG_R0))
+            return 0
+
+        m.falsas[0x00D084F8] = fake
+        m.escreve(self.GLOBAL_XIP, b"\xff" * 0x100)
+        m.chama(self.BLOB_XIP, (path,))
+        self.assertEqual(m.erros, [])
+        self.assertEqual(m.cstr(self.GLOBAL_XIP), b"0:/A/B.mp3")
+        self.assertEqual(vistos, [path])
+
+    def test_47_emulacao_le_global(self):
+        m = E.Maquina(self.b3)
+        ctx = m.aloca(0x220, registra=False)
+        for path, ok in ((b"0:/A.mp3", 1), (b"0:\\A.mp3", 1),
+                         (b"lixo", 0), (b"", 0)):
+            m.escreve(self.GLOBAL_XIP, path + b"\0")
+            m.escreve(ctx + 0x110, b"\xAA" * 0x100)
+            salvos = [0x11110000 + i for i in range(8)]
+            salvos[3] = ctx                      # r7 = o contexto
+            r = m.chama(self.LE, (), salvos=salvos)
+            self.assertEqual(m.erros, [], path)
+            self.assertEqual(r, ok, path)
+            self.assertEqual(m.cstr(ctx + 0x110), path, path)
+
+    def test_48_emulacao_titulo(self):
+        m, view = self.aparelho(self.b3)
+        for path in (b"0:/MUSICA/teste.mp3", b"0:\\MUSICA\\teste.mp3"):
+            ctx, novas = self.titulo_b3(m, view, path)
+            nomes = [c[0] for c in novas]
+            self.assertEqual(nomes, ["label_set_text", "img_set_src"], path)
+            self.assertEqual(nomes.count("get_path"), 0, path)
+            self.assertEqual(nomes.count("calloc"), 0, path)
+            self.assertEqual(nomes.count("free"), 0, path)
+            self.assertEqual(nomes.count("f_open"), 0, path)
+            self.assertEqual(m.cstr(ctx + 0x110), path, path)
+            self.assertEqual(m.cstr(ctx + 0x10), path, path)
+            srcs = [c[2] for c in novas if c[0] == "img_set_src"]
+            self.assertEqual(set(srcs), {self.PH_DSC}, path)
+        # caminho invalido: cinza, e o caminho guardado fica vazio
+        ctx, novas = self.titulo_b3(m, view, b"lixo")
+        self.assertEqual([c[0] for c in novas], ["label_set_text", "img_set_src"])
+        self.assertEqual(m.cstr(ctx + 0x10), b"")
+        self.assertEqual(m.cstr(ctx + 0x110), b"lixo")
+
+    def test_49_mapa_e_receita(self):
+        import build as B
+        self.assertIn(self.RECEITA, B.RECEITAS)
+        passo = B.RECEITAS[self.RECEITA][-1]
+        self.assertEqual(passo[0], "fab_diag_b3.py")
+        self.assertIn("--em", passo[1])
+        self.assertIn("0x1a8000", passo[1])
+        self.assertNotIn("fab_diag_b3.py", B.MAPA)
+        t = le(os.path.join(RAIZ, "tests/test_catraca.py")).decode()
+        self.assertNotIn(self.RECEITA, t)
 
 
 class Comportamento(Base):

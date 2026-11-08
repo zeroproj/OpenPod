@@ -632,6 +632,32 @@ RELOAD_1_0_RC7_DIAG_B2 = RELOAD_1_0_RC7_DIAG_B + [
      "diag B2: B + o monitor do watchdog neutralizado (sem watchdog)"),
 ]
 
+# ---------------------------------------------------------------------------
+# RELOAD 1.0 RC7 DIAG B3 — a ficha 011 (o caminho sem o get_path).
+#
+# O B0 mediu a chamada do get_path; o B2 mostrou que o monitor do watchdog
+# e o que leva ao reset. O B3 tira o get_path da ViewTask: a MainTask
+# captura o caminho na rajada do play (o `bl 0xD084F8` de 0x001088D8), o
+# guarda em 0x00DAAB00 e o TITULO le esse global (0x001AA144) em vez de
+# chamar o get_path. O `carrega_capa` fica cortado como no B (cinza).
+#
+#     captura  4 bytes  o `bl 0xD084F8` de 0x001088D8 vira `bl` para o
+#                      guarda_path (0x00DAAA00)
+#     leitura 10 bytes  o `movw/movt` + `blx` do get_path (0x001AA144)
+#                      vira `bl le_global` (0x00DAAA40) + 3 `nop`
+#     capa     4 bytes  o `bl` do carrega_capa (0x001AA188) vira
+#                      `movs r0, #0` + `nop`
+#     codigo  128 bytes o guarda_path, o le_global e o global (0x001AAA00)
+#
+# A ferramenta NAO entra no MAPA: ela patcha dentro do lote que a RC7 ja
+# montou e no codigo da fabrica, e o `tests/test_rc7.py` (protegido, C2)
+# recusa um lote do MAPA que cruze o lote da RC7.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC7_DIAG_B3 = RELOAD_1_0_RC7 + [
+    ("fab_diag_b3.py", ["--em", "0x1a8000"],
+     "diag B3: o caminho da MainTask, sem get_path na ViewTask"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -653,6 +679,8 @@ RECEITAS = {
     "reload_1.0_rc7_diag_b1": RELOAD_1_0_RC7_DIAG_B1,
     # o degrau B2 da ficha 010 (adendo; diagnostico: nao entra na catraca)
     "reload_1.0_rc7_diag_b2": RELOAD_1_0_RC7_DIAG_B2,
+    # o degrau B3 da ficha 011 (diagnostico: nao entra na catraca)
+    "reload_1.0_rc7_diag_b3": RELOAD_1_0_RC7_DIAG_B3,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
