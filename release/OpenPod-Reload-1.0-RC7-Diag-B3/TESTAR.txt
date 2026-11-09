@@ -4,8 +4,8 @@ O que e: a RC7 exata com o get_path da ViewTask trocado pela LEITURA do
 caminho que a mensagem ja deixou no ROTULO 2 (o da pasta). O r5 do TITULO
 era o TEXTO DO TITULO, nao o caminho (era o erro do B3 anterior); o caminho
 esta no rotulo 2, que a mensagem do 0xD084F8 preenche antes do titulo (a
-fila e FIFO). O TITULO le o texto do rotulo 2 com o lv_label_get_text da
-fabrica (le [rotulo+0x24]) e copia para a extensao em RAM (ext+0x110).
+fila e FIFO). O TITULO le o texto do rotulo 2 lendo direto o campo de texto
+do rotulo ([rotulo+0x24], o que o lv_label_set_text grava) e copia para a extensao em RAM (ext+0x110).
 Caminho valido: NAO mostra o quadrado cinza (src nulo); invalido/vazio:
 continua cinza. Rotulo 2 nulo, texto nulo ou texto vazio: cinza, sem fault.
 Nao ha escrita na flash XIP. Base: a RC7 exata (3af97713...).
@@ -28,7 +28,8 @@ ROTEIRO (marque um)
   [ ] Sair e entrar na Tocando Agora 10 vezes: sem travar
   [ ] Config: Informacoes = "RC7 diag B3"
 
-AVISOS: se CONGELAR, o aparelho so sai pelo BOTAO DE RESET; a B3 NAO e para
-uso normal (fica SEM a protecao do watchdog); a volta de seguranca e a RC6.
+AVISOS: a B3 mantem a protecao do watchdog da fabrica (nao tem o patch da
+B2); se mesmo assim CONGELAR, use o BOTAO DE RESET. A B3 NAO e para uso
+normal; a volta de seguranca e a RC6.
 Ao trocar de faixa pelos botoes, o titulo de um dos dois fluxos que NAO
 reenviam o caminho pode mostrar o resultado (capa/cinza) da faixa anterior.
