@@ -631,16 +631,16 @@ class B2(Base):
 
 
 class B3(Base):
-    r"""O degrau B3 da ficha 011 (o caminho sem o get_path na ViewTask).
+    r"""O degrau B3 da ficha 011 (o caminho do rotulo 2, sem get_path).
 
-    O B3 tira o get_path da ViewTask sem inventar RAM: a mensagem que o
-    0xD084F8 manda ja leva o caminho em +0x14; o
-    page_music_play_label_process (0x00D32204) passa esse texto em r1 para
-    o TITULO, que o guarda em r5. O B3 troca a chamada do get_path
-    (0x001AA144) por uma copia desse r5 para ext+0x110 (a mesma RAM que o
-    get_path usava; ext = [[[0x81CE2C]+0xAC]+0x30]). A captura 0x001088D8
-    NAO e tocada e a regiao XIP (0xC00000..0xDFFFFF) e so leitura: uma
-    escrita nela falha o teste."""
+    O B3 tira o get_path da ViewTask sem inventar RAM: o caminho NAO esta
+    no r5 do TITULO (esse e o texto do titulo); esta no rotulo 2, que a
+    mensagem do 0xD084F8 preenche antes do titulo (a fila e serial). O B3
+    le o texto do rotulo 2 com o lv_label_get_text da fabrica (le
+    [rotulo+0x24], como o lv_label_set_text em 0xD5ED94) e copia para
+    ext+0x110. O caminho valido NAO mostra o cinza (src nulo); o invalido
+    continua cinza. A captura 0x001088D8 NAO e tocada e a regiao XIP
+    (0xC00000..0xDFFFFF) e so leitura: uma escrita nela falha o teste."""
 
     RECEITA = "reload_1.0_rc7_diag_b3"
     BLOB = 0x1AAA00
@@ -648,6 +648,8 @@ class B3(Base):
     CAPTURA = 0x1088D8
     ALVO_CAPTURA = 0x00D084F8
     GET = 0x1AA144
+    CAPA = 0x1AA174
+    FALHA = 0x1AA1BE
     CARREGA = 0x1AA188
     PH_DSC = 0x00DA8000
 
@@ -701,7 +703,7 @@ class B3(Base):
 
     def test_42_diff_exato(self):
         dif = [i for i in range(len(self.b3)) if self.b3[i] != self.rc7[i]]
-        regioes = [(self.GET, 10), (self.CARREGA, 4),
+        regioes = [(self.GET, 10), (self.CAPA, 8), (self.CARREGA, 4),
                    (self.BLOB, len(self.blob))]
         for i in dif:
             self.assertTrue(any(o <= i < o + t for o, t in regioes),
@@ -712,8 +714,10 @@ class B3(Base):
             self.assertFalse(self.CAPTURA <= i < self.CAPTURA + 4,
                              "a captura 0x001088D8 nao pode mudar")
         self.assertEqual(self.b3[self.GET:self.GET + 4],
-                         b"\x10\x46\x29\x46")
+                         b"\xB0\x68\x40\x6A")
         self.assertEqual(self.b3[self.GET + 8:self.GET + 10], b"\x00\xbf")
+        self.assertEqual(self.b3[self.CAPA:self.CAPA + 8],
+                         b"\x00\x21\x00\xbf\x00\xbf\x00\xbf")
         self.assertEqual(self.b3[self.CARREGA:self.CARREGA + 4],
                          b"\x00\x20\x00\xbf")
         self.assertEqual(self.b3[self.BLOB:self.BLOB + len(self.blob)],
@@ -722,13 +726,14 @@ class B3(Base):
     def test_43_decodificacao(self):
         self.assertEqual(desvio(self.b3, self.CAPTURA), self.ALVO_CAPTURA)
         self.assertEqual(self.b3[self.GET:self.GET + 4],
-                         b"\x10\x46\x29\x46")
+                         b"\xB0\x68\x40\x6A")
         self.assertEqual(desvio(self.b3, self.GET + 4), self.BLOB_XIP)
         self.assertEqual(self.b3[self.GET + 8:self.GET + 10], b"\x00\xbf")
+        self.assertEqual(self.b3[self.CAPA:self.CAPA + 2], b"\x00\x21")
         self.assertEqual(self.b3[self.CARREGA:self.CARREGA + 2], b"\x00\x20")
         self.assertEqual(self.b3[self.CARREGA + 2:self.CARREGA + 4],
                          b"\x00\xbf")
-        for v in (0x2B30, 0x2B3A, 0x2B5C, 0x2B2F):
+        for v in (0x2930, 0x293A, 0x292F, 0x295C):
             self.assertIn(struct.pack("<H", v), self.blob, hex(v))
 
     def test_44_recusas(self):
@@ -772,6 +777,9 @@ class B3(Base):
         d[self.CAPTURA + 1] ^= 0x01
         self.assertTrue(F3.confere_premissas(d, self.blob))
         d = bytearray(self.rc7)
+        d[self.CAPA] ^= 0x01
+        self.assertTrue(F3.confere_premissas(d, self.blob))
+        d = bytearray(self.rc7)
         d[self.BLOB] ^= 0xFF
         self.assertTrue(any("virgem" in e
                             for e in F3.confere_premissas(d, self.blob)))
@@ -793,6 +801,7 @@ class B3(Base):
     def aparelho(self, img):
         m = E.Maquina(img)
         self.xip_rom(m)
+        m.u.mem_map(0x5F000000, 0x1000)
         pag, view = m.aloca(0x200, registra=False), m.aloca(0x34, registra=False)
         m.escreve32(E.PAGINAS, pag)
         m.escreve32(pag + 0xAC, view)
@@ -807,14 +816,18 @@ class B3(Base):
         self.assertEqual(m.erros, [])
         return m, view
 
-    def titulo_b3(self, m, view, path):
+    def titulo_b3(self, m, view, path, titulo=b"TITULO"):
         ctx = m.le32(view + 0x30)
-        p = m.aloca(0x100, registra=False)
-        m.escreve(p, path + b"\0")
+        pp = m.aloca(0x100, registra=False)
+        m.escreve(pp, path + b"\0")
+        pt = m.aloca(0x100, registra=False)
+        m.escreve(pt, titulo + b"\0")
+        m.escreve32(ROT_LETRA + 0x24, pp)
+        m.escreve32(ROT_TIT + 0x24, pt)
         m.escreve(ctx + 0x10, b"\0" * 0x100)
         m.escreve(ctx + 0x110, b"\0" * 0x100)
         n0 = len(m.chamadas)
-        m.chama(TITULO, (ROT_TIT, p))
+        m.chama(TITULO, (ROT_TIT, pt))
         self.assertEqual(m.erros, [])
         return ctx, m.chamadas[n0:]
 
@@ -827,7 +840,7 @@ class B3(Base):
                          (b"lixo", 0), (b"", 0)):
             m.escreve(src, path + b"\0")
             m.escreve(dest, b"\xAA" * 0x100)
-            r = m.chama(self.BLOB_XIP, (dest, src))
+            r = m.chama(self.BLOB_XIP, (src, 0, dest))
             self.assertEqual(m.erros, [], path)
             self.assertEqual(r, ok, path)
             self.assertEqual(m.cstr(dest), path, path)
@@ -845,19 +858,27 @@ class B3(Base):
             self.assertEqual(m.cstr(ctx + 0x110), path, path)
             self.assertEqual(m.cstr(ctx + 0x10), path, path)
             srcs = [c[2] for c in novas if c[0] == "img_set_src"]
-            self.assertEqual(set(srcs), {self.PH_DSC}, path)
-        # caminho invalido: cinza, e o caminho copiado fica como veio
-        ctx, novas = self.titulo_b3(m, view, b"lixo")
-        self.assertEqual([c[0] for c in novas], ["label_set_text", "img_set_src"])
-        self.assertEqual(m.cstr(ctx + 0x10), b"")
-        self.assertEqual(m.cstr(ctx + 0x110), b"lixo")
+            self.assertEqual(srcs, [0], path)          # o sucesso: src nulo
+        # caminho invalido/vazio: cinza, e o caminho copiado fica como veio
+        for path in (b"lixo", b""):
+            ctx, novas = self.titulo_b3(m, view, path)
+            self.assertEqual([c[0] for c in novas],
+                             ["label_set_text", "img_set_src"])
+            self.assertEqual(m.cstr(ctx + 0x10), b"")
+            self.assertEqual(m.cstr(ctx + 0x110), path)
+            srcs = [c[2] for c in novas if c[0] == "img_set_src"]
+            self.assertEqual(srcs, [self.PH_DSC])      # a falha: cinza
+        # o rotulo 1 (o titulo) NUNCA e lido como caminho
+        ctx, novas = self.titulo_b3(m, view, b"0:/MUSICA", b"0:/TITULO")
+        self.assertEqual(m.cstr(ctx + 0x110), b"0:/MUSICA")
+        self.assertEqual(m.cstr(ctx + 0x10), b"0:/MUSICA")
 
     def test_48_emulacao_xip_rom(self):
         m = E.Maquina(self.b3)
         self.xip_rom(m)
         src = m.aloca(0x40, registra=False)
         m.escreve(src, b"0:/A\0")
-        m.chama(self.BLOB_XIP, (E.XIP + 0x1000, src))
+        m.chama(self.BLOB_XIP, (src, 0, E.XIP + 0x1000))
         self.assertTrue(any("XIP" in e for e in m.erros))
 
     def test_49_mapa_e_receita(self):

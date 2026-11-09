@@ -637,19 +637,22 @@ RELOAD_1_0_RC7_DIAG_B2 = RELOAD_1_0_RC7_DIAG_B + [
 #
 # O B0 mediu a chamada do get_path; o B2 mostrou que o monitor do watchdog
 # e o que leva ao reset. O B3 tira o get_path da ViewTask sem inventar RAM:
-# a mensagem que o `0xD084F8` manda ja leva o caminho em +0x14; o
-# `page_music_play_label_process` (0x00D32204) passa esse texto em r1 para
-# o TITULO, que o guarda em r5. O B3 troca a chamada do get_path
-# (0x001AA144) por uma copia desse r5 para ext+0x110 (a mesma RAM que o
-# get_path usava). A captura 0x001088D8 NAO e tocada. O `carrega_capa`
-# fica cortado como no B (cinza).
+# o caminho nao esta no r5 do TITULO (esse e o texto do titulo); ele esta
+# no rotulo 2, que a mensagem do `0xD084F8` preenche antes do titulo (a
+# fila e serial). O B3 le o texto do rotulo 2 com o `lv_label_get_text` da
+# fabrica (le `[rotulo+0x24]`, como o `lv_label_set_text` em 0xD5ED94) e
+# copia para ext+0x110 (a mesma RAM que o get_path usava). O caminho
+# valido NAO mostra o cinza; o invalido continua cinza. A captura
+# 0x001088D8 NAO e tocada; o `carrega_capa` fica cortado como no B.
 #
 #     leitura 10 bytes  o `movw/movt` + `blx` do get_path (0x001AA144)
-#                      vira `mov r0,r2` + `mov r1,r5` + `bl copia_path` +
-#                      `nop`
-#     capa     4 bytes  o `bl` do carrega_capa (0x001AA188) vira
+#                      vira `ldr r0,[r6,#8]` + `ldr r0,[r0,#0x24]` +
+#                      `bl copia_path` + `nop`
+#     capa     8 bytes  o cinza do sucesso (0x001AA174) vira `movs r1,#0` +
+#                      3 `nop` (src nulo: sem o quadrado cinza)
+#     carrega  4 bytes  o `bl` do carrega_capa (0x001AA188) vira
 #                      `movs r0, #0` + `nop`
-#     codigo  52 bytes  o copia_path (0x001AAA00)
+#     codigo  46 bytes  o copia_path (0x001AAA00)
 #
 # A ferramenta NAO entra no MAPA: ela patcha dentro do lote que a RC7 ja
 # montou e no codigo da fabrica, e o `tests/test_rc7.py` (protegido, C2)

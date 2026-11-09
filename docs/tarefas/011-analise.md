@@ -127,29 +127,56 @@ no buffer do chamador (o like getter aloca 0xFF em `0xCFF0A8`; o
 pela view. O `0xD08448` (mensagem do título) usa o getter de **nome**
 (`0xCFEE60`), não o `get_path`.
 
-**CONFIRMADO — a rajada já carrega o caminho:** `page4_media_cb`
+**CONFIRMADO — a rajada já carrega o caminho na mensagem:** `page4_media_cb`
 (`0xD088B4`) chama `0xD084F8` em `0xD088D8` (o caminho do evento) e o
 `0xD0D818` envia a mensagem ao ring da view. O `0xD084F8` (branch `r0 != 0`,
 `0xD08556`) copia o caminho (`r5`) para `msg+0x14` com o `0xD9FD54`
-(strncpy); se `r0 == 0`, usa o placeholder `0xCE4473` (`"  "`). A ViewTask
-recebe o caminho em `msg+0x14`: `page_music_play_label_process` (`0xD32204`,
-tipo 3 em `0xD32226`) faz `r6 = msg+0x14`, loga `str: %s` e chama o TITULO
-(`0xDAA014`) com `r1 = r6` (caminho) ou `0xC4F981` (`" "`).
+(strncpy); se `r0 == 0`, usa o placeholder `0xCE4473` (`"  "`). O título
+(`0xD08448`, chamado logo depois em `0xD088E8`) faz o mesmo com o nome.
+
+**CONFIRMADO — a ViewTask escolhe o rótulo pelo tipo da mensagem.**
+`page_music_play_label_process` (`0xD3220C`, não `0xD32204`) lê o halfword
+`msg+4` e o `tbb` de `0xD32242` escolhe o rótulo em `[[0x81CE2C]+0xAC]`
+(`r5`): 0 → `[r5]`, 1 → `[r5+4]`, 2 → `[r5+8]`, 3 → `[r5+0x14]`,
+4 → `[r5+0x18]`; em seguida `set_text(rótulo, msg+0x14)` em `0xD3225E`
+(`b.w 0xD5ED94`). A mensagem do caminho (`0xD084F8`) grava **2** em `+4`
+(o rótulo `[r5+8]`); a do título (`0xD08448`) grava **1** (o rótulo
+`[r5+4]`).
+
+**CONFIRMADO — o TITULO só roda para o título, e o `r5` dele é o texto do
+título.** O TITULO (`0xDAA014`) só segue quando `r4 == [r6+4]`
+(`0xDAA114`), isto é, quando o rótulo é o **1** (o título). Logo o `r5` que
+o TITULO copia é o **texto do título**, não o caminho: era o erro do B3
+anterior, que copiava o `r5` e caía sempre no cinza.
+
+**CONFIRMADO — o rótulo 2 já tem o caminho quando o título chega.** O
+`page4_media_cb` chama o caminho (`0xD088D8`) **antes** do título
+(`0xD088E8`); a fila da ViewTask é FIFO (a mesma `0xD3220C` processa as
+duas), então o `set_text` do rótulo 2 já rodou quando o TITULO lê o rótulo
+2.
+
+**CONFIRMADO — o `lv_label_get_text` da fábrica é inline.** O
+`lv_label_set_text` (`0xD5ED94`) grava o texto em `[rótulo+0x24]`
+(`ldr r6,[r4,#0x24]` em `0xD5EDA0`; `str r0,[r4,#0x24]` em `0xD5EDC2`);
+não há função separada nem a string `lv_label_get_text` no binário. O getter
+é o próprio `ldr r0,[rótulo+0x24]`.
+
+**O B3 (implementado):** no lugar do `get_path` da ViewTask, o TITULO lê o
+texto do **rótulo 2** (o caminho) e o copia para a mesma RAM que o
+`get_path` usava. Em `0xDAA144` os 10 bytes do par `movw/movt + blx
+get_path` viram `ldr r0,[r6,#8]` (`B0 68`) + `ldr r0,[r0,#0x24]`
+(`40 6A`) + `bl copia_path` (`0xDAAA00`) + 1 `nop`; o `copia_path` copia
+`r0`→`r2` (`ext+0x110`) até 0xFF e devolve 1 só se o texto começa com `0:`
+e tem `/` ou `\`, e 0 caso contrário. Em `0xDAA174` o cinza do **sucesso**
+vira `movs r1,#0` + 3 `nop` (src nulo: **sem quadrado**); o `carrega_capa`
+(`0x1AA188`) vira `movs r0,#0` + `nop`; o cinza da **falha** (`0xDAA1BE`)
+fica, então caminho inválido/vazio continua cinza. O `0xD088D8`/`0xD084F8`
+ficam de fábrica. Sem `f_open`, sem JPEG, sem heap; nenhum byte abaixo de
+`0xE000`, setor `0xD000`/PSMP intocados.
 
 **Formato:** nos ativos de teste o caminho é `0:/MUSICA/...` (barra
 normal); o `get_path` da fábrica pode devolver `0:\` ou `0:/`. A cópia
-deve aceitar **os dois** (foi o que o B3 faz).
-
-**O B3 (implementado):** a ViewTask copia o caminho da própria mensagem —
-sem global, sem `get_path` e sem escrita na flash. Em `0xDAA144` (o TITULO,
-depois do `memset(ext+0x110,0,0x100)` e antes do `get_path`) o par
-`movw/movt + blx get_path` vira `mov r0,r2` + `mov r1,r5` +
-`bl copia_path` (`0xDAAA00`) + 1 `nop`; o `copia_path` copia `r1`→`r0` até
-0xFF e devolve 1 só se o caminho começa com `0:` e tem `/` ou `\`, e 0 caso
-contrário (o TITULO então zera `ext+0x10` e volta ao cinza `0xDA8000`). O
-`0xD088D8`/`0xD084F8` ficam de fábrica; o `carrega_capa` (`0x1AA188`) vira
-`movs r0,#0` + `nop` e o cinza continua. Sem `f_open`, sem JPEG, sem heap;
-nenhum byte abaixo de `0xE000`, setor `0xD000`/PSMP intocados.
+aceita **os dois**.
 
 ## 3. A fábrica lê o cartão na ViewTask?
 
@@ -173,25 +200,26 @@ ViewTask) pode copiar.
 
 ## Kits e shas do B3
 
-Base: a RC7 exata `3af97713…`. Contra ela, o B3 altera **66 bytes**
-(`0x1AA144` 10 B, `0x1AA188` 4 B, `0x1AAA00..0x1AAA34` 52 B); o
-`0xD088D8` fica de fábrica.
+Base: a RC7 exata `3af97713…`. Contra ela, o B3 altera **68 bytes**
+(`0x1AA144` 10 B, `0x1AA174` 8 B, `0x1AA188` 4 B, `0x1AAA00..0x1AAA2E`
+46 B); o `0xD088D8` fica de fábrica.
 
 | | sha256 |
 |---|---|
-| imagem B3 (sem carimbo) | `b42a3a14b84dd7b4daaef5193a607ed177f7b0a85163402fa2ac57d6f0c6c3f1` |
-| imagem B3 carimbada (`RC7 diag B3`, `--em 0x1A4F00`) | `67753c69bb624050df7901a8fab43a556b8abdf595f241db2f9cd970db9f990c` |
-| `.up` (`OpenPod_OpenPodReload1.0RC7DiagB3.up`) | `a33415fbcff01ba1b1d7ed4400dea8bc37f77a63269711b15f91e5427cf5d757` |
+| imagem B3 (sem carimbo) | `3e9b8fa138c79f129bcfbd6cee1ed6f73634ce1e0be624ea89db3998340a5dd4` |
+| imagem B3 carimbada (`RC7 diag B3`, `--em 0x1A4F00`) | `5e86077b88ad8cb45a5f7347a3e664508cdd27879e116427be9ac6c63d0dee3e` |
+| `.up` (`OpenPod_OpenPodReload1.0RC7DiagB3.up`) | `e0d5594f2c4c496a7847caddc3491d0e29656608d8118a139cd33834c1a9c8f4` |
 
-CRC do `.up`: **`0x32F6`** (3 setores: `0x146000`, `0x1A4000`, `0x1AA000`;
-63 bytes alterados contra a base B2 `72632cfc…`; bootloader e setor `0xD000`
-como de fábrica; PSMP fora).
+CRC do `.up`: **`0xD9DB`** (3 setores: `0x146000`, `0x1A4000`, `0x1AA000`;
+65 bytes alterados contra a base B2 carimbada `72632cfc…`; bootloader e setor
+`0xD000` como de fábrica; PSMP fora).
 
 ## Leitura do B3 no aparelho
 
 | no aparelho | leitura |
 |---|---|
-| **Toca, cinza** | a contenção do mutex no TITULO era a causa; o caminho da mensagem serve para a correção final |
+| **Toca, sem o quadrado cinza** | o rótulo 2 tinha o caminho válido: a captura funcionou; a contenção do mutex no TITULO era a causa (o caminho da mensagem serve para a correção final) |
+| **Toca, com o quadrado cinza** | o rótulo 2 não tinha o caminho (vazio ou fora do formato `0:`): o caminho não chegou à view; a contenção não era (só) o `get_path` |
 | **Reinicia** | o `get_path` da view não era (ou não era só) a causa: sobra o `f_open`/JPEG, um fault ou o próprio caminho copiado |
 
 A volta de segurança é a **RC6**.

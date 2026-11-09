@@ -1,45 +1,34 @@
-@ diag_b3.s — o codigo novo do degrau B3 da ficha 011.
-@
-@ copia_path: chamado no lugar do get_path no TITULO (0x00DAA144).
-@ r0 = destino (ext+0x110, RAM), r1 = origem (o caminho da mensagem que o
-@ 0xD084F8 manda em +0x14; o page_music_play_label_process passa em r1).
-@ Copia a origem para o destino (ate 0xFF bytes), confere que parece um
-@ caminho (0x30 0x3a 0x5c/0x2f = "0:\" ou "0:/") e devolve 1 (valido) ou
-@ 0 (invalido). Nao chama o get_path, nao abre arquivo, nao aloca.
-@
-@ Nada aqui escreve na flash XIP: o destino e o ext+0x110 (RAM), como no
-@ get_path da fabrica.
-
+@ B3: copia o texto do rotulo 2 (o caminho da mensagem de 0xD084F8)
+@ para ext+0x110. r0 = origem (texto do rotulo), r2 = destino
+@ (ext+0x110). Copia ate 0xFF, devolve 1 se comeca com "0:" e "/" ou "\".
     .syntax unified
     .thumb
     .text
-
     .global copia_path
     .type copia_path, %function
+    .thumb_func
 copia_path:
-    movs    r2, #0
-1:  ldrb    r3, [r1, r2]
-    strb    r3, [r0, r2]
-    cmp     r3, #0
-    beq     2f
-    adds    r2, #1
-    cmp     r2, #0xff
-    blo     1b
-    movs    r3, #0
-    movs    r2, #0xff
-    strb    r3, [r0, r2]
-2:  ldrb    r3, [r1]
-    cmp     r3, #0x30
-    bne     3f
-    ldrb    r3, [r1, #1]
-    cmp     r3, #0x3a
-    bne     3f
-    ldrb    r3, [r1, #2]
-    cmp     r3, #0x5c
-    beq     4f
-    cmp     r3, #0x2f
-    bne     3f
-4:  movs    r0, #1
-    bx      lr
-3:  movs    r0, #0
-    bx      lr
+    movs r3, #0
+1:  ldrb r1, [r0, r3]
+    strb r1, [r2, r3]
+    cmp  r1, #0
+    beq  3f
+    adds r3, #1
+    cmp  r3, #0xff
+    bne  1b
+3:  ldrb r1, [r0]
+    cmp  r1, #0x30
+    bne  4f
+    ldrb r1, [r0, #1]
+    cmp  r1, #0x3a
+    bne  4f
+    ldrb r1, [r0, #2]
+    cmp  r1, #0x2f
+    beq  5f
+    cmp  r1, #0x5c
+    beq  5f
+4:  movs r0, #0
+    bx   lr
+5:  movs r0, #1
+    bx   lr
+    .size copia_path, . - copia_path
