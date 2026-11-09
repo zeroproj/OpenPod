@@ -24,7 +24,7 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   Claude escreve a ficha → `opencode/deepseek-v4.1-flash-free` faz a análise e o código → `opencode/glm-5.3-flash-free`
   faz a primeira revisão → `minimax/MiniMax-M3` revisa só o principal, e só quando a ficha gera versão para gravar (limite de
   US$ 3 por revisão) → Claude confere no firmware ORIGINAL → o decisor grava e testa. Reservas: MiniMax M3 refaz se o DeepSeek
-  vier fraco; GLM-5.3 do plano Go quando houver cota. Outros modelos grátis ficam de fora por causa da privacidade.
+  vier fraco; GLM-5.3 do plano Go quando houver cota. Privacidade não restringe a escolha de modelo (decisor, 2026-11-09: "openpod vai ser liberado"); o push de código para o repo público continua dependendo do "pode" do decisor.
 - **Pendências técnicas:**
   - [BAIXA 006] `fab_home_moldura.confere_resultado` não confere o `00` em
     `0x1A6448` (coberto pelo `test_c4_rotinas`).
