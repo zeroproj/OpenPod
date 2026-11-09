@@ -14,11 +14,12 @@ lv_label_get_text da fabrica (le [rotulo+0x24], como o lv_label_set_text
 em 0xD5ED94) e copia para ext+0x110 (a RAM que o get_path usava; ext =
 [[[0x81CE2C]+0xAC]+0x30]).
 
-PATCH: 0x001AA144 (10 B) vira ldr r0,[r6,#8] + ldr r0,[r0,#0x24] +
-bl copia_path + nop; 0x001AA174 (8 B) vira movs r1,#0 + 3 nop (o sucesso
-sem o quadrado cinza; o cinza da falha em 0x001AA1BE fica); 0x001AA188
-(4 B) vira movs r0,#0 + nop; e o copia_path em 0x001AAA00. A captura
-0x001088D8 NAO e tocada.
+PATCH: 0x001AA144 (10 B) vira ldr r0,[r6,#8] + bl copia_path + 2 nop (o
+copia_path checa rotulo 0, texto 0 e texto vazio ANTES de qualquer deref:
+os tres devolvem falha/cinza sem ler mais nada); 0x001AA174 (8 B) vira
+movs r1,#0 + 3 nop (o sucesso sem o quadrado cinza; o cinza da falha em
+0x001AA1BE fica); 0x001AA188 (4 B) vira movs r0,#0 + nop; e o copia_path
+em 0x001AAA00. A captura 0x001088D8 NAO e tocada.
 
 PREMISSAS (conferidas ANTES de escrever; senao recusa sem criar a saida):
 2 MiB e sha256 da RC7 exata (3af97713...); a tabela CRIA/TITULO/APAGA; a
@@ -63,7 +64,6 @@ P_CARREGA = 0x1AA188                    # `bl carrega_capa`
 FALHA_BL = b"\x00\x20\x00\xBF"          # movs r0, #0 + nop
 NOP = b"\x00\xBF"
 LDR_R0_R6_8 = b"\xB0\x68"               # ldr r0, [r6, #8] (o rotulo 2)
-LDR_R0_R0_24 = b"\x40\x6A"              # ldr r0, [r0, #0x24] (o texto)
 MOVS_R1_0 = b"\x00\x21"                 # movs r1, #0 (src nulo)
 RC7_TITULO = bytes.fromhex("4ef6c57cc0f2cf0ce047")   # get_path (0xDAA144)
 RC7_CAPA = bytes.fromhex("48f20001c0f2da01")         # r1 = 0xDA8000
@@ -88,6 +88,7 @@ ESTRUTURA = (
     (0x1AA134, "4bf68441c0f28101", "o [0x81BC84]"),
     (0x1AA13C, "0878096a", "o [r1]/[r1+0x20]"),
     (0x1AA140, "07f58872", "o r2 = ext+0x110"),
+    (P_TITULO, RC7_TITULO.hex(), "o get_path do TITULO"),
     (P_CAPA, RC7_CAPA.hex(), "o cinza do sucesso"),
     (P_IMG, RC7_IMG.hex(), "o img_set_src do sucesso"),
     (P_FALHA, RC7_CAPA.hex(), "o cinza da falha"),
@@ -117,6 +118,9 @@ def confere_blob(cod):
     for v in (0x2930, 0x293A, 0x292F, 0x295C):   # cmp r1, #'0'/':'/'/'/'\\'
         if struct.pack("<H", v) not in cod:
             erros.append(f"o copia_path nao tem a validacao 0x{v:04X}")
+    for v in (0xB1B0, 0xB191, 0x6A40):           # cbz r0 / cbz r1 / ldr [r0+0x24]
+        if struct.pack("<H", v) not in cod:
+            erros.append(f"o copia_path nao tem a guarda 0x{v:04X}")
     return erros
 
 
@@ -179,6 +183,9 @@ def confere_premissas(d, cod):
     if any(b != 0xFF for b in d[BLOB:BLOB + BLOB_MAX]):
         erros.append(f"a area livre 0x{BLOB:06X}..0x{BLOB + BLOB_MAX:06X} "
                      f"nao esta virgem (todo 0xFF)")
+    if BLOB + BLOB_MAX > A.LOTE + A.LOTE_TAM:
+        erros.append(f"a area livre termina em 0x{BLOB + BLOB_MAX:06X} e "
+                     f"passa do lote (0x{A.LOTE + A.LOTE_TAM:06X})")
     erros.extend(confere_blob(cod))
     return erros
 
@@ -189,8 +196,8 @@ def confere_premissas(d, cod):
 
 def bytes_do_patch(cod):
     """As (deslocamento, bytes novos) do B3, na ordem em que sao aplicadas."""
-    titulo = (LDR_R0_R6_8 + LDR_R0_R0_24
-              + A.enc(A.XIP + P_TITULO + 4, BLOB_XIP, True) + NOP)
+    titulo = (LDR_R0_R6_8
+              + A.enc(A.XIP + P_TITULO + 2, BLOB_XIP, True) + NOP * 2)
     return [(P_TITULO, titulo),
             (P_CAPA, MOVS_R1_0 + NOP * 3),
             (P_CARREGA, FALHA_BL),
@@ -200,15 +207,14 @@ def bytes_do_patch(cod):
 def confere_patch(d, cod):
     """Rele o patch e confere: os bytes novos e a decodificacao deles."""
     erros = []
-    if bytes(d[P_TITULO:P_TITULO + 4]) != LDR_R0_R6_8 + LDR_R0_R0_24:
-        erros.append(f"os 4 bytes de 0x{P_TITULO:06X} nao sao "
-                     f"ldr r0,[r6,#8] + ldr r0,[r0,#0x24]")
-    lido = A.desvio(d, P_TITULO + 4)
+    if bytes(d[P_TITULO:P_TITULO + 2]) != LDR_R0_R6_8:
+        erros.append(f"os 2 bytes de 0x{P_TITULO:06X} nao sao ldr r0,[r6,#8]")
+    lido = A.desvio(d, P_TITULO + 2)
     if lido is None or lido[0] != "bl" or lido[1] != BLOB_XIP:
-        erros.append(f"o bl de 0x{P_TITULO + 4:06X} nao ficou um bl para "
+        erros.append(f"o bl de 0x{P_TITULO + 2:06X} nao ficou um bl para "
                      f"0x{BLOB_XIP:08X}")
-    if bytes(d[P_TITULO + 8:P_TITULO + 10]) != NOP:
-        erros.append("o nop depois do bl do copia_path nao esta no lugar")
+    if bytes(d[P_TITULO + 6:P_TITULO + 10]) != NOP * 2:
+        erros.append("os 2 nop depois do bl do copia_path nao estao no lugar")
     if bytes(d[P_CAPA:P_CAPA + 8]) != MOVS_R1_0 + NOP * 3:
         erros.append("os 8 bytes do cinza do sucesso nao sao movs r1,#0 + "
                      "3 nop")

@@ -1,6 +1,8 @@
-@ B3: copia o texto do rotulo 2 (o caminho da mensagem de 0xD084F8)
-@ para ext+0x110. r0 = origem (texto do rotulo), r2 = destino
-@ (ext+0x110). Copia ate 0xFF, devolve 1 se comeca com "0:" e "/" ou "\".
+@ B3: le o texto do rotulo 2 (o caminho da mensagem de 0xD084F8) e o
+@ copia para ext+0x110. r0 = objeto do rotulo 2 ([view+8]), r2 = destino
+@ (ext+0x110). Antes de qualquer deref: rotulo 0, texto 0 ou texto vazio
+@ devolvem falha (0) sem ler mais nada. Copia ate 0xFF e devolve 1 se
+@ comeca com "0:" e "/" ou "\".
     .syntax unified
     .thumb
     .text
@@ -8,6 +10,11 @@
     .type copia_path, %function
     .thumb_func
 copia_path:
+    cbz  r0, 4f
+    ldr  r0, [r0, #0x24]
+    cbz  r0, 4f
+    ldrb r1, [r0]
+    cbz  r1, 4f
     movs r3, #0
 1:  ldrb r1, [r0, r3]
     strb r1, [r2, r3]

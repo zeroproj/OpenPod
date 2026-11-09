@@ -7,8 +7,9 @@ esta no rotulo 2, que a mensagem do 0xD084F8 preenche antes do titulo (a
 fila e FIFO). O TITULO le o texto do rotulo 2 com o lv_label_get_text da
 fabrica (le [rotulo+0x24]) e copia para a extensao em RAM (ext+0x110).
 Caminho valido: NAO mostra o quadrado cinza (src nulo); invalido/vazio:
-continua cinza. Nao ha escrita na flash XIP. Base: a RC7 exata (3af97713...).
-Imagem 3e9b8fa1... · carimbada 5e86077b... · .up CRC 0xD9DB · sha e0d5594f...
+continua cinza. Rotulo 2 nulo, texto nulo ou texto vazio: cinza, sem fault.
+Nao ha escrita na flash XIP. Base: a RC7 exata (3af97713...).
+Imagem 8bce17ad... · carimbada 18930ab2... · .up CRC 0x3B54 · sha ce0fe7f7...
 
 INSTALAR (pelo cartao): copie OpenPod_OpenPodReload1.0RC7DiagB3.up para a
 RAIZ do cartao como update.up; Config -> Atualizar por SD -> Sim; apague o
@@ -23,9 +24,11 @@ ROTEIRO (marque um)
   [ ] 01_capa_v23: sem o quadrado cinza (o caminho valido; a capa nao e carregada nesta etapa)
   [ ] Musica em pasta com caminho valido: SEM o quadrado cinza
   [ ] Caminho invalido/vazio: quadrado cinza "sem capa"
-  [ ] Trocar de faixa 01 -> 04 -> 02: sem reiniciar
+  [ ] Trocar de faixa 01 -> 04 -> 02: sem reiniciar (pode mostrar o resultado da faixa anterior)
   [ ] Sair e entrar na Tocando Agora 10 vezes: sem travar
   [ ] Config: Informacoes = "RC7 diag B3"
 
 AVISOS: se CONGELAR, o aparelho so sai pelo BOTAO DE RESET; a B3 NAO e para
 uso normal (fica SEM a protecao do watchdog); a volta de seguranca e a RC6.
+Ao trocar de faixa pelos botoes, o titulo de um dos dois fluxos que NAO
+reenviam o caminho pode mostrar o resultado (capa/cinza) da faixa anterior.

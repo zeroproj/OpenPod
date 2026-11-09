@@ -713,9 +713,9 @@ class B3(Base):
             self.assertLess(i, 0x1FC000)
             self.assertFalse(self.CAPTURA <= i < self.CAPTURA + 4,
                              "a captura 0x001088D8 nao pode mudar")
-        self.assertEqual(self.b3[self.GET:self.GET + 4],
-                         b"\xB0\x68\x40\x6A")
-        self.assertEqual(self.b3[self.GET + 8:self.GET + 10], b"\x00\xbf")
+        self.assertEqual(self.b3[self.GET:self.GET + 2], b"\xB0\x68")
+        self.assertEqual(self.b3[self.GET + 6:self.GET + 10],
+                         b"\x00\xbf\x00\xbf")
         self.assertEqual(self.b3[self.CAPA:self.CAPA + 8],
                          b"\x00\x21\x00\xbf\x00\xbf\x00\xbf")
         self.assertEqual(self.b3[self.CARREGA:self.CARREGA + 4],
@@ -725,10 +725,10 @@ class B3(Base):
 
     def test_43_decodificacao(self):
         self.assertEqual(desvio(self.b3, self.CAPTURA), self.ALVO_CAPTURA)
-        self.assertEqual(self.b3[self.GET:self.GET + 4],
-                         b"\xB0\x68\x40\x6A")
-        self.assertEqual(desvio(self.b3, self.GET + 4), self.BLOB_XIP)
-        self.assertEqual(self.b3[self.GET + 8:self.GET + 10], b"\x00\xbf")
+        self.assertEqual(self.b3[self.GET:self.GET + 2], b"\xB0\x68")
+        self.assertEqual(desvio(self.b3, self.GET + 2), self.BLOB_XIP)
+        self.assertEqual(self.b3[self.GET + 6:self.GET + 10],
+                         b"\x00\xbf\x00\xbf")
         self.assertEqual(self.b3[self.CAPA:self.CAPA + 2], b"\x00\x21")
         self.assertEqual(self.b3[self.CARREGA:self.CARREGA + 2], b"\x00\x20")
         self.assertEqual(self.b3[self.CARREGA + 2:self.CARREGA + 4],
@@ -816,13 +816,15 @@ class B3(Base):
         self.assertEqual(m.erros, [])
         return m, view
 
-    def titulo_b3(self, m, view, path, titulo=b"TITULO"):
+    def titulo_b3(self, m, view, path, titulo=b"TITULO",
+                  rotulo2=None, texto2=None):
         ctx = m.le32(view + 0x30)
         pp = m.aloca(0x100, registra=False)
         m.escreve(pp, path + b"\0")
         pt = m.aloca(0x100, registra=False)
         m.escreve(pt, titulo + b"\0")
-        m.escreve32(ROT_LETRA + 0x24, pp)
+        m.escreve32(view + 8, ROT_LETRA if rotulo2 is None else rotulo2)
+        m.escreve32(ROT_LETRA + 0x24, pp if texto2 is None else texto2)
         m.escreve32(ROT_TIT + 0x24, pt)
         m.escreve(ctx + 0x10, b"\0" * 0x100)
         m.escreve(ctx + 0x110, b"\0" * 0x100)
@@ -836,14 +838,19 @@ class B3(Base):
         self.xip_rom(m)
         dest = m.aloca(0x100, registra=False)
         src = m.aloca(0x40, registra=False)
+        lab = m.aloca(0x40, registra=False)
+        m.escreve32(lab + 0x24, src)
         for path, ok in ((b"0:/A/B.mp3", 1), (b"0:\\A.mp3", 1),
                          (b"lixo", 0), (b"", 0)):
             m.escreve(src, path + b"\0")
             m.escreve(dest, b"\xAA" * 0x100)
-            r = m.chama(self.BLOB_XIP, (src, 0, dest))
+            r = m.chama(self.BLOB_XIP, (lab, 0, dest))
             self.assertEqual(m.erros, [], path)
             self.assertEqual(r, ok, path)
-            self.assertEqual(m.cstr(dest), path, path)
+            if path:
+                self.assertEqual(m.cstr(dest), path, path)
+            else:
+                self.assertEqual(m.le32(dest), 0xAAAAAAAA, "texto vazio nao copia")
 
     def test_47_emulacao_titulo(self):
         m, view = self.aparelho(self.b3)
@@ -878,7 +885,9 @@ class B3(Base):
         self.xip_rom(m)
         src = m.aloca(0x40, registra=False)
         m.escreve(src, b"0:/A\0")
-        m.chama(self.BLOB_XIP, (src, 0, E.XIP + 0x1000))
+        lab = m.aloca(0x40, registra=False)
+        m.escreve32(lab + 0x24, src)
+        m.chama(self.BLOB_XIP, (lab, 0, E.XIP + 0x1000))
         self.assertTrue(any("XIP" in e for e in m.erros))
 
     def test_49_mapa_e_receita(self):
@@ -891,6 +900,24 @@ class B3(Base):
         self.assertNotIn("fab_diag_b3.py", B.MAPA)
         t = le(os.path.join(RAIZ, "tests/test_catraca.py")).decode()
         self.assertNotIn(self.RECEITA, t)
+
+
+    def test_50_guarda_rotulo_2(self):
+        """Rotulo 2 nulo, texto nulo ou texto vazio: cinza sem deref/fault."""
+        m, view = self.aparelho(self.b3)
+        casos = (("rotulo 0", dict(rotulo2=0)),
+                 ("texto 0", dict(texto2=0)),
+                 ("texto vazio", dict()))
+        for nome, kw in casos:
+            path = b"" if nome == "texto vazio" else b"0:/MUSICA/teste.mp3"
+            ctx, novas = self.titulo_b3(m, view, path, **kw)
+            nomes = [c[0] for c in novas]
+            self.assertEqual(nomes, ["label_set_text", "img_set_src"], nome)
+            self.assertEqual(nomes.count("get_path"), 0, nome)
+            srcs = [c[2] for c in novas if c[0] == "img_set_src"]
+            self.assertEqual(srcs, [self.PH_DSC], nome)   # cinza, sem parar
+            self.assertEqual(m.cstr(ctx + 0x110), b"", nome)
+            self.assertEqual(m.cstr(ctx + 0x10), b"", nome)
 
 
 class Comportamento(Base):
