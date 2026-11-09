@@ -21,18 +21,16 @@ A REGRA QUE NASCEU DE UM ERRO REAL
 
 CONTEUDO
 --------
-  flash_OpenPod_OpenPodReload1.0RC7DiagB3.sh      grava (4 setores, 16 KiB)
+  flash_OpenPod_OpenPodReload1.0RC7DiagB3.sh      grava (3 setores, 12 KiB)
   diag.sh                diagnostico          (SO LEITURA)
   recovery_check_linux.sh  confere a ferramenta (SO LEITURA)
 
   SETORES A GRAVAR (4096 B cada)
-    OpenPod_OpenPodReload1.0RC7DiagB3_108000.bin 0x108000  10a48df020c88cc03606ff7edf1011a0498b0603b3e749de1f7e6f744e3df27d
     OpenPod_OpenPodReload1.0RC7DiagB3_146000.bin 0x146000  7420d43726c3d569a28511f0a62b19d303d551025cd5d48a62e18a1bdac259ff
     OpenPod_OpenPodReload1.0RC7DiagB3_1A4000.bin 0x1A4000  e1d4f3cd9a3529026ab83b6b9b52aafc236a282b18ac390bade4595ae1dc72e2
-    OpenPod_OpenPodReload1.0RC7DiagB3_1AA000.bin 0x1AA000  80abe398ce599ec1c0ad903a03e0e0d5ca87687213f56efcfc2c5622a392fe5e
+    OpenPod_OpenPodReload1.0RC7DiagB3_1AA000.bin 0x1AA000  7b3222c3c3f31ae93330b16698087c6bc66562f85244324638a6732c12849582
 
   SETORES DE REVERSAO -> ESTADO ANTERIOR (a base deste kit)
-    base_108000.bin  0x108000  ccd6967286db00a55df42f50d7af6d633f736c482ebf08807ecf0e2e6d71dbf4
     base_146000.bin  0x146000  dae0fdb6b5cd6421109dd57bb199320d6b24fba3c7a28a3d5bcbe3c257305e3d
     base_1A4000.bin  0x1A4000  b3045335665b4de85fb09e5398d554c5075632859f7f5f50acbf5b9fe2471fb5
     base_1AA000.bin  0x1AA000  a31ec6accd1ca7d3a012e3fe5f3076424dc05ad5cd88f049f004e94635d79fa2
@@ -68,8 +66,6 @@ SE DER ERRADO
 -------------
 NAO DESLIGUE O APARELHO. Enquanto ele enumera, tem conserto.
 
-  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
-       write_flash 0x108000 0 0x1000 base_108000.bin
   sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
        write_flash 0x146000 0 0x1000 base_146000.bin
   sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \

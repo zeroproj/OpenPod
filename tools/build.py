@@ -636,18 +636,20 @@ RELOAD_1_0_RC7_DIAG_B2 = RELOAD_1_0_RC7_DIAG_B + [
 # RELOAD 1.0 RC7 DIAG B3 — a ficha 011 (o caminho sem o get_path).
 #
 # O B0 mediu a chamada do get_path; o B2 mostrou que o monitor do watchdog
-# e o que leva ao reset. O B3 tira o get_path da ViewTask: a MainTask
-# captura o caminho na rajada do play (o `bl 0xD084F8` de 0x001088D8), o
-# guarda em 0x00DAAB00 e o TITULO le esse global (0x001AA144) em vez de
-# chamar o get_path. O `carrega_capa` fica cortado como no B (cinza).
+# e o que leva ao reset. O B3 tira o get_path da ViewTask sem inventar RAM:
+# a mensagem que o `0xD084F8` manda ja leva o caminho em +0x14; o
+# `page_music_play_label_process` (0x00D32204) passa esse texto em r1 para
+# o TITULO, que o guarda em r5. O B3 troca a chamada do get_path
+# (0x001AA144) por uma copia desse r5 para ext+0x110 (a mesma RAM que o
+# get_path usava). A captura 0x001088D8 NAO e tocada. O `carrega_capa`
+# fica cortado como no B (cinza).
 #
-#     captura  4 bytes  o `bl 0xD084F8` de 0x001088D8 vira `bl` para o
-#                      guarda_path (0x00DAAA00)
 #     leitura 10 bytes  o `movw/movt` + `blx` do get_path (0x001AA144)
-#                      vira `bl le_global` (0x00DAAA40) + 3 `nop`
+#                      vira `mov r0,r2` + `mov r1,r5` + `bl copia_path` +
+#                      `nop`
 #     capa     4 bytes  o `bl` do carrega_capa (0x001AA188) vira
 #                      `movs r0, #0` + `nop`
-#     codigo  128 bytes o guarda_path, o le_global e o global (0x001AAA00)
+#     codigo  52 bytes  o copia_path (0x001AAA00)
 #
 # A ferramenta NAO entra no MAPA: ela patcha dentro do lote que a RC7 ja
 # montou e no codigo da fabrica, e o `tests/test_rc7.py` (protegido, C2)

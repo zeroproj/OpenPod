@@ -633,17 +633,20 @@ class B2(Base):
 class B3(Base):
     r"""O degrau B3 da ficha 011 (o caminho sem o get_path na ViewTask).
 
-    A MainTask captura o caminho na rajada do play (0x001088D8), o guarda
-    em 0x00DAAB00; o TITULO le esse global (0x001AA144) em vez de chamar o
-    get_path, confere o `0:\`/`0:/` e mostra o cinza."""
+    O B3 tira o get_path da ViewTask sem inventar RAM: a mensagem que o
+    0xD084F8 manda ja leva o caminho em +0x14; o
+    page_music_play_label_process (0x00D32204) passa esse texto em r1 para
+    o TITULO, que o guarda em r5. O B3 troca a chamada do get_path
+    (0x001AA144) por uma copia desse r5 para ext+0x110 (a mesma RAM que o
+    get_path usava; ext = [[[0x81CE2C]+0xAC]+0x30]). A captura 0x001088D8
+    NAO e tocada e a regiao XIP (0xC00000..0xDFFFFF) e so leitura: uma
+    escrita nela falha o teste."""
 
     RECEITA = "reload_1.0_rc7_diag_b3"
     BLOB = 0x1AAA00
     BLOB_XIP = 0x00DAAA00
-    LE = 0x00DAAA40
-    GLOBAL = 0x1AAB00
-    GLOBAL_XIP = 0x00DAAB00
     CAPTURA = 0x1088D8
+    ALVO_CAPTURA = 0x00D084F8
     GET = 0x1AA144
     CARREGA = 0x1AA188
     PH_DSC = 0x00DA8000
@@ -683,6 +686,8 @@ class B3(Base):
         self.assertEqual(self.b3_rc, 0, self.b3_log[-2000:])
         self.assertEqual(sha(self.rc7), SHA_RC7)
         self.assertEqual(len(self.b3), 0x200000)
+        self.assertEqual(self.b3[self.CAPTURA:self.CAPTURA + 4],
+                         self.rc7[self.CAPTURA:self.CAPTURA + 4])
 
     def test_41_reprodutivel(self):
         tmp = tempfile.mkdtemp(prefix="openpod_diag011r_")
@@ -696,7 +701,7 @@ class B3(Base):
 
     def test_42_diff_exato(self):
         dif = [i for i in range(len(self.b3)) if self.b3[i] != self.rc7[i]]
-        regioes = [(self.CAPTURA, 4), (self.GET, 10), (self.CARREGA, 4),
+        regioes = [(self.GET, 10), (self.CARREGA, 4),
                    (self.BLOB, len(self.blob))]
         for i in dif:
             self.assertTrue(any(o <= i < o + t for o, t in regioes),
@@ -704,19 +709,27 @@ class B3(Base):
             self.assertGreaterEqual(i, 0x00E000)
             self.assertFalse(0xD000 <= i < 0xE000)
             self.assertLess(i, 0x1FC000)
-        self.assertEqual(self.b3[self.GET + 4:self.GET + 10], b"\x00\xbf" * 3)
+            self.assertFalse(self.CAPTURA <= i < self.CAPTURA + 4,
+                             "a captura 0x001088D8 nao pode mudar")
+        self.assertEqual(self.b3[self.GET:self.GET + 4],
+                         b"\x10\x46\x29\x46")
+        self.assertEqual(self.b3[self.GET + 8:self.GET + 10], b"\x00\xbf")
         self.assertEqual(self.b3[self.CARREGA:self.CARREGA + 4],
                          b"\x00\x20\x00\xbf")
         self.assertEqual(self.b3[self.BLOB:self.BLOB + len(self.blob)],
                          self.blob)
 
     def test_43_decodificacao(self):
-        self.assertEqual(desvio(self.b3, self.CAPTURA), self.BLOB_XIP)
-        self.assertEqual(desvio(self.b3, self.GET), self.LE)
-        self.assertEqual(valor_carregado(self.b3, self.BLOB + 0x40),
-                         self.GLOBAL_XIP)
-        self.assertEqual(valor_carregado(self.b3, self.BLOB + 0x26),
-                         0x00D084F9)
+        self.assertEqual(desvio(self.b3, self.CAPTURA), self.ALVO_CAPTURA)
+        self.assertEqual(self.b3[self.GET:self.GET + 4],
+                         b"\x10\x46\x29\x46")
+        self.assertEqual(desvio(self.b3, self.GET + 4), self.BLOB_XIP)
+        self.assertEqual(self.b3[self.GET + 8:self.GET + 10], b"\x00\xbf")
+        self.assertEqual(self.b3[self.CARREGA:self.CARREGA + 2], b"\x00\x20")
+        self.assertEqual(self.b3[self.CARREGA + 2:self.CARREGA + 4],
+                         b"\x00\xbf")
+        for v in (0x2B30, 0x2B3A, 0x2B5C, 0x2B2F):
+            self.assertIn(struct.pack("<H", v), self.blob, hex(v))
 
     def test_44_recusas(self):
         for nome, entrada in (("rc6", self.rc6),
@@ -762,9 +775,24 @@ class B3(Base):
         d[self.BLOB] ^= 0xFF
         self.assertTrue(any("virgem" in e
                             for e in F3.confere_premissas(d, self.blob)))
+        d = bytearray(self.rc7)
+        d[self.CARREGA:self.CARREGA + 4] = b"\x00\x20\x00\xbf"
+        self.assertTrue(any("carrega_capa" in e
+                            for e in F3.confere_premissas(d, self.blob)))
+
+    def xip_rom(self, m):
+        from unicorn import UC_HOOK_MEM_WRITE
+
+        def _hook(uc, acesso, end, tam, val, ud):
+            if end < E.XIP + 0x200000 and end + tam > E.XIP:
+                m.erros.append(f"escrita em XIP 0x{end:08X} ({tam} B)")
+            return True
+
+        m.u.hook_add(UC_HOOK_MEM_WRITE, _hook)
 
     def aparelho(self, img):
         m = E.Maquina(img)
+        self.xip_rom(m)
         pag, view = m.aloca(0x200, registra=False), m.aloca(0x34, registra=False)
         m.escreve32(E.PAGINAS, pag)
         m.escreve32(pag + 0xAC, view)
@@ -781,48 +809,30 @@ class B3(Base):
 
     def titulo_b3(self, m, view, path):
         ctx = m.le32(view + 0x30)
-        m.escreve(self.GLOBAL_XIP, path + b"\0")
+        p = m.aloca(0x100, registra=False)
+        m.escreve(p, path + b"\0")
         m.escreve(ctx + 0x10, b"\0" * 0x100)
         m.escreve(ctx + 0x110, b"\0" * 0x100)
-        txt = m.aloca(16, registra=False)
-        m.escreve(txt, b"titulo\0")
         n0 = len(m.chamadas)
-        m.chama(TITULO, (ROT_TIT, txt))
+        m.chama(TITULO, (ROT_TIT, p))
         self.assertEqual(m.erros, [])
         return ctx, m.chamadas[n0:]
 
-    def test_46_emulacao_guarda_path(self):
+    def test_46_emulacao_copia_path(self):
         m = E.Maquina(self.b3)
-        path = m.aloca(64, registra=False)
-        m.escreve(path, b"0:/A/B.mp3\0")
-        vistos = []
-
-        def fake(mq):
-            vistos.append(mq.r(E.UC_ARM_REG_R0))
-            return 0
-
-        m.falsas[0x00D084F8] = fake
-        m.escreve(self.GLOBAL_XIP, b"\xff" * 0x100)
-        m.chama(self.BLOB_XIP, (path,))
-        self.assertEqual(m.erros, [])
-        self.assertEqual(m.cstr(self.GLOBAL_XIP), b"0:/A/B.mp3")
-        self.assertEqual(vistos, [path])
-
-    def test_47_emulacao_le_global(self):
-        m = E.Maquina(self.b3)
-        ctx = m.aloca(0x220, registra=False)
-        for path, ok in ((b"0:/A.mp3", 1), (b"0:\\A.mp3", 1),
+        self.xip_rom(m)
+        dest = m.aloca(0x100, registra=False)
+        src = m.aloca(0x40, registra=False)
+        for path, ok in ((b"0:/A/B.mp3", 1), (b"0:\\A.mp3", 1),
                          (b"lixo", 0), (b"", 0)):
-            m.escreve(self.GLOBAL_XIP, path + b"\0")
-            m.escreve(ctx + 0x110, b"\xAA" * 0x100)
-            salvos = [0x11110000 + i for i in range(8)]
-            salvos[3] = ctx                      # r7 = o contexto
-            r = m.chama(self.LE, (), salvos=salvos)
+            m.escreve(src, path + b"\0")
+            m.escreve(dest, b"\xAA" * 0x100)
+            r = m.chama(self.BLOB_XIP, (dest, src))
             self.assertEqual(m.erros, [], path)
             self.assertEqual(r, ok, path)
-            self.assertEqual(m.cstr(ctx + 0x110), path, path)
+            self.assertEqual(m.cstr(dest), path, path)
 
-    def test_48_emulacao_titulo(self):
+    def test_47_emulacao_titulo(self):
         m, view = self.aparelho(self.b3)
         for path in (b"0:/MUSICA/teste.mp3", b"0:\\MUSICA\\teste.mp3"):
             ctx, novas = self.titulo_b3(m, view, path)
@@ -836,11 +846,19 @@ class B3(Base):
             self.assertEqual(m.cstr(ctx + 0x10), path, path)
             srcs = [c[2] for c in novas if c[0] == "img_set_src"]
             self.assertEqual(set(srcs), {self.PH_DSC}, path)
-        # caminho invalido: cinza, e o caminho guardado fica vazio
+        # caminho invalido: cinza, e o caminho copiado fica como veio
         ctx, novas = self.titulo_b3(m, view, b"lixo")
         self.assertEqual([c[0] for c in novas], ["label_set_text", "img_set_src"])
         self.assertEqual(m.cstr(ctx + 0x10), b"")
         self.assertEqual(m.cstr(ctx + 0x110), b"lixo")
+
+    def test_48_emulacao_xip_rom(self):
+        m = E.Maquina(self.b3)
+        self.xip_rom(m)
+        src = m.aloca(0x40, registra=False)
+        m.escreve(src, b"0:/A\0")
+        m.chama(self.BLOB_XIP, (E.XIP + 0x1000, src))
+        self.assertTrue(any("XIP" in e for e in m.erros))
 
     def test_49_mapa_e_receita(self):
         import build as B

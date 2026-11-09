@@ -4,7 +4,7 @@
 #
 # OpenPod Reload 1.0 RC7 Diag B3
 #
-# Grava 4 setores de 4096 B (16 KiB). O bootloader (0x0..0xD000)
+# Grava 3 setores de 4096 B (12 KiB). O bootloader (0x0..0xD000)
 # nao e endereçado. write_flash sempre com 0 no 2o argumento, a
 # partir de um arquivo por setor (docs/WRITE_FLASH_SEMANTICS.md).
 #
@@ -37,7 +37,6 @@ die() {
         log "$(m ja_gravou) $WROTE $(m ja_gravou2)"
         log "$(m reversao)"
         log "***   (de dentro de $DADOS)"
-        log "***   sudo $TOOL --id $DEV write_flash 0x108000 0 0x1000 base_108000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x146000 0 0x1000 base_146000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x1A4000 0 0x1000 base_1A4000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x1AA000 0 0x1000 base_1AA000.bin"
@@ -207,8 +206,7 @@ m() {
 # --------------------------------------------------------------------------
 
 log "======================================================================"
-log "$(m hdr) OPENPOD_OPENPODRELOAD1.0RC7DIAGB3   (4 $(m setores), 16 KiB)"
-log " 0x108000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB3_108000.bin"
+log "$(m hdr) OPENPOD_OPENPODRELOAD1.0RC7DIAGB3   (3 $(m setores), 12 KiB)"
 log " 0x146000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB3_146000.bin"
 log " 0x1A4000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB3_1A4000.bin"
 log " 0x1AA000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB3_1AA000.bin"
@@ -231,11 +229,9 @@ ck_file() {
     $(m obtido) $g"
     log "        OK   $1"
 }
-ck_file "OpenPod_OpenPodReload1.0RC7DiagB3_108000.bin" 10a48df020c88cc03606ff7edf1011a0498b0603b3e749de1f7e6f744e3df27d
 ck_file "OpenPod_OpenPodReload1.0RC7DiagB3_146000.bin" 7420d43726c3d569a28511f0a62b19d303d551025cd5d48a62e18a1bdac259ff
 ck_file "OpenPod_OpenPodReload1.0RC7DiagB3_1A4000.bin" e1d4f3cd9a3529026ab83b6b9b52aafc236a282b18ac390bade4595ae1dc72e2
-ck_file "OpenPod_OpenPodReload1.0RC7DiagB3_1AA000.bin" 80abe398ce599ec1c0ad903a03e0e0d5ca87687213f56efcfc2c5622a392fe5e
-ck_file "base_108000.bin" ccd6967286db00a55df42f50d7af6d633f736c482ebf08807ecf0e2e6d71dbf4
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB3_1AA000.bin" 7b3222c3c3f31ae93330b16698087c6bc66562f85244324638a6732c12849582
 ck_file "base_146000.bin" dae0fdb6b5cd6421109dd57bb199320d6b24fba3c7a28a3d5bcbe3c257305e3d
 ck_file "base_1A4000.bin" b3045335665b4de85fb09e5398d554c5075632859f7f5f50acbf5b9fe2471fb5
 ck_file "base_1AA000.bin" a31ec6accd1ca7d3a012e3fe5f3076424dc05ad5cd88f049f004e94635d79fa2
@@ -328,7 +324,7 @@ ck "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3
 log ""
 log "======================================================================"
 log "$(m conf1)"
-log "$(m escreve) 16 KiB / 4 $(m setores)"
+log "$(m escreve) 12 KiB / 3 $(m setores)"
 log "$(m muda) OpenPod Reload 1.0 RC7 Diag B3"
 log "$(m conf4)"
 log "======================================================================"
@@ -352,10 +348,9 @@ wr() {
     $(m obtido) $g"
     log "        $(m setor_ok)"
 }
-wr "4/6 1/4" 0x108000 "OpenPod_OpenPodReload1.0RC7DiagB3_108000.bin" 10a48df020c88cc03606ff7edf1011a0498b0603b3e749de1f7e6f744e3df27d
-wr "4/6 2/4" 0x146000 "OpenPod_OpenPodReload1.0RC7DiagB3_146000.bin" 7420d43726c3d569a28511f0a62b19d303d551025cd5d48a62e18a1bdac259ff
-wr "4/6 3/4" 0x1A4000 "OpenPod_OpenPodReload1.0RC7DiagB3_1A4000.bin" e1d4f3cd9a3529026ab83b6b9b52aafc236a282b18ac390bade4595ae1dc72e2
-wr "4/6 4/4" 0x1AA000 "OpenPod_OpenPodReload1.0RC7DiagB3_1AA000.bin" 80abe398ce599ec1c0ad903a03e0e0d5ca87687213f56efcfc2c5622a392fe5e
+wr "4/6 1/3" 0x146000 "OpenPod_OpenPodReload1.0RC7DiagB3_146000.bin" 7420d43726c3d569a28511f0a62b19d303d551025cd5d48a62e18a1bdac259ff
+wr "4/6 2/3" 0x1A4000 "OpenPod_OpenPodReload1.0RC7DiagB3_1A4000.bin" e1d4f3cd9a3529026ab83b6b9b52aafc236a282b18ac390bade4595ae1dc72e2
+wr "4/6 3/3" 0x1AA000 "OpenPod_OpenPodReload1.0RC7DiagB3_1AA000.bin" 7b3222c3c3f31ae93330b16698087c6bc66562f85244324638a6732c12849582
 rm -f "$WORK/sec.bin"
 
 log "$(m p5)"
@@ -370,7 +365,7 @@ ck2() {
 }
 ck2 "bootloader" 0 51532 861184003923634be0f2ae9883456035b40d1ea72f97682890238edfae3acb31
 ck2 "ptable" 53248 64 9f93d4435e7cb819b2dad2f38edf91fb0a0af44654c4d9fcd3df174bf3380a2d
-ck2 "FIRM" 57344 1647984 99017d4c473ff7572fe037b68454bac307b9c52ab3f0b056060a22768744036d
+ck2 "FIRM" 57344 1647984 8260a78cae15236367b894055908c08fc321a726ddc6b9dffdcf1ac9d78f14e9
 ck2 "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3f8b4ace
 
 log ""
@@ -383,7 +378,6 @@ else
     log " [6/6] $(m res_err)"
     log ""
     log "$(m nao_desligue)"
-    log "     sudo $TOOL --id $DEV write_flash 0x108000 0 0x1000 base_108000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x146000 0 0x1000 base_146000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x1A4000 0 0x1000 base_1A4000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x1AA000 0 0x1000 base_1AA000.bin"

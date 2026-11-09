@@ -1,9 +1,11 @@
 OpenPod Reload 1.0 RC7 Diag B3 — TESTAR
 
-O que e: a RC7 com o caminho capturado na MainTask (0x1088D8) e lido pelo
-TITULO (0x1AA144) sem chamar o get_path na ViewTask. Sem f_open, sem JPEG,
-sem heap novo. Base: a RC7 exata (5f2fe234...). Imagem carimbada
-a1163128... · .up CRC 0xE7A9 · sha 2c8f091e...
+O que e: a RC7 exata com o get_path da ViewTask trocado por uma copia do
+caminho que a mensagem ja traz. A ViewTask deixa de pedir o caminho ao banco
+(0xD084F8) na thread da interface: copia o texto da mensagem (msg+0x14) para
+a extensao em RAM (ext+0x110). Nao ha escrita na flash XIP. Base: a RC7 exata
+(3af97713...). Imagem b42a3a14... · carimbada 67753c69... · .up CRC 0x32F6 ·
+sha a33415fb...
 
 INSTALAR (pelo cartao): copie OpenPod_OpenPodReload1.0RC7DiagB3.up para a
 RAIZ do cartao como update.up; Config -> Atualizar por SD -> Sim; apague o
@@ -11,12 +13,15 @@ update.up depois. (Musicas: tests/assets/rc7/01..07)
 
 ROTEIRO (marque um)
   [ ] TOCA (nao reinicia)
-  [ ] REINICIA (sozinho) — quantos SEGUNDOS depois de dar play? ____
-  [ ] 01_capa_v23: quadrado cinza com a nota (esperado)
+  [ ] CONGELA (a tela para, sem reiniciar)
+  [ ] REINICIA (sozinho)
+  [ ] Se reiniciou ou congelou: quantos SEGUNDOS depois de dar play? ____
+  [ ] 01_capa_v23: quadrado cinza com a nota (esperado) e o caminho no titulo
+  [ ] Musica em pasta com caminho valido: mostra o caminho da pasta
+  [ ] Caminho invalido: volta ao cinza "sem capa"
   [ ] Trocar de faixa 01 -> 04 -> 02: sem reiniciar
   [ ] Sair e entrar na Tocando Agora 10 vezes: sem travar
   [ ] Config: Informacoes = "RC7 diag B3"
 
-AVISOS: o cinza e o esperado (o B3 ainda nao abre o MP3 nem o JPEG); a
-volta de seguranca e a RC6; se reiniciar, anote quantos segundos depois do
-play e se o player chegou a aparecer.
+AVISOS: se CONGELAR, o aparelho so sai pelo BOTAO DE RESET; a B3 NAO e para
+uso normal (fica SEM a protecao do watchdog); a volta de seguranca e a RC6.

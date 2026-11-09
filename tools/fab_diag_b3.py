@@ -4,38 +4,39 @@ fab_diag_b3.py — o degrau B3 da ficha 011 (RC7: duas tarefas).
 
 A ficha 011 mediu que o `get_path` na ViewTask reinicia o aparelho (B) e
 que o monitor do watchdog e o que o leva ao reset (B2). O B3 tira o
-`get_path` da ViewTask: a MainTask captura o caminho na rajada do play (o
-`bl 0xD084F8` de `page4_media_cb`, 0x001088D8) e guarda em 0x00DAAB00; o
-TITULO le esse global (0x001AA144) em vez de chamar o `get_path`, confere
-que parece um caminho (`0:\` ou `0:/`) e mostra o quadrado cinza. Sem
-`f_open`, sem JPEG, sem heap novo.
+`get_path` da ViewTask sem inventar RAM: a mensagem que o `0xD084F8` manda
+ja leva o caminho em `+0x14`; o `page_music_play_label_process`
+(0x00D32204) passa esse texto em `r1` para o TITULO, que o guarda em `r5`.
+O B3 troca a chamada do `get_path` (0x001AA144) por uma copia desse `r5`
+para `ext+0x110` (a mesma RAM que o `get_path` usava; `ext` =
+[[[0x81CE2C]+0xAC]+0x30], como no TITULO em 0x00DAA10C..0x00DAA11A).
+Sem `f_open`, sem JPEG, sem heap novo, sem escrita na flash XIP.
 
 O codigo novo e ASSEMBLY Thumb-2 (tools/diag_b3.s, montado pelo clang via
 tools/asm.py), para a saida ser reproduzivel.
 
-PATCH (tres pontos + o codigo novo)
+PATCH (dois pontos + o codigo novo)
 
-    1. 0x001088D8 (4 B, fabrica): `bl 0xD084F8` -> `bl guarda_path`;
-    2. 0x001AA144 (10 B): `movw/movt + blx get_path` -> `bl le_global` +
-       3 `nop`;
-    3. 0x001AA188 (4 B): `bl carrega_capa` -> `movs r0, #0` + `nop`;
-    4. 0x001AAA00: o blob (guarda_path em 0xDAAA00, le_global em
-       0xDAAA40); o global 0x001AAB00..0x001AABFF fica 0xFF.
+    1. 0x001AA144 (10 B): `movw/movt + blx get_path` -> `mov r0,r2` +
+       `mov r1,r5` + `bl copia_path` + `nop`;
+    2. 0x001AA188 (4 B): `bl carrega_capa` -> `movs r0, #0` + `nop`;
+    3. 0x001AAA00: o blob (copia_path em 0xDAAA00).
+    A captura 0x001088D8 (`bl 0xD084F8`) NAO e tocada: o caminho continua
+    sendo mandado pela MainTask.
 
 PREMISSAS, conferidas ANTES de escrever (senao recusa sem criar a saida)
 
     - 2 MiB e sha256 da RC7 exata (3af97713...);
     - a tabela 0x001AA010/14/18 decodifica para CRIA/TITULO/APAGA;
-    - o `bl` de 0x001088D8 ainda chama 0xD084F8;
+    - a captura de 0x001088D8 ainda chama 0xD084F8 (a fabrica);
     - o par movw/movt de 0x00CFEFC5 aparece 1x no lote, seguido do `blx`;
     - o prologo do `carrega_capa` e o `bl` que o chama estao no lugar;
-    - 0x001AAA00..0x001AAC00 esta virgem (0xFF) e o blob cabe antes do
-      global, com as rotinas nos deslocamentos certos.
+    - 0x001AAA00..0x001AB000 esta virgem (0xFF) e o blob cabe.
 
 SAIDA E SEGURANCA
 
     Depois de escrever, RELE e confere o `bl`/`nop`/`movs` novos e o blob.
-    O diff so pode tocar as tres regioes e o blob. `--out` igual/symlink/
+    O diff so pode tocar as duas regioes e o blob. `--out` igual/symlink/
     hardlink da entrada e recusado. Nada abaixo de 0x00E000; setor 0x00D000
     e PSMP (0x001FC000+) intocados.
 
@@ -52,7 +53,7 @@ DEPENDENCIAS
 LIMITACOES
 
     - so serve na RC7 exata; a saida ja patcheada e recusada;
-    - o lote NAO e remontado: a RC7 fica byte a byte, salvo os 3 pontos e
+    - o lote NAO e remontado: a RC7 fica byte a byte, salvo os 2 pontos e
       o blob.
 """
 
@@ -70,21 +71,19 @@ from asm import monta  # noqa: E402
 TAMANHO = 0x200000
 SHA_RC7 = G.SHA_RC7
 
-# o codigo novo e o global (arquivo / XIP)
+# o codigo novo (arquivo / XIP)
 BLOB = 0x1AAA00
 BLOB_XIP = A.XIP + BLOB                 # 0x00DAAA00
-GUARDA = BLOB_XIP                       # guarda_path
-LE_GLOBAL = BLOB_XIP + 0x40             # le_global
-GLOBAL = 0x1AAB00                       # o caminho capturado (0x100 B)
-GLOBAL_XIP = A.XIP + GLOBAL             # 0x00DAAB00
-BLOB_MAX = GLOBAL - BLOB                # o codigo tem de caber antes
+BLOB_MAX = 0x600                        # a area livre ate 0x1AB000
 
-# as tres regioes do patch
-P_CAPTURA = 0x1088D8                    # `bl 0xD084F8` (fabrica)
+# as duas regioes do patch (a captura 0x1088D8 fica da fabrica)
+P_CAPTURA = 0x1088D8                    # `bl 0xD084F8` (fabrica; so confere)
 P_GET_PATH = 0x1AA144                   # `movw/movt` + `blx get_path`
 P_CARREGA = 0x1AA188                    # `bl carrega_capa`
 FALHA_BL = b"\x00\x20\x00\xBF"          # movs r0, #0 + nop
 NOP = b"\x00\xBF"
+MOV_R0_R2 = b"\x10\x46"                 # mov r0, r2 (destino = ext+0x110)
+MOV_R1_R5 = b"\x29\x46"                 # mov r1, r5 (origem = o caminho)
 ALVO_CAPTURA = 0x00D084F8               # o `0xD084F8` da fabrica
 CARREGA_CAPA = 0x00DAA256               # o alvo do `bl` de 0x001AA188
 FONTE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -102,32 +101,17 @@ def monta_blob():
 
 
 def confere_blob(cod):
-    """O codigo novo tem de caber e ter as duas rotinas nos lugares certos."""
+    """O codigo novo tem de caber e ter a validacao do caminho."""
     erros = []
-    if len(cod) > BLOB_MAX:
-        erros.append(f"o codigo novo tem {len(cod)} bytes e nao cabe antes "
-                     f"do global 0x{GLOBAL:06X} ({BLOB_MAX} bytes)")
-    if len(cod) < 0x40:
-        erros.append(f"o codigo novo tem {len(cod)} bytes: nao chega ao "
-                     f"le_global (0x40)")
+    if not cod:
+        erros.append("o codigo novo esta vazio")
         return erros
-    # o le_global comeca com o par movw/movt que carrega o global
-    if G.imm16(*struct.unpack_from("<HH", cod, 0x40)) != GLOBAL_XIP & 0xFFFF:
-        erros.append("o le_global nao comeca com movw r1, #0xab00")
-    if G.imm16(*struct.unpack_from("<HH", cod, 0x44)) != (GLOBAL_XIP >> 16):
-        erros.append("o le_global nao continua com movt r1, #0xda")
-    # o guarda_path chama o 0xD084F8: o par movw/movt com o bit do Thumb
-    pares = []
-    for i in range(0, 0x40 - 8, 2):
-        h1, h2 = struct.unpack_from("<HH", cod, i)
-        n1, n2 = struct.unpack_from("<HH", cod, i + 4)
-        if G.e_mov(h1, h2, 0xF240) and G.e_mov(n1, n2, 0xF2C0) \
-                and ((h2 >> 8) & 0xF) == ((n2 >> 8) & 0xF) \
-                and ((G.imm16(n1, n2) << 16) | G.imm16(h1, h2)) == ALVO_CAPTURA | 1:
-            pares.append(i)
-    if len(pares) != 1:
-        erros.append(f"o guarda_path nao tem o par movw/movt do "
-                     f"0x{ALVO_CAPTURA:08X} (achou {len(pares)})")
+    if len(cod) > BLOB_MAX:
+        erros.append(f"o codigo novo tem {len(cod)} bytes e nao cabe na "
+                     f"area livre ({BLOB_MAX} bytes)")
+    for v in (0x2B30, 0x2B3A, 0x2B5C, 0x2B2F):   # cmp r3, #'0'/':'/'\\'/'/'
+        if struct.pack("<H", v) not in cod:
+            erros.append(f"o copia_path nao tem a validacao 0x{v:04X}")
     return erros
 
 
@@ -151,21 +135,21 @@ def confere_premissas(d, cod):
             erros.append(f"a entrada {i} da tabela (0x{G.TABELA + 4 * i:06X}) "
                          f"nao e um b.w para 0x{alvo:08X} — o lote da RC7 "
                          f"nao esta no lugar")
-    # 1. a captura: o bl da fabrica ainda chama o 0xD084F8
+    # 1. a captura da fabrica continua no lugar (nao e patcheada)
     lido = A.desvio(d, P_CAPTURA)
-    if lido is not None and lido[0] == "bl" and lido[1] == GUARDA:
-        erros.append(f"o bl de 0x{P_CAPTURA:06X} ja aponta para o "
-                     f"guarda_path (a imagem ja foi patcheada)")
+    if lido is not None and lido[0] == "bl" and lido[1] == BLOB_XIP:
+        erros.append(f"o bl de 0x{P_CAPTURA:06X} ja aponta para o codigo "
+                     f"novo (a imagem ja foi patcheada)")
     elif lido is None or lido[0] != "bl" or lido[1] != ALVO_CAPTURA:
         erros.append(f"em 0x{P_CAPTURA:06X} nao ha um bl para o "
                      f"0x{ALVO_CAPTURA:08X} da fabrica — o codigo mudou")
     # 2. a leitura: o par movw/movt do get_path, e o blx que o usa
     pares = G.acha_pares(d, G.GET_PATH)
     if len(pares) != 1:
-        lido = A.desvio(d, P_GET_PATH)
-        if lido is not None and lido[0] == "bl" and lido[1] == LE_GLOBAL:
+        lido = A.desvio(d, P_GET_PATH + 4)
+        if lido is not None and lido[0] == "bl" and lido[1] == BLOB_XIP:
             erros.append(f"o get_path de 0x{P_GET_PATH:06X} ja foi trocado "
-                         f"pelo le_global (a imagem ja foi patcheada)")
+                         f"pelo copia_path (a imagem ja foi patcheada)")
         else:
             erros.append(f"o par movw/movt que carrega 0x{G.GET_PATH:08X} "
                          f"aparece {len(pares)}x no codigo do lote, esperado 1")
@@ -193,8 +177,8 @@ def confere_premissas(d, cod):
                 erros.append(f"o bl do carrega_capa esta em 0x{bls[0]:06X}, "
                              f"esperado 0x{P_CARREGA:06X}")
     # 4. a area livre e o codigo novo
-    if any(b != 0xFF for b in d[BLOB:GLOBAL + 0x100]):
-        erros.append(f"a area livre 0x{BLOB:06X}..0x{GLOBAL + 0x100:06X} "
+    if any(b != 0xFF for b in d[BLOB:BLOB + BLOB_MAX]):
+        erros.append(f"a area livre 0x{BLOB:06X}..0x{BLOB + BLOB_MAX:06X} "
                      f"nao esta virgem (todo 0xFF)")
     erros.extend(confere_blob(cod))
     return erros
@@ -206,10 +190,9 @@ def confere_premissas(d, cod):
 
 def bytes_do_patch(cod):
     """As (deslocamento, bytes novos) do B3, na ordem em que sao aplicadas."""
-    captura = A.enc(A.XIP + P_CAPTURA, GUARDA, True)
-    leitura = A.enc(A.XIP + P_GET_PATH, LE_GLOBAL, True) + NOP * 3
-    return [(P_CAPTURA, captura),
-            (P_GET_PATH, leitura),
+    leitura = (MOV_R0_R2 + MOV_R1_R5
+               + A.enc(A.XIP + P_GET_PATH + 4, BLOB_XIP, True) + NOP)
+    return [(P_GET_PATH, leitura),
             (P_CARREGA, FALHA_BL),
             (BLOB, cod)]
 
@@ -217,16 +200,15 @@ def bytes_do_patch(cod):
 def confere_patch(d, cod):
     """Rele o patch e confere: os bytes novos e a decodificacao deles."""
     erros = []
-    lido = A.desvio(d, P_CAPTURA)
-    if lido is None or lido[0] != "bl" or lido[1] != GUARDA:
-        erros.append(f"o bl de 0x{P_CAPTURA:06X} nao ficou um bl para "
-                     f"0x{GUARDA:08X}")
-    lido = A.desvio(d, P_GET_PATH)
-    if lido is None or lido[0] != "bl" or lido[1] != LE_GLOBAL:
-        erros.append(f"o bl de 0x{P_GET_PATH:06X} nao ficou um bl para "
-                     f"0x{LE_GLOBAL:08X}")
-    if bytes(d[P_GET_PATH + 4:P_GET_PATH + 10]) != NOP * 3:
-        erros.append("os 3 nop depois do bl do le_global nao estao no lugar")
+    if bytes(d[P_GET_PATH:P_GET_PATH + 4]) != MOV_R0_R2 + MOV_R1_R5:
+        erros.append(f"os 4 bytes de 0x{P_GET_PATH:06X} nao sao "
+                     f"mov r0,r2 + mov r1,r5")
+    lido = A.desvio(d, P_GET_PATH + 4)
+    if lido is None or lido[0] != "bl" or lido[1] != BLOB_XIP:
+        erros.append(f"o bl de 0x{P_GET_PATH + 4:06X} nao ficou um bl para "
+                     f"0x{BLOB_XIP:08X}")
+    if bytes(d[P_GET_PATH + 8:P_GET_PATH + 10]) != NOP:
+        erros.append("o nop depois do bl do copia_path nao esta no lugar")
     if bytes(d[P_CARREGA:P_CARREGA + 4]) != FALHA_BL:
         erros.append("os 4 bytes do carrega_capa nao sao movs r0,#0 + nop")
     if bytes(d[BLOB:BLOB + len(cod)]) != cod:
@@ -288,7 +270,7 @@ def main():
     print("OpenPod — RC7: o degrau B3 da ficha 011")
     print("=" * 72)
     print(f"  origem : {a.src}\n  destino: {a.dst}\n")
-    print(f"  B3: o caminho da MainTask, sem get_path na ViewTask")
+    print(f"  B3: o caminho da mensagem, sem get_path na ViewTask")
 
     erros = confere_premissas(d, cod)
     if erros:
@@ -301,10 +283,11 @@ def main():
     print("    - 2 MiB")
     print(f"    - sha256 {SHA_RC7[:16]}... (a RC7 exata)")
     print("    - a tabela de entradas do lote esta no lugar (CRIA/TITULO/APAGA)")
-    print(f"    - o bl da captura (0x{P_CAPTURA:06X}) ainda e o da fabrica")
+    print(f"    - a captura (0x{P_CAPTURA:06X}) ainda e o bl da fabrica")
     print(f"    - o get_path (0x{G.GET_PATH:08X}) aparece 1x no lote")
     print(f"    - o carrega_capa e o bl que o chama estao no lugar")
-    print(f"    - a area livre 0x{BLOB:06X}..0x{GLOBAL + 0x100:06X} esta virgem")
+    print(f"    - a area livre 0x{BLOB:06X}..0x{BLOB + BLOB_MAX:06X} esta "
+          f"virgem")
 
     patches = bytes_do_patch(cod)
     print("\n  PATCH")
