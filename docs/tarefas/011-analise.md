@@ -230,3 +230,16 @@ CRC do `.up`: **`0x3B54`** (3 setores: `0x146000`, `0x1A4000`, `0x1AA000`;
 | **Reinicia** | o `get_path` da view não era (ou não era só) a causa: sobra o `f_open`/JPEG, um fault ou o watchdog (as guardas eliminam o deref de rótulo/texto nulo) |
 
 A volta de segurança é a **RC6**.
+
+---
+
+## Resultado do B3 no aparelho (decisor, 2026-11-09)
+
+Tocou normalmente, com o quadrado cinza e a nota; tudo funcionou; sem travar nem reiniciar.
+
+- **CONFIRMADO (aparelho):** com o `get_path` fora da ViewTask (lendo o texto do rótulo 2), a Tocando Agora não trava. Junto com
+  B (reinicia), B2 (congela ~15 s e reinicia) e B0 (toca), isso aponta o `get_path` na ViewTask como a causa do reinício da RC7.
+- **CONFIRMADO (aparelho):** o texto do rótulo 2 **não** começa com `0:/` nem `0:\` (por isso o cinza). O que ele contém
+  (nome da pasta, nome do arquivo, caminho com outro prefixo) é a próxima pergunta.
+- Pendência para a correção final: obter o caminho completo sem o `get_path` na ViewTask. A MainTask já calcula o caminho a cada play
+  (`0xD088DC` → `0xCFF2A4` → `0xCFF0A8` → `get_path` em `0xCFF0C0`); ver a próxima ficha.
