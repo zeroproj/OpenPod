@@ -233,7 +233,7 @@ b6b_copia_px:
     movt ip, #0x00d0
     blx  ip                    @ 0xD0D818(msg)
     cmp  r0, #0
-    bne  b6b_falha
+    beq  b6b_falha             @ 0 = nao enviou (0xCF83E4 devolve o tamanho)
     add.w r5, r5, #0x400
     cmp.w r5, #0x2000
     bne  b6b_pedaco
@@ -241,6 +241,11 @@ b6b_copia_px:
     movw ip, #0x7885
     movt ip, #0x00cf
     blx  ip                    @ free(tmp)
+    movw r0, #0x38f1
+    movt r0, #0x0082
+    movw ip, #0xd881
+    movt ip, #0x00d0
+    blx  ip                    @ 0xD0D880(msg) depois do ultimo envio
     b    4f
 b6b_falha:
     mov  r0, r8
@@ -272,6 +277,11 @@ b6b_vazio:
     movw ip, #0xd819
     movt ip, #0x00d0
     blx  ip
+    movw r0, #0x38f1
+    movt r0, #0x0082
+    movw ip, #0xd881
+    movt ip, #0x00d0
+    blx  ip                    @ 0xD0D880(msg) depois do ultimo envio
     b    4f
 .else
     cmp  r6, #1
@@ -366,6 +376,11 @@ b6a_libera:
     movw ip, #0xd819
     movt ip, #0x00d0
     blx  ip
+    movw r0, #0x38f1
+    movt r0, #0x0082
+    movw ip, #0xd881
+    movt ip, #0x00d0
+    blx  ip                    @ 0xD0D880(msg) depois do envio
     b    4f
 b6a_vazio:
     movw r0, #0x38f1
@@ -391,6 +406,11 @@ b6a_vazio:
     movw ip, #0xd819
     movt ip, #0x00d0
     blx  ip
+    movw r0, #0x38f1
+    movt r0, #0x0082
+    movw ip, #0xd881
+    movt ip, #0x00d0
+    blx  ip                    @ 0xD0D880(msg) depois do envio
 .endif
 4:  cmp  r6, #1
     bne  6f

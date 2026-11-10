@@ -1939,7 +1939,7 @@ class B6(Base):
             pos += 10 + tam
         return None
 
-    def falsas(self, m, send_ret=0):
+    def falsas(self, m, send_ret=1):
         from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R1,
                                        UC_ARM_REG_R2, UC_ARM_REG_LR)
 
@@ -1948,6 +1948,10 @@ class B6(Base):
             n = struct.unpack("<H", mq.le(p + 0xA, 2))[0] + 0xC
             mq.chamadas.append(("send", p, mq.le(p, n)))
             return send_ret
+
+        def send_view(mq):
+            mq.chamadas.append(("send_view", mq.r(UC_ARM_REG_R0)))
+            return 0
 
         def strncpy(mq):
             dst, src, n = (mq.r(UC_ARM_REG_R0), mq.r(UC_ARM_REG_R1),
@@ -1969,6 +1973,7 @@ class B6(Base):
             return 0
 
         m.falsas[0x00D0D818] = send
+        m.falsas[0x00D0D880] = send_view
         m.falsas[0x00D6DB90] = like
         m.falsas[0x00D9FD54] = strncpy
         m.falsas[0x00000AA2] = strlen
@@ -1991,10 +1996,12 @@ class B6(Base):
         m.chama(self.BLOB_ENVIA_XIP, (ret, 0, 0, 0),
                 salvos=[buf, E.AUDIO] + [0x11110000 + i for i in range(6)])
         self.assertEqual(m.erros, [], hex(lr))
-        return sp, [c for c in m.chamadas if c[0] in ("send", "like")]
+        return sp, [c for c in m.chamadas
+                    if c[0] in ("send", "send_view", "like")]
 
-    def tipo6(self, m, view, off, dados=None, tipo=6):
-        ext = m.le32(view + 0x30)
+    LABEL_PROCESS = 0x00D32204
+
+    def _msg_tipo6(self, m, off, dados, tipo):
         msg = m.aloca(0x414, registra=False)
         m.escreve(msg, b"\0" * 0x414)
         m.escreve(msg + 0, b"\x04")
@@ -2005,6 +2012,29 @@ class B6(Base):
         m.escreve32(msg + 0x10, off)
         if dados is not None:
             m.escreve(msg + 0x14, dados)
+        return msg
+
+    def tipo6(self, m, view, off, dados=None, tipo=6):
+        """Tipo 6 pelo label_process inteiro (0xD32204; push em 0xD3220C)."""
+        ext = m.le32(view + 0x30)
+        msg = self._msg_tipo6(m, off, dados, tipo)
+        n0 = len(m.chamadas)
+        salvos = [msg, view, msg + 0x14] + [0x11110000 + i for i in range(5)]
+        epilogo = m.falsas.pop(0x00D322A0, None)
+        tj = E.TJPGDEC
+        E.TJPGDEC = (tj[0], 0x00D32300)
+        try:
+            m.chama(self.LABEL_PROCESS, (msg, 0, 0, 0), salvos=salvos)
+        finally:
+            E.TJPGDEC = tj
+            if epilogo is not None:
+                m.falsas[0x00D322A0] = epilogo
+        return ext, m.chamadas[n0:]
+
+    def tipo6_direto(self, m, view, off, dados=None, tipo=6):
+        """Tipo 6 direto na view (guardas que o label_process nao alcanca)."""
+        ext = m.le32(view + 0x30)
+        msg = self._msg_tipo6(m, off, dados, tipo)
         n0 = len(m.chamadas)
         salvos = [msg, view, msg + 0x14] + [0x11110000 + i for i in range(5)]
         m.chama(self.BLOB_XIP, (0, 0, 0, tipo), salvos=salvos)
@@ -2014,9 +2044,9 @@ class B6(Base):
         self.assertEqual(self.b4_rc, 0, self.b4_log[-1500:])
         self.assertEqual(self.b6a_rc, 0, self.b6a_log[-2000:])
         self.assertEqual(self.b6b_rc, 0, self.b6b_log[-2000:])
-        for img in (self.b6a, self.b6b):
+        for img, tipo in ((self.b6a, b"\x05\x2b"), (self.b6b, b"\x06\x2b")):
             self.assertEqual(len(img), 0x200000)
-            self.assertEqual(img[self.P_TYPE:self.P_TYPE + 2], b"\x05\x2b")
+            self.assertEqual(img[self.P_TYPE:self.P_TYPE + 2], tipo)
             self.assertEqual(desvio(img, self.P_TBB), self.BLOB_XIP)
             self.assertEqual(desvio(img, self.P_BURST), self.BLOB_ENVIA_XIP)
         self.assertEqual(self.b6a[self.BLOB:self.BLOB + 2], b"\x05\x2b")
@@ -2034,18 +2064,21 @@ class B6(Base):
             self.assertEqual(shas[0], shas[1], receita)
 
     def test_102_diff_exato(self):
-        for nome, img, blob in (("a", self.b6a, self.blob_a),
-                                ("b", self.b6b, self.blob_b)):
+        for nome, img, blob, tipo in (
+                ("a", self.b6a, self.blob_a, b"\x05\x2b"),
+                ("b", self.b6b, self.blob_b, b"\x06\x2b")):
             dif = [i for i in range(len(img)) if img[i] != self.b4[i]]
             regioes = [(self.P_TBB, 4), (self.P_BURST, 12),
                        (self.BLOB, self.BLOB_MAX)]
+            if nome == "b":
+                regioes.append((self.P_TYPE, 2))
             for i in dif:
                 self.assertTrue(any(o <= i < o + t for o, t in regioes),
                                 f"B6{nome}: byte fora do patch: 0x{i:06X}")
                 self.assertGreaterEqual(i, 0x00E000)
                 self.assertFalse(0xD000 <= i < 0xE000)
                 self.assertLess(i, 0x1FC000)
-            self.assertEqual(img[self.P_TYPE:self.P_TYPE + 2], b"\x05\x2b")
+            self.assertEqual(img[self.P_TYPE:self.P_TYPE + 2], tipo)
             self.assertEqual(img[self.P_TITULO:self.P_TITULO + 4],
                              self.b4[self.P_TITULO:self.P_TITULO + 4])
             self.assertEqual(img[self.P_CARREGA:self.P_CARREGA + 4],
@@ -2059,7 +2092,8 @@ class B6(Base):
                          self.b4[self.BLOB:self.BLOB + 0x200])
         self.assertEqual(self.b6b[self.BLOB:self.BLOB + 2], b"\x06\x2b")
         self.assertIn(b"\x05\x2b", self.b6b[self.BLOB:self.BLOB + 0x200])
-        for img in (self.b6a, self.b6b):
+        for img, tipo in ((self.b6a, b"\x05\x2b"), (self.b6b, b"\x06\x2b")):
+            self.assertEqual(img[self.P_TYPE:self.P_TYPE + 2], tipo)
             self.assertEqual(desvio(img, self.P_TBB), self.BLOB_XIP)
             self.assertEqual(desvio(img, self.P_BURST), self.BLOB_ENVIA_XIP)
             self.assertEqual(img[self.BLOB_ENVIA:self.BLOB_ENVIA + 4],
@@ -2136,29 +2170,29 @@ class B6(Base):
             self.assertEqual([c[0] for c in novas], ["img_set_src"], p)
             self.assertEqual([c[2] for c in novas], [src], p)
         sp, c = self.envia(m, path, b"ID3\x04\x00\x00\x00\x00\x00\x00")
-        self.assertEqual([x[0] for x in c], ["send", "like"])
+        self.assertEqual([x[0] for x in c], ["send", "send_view", "like"])
         msg = c[0][1]
         self.assertEqual(c[0][2][4], 5)
         self.assertEqual(struct.unpack("<I", c[0][2][0x10:0x14])[0], len(path))
         self.assertEqual(struct.unpack("<H", c[0][2][0xA:0xC])[0], len(path) + 9)
         self.assertEqual(m.cstr(msg + 0x14), path)
-        self.assertEqual(c[1][2], sp + 4)
+        self.assertEqual(c[2][2], sp + 4)
         sp, c = self.envia(m, path, b"RIFF\x00\x00\x00\x00\x00\x00")
-        self.assertEqual([x[0] for x in c], ["send", "like"])
+        self.assertEqual([x[0] for x in c], ["send", "send_view", "like"])
         self.assertEqual(struct.unpack("<I", c[0][2][0x10:0x14])[0], 0)
         self.assertEqual(struct.unpack("<H", c[0][2][0xA:0xC])[0], 9)
         self.assertEqual(m.cstr(c[0][1] + 0x14), b"")
         sp, c = self.envia(m, path, None)
-        self.assertEqual([x[0] for x in c], ["send", "like"])
+        self.assertEqual([x[0] for x in c], ["send", "send_view", "like"])
         self.assertEqual(struct.unpack("<I", c[0][2][0x10:0x14])[0], 0)
         sp, c = self.envia(m, path, b"ID3\x04\x00\x00\x00\x00\x00\x00",
                            ret=0)
-        self.assertEqual([x[0] for x in c], ["send"])
+        self.assertEqual([x[0] for x in c], ["send", "send_view"])
         self.assertEqual(c[0][2][4], 5)
         for lr in self.ENVIA_LR:
             _, c = self.envia(m, path, b"ID3\x04\x00\x00\x00\x00\x00\x00",
                               lr=lr)
-            self.assertEqual([x[0] for x in c], ["send", "like"], hex(lr))
+            self.assertEqual([x[0] for x in c], ["send", "send_view", "like"], hex(lr))
         for lr in self.OUTROS_LR:
             _, c = self.envia(m, path, b"ID3\x04\x00\x00\x00\x00\x00\x00",
                               lr=lr)
@@ -2201,7 +2235,7 @@ class B6(Base):
                 m.escreve32(view + 0x30, 0)
             else:
                 m.escreve32(ext + 0xC, 0)
-            _, novas = self.tipo6(m, view, 0, b"\x00" * 0x400)
+            _, novas = self.tipo6_direto(m, view, 0, b"\x00" * 0x400)
             self.assertEqual(m.erros, [], nome)
             self.assertEqual([c[0] for c in novas], [], nome)
 
@@ -2215,7 +2249,7 @@ class B6(Base):
         m, view = self.aparelho(self.b6b)
         self.falsas(m)
         sp, c = self.envia(m, path, dados)
-        self.assertEqual([x[0] for x in c], ["send"] * 8 + ["like"])
+        self.assertEqual([x[0] for x in c], ["send"] * 8 + ["send_view", "like"])
         self.assertEqual([x[2][4] for x in c[:8]], [6] * 8)
         self.assertEqual([struct.unpack("<I", x[2][0x10:0x14])[0]
                           for x in c[:8]], list(range(0, 0x2000, 0x400)))
@@ -2224,9 +2258,9 @@ class B6(Base):
         self.assertEqual(b"".join(x[2][0x14:0x414] for x in c[:8]), ref)
         self.assertEqual(m.abertos, {})
         m, view = self.aparelho(self.b6b)
-        self.falsas(m, send_ret=-1)
+        self.falsas(m, send_ret=0)
         sp, c = self.envia(m, path, dados)
-        self.assertEqual([x[0] for x in c], ["send", "send", "like"])
+        self.assertEqual([x[0] for x in c], ["send", "send", "send_view", "like"])
         self.assertEqual(c[0][2][4], 6)
         self.assertEqual(c[1][2][4], 5)
         self.assertEqual(struct.unpack("<I", c[1][2][0x10:0x14])[0], 0)
@@ -2234,15 +2268,16 @@ class B6(Base):
         m, view = self.aparelho(self.b6b)
         self.falsas(m)
         sp, c = self.envia(m, path, b"notjpeg")
-        self.assertEqual([x[0] for x in c], ["send", "like"])
+        self.assertEqual([x[0] for x in c], ["send", "send_view", "like"])
         self.assertEqual(c[0][2][4], 5)
         self.assertEqual(m.abertos, {})
         sp, c = self.envia(m, path, dados, ret=0)
-        self.assertEqual([x[0] for x in c], ["send"])
+        self.assertEqual([x[0] for x in c], ["send", "send_view"])
         self.assertEqual(c[0][2][4], 5)
         for lr in self.ENVIA_LR:
             _, c = self.envia(m, path, dados, lr=lr)
-            self.assertEqual([x[0] for x in c], ["send"] * 8 + ["like"],
+            self.assertEqual([x[0] for x in c],
+                             ["send"] * 8 + ["send_view", "like"],
                              hex(lr))
         for lr in self.OUTROS_LR:
             _, c = self.envia(m, path, dados, lr=lr)
@@ -2382,12 +2417,14 @@ class B6(Base):
         self.falsas(m)
         for nome in validos:
             _, c = self.envia(m, path, self.ativo(nome))
-            self.assertEqual([x[0] for x in c], ["send"] * 8 + ["like"], nome)
+            self.assertEqual([x[0] for x in c],
+                             ["send"] * 8 + ["send_view", "like"], nome)
             self.assertEqual([x[2][4] for x in c[:8]], [6] * 8, nome)
             self.assertEqual(m.abertos, {}, nome)
         for nome in falhas:
             _, c = self.envia(m, path, self.ativo(nome))
-            self.assertEqual([x[0] for x in c], ["send", "like"], nome)
+            self.assertEqual([x[0] for x in c],
+                             ["send", "send_view", "like"], nome)
             self.assertEqual(c[0][2][4], 5, nome)
             self.assertEqual(struct.unpack("<I", c[0][2][0x10:0x14])[0], 0,
                              nome)

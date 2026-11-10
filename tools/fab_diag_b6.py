@@ -10,8 +10,10 @@ vazio (cinza). O B6b aloca um contexto de 0x2210 B, copia o caminho para
 mensagens tipo 6 de 1024 B; a view copia os pixels para ext+0x210+offset e,
 no ultimo, faz img_set_src(img, ext). Nenhuma funcao de arquivo sai da view.
 
-PATCH (contra o B4; 2 pontos + o blob):
-    0x00132242 (4 B)  bl label_dispatch (+0)
+PATCH (contra o B4; 2 ou 3 pontos + o blob):
+    0x0013223E (2 B)  cmp r3,#6 (so no B6b; o B6a fica com o #5 do B4)
+    0x00132242 (4 B)  b.w label_dispatch (+0), nao bl: a view volta pelo
+                      epilogo 0xD322A0, que espera a pilha do push de 0xD3220C
     0x000FF0C4 (12 B) bl envia_path (+0x200) + 4 nop
     0x001AAA00 (0x600 B) label_dispatch (+0) e envia_path (+0x200)
 
@@ -94,6 +96,7 @@ B6B_MARCAS = (
 ENVIA_MARCAS = (
     ("786920f00100", "o ldr do lr + bic do bit0"),
     ("4df6913cc0f2d60ce047", "o like getter 0xD6DB91"),
+    ("4df6810cc0f2d00ce047", "o aviso a view 0xD0D881"),
     ("4ff2df0cc0f2cf0c", "a falha 0xCFF0DF"),
     ("42f2a12cc0f2d30c", "o epilogo 0xD322A1"),
 )
@@ -183,19 +186,22 @@ def confere_premissas(d, cod, degrau):
     return erros
 
 
-def bytes_do_patch(cod):
+def bytes_do_patch(cod, degrau):
     """As (deslocamento, bytes novos) do B6, na ordem em que sao aplicadas."""
-    return [(P_TBB, A.enc(A.XIP + P_TBB, BLOB_XIP, True)),
-            (P_BURST, A.enc(A.XIP + P_BURST, BLOB_ENVIA_XIP, True) + NOP * 4),
-            (BLOB, cod)]
+    patches = [(P_TBB, A.enc(A.XIP + P_TBB, BLOB_XIP, False)),
+               (P_BURST, A.enc(A.XIP + P_BURST, BLOB_ENVIA_XIP, True) + NOP * 4),
+               (BLOB, cod)]
+    if degrau == "b":
+        patches.insert(0, (P_TYPE, CMP_R3_6))
+    return patches
 
 
-def confere_patch(d, cod):
+def confere_patch(d, cod, degrau):
     """Rele o patch e confere: os bytes novos e a decodificacao deles."""
     erros = []
     lido = A.desvio(d, P_TBB)
-    if lido is None or lido[0] != "bl" or lido[1] != BLOB_XIP:
-        erros.append(f"o bl de 0x{P_TBB:06X} nao ficou um bl para "
+    if lido is None or lido[0] != "b.w" or lido[1] != BLOB_XIP:
+        erros.append(f"o b.w de 0x{P_TBB:06X} nao ficou um b.w para "
                      f"0x{BLOB_XIP:08X}")
     lido = A.desvio(d, P_BURST)
     if lido is None or lido[0] != "bl" or lido[1] != BLOB_ENVIA_XIP:
@@ -203,8 +209,10 @@ def confere_patch(d, cod):
                      f"0x{BLOB_ENVIA_XIP:08X}")
     if bytes(d[P_BURST + 4:P_BURST + 12]) != NOP * 4:
         erros.append("os 4 nop depois do bl do envia_path nao estao no lugar")
-    if bytes(d[P_TYPE:P_TYPE + 2]) != CMP_R3_5:
-        erros.append(f"os 2 bytes de 0x{P_TYPE:06X} nao sao cmp r3,#5")
+    esperado = CMP_R3_6 if degrau == "b" else CMP_R3_5
+    if bytes(d[P_TYPE:P_TYPE + 2]) != esperado:
+        erros.append(f"os 2 bytes de 0x{P_TYPE:06X} nao sao cmp r3,"
+                     f"#{6 if degrau == 'b' else 5}")
     lido = A.desvio(d, P_TITULO)
     if lido is None or lido[0] != "b.w" or lido[1] != TITULO_EPILOGO:
         erros.append(f"o b.w de 0x{P_TITULO:06X} nao pula para "
@@ -280,13 +288,13 @@ def main():
     print(f"  entrada conferida: B4 exato ({SHA_B4[:16]}...); patches, "
           f"blob e area livre no lugar")
 
-    patches = bytes_do_patch(cod)
+    patches = bytes_do_patch(cod, a.degrau)
     print("\n  PATCH")
     for off, novos in patches:
         print(f"    0x{off:06X}..0x{off + len(novos):06X}  {len(novos)} byte(s)")
     for off, novos in patches:
         d[off:off + len(novos)] = novos
-    erros = confere_patch(d, cod)
+    erros = confere_patch(d, cod, a.degrau)
     if erros:
         print("\n  RECUSADO — a conferencia do resultado falhou:")
         for m in erros:

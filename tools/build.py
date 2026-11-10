@@ -732,10 +732,20 @@ RELOAD_1_0_RC7_DIAG_B5B = RELOAD_1_0_RC7_DIAG_B4 + [
 # mensagens tipo 6 de 1024 B; a view copia os pixels para ext+0x210+offset e
 # faz img_set_src(img, ext) no ultimo. Nenhuma funcao de arquivo sai da view.
 #
-# PATCH (contra o B4; 2 pontos + o blob):
-#     tbb      4 bytes  0x00132242: `bl label_dispatch` (+0)
+# O `0xD0D818` devolve 0 em falha (ring cheio ou mensagem nula) e != 0 em
+# sucesso; o B6b testa `beq` para o caminho de falha. O `0xD0D881` (aviso
+# da view) e chamado depois do ultimo send de cada caminho, como a fabrica
+# faz em `0xD084D8`.
+#
+# PATCH (contra o B4; B6a: 2 pontos + o blob; B6b: 3 pontos + o blob):
+#     tipo     1 byte   0x0013223E: so no B6b, `cmp r3,#5` vira `cmp r3,#6`
+#     tbb      4 bytes  0x00132242: `b.w label_dispatch` (+0) -- NAO `bl`
 #     rajada  12 bytes  0x000FF0C4: `bl envia_path` (+0x200) + 4 `nop`
 #     codigo 1536 bytes 0x001AAA00: label_dispatch (+0) e envia_path (+0x200)
+#
+# O `b.w` e obrigatorio: o `label_process` comeca em `0xD32204` e empilha em
+# `0xD3220C`; o epilogo `0xD322A0` faz `pop {r4,r5,r6,pc}`. Um `bl` deixaria
+# o LR no topo da pilha e o `pop` sairia 4 B deslocado.
 #
 # A ferramenta NAO entra no MAPA: ela patcha dentro do lote que a RC7 ja
 # montou e no codigo da fabrica, e o `tests/test_rc7.py` (protegido, C2)

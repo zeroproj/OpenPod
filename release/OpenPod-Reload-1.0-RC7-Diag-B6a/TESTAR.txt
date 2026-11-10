@@ -9,7 +9,7 @@ monitorada). Este e o degrau DECISOR: prova que abrir arquivo na PreTask,
 durante a musica, nao trava.
 Base do kit: ORIGINAL de fabrica (FIRM e2a7b863...), como os kits
 anteriores. A imagem-alvo parte do B4 (39bea488...).
-Imagem carimbada f2af454d... · .up CRC 0x6CB1 · sha ead8320d...
+Imagem carimbada 80cc6bfb... · .up CRC 0xFC0A · sha d99758e9...
 Bytes contra o B4 (imagens carimbadas): 1013 bytes em 2 setores.
 
 INSTALAR (pelo cartao): copie OpenPod_OpenPodReload1.0RC7DiagB6a.up

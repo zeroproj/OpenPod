@@ -79,16 +79,41 @@ mensagem que não chega ao `label_process`), é proibido.
 
 - **B6a** (`reload_1.0_rc7_diag_b6a`): B4 exato; no `envia_path` da PreTask
   (`0xDAAC00`), depois do `get_path`: `calloc(1,0x25C)`, `f_open(caminho,1)`,
-  `f_read` de 10 B, `f_close`, `free`. `"ID3"` → tipo 5 com o caminho;
-  qualquer falha → tipo 5 vazio (cinza). A view é byte a byte a do B4.
+  `f_read` de 10 B, `f_close`, `free`. `"ID3"` → tipo 5 com o caminho e
+  `0xD0D881`; qualquer falha → tipo 5 vazio (cinza) e `0xD0D881`. A view
+  mantém a lógica do B4 (tipo 5); só o desvio para o `label_dispatch` muda
+  de `bl` para `b.w` (item 7).
 - **B6b** (`reload_1.0_rc7_diag_b6b`): `calloc(1,0x2210)`, caminho em
-  `tmp+0x110`, `carrega_capa(tmp)` (`0xDAA256`) intacto. Sucesso → 8 tipos 6
-  e `free(tmp)`; falha → tipo 5 vazio e `free(tmp)`. A view só copia pixels
-  e faz `img_set_src`; nenhuma função de arquivo é alcançável dela (teste
-  estático em `tests/test_diag_trava.py`, classe `B6`).
+  `tmp+0x110`, `carrega_capa(tmp)` (`0xDAA256`) intacto. Sucesso → 8 tipos 6,
+  `free(tmp)` e `0xD0D881`; falha → tipo 5 vazio, `free(tmp)` e `0xD0D881`.
+  A view só copia pixels e faz `img_set_src`; nenhuma função de arquivo é
+  alcançável dela (teste estático em `tests/test_diag_trava.py`, classe
+  `B6`).
 
 ## 6. O que não dá para saber
 
 - Se o `JpegDec` da fábrica compartilha hardware/memória com o áudio (item 3).
 - Se o aparelho real se comporta como o emulador em todos os tempos de
   `f_open`/`carrega_capa`; o B6a é o decisor no aparelho.
+
+## 7. Correções da revisão (B6a/B6b)
+
+- **Tipo 6 na view (crítico).** O `label_process` começa em `0xD32204`
+  (`ldr r3,[pc,#0x9c]`; `ldrh r2,[r0,#6]`; `cmp r2,#3`; `push` em
+  `0xD3220C`; `ldr r5,[r3,#0xac]`). O B4 deixou `cmp r3,#5` em `0xD3223E`;
+  sem o B6b trocar para `cmp r3,#6`, o tipo 6 cai em `bhi 0xD322A0` e nunca
+  chega ao `label_dispatch`.
+- **Desvio `b.w`, não `bl`.** O epílogo `0xD322A0 pop {r4,r5,r6,pc}` espera
+  a pilha do prólogo. Um `bl` empilha o LR e o `pop` sai 4 B deslocado; o
+  patch em `0x00132242` tem de ser `b.w label_dispatch`.
+- **Retorno do `0xD0D818`.** `0xD0D818` devolve 0 quando a mensagem é nula
+  ou `0xCFE708` devolve 0; `0xCF83E4` devolve o comprimento (não zero) no
+  sucesso e 0 no ring cheio. Logo **0 = falha, != 0 = sucesso**; o B6b usa
+  `beq` para o caminho de falha.
+- **`0xD0D881` restaurado.** O aviso da view é chamado depois do último send
+  de cada caminho (tipo 5 do B6a, 8º tipo 6 do B6b e tipo 5 vazio), como a
+  fábrica em `0xD084D8` (free e depois `0xD0D880`).
+- **Imagens carimbadas novas.** B6a `80cc6bfb…` (1013 B contra o B4
+  carimbado, 2 setores de patch); B6b `542ecbb8…` (1263 B, 2 setores).
+  `.up` B6a CRC `0xFC0A`, sha `d99758e9…`; B6b CRC `0x9E9E`, sha
+  `1c06cbdf…`.
