@@ -663,6 +663,37 @@ RELOAD_1_0_RC7_DIAG_B3 = RELOAD_1_0_RC7 + [
      "diag B3: o caminho da MainTask, sem get_path na ViewTask"),
 ]
 
+# ---------------------------------------------------------------------------
+# o degrau B4 da ficha 012: o caminho completo da MainTask, sem get_path na
+# ViewTask e sem trocar a ordem dos `bl`.
+#
+# A rajada (0x00CFF0A8) passa a enviar, logo depois do get_path, uma
+# mensagem da propria fabrica (classe 3, tipo 5), texto = caminho (ou vazio
+# se o get_path falhar), pela mesma infra 0xD0D818. A view trata o tipo 5
+# no page_music_play_label_process (0x00D32204): copia o texto para
+# ext+0x110, valida com as guardas do B3 e aplica na imagem (src nulo no
+# sucesso; 0x00DA8000 no invalido/vazio). O TITULO (0x00DAA0E6) volta a
+# fazer so o set_text da fabrica.
+#
+# PATCH (contra a RC7 exata; 5 pontos + o blob):
+#     tipo     2 bytes  `cmp r3,#4` (0x0013223E) vira `cmp r3,#5`
+#     tbb      4 bytes  o `tbb [pc,r3]` (0x00132242) vira `bl label_dispatch`
+#     rajada  12 bytes  0x000FF0C4: `bl envia_path` + 4 `nop`
+#     titulo   4 bytes  0x001AA0FE: `b.w 0xDAA1D0` (so o set_text)
+#     carrega  4 bytes  0x001AA188: `movs r0,#0` + `nop` (como no B3)
+#     codigo 731 bytes  0x001AAA00: label_dispatch (+0) e envia_path (+0x200)
+#                       (o `fab_diag_b4.py` confere o `len(cod)` real;
+#                        727 + 4 do `bic` do bit0 do lr)
+#
+# A ferramenta NAO entra no MAPA: ela patcha dentro do lote que a RC7 ja
+# montou e no codigo da fabrica, e o `tests/test_rc7.py` (protegido, C2)
+# recusa um lote do MAPA que cruze o lote da RC7.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC7_DIAG_B4 = RELOAD_1_0_RC7 + [
+    ("fab_diag_b4.py", ["--em", "0x1a8000"],
+     "diag B4: o caminho da MainTask no tipo 5; o TITULO so set_text"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -686,6 +717,8 @@ RECEITAS = {
     "reload_1.0_rc7_diag_b2": RELOAD_1_0_RC7_DIAG_B2,
     # o degrau B3 da ficha 011 (diagnostico: nao entra na catraca)
     "reload_1.0_rc7_diag_b3": RELOAD_1_0_RC7_DIAG_B3,
+    # o degrau B4 da ficha 012 (diagnostico: nao entra na catraca)
+    "reload_1.0_rc7_diag_b4": RELOAD_1_0_RC7_DIAG_B4,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
