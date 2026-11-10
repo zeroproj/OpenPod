@@ -88,8 +88,6 @@ ESTRUTURA = (
     (P_IMG, RC7_IMG.hex(), "o img_set_src do TITULO (0xD5D868)"),
     (P_CARREGA, RC7_CARREGA.hex(), "o bl do carrega_capa"),
 )
-
-
 # ---------------------------------------------------------------------------
 # o codigo novo
 # ---------------------------------------------------------------------------
@@ -135,8 +133,10 @@ def confere_blob(cod):
     for chamador in (0xD088E0, 0xD08970, 0xD08BEE, 0xD0902C, 0xD0EED4):
         if struct.pack("<I", chamador) not in cod:
             erros.append(f"sem o chamador 0x{chamador:08X} da ViewTask")
+    off = cod.find(struct.pack("<I", 0xD088E0))
+    if off < 0 or (BLOB_XIP + off) % 4:
+        erros.append("a tabela chamadores nao esta 4-alinhada")
     return erros
-
 # ---------------------------------------------------------------------------
 # premissas
 # ---------------------------------------------------------------------------
@@ -197,7 +197,6 @@ def confere_premissas(d, cod):
         erros.append("a area livre passa do lote")
     erros.extend(confere_blob(cod))
     return erros
-
 
 # ---------------------------------------------------------------------------
 # o patch

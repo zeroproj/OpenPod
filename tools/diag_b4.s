@@ -171,6 +171,7 @@ envia_path:
     movw ip, #0xf0df
     movt ip, #0x00cf
     bx   ip                   @ falha: free e volta
+    .balign 4
 chamadores:
     .word 0x00D088E0, 0x00D08970, 0x00D08BEE, 0x00D0902C, 0x00D0EED4
 vazio:

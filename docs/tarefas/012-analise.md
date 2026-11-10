@@ -152,8 +152,11 @@ volta a fazer só o `set_text` da fábrica. **Não** há troca de `bl` nem
   cinco enviem; sem o `bic` ele falha. O `confere_blob` exige a sequência
   `ldr r0,[r7,#0x14]` + `bic r0,r0,#1` (`786920f00100`); sem ela o
   `fab_diag_b4.py` recusa.
-- **BAIXA corrigida — o comentário de tamanho do `build.py`.** O blob tem
-  731 bytes (727 + 4 do `bic`); o `build.py:684` dizia 673. O
+- **BAIXA corrigida — a tabela em 4 bytes e o tamanho.** O `diag_b4.s`
+  tem `.balign 4` antes de `chamadores`; a tabela fica em `0xDAACC4` e o
+  `adr` aponta para ela (teste **73**; o `confere_blob` recusa a tabela
+  fora de 4). O blob ficou 729 bytes (727 + 4 do `bic`; o `adr` virou o
+  de 16 bits); o `build.py:684` está em 731 (o número do `bic`) e o
   `fab_diag_b4.py` confere o `len(cod)` real contra o `BLOB_MAX`.
 - **BAIXA registrada — o tipo 5 reaplica o `img_set_src` sempre** (a
   RC7/fábrica só mexia na imagem quando o caminho mudava). É custo, não

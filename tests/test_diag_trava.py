@@ -1319,6 +1319,37 @@ class B4(Base):
             self.assertEqual([x[0] for x in c], ["like"], hex(lr))
             self.assertEqual(c[0][2], sp + 4, hex(lr))
 
+    def test_73_tabela_alinhada(self):
+        """A tabela chamadores fica 4-alinhada e o adr aponta para ela."""
+        from capstone import (Cs, CS_ARCH_ARM, CS_MODE_THUMB,
+                              CS_MODE_LITTLE_ENDIAN)
+        tabela = b"".join(struct.pack("<I", a) for a in
+                          (0xD088E0, 0xD08970, 0xD08BEE, 0xD0902C,
+                           0xD0EED4))
+        off = self.blob.index(tabela)
+        end = self.BLOB_XIP + off
+        self.assertEqual(end % 4, 0,
+                         f"a tabela em 0x{end:08X} nao e 4-alinhada")
+        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_LITTLE_ENDIAN)
+        md.detail = True
+        achou = False
+        for i in md.disasm(self.blob[self.BLOB_ENVIA - self.BLOB:],
+                           self.BLOB_ENVIA_XIP):
+            if i.mnemonic == "adr":
+                imm = i.operands[1].imm
+            elif i.mnemonic == "addw":
+                imm = i.operands[2].imm
+            else:
+                continue
+            if i.reg_name(i.operands[0].reg) != "r1":
+                continue
+            alvo = ((i.address + 4) & ~3) + imm
+            self.assertEqual(alvo, end,
+                             f"o adr em 0x{i.address:08X} aponta 0x{alvo:08X}")
+            achou = True
+            break
+        self.assertTrue(achou, "o envia_path nao tem o adr r1, chamadores")
+
 
 class Comportamento(Base):
     """As tres imagens no arnes de emulacao (unicorn, o de verdade).
