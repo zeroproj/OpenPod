@@ -7,7 +7,7 @@ qualquer falha -> cinza. Sem JPEG, sem carrega_capa, sem monitor.
 Base do kit: ORIGINAL de fabrica (FIRM e2a7b863...), como os kits
 anteriores. A imagem-alvo parte do B4 (39bea488...).
 Imagem carimbada 27718899... · .up CRC 0xEE60 · sha a2267f4f...
-Bytes contra o B4: 1428 bytes em 4 setores.
+Bytes contra o B4 (imagens carimbadas): 1415 bytes em 3 setores.
 
 INSTALAR (pelo cartao): copie OpenPod_OpenPodReload1.0RC7DiagB5a.up
 para a RAIZ do cartao como update.up; Config -> Atualizar por SD -> Sim;

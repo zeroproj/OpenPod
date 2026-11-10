@@ -8,7 +8,7 @@ pequena -> cinza. Arquivo fechado e tudo liberado.
 Base do kit: ORIGINAL de fabrica (FIRM e2a7b863...), como os kits
 anteriores. A imagem-alvo parte do B4 (39bea488...).
 Imagem carimbada 4056ed15... · .up CRC 0x8C2F · sha 96e28bcf...
-Bytes contra o B4: 1356 bytes em 5 setores.
+Bytes contra o B4 (imagens carimbadas): 1343 bytes em 4 setores.
 
 INSTALAR (pelo cartao): copie OpenPod_OpenPodReload1.0RC7DiagB5b.up
 para a RAIZ do cartao como update.up; Config -> Atualizar por SD -> Sim;
