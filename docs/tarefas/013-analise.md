@@ -172,7 +172,7 @@ continua, agora em `+0x500`.
 
 ## Resultado do B5a no aparelho (decisor, 2026-11-10)
 
-- **Trava ao selecionar a música.** O B5a só faz `f_open` + `f_read` de 10 B + `f_close` no tratamento do tipo 5; não decodifica.
+- **Trava ao selecionar a música e depois reinicia.** O B5a só faz `f_open` + `f_read` de 10 B + `f_close` no tratamento do tipo 5; não decodifica.
 - Conclusão (**PROVÁVEL forte**, junto com B/B2/B5b):
   - **Abrir arquivo dentro do `label_process` na ViewTask trava**, com ou sem o banco. O `get_path` do B também faz `f_open`.
   - A causa **não é** o mutex do banco nem o decode JPEG. Isso derruba a hipótese principal da Q2.
