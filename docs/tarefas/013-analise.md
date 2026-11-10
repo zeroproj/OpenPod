@@ -180,3 +180,25 @@ continua, agora em `+0x500`.
 - **Próximo:** tirar todo acesso a arquivo da ViewTask.
   - Ler e decodificar a capa fora dela, na PreTask ou em outra tarefa da fábrica.
   - Entregar só os pixels prontos à view, com dono claro do buffer.
+
+## Referências para o próximo degrau (coordenação, 2026-11-10)
+
+### O firmware do B27
+
+- **Arquivo:** `~/Downloads/B27 Firmware Update/B27_251112.up`, sha `c98227c3…`.
+  - SL6801, outro produto. **Nunca gravar.** Lido só como referência.
+- **CONFIRMADO (strings):** o B27 não tem `APIC` nem código de capa de álbum.
+  - Tem o mesmo decodificador JPEG estilo libjpeg do visualizador de fotos.
+  - Os acertos de `cover` são do Bluetooth (`discover`).
+- **Conclusão:** não serve de modelo para a capa.
+
+### O visualizador de fotos do próprio GN-438 (ORIGINAL)
+
+- **CONFIRMADO (strings):** o visualizador de fotos (`page_pict_play_*` `0xCD4F21`..) decodifica numa tarefa própria.
+  - Nome da tarefa: `_pic_proc_` `0xC4FD59`.
+  - Mensagens: `-pic OAL_event_create fail!`, `-JpegDecInit`/`JpegDecDecoder`/`JpegDecRelease` `0xC4FCAD`.
+- **CONFIRMADO (string):** a fábrica avisa `Music would be stopped if you open the picture, continue?` (`0xC5CFC7`).
+- **HIPÓTESE a investigar na próxima ficha:**
+  - A fábrica pode não abrir nem decodificar imagem com música tocando.
+  - Ela faz isso fora da ViewTask, numa tarefa dedicada que avisa a view por evento.
+  - Isso combina com B/B5a/B5b: abrir arquivo na ViewTask durante a reprodução trava.
