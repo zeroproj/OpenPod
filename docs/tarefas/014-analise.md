@@ -122,4 +122,8 @@ mensagem que não chega ao `label_process`), é proibido.
 
 - **A capa apareceu** na Tocando Agora, com o B6b corrigido (`a78a169`, `.up` `1c06cbdf…`, CRC `0x9E9E`).
 - **CONFIRMADO no aparelho:** ler e decodificar a capa na PreTask e entregar os pixels à view em 8 mensagens tipo 6 funciona.
-- Observação: o decisor gravou antes da conferência final da coordenação e da revisão GLM. Ainda falta registrar a impressão dele.
+- Observação: o decisor gravou antes da conferência final da coordenação e da revisão GLM. Impressão do decisor:
+  - Engasgada curta no áudio (< 1 s), **só no início, em todas as músicas**, enquanto a capa carrega. Depois toca normal.
+  - **HIPÓTESE (coordenação):** disputa de CPU/cartão entre a PreTask (decode do JPEG) e a MediaTask, as duas com prioridade 3.
+    Não é falta de RAM: falta de RAM faria a capa falhar, não engasgar.
+  - Próximo: ceder a vez durante o decode e/ou atrasar a capa 1–2 s depois do play.
