@@ -34,10 +34,27 @@ volta a fazer só o `set_text` da fábrica. **Não** há troca de `bl` nem
   `r1=[0x81BC84+0x20]` (índice), `r2=buf` (`0xCFF0BA`..`0xCFF0C0`), chama o
   like getter `0xD6DB90` (`0xCFF0CC`), grava `[0x81BC84+0x14]`
   (`0xCFF0DC`) e libera o buffer (`0xCFF0E0`). Não sobra ponteiro.
-- **CONFIRMADO** — roda na MainTask. Antes do título em `0xD088E8`
-  (rajada `0xD088DC`) e em `0xD089A0` (rajada `0xD0896C`); **depois** do
-  título em `0xD08BE2` (rajada `0xD08BEA`) e em `0xD09014` (rajada
-  `0xD09028`).
+- **CONFIRMADO** — roda na **ViewTask** (a tarefa do `page4_media_cb`).
+  Antes do título em `0xD088E8` (rajada `0xD088DC`) e em `0xD089A0`
+  (rajada `0xD0896C`); **depois** do título em `0xD08BE2` (rajada
+  `0xD08BEA`) e em `0xD09014` (rajada `0xD09028`); e no próprio handler
+  `0xD0EED0` (rajada `0xD0EED0` → `0xD0EED4`), que também chama o
+  `page4_media_cb` em `0xD0EEE8`. Os retornos são `0xD088E0`, `0xD08970`,
+  `0xD08BEE`, `0xD0902C` e `0xD0EED4` (o lr salvo pela rajada em
+  `[sp+0x14]`).
+- **CONFIRMADO** — a rajada também é chamada fora da ViewTask:
+  `0xCFF20E` (`0xCFF1FC`, a **MediaTask**; retorno `0xCFF212`) e
+  `0xD00C24` (`0xD00C00`, a **MainTask**/APP; retorno `0xD00C28`). A
+  mensagem em `0x008238F1` é o buffer global dos construtores de rótulo da
+  ViewTask; enviar o tipo 5 dessas duas tarefas corromperia o buffer. Por
+  isso o `envia_path` só envia quando o lr salvo está na tabela acima; nas
+  outras ele pula a mensagem (e o `0xD0D880`) e mantém o like getter.
+- **CONFIRMADO** — a fábrica termina a mensagem de rótulo com
+  `b.w 0xD0D880` depois do `0xD0D818`: em `0xD084E6` (builder `0xD084C8`,
+  depois do `free` em `0xD084DC`) e em `0xD08552` (builder `0xD08540`).
+  `0xD0D880` (`pstr_send_msg_to_view`) monta a notificação
+  `0x20B`/`6` em `sp+4`, chama `0xCFE708` e `0x816DB2`; **não usa o r0 de
+  entrada**. O B4 chama `0xD0D881` depois do `0xD0D818`, como a fábrica.
 - **CONFIRMADO** — `get_path` devolve `0:/…` ou `0:\…`: o B3 no aparelho e
   os testes usam esses prefixos, e `0xCFF0C4 cmp r0,#1` valida o retorno.
 
@@ -45,7 +62,7 @@ volta a fazer só o `set_text` da fábrica. **Não** há troca de `bl` nem
 
 - **CONFIRMADO** — a fila copia a mensagem: `0xD0D818` → `0xCF83E4` →
   `0xD6AA72`, que grava o header `0x55AA` + tamanho e o payload. Ponteiro
-  para buffer que a MainTask libera não é problema.
+  para buffer que a ViewTask libera não é problema.
 - **CONFIRMADO** — o layout da mensagem: classe em `msg+6`, tipo em `msg+4`,
   texto em `msg+0x14`, tamanho em `msg+0x10`. `page_music_play_label_process`
   `0xD32204` lê `msg+6` (3=rótulo, 4=barra); na classe 3 lê `msg+4`,
@@ -90,6 +107,37 @@ volta a fazer só o `set_text` da fábrica. **Não** há troca de `bl` nem
   estar ativa: o dispatcher compara `[[0x81CE2C]+0xAC]` com a view do
   processo e exige `[view+4]` (título) não nulo; senão descarta.
 
+## Revisão do orquestrador (B4): bits Thumb, 0xD0D880 e tarefas
+
+- **CRÍTICO corrigido — bit Thumb em todo `bx`/`blx` indireto.** No
+  Cortex-M, `bx`/`blx` com bit0=0 gera UsageFault INVSTATE e reinicia. O
+  B4 tinha os 9 destinos indiretos pares (`0xD3224E`, `0xD5D868`,
+  `0xD322A0`, `0xBAA`, `0xD9FD54`, `0xAA2`, `0xD0D818`, `0xD6DB90`,
+  `0xCFF0DE`). Agora todos levam `|1`: `0xD3224F`, `0xD5D869`,
+  `0xD322A1`, `0xBAB`, `0xD9FD55`, `0xAA3`, `0xD0D819`, `0xD6DB91`,
+  `0xCFF0DF` (e o novo `0xD0D881`). A RC7 é a referência: em `0xDAA17C`
+  o `img_set_src` já é `0xD5D869` (`4df6690cc0f2d50ce047`).
+- **Por que o emulador não pegou.** O Unicorn não levanta INVSTATE para
+  `bx`/`blx` par e o gancho de bloco normaliza o endereço (o `blx
+  0xD5D869` chega como bloco `0xD5D868`), então o alvo par executava
+  igual. O `tests/emu_rc7.py` é protegido e não pode ser alterado; a
+  trava virou o teste estático **71** (`test_71_bit_thumb_nos_indiretos`),
+  que decodifica o blob B4, o B3 e o `0xDAA17C` da RC7 e falha se algum
+  `movw`/`movt` usado por `bx`/`blx` tiver destino par.
+- **MÉDIO corrigido — 0xD0D880.** A fábrica termina a mensagem de rótulo
+  com `b.w 0xD0D880` (`0xD084E6` e `0xD08552`, depois do `0xD0D818`); o
+  `envia_path` agora chama `0xD0D881` depois do `0xD0D819`, no caminho
+  da ViewTask.
+- **MÉDIO corrigido — tarefas dos callers.** A rajada `0xCFF0A8` é
+  chamada pela ViewTask (`0xD088E0`, `0xD08970`, `0xD08BEE`, `0xD0902C`,
+  `0xD0EED4`), pela MediaTask (`0xCFF212`) e pela MainTask/APP
+  (`0xD00C28`). O `envia_path` compara o lr salvo em `[r7+0x14]` com a
+  tabela dos cinco retornos da ViewTask; nas outras tarefas não toca o
+  buffer `0x008238F1` nem chama o `0xD0D880`, mas mantém o like getter
+  `0xD6DB90` (comportamento original da rajada). O teste **72**
+  (`test_72_envia_path_guarda`) exercita os cinco retornos e os dois
+  callers de fora no emulador.
+
 ## O que não dá para saber só pelo ORIGINAL
 
 - Se a fila da view entrega a mensagem tipo 5 ao `page_music_play_label_process`
@@ -97,4 +145,4 @@ volta a fazer só o `set_text` da fábrica. **Não** há troca de `bl` nem
   rótulo 2, mas não há prova de todos os filtros).
 - O texto exato do rótulo 2 (nome da faixa? pasta?) sem captura no aparelho.
 - Se a transitória “capa anterior até o tipo 5 chegar” é visível no aparelho
-  (depende do tempo da fila; o emulador não roda a MainTask).
+  (depende do tempo da fila; o emulador não roda a ViewTask).

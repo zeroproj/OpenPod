@@ -1200,6 +1200,123 @@ class B4(Base):
             self.assertEqual(m.erros, [], nome)
             self.assertEqual([c[0] for c in m.chamadas[n0:]], [], nome)
 
+    def test_71_bit_thumb_nos_indiretos(self):
+        """Todo bx/blx do blob leva o bit Thumb (|1).
+
+        No Cortex-M, bx/blx com bit0=0 gera UsageFault INVSTATE e reinicia
+        o aparelho. O emulador (Unicorn) NAO aplica essa checagem e ainda
+        normaliza o endereco do bloco, entao ele nao pega: a trava tem de
+        ser estatica. A RC7 (0x1AA17C, o img_set_src do TITULO) e a
+        referencia: 0xD5D869, impar."""
+        from capstone import Cs, CS_ARCH_ARM, CS_MODE_THUMB
+        from capstone import CS_MODE_LITTLE_ENDIAN
+        from capstone.arm import ARM_OP_REG
+
+        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_LITTLE_ENDIAN)
+        md.detail = True
+
+        def indiretos(cod, base):
+            achados, mov = [], {}
+            for i in md.disasm(cod, base):
+                if i.mnemonic in ("movw", "movt"):
+                    rd = i.reg_name(i.operands[0].reg)
+                    imm = i.operands[1].imm
+                    if i.mnemonic == "movw":
+                        mov[rd] = imm & 0xFFFF
+                    else:
+                        mov[rd] = (mov.get(rd, 0) & 0xFFFF) | (imm << 16)
+                elif i.mnemonic in ("bx", "blx") and i.operands:
+                    op = i.operands[0]
+                    if op.type == ARM_OP_REG and i.reg_name(op.reg) in mov:
+                        rd = i.reg_name(op.reg)
+                        achados.append((i.address, rd, mov.pop(rd)))
+            return achados
+
+        for cod, base, nome in ((self.blob, self.BLOB_XIP, "B4"),
+                                (F3.monta_blob(), 0x00DAAA00, "B3")):
+            for end, reg, alvo in indiretos(cod, base):
+                self.assertTrue(alvo & 1,
+                                f"{nome}: {reg}=0x{alvo:08X} par em "
+                                f"0x{end:08X} (falta o bit Thumb)")
+        for end, reg, alvo in indiretos(self.rc7[0x1AA17C:0x1AA186],
+                                        0x00DAA17C):
+            self.assertTrue(alvo & 1, f"RC7: {reg}=0x{alvo:08X} par")
+
+    def test_72_envia_path_guarda(self):
+        """O envia_path so manda o tipo 5 vindo da ViewTask (0x8238F1).
+
+        O lr salvo pela rajada em [r7+0x14] e comparado com a tabela dos
+        cinco chamadores da ViewTask; a MainTask (0xD00C28) e a MediaTask
+        (0xCFF212) pulam a mensagem e o 0xD0D880, mas mantem o like
+        getter. A fabrica termina a mensagem de rotulo com o 0xD0D880."""
+        from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R1,
+                                       UC_ARM_REG_R2)
+        m = E.Maquina(self.b4)
+
+        def strncpy(mq):
+            dst, src, n = (mq.r(UC_ARM_REG_R0), mq.r(UC_ARM_REG_R1),
+                           mq.r(UC_ARM_REG_R2))
+            s = mq.cstr(src)
+            mq.escreve(dst, s + b"\0" * (n - len(s)))
+            return dst
+
+        def strlen(mq):
+            return len(mq.cstr(mq.r(UC_ARM_REG_R0)))
+
+        def send(mq):
+            msg = mq.r(UC_ARM_REG_R0)
+            mq.chamadas.append(("send", msg, mq.le(msg, 0x14)))
+            return 0
+
+        def send_view(mq):
+            mq.chamadas.append(("send_view", mq.r(UC_ARM_REG_R0)))
+            return 0
+
+        def like(mq):
+            mq.chamadas.append(("like", mq.r(UC_ARM_REG_R0),
+                                mq.r(UC_ARM_REG_R1)))
+            return 1
+
+        m.falsas[0x00D9FD54] = strncpy
+        m.falsas[0x00000AA2] = strlen
+        m.falsas[0x00D0D818] = send
+        m.falsas[0x00D0D880] = send_view
+        m.falsas[0x00D6DB90] = like
+        sp = E.PILHA[0] + E.PILHA[1] - 0x100
+        path = b"0:/A/B.mp3"
+
+        def envia(lr):
+            m.chamadas.clear()
+            m.erros.clear()
+            buf = m.aloca(0x100, registra=False)
+            m.escreve(buf, path + b"\0")
+            m.escreve32(sp + 0x14, lr)
+            m.escreve32(sp + 4, 0)
+            m.chama(self.BLOB_ENVIA_XIP, (1, 0, 0, 0),
+                    salvos=[buf, E.AUDIO] + [0x11110000 + i for i in range(6)])
+            self.assertEqual(m.erros, [], hex(lr))
+            return [c for c in m.chamadas
+                    if c[0] in ("send", "send_view", "like")]
+
+        for lr in (0xD088E0, 0xD08970, 0xD08BEE, 0xD0902C, 0xD0EED4):
+            c = envia(lr)
+            self.assertEqual([x[0] for x in c],
+                             ["send", "send_view", "like"], hex(lr))
+            msg = c[0][1]
+            self.assertEqual(c[0][2][0:2], b"\x04\x00", hex(lr))
+            self.assertEqual(c[0][2][2:3], b"\x03", hex(lr))
+            self.assertEqual(c[0][2][4:5], b"\x05", hex(lr))
+            self.assertEqual(c[0][2][6:7], b"\x03", hex(lr))
+            self.assertEqual(c[0][2][0xC:0xD], b"\x01", hex(lr))
+            self.assertEqual(struct.unpack("<I", c[0][2][0x10:0x14])[0],
+                             len(path), hex(lr))
+            self.assertEqual(m.cstr(msg + 0x14), path, hex(lr))
+            self.assertEqual(c[2][2], sp + 4, hex(lr))
+        for lr in (0xD00C28, 0xCFF212):
+            c = envia(lr)
+            self.assertEqual([x[0] for x in c], ["like"], hex(lr))
+            self.assertEqual(c[0][2], sp + 4, hex(lr))
+
 
 class Comportamento(Base):
     """As tres imagens no arnes de emulacao (unicorn, o de verdade).

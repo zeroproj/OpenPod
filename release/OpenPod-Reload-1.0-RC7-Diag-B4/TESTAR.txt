@@ -1,12 +1,14 @@
 OpenPod Reload 1.0 RC7 Diag B4 — TESTAR
 
-O que e: a RC7 exata + o caminho completo que a MainTask ja calcula,
-entregue a view numa mensagem da fabrica (classe 3, tipo 5). O TITULO volta
-a fazer so o set_text (0x1AA0FE -> b.w 0xDAA1D0) e o carrega_capa continua
-cortado (0x1AA188). Sem get_path na ViewTask, sem f_open, sem JPEG.
-Caminho valido: SEM o quadrado cinza (src nulo); invalido/vazio/ausente:
-cinza. Base: a RC7 exata (3af97713...). Imagem carimbada 16be12ef... ·
-.up CRC 0xAD09 · sha 0d08d3ff...
+O que e: a RC7 exata + o caminho completo que a ViewTask ja calcula,
+entregue a view numa mensagem da fabrica (classe 3, tipo 5). O tipo 5 so
+e enviado quando a rajada vem da ViewTask; a MainTask (0xD00C28) e a
+MediaTask (0xCFF212) pulam a mensagem e mantem o like getter. O TITULO
+volta a fazer so o set_text (0x1AA0FE -> b.w 0xDAA1D0) e o carrega_capa
+continua cortado (0x1AA188). Sem get_path na ViewTask, sem f_open, sem
+JPEG. Caminho valido: SEM o quadrado cinza (src nulo); invalido/vazio/
+ausente: cinza. Base: a RC7 exata (3af97713...). Imagem carimbada
+5f0e35bd... · .up CRC 0x8C7B · sha 74618ccf...
 
 INSTALAR (pelo cartao): copie OpenPod_OpenPodReload1.0RC7DiagB4.up para a
 RAIZ do cartao como update.up; Config -> Atualizar por SD -> Sim; apague o

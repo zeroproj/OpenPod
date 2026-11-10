@@ -143,7 +143,7 @@ ck_file "OpenPod_OpenPodReload1.0RC7DiagB4_1A6000.bin" 25d6784a3323dc277f51e9bcf
 ck_file "OpenPod_OpenPodReload1.0RC7DiagB4_1A7000.bin" 142b9638e43a185341ae27973131aa4bc2cf998c5d16defb8852bd1ba5fe0b02
 ck_file "OpenPod_OpenPodReload1.0RC7DiagB4_1A8000.bin" 380953cff47806c257df31a7599300111b386cbc098fd69c42e16001448d0544
 ck_file "OpenPod_OpenPodReload1.0RC7DiagB4_1A9000.bin" 5153d4d74d7f85164aa63adfebcc3e37e858724cd29f5862ea42b685c6850342
-ck_file "OpenPod_OpenPodReload1.0RC7DiagB4_1AA000.bin" 0997660eca2a4c5fc1d45055e2e4bea4f851866c3e275980754d1d5f83c431b6
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB4_1AA000.bin" 0e56aa2fe51f5c40bca47ed8e31ec2dbef618cbd77cecec6c66b24bf5a2385bb
 ck_file "base_48000.bin" cd43df9cf6f193ab32cd4c0963555f95e95e7ecb02b836bc720c2d1873dcbc01
 ck_file "base_53000.bin" 5decc107dd674f7b6bdd34436f9a7e9b68900c61a7552df7a24be1f7f85bf4c5
 ck_file "base_C7000.bin" ae29fc778567f832164a237fd2f523dd6eedb4eefad4c7d843676d63931039b4
@@ -312,7 +312,7 @@ wr "4/6 24/28" 0x1A6000 "OpenPod_OpenPodReload1.0RC7DiagB4_1A6000.bin" 25d6784a3
 wr "4/6 25/28" 0x1A7000 "OpenPod_OpenPodReload1.0RC7DiagB4_1A7000.bin" 142b9638e43a185341ae27973131aa4bc2cf998c5d16defb8852bd1ba5fe0b02
 wr "4/6 26/28" 0x1A8000 "OpenPod_OpenPodReload1.0RC7DiagB4_1A8000.bin" 380953cff47806c257df31a7599300111b386cbc098fd69c42e16001448d0544
 wr "4/6 27/28" 0x1A9000 "OpenPod_OpenPodReload1.0RC7DiagB4_1A9000.bin" 5153d4d74d7f85164aa63adfebcc3e37e858724cd29f5862ea42b685c6850342
-wr "4/6 28/28" 0x1AA000 "OpenPod_OpenPodReload1.0RC7DiagB4_1AA000.bin" 0997660eca2a4c5fc1d45055e2e4bea4f851866c3e275980754d1d5f83c431b6
+wr "4/6 28/28" 0x1AA000 "OpenPod_OpenPodReload1.0RC7DiagB4_1AA000.bin" 0e56aa2fe51f5c40bca47ed8e31ec2dbef618cbd77cecec6c66b24bf5a2385bb
 rm -f "$WORK/sec.bin"
 
 log "[5/6] lendo a flash inteira e conferindo o estado DEPOIS..."

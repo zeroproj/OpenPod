@@ -12,10 +12,18 @@
 @
 @  envia_path (0xDAAA00+0x200): chamada no lugar do get_path/like getter
 @    da rajada (0xCFF0C4). r0 = retorno do get_path (1 = ok), r4 = buf,
-@    r5 = [0x81BC84]. Monta a mensagem tipo 5 (texto = caminho ou vazio),
-@    envia por 0xD0D818 e, no sucesso, chama o like getter 0xD6DB90 com
-@    r1 = sp do chamador + 4. No sucesso volta para 0xCFF0C8; na falha
-@    do get_path pula para 0xCFF0DE (o free da rajada).
+@    r5 = [0x81BC84]. So envia a mensagem tipo 5 quando o lr salvo pela
+@    rajada e um dos chamadores da ViewTask (0x8238F1 e o buffer global
+@    dos construtores de rotulo); nos chamadores da MainTask/MediaTask
+@    (0xD00C28, 0xCFF212) pula a mensagem e mantem o like getter. Monta a
+@    mensagem (texto = caminho ou vazio), envia por 0xD0D818, chama o
+@    0xD0D880 (a fabrica termina assim) e, no sucesso, o like getter
+@    0xD6DB90 com r1 = sp do chamador + 4. No sucesso volta para 0xCFF0C8;
+@    na falha do get_path pula para 0xCFF0DE (o free da rajada).
+@
+@ TODOS os destinos de bx/blx levam o bit Thumb (|1): no Cortex-M, bx/blx
+@ com bit0=0 gera UsageFault INVSTATE. O emulador (Unicorn) nao aplica essa
+@ checagem; o teste estatico 71 confere o bit.
     .syntax unified
     .thumb
     .text
@@ -29,7 +37,7 @@ label_dispatch:
     adr  r0, tabela
     ldrb r0, [r0, r3]
     ldr  r0, [r5, r0]
-    movw ip, #0x224e
+    movw ip, #0x224f
     movt ip, #0x00d3
     bx   ip
 tabela:
@@ -81,10 +89,10 @@ tabela:
 3:  mov  r2, r0
     mov  r0, r1
     mov  r1, r2
-    movw ip, #0xd868
+    movw ip, #0xd869
     movt ip, #0x00d5
     blx  ip
-9:  movw ip, #0x22a0
+9:  movw ip, #0x22a1
     movt ip, #0x00d3
     bx   ip
     .size label_dispatch, . - label_dispatch
@@ -97,12 +105,22 @@ envia_path:
     push {r4-r8, lr}
     add  r7, sp, #24          @ o sp do chamador (a rajada)
     mov  r6, r0               @ 1 = get_path ok
-    movw r8, #0x38f1
+    @ guard: so a ViewTask envia o tipo 5 (0x8238F1 e o buffer global dela)
+    ldr  r0, [r7, #0x14]      @ o lr salvo pela rajada
+    adr  r1, chamadores
+    movs r2, #5
+1:  ldr  r3, [r1], #4
+    cmp  r0, r3
+    beq  2f
+    subs r2, #1
+    bne  1b
+    b    4f                   @ fora da ViewTask: nao toca 0x8238F1
+2:  movw r8, #0x38f1
     movt r8, #0x0082          @ msg = 0x008238F1
     mov  r0, r8
     movs r1, #0
     movw r2, #0x0414
-    movw r3, #0x0baa
+    movw r3, #0x0bab
     blx  r3                   @ memset(msg, 0, 0x414)
     movs r0, #4
     strb r0, [r8]
@@ -115,37 +133,43 @@ envia_path:
     movs r0, #1
     strb r0, [r8, #0xc]       @ msg[0xc] = 1 (como a mensagem do rotulo 2)
     cmp  r6, #1
-    bne  1f
+    bne  3f
     mov  r1, r4               @ o caminho
-    b    2f
-1:  adr  r1, vazio
-2:  add.w r0, r8, #0x14
+    b    5f
+3:  adr  r1, vazio
+5:  add.w r0, r8, #0x14
     movw r2, #0x03ff
-    movw r3, #0xfd54
+    movw r3, #0xfd55
     movt r3, #0x00d9
     blx  r3                   @ strncpy(msg+0x14, texto, 0x3FF)
     add.w r0, r8, #0x14
-    movw r3, #0x0aa2
+    movw r3, #0x0aa3
     blx  r3                   @ strlen(msg+0x14)
     str  r0, [r8, #0x10]
     adds r0, #9
     strh r0, [r8, #0xa]
     mov  r0, r8
-    movw r3, #0xd818
+    movw r3, #0xd819
     movt r3, #0x00d0
     blx  r3                   @ 0xD0D818(msg)
-    cmp  r6, #1
-    bne  3f
+    mov  r0, r8
+    movw r3, #0xd881
+    movt r3, #0x00d0
+    blx  r3                   @ 0xD0D880 (a fabrica termina assim)
+4:  cmp  r6, #1
+    bne  6f
     mov  r0, r4
     add.w r1, r7, #4          @ o slot do like getter (sp+4)
-    movw r3, #0xdb90
+    movw r3, #0xdb91
     movt r3, #0x00d6
     blx  r3                   @ 0xD6DB90(buf, sp+4)
     pop  {r4-r8, pc}
-3:  pop  {r4-r8, lr}
-    movw ip, #0xf0de
+6:  pop  {r4-r8, lr}
+    movw ip, #0xf0df
     movt ip, #0x00cf
     bx   ip                   @ falha: free e volta
+chamadores:
+    .word 0x00D088E0, 0x00D08970, 0x00D08BEE, 0x00D0902C, 0x00D0EED4
 vazio:
     .asciz ""
     .size envia_path, . - envia_path

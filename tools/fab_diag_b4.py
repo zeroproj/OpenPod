@@ -99,7 +99,6 @@ def monta_blob():
     with open(FONTE, "r") as f:
         return monta(f.read())
 
-
 def confere_blob(cod):
     """O codigo novo tem de caber e ter o tipo 5, as guardas e a capa."""
     erros = []
@@ -118,27 +117,29 @@ def confere_blob(cod):
             erros.append(f"o label_dispatch nao tem a validacao 0x{v:04X}")
     for hexa, nome in (
             ("48f20000c0f2da00", "o cinza 0xDA8000"),
-            ("4df6680cc0f2d50ce047", "o img_set_src"),
+            ("4df6690cc0f2d50ce047", "o img_set_src 0xD5D869"),
             ("43f6f108c0f28208", "a mensagem 0x008238F1"),
             ("052088f80400", "o tipo 5 em msg+4"),
             ("012088f80c00", "o msg+0xc = 1"),
-            ("4df61803c0f2d003", "o 0xD0D818"),
-            ("4df69033c0f2d603", "o like getter 0xD6DB90"),
-            ("4ff65453c0f2d903", "o strncpy"),
-            ("40f6a223", "o strlen"),
-            ("40f6aa33", "o memset"),
-            ("4ff2de0cc0f2cf0c", "a falha 0xCFF0DE"),
-            ("42f24e2cc0f2d30c", "o comum 0xD3224E"),
-            ("42f2a02cc0f2d30c", "o epilogo 0xD322A0")):
+            ("4df61903c0f2d003", "o 0xD0D819"),
+            ("4df68103c0f2d003", "o 0xD0D881"),
+            ("4df69133c0f2d603", "o like getter 0xD6DB91"),
+            ("4ff65553c0f2d903", "o strncpy 0xD9FD55"),
+            ("40f6a323", "o strlen 0xAA3"),
+            ("40f6ab33", "o memset 0xBAB"),
+            ("4ff2df0cc0f2cf0c", "a falha 0xCFF0DF"),
+            ("42f24f2cc0f2d30c", "o comum 0xD3224F"),
+            ("42f2a12cc0f2d30c", "o epilogo 0xD322A1")):
         if bytes.fromhex(hexa) not in cod:
             erros.append(f"o codigo novo nao tem {nome}")
+    for chamador in (0xD088E0, 0xD08970, 0xD08BEE, 0xD0902C, 0xD0EED4):
+        if struct.pack("<I", chamador) not in cod:
+            erros.append(f"sem o chamador 0x{chamador:08X} da ViewTask")
     return erros
-
 
 # ---------------------------------------------------------------------------
 # premissas
 # ---------------------------------------------------------------------------
-
 def confere_premissas(d, cod):
     """TODAS as premissas da ficha. Devolve a lista de erros (vazia = ok)."""
     if len(d) != TAMANHO:
