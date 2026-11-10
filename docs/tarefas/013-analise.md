@@ -160,6 +160,11 @@ continua, agora em `+0x500`.
 ## Resultado do B5b no aparelho (decisor, 2026-11-10)
 
 - **Trava e reinicia:** ao dar play, a tela do player **abre, fica travada e depois reinicia** (mesmo padrão do B2: com o monitor da ViewTask desligado, o reinício vem de outro ponto, provavelmente da MainTask deixando de alimentar o watchdog).
+- **Tempo até reiniciar (decisor):** às vezes na hora em que o player abre, às vezes por volta de 24 s.
+  - O tempo variável sugere **duas causas possíveis (HIPÓTESE):**
+    - Reinício imediato: falha de execução (fault) durante o trabalho da capa, por exemplo pilha da ViewTask (`0x1000`) ou escrita fora do lugar.
+    - ~24 s: outra tarefa presa esperando a view, até o watchdog de hardware cortar.
+  - Conferido: a ext da RC7 tem `0x2210` B (`0xDAA040`), e o layout dsc/último caminho/caminho/pixels cabe exato.
 - Leitura (coordenação): **HIPÓTESE**. A trava acontece dentro do tratamento do tipo 5, no `f_open` ou no decode, com o monitor da ViewTask desligado.
 - **Próximo:** o B5a separa as duas causas.
   - Se o B5a também travar, a causa é abrir o arquivo na ViewTask.
