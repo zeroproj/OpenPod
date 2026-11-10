@@ -54,6 +54,7 @@ import fab_diag_trava as F  # noqa: E402
 import fab_diag_b3 as F3  # noqa: E402
 import fab_diag_b4 as F4  # noqa: E402
 import fab_diag_b5 as F5  # noqa: E402
+import fab_diag_b6 as F6  # noqa: E402
 import emu_rc7 as E  # noqa: E402
 
 SHA_RC7 = ("3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab6456"
@@ -1848,6 +1849,598 @@ class B5(Base):
                 achou = True
                 break
             self.assertTrue(achou, "o envia_path nao tem o adr r1, chamadores")
+
+
+class B6(Base):
+    r"""Os degraus B6a/B6b da ficha 014 (a capa sai da ViewTask).
+
+    O B6a e o B4 exato, mas o envia_path da PreTask abre o MP3, le 10 B e
+    manda o tipo 5 com o caminho ("ID3") ou vazio. O B6b decodifica a capa
+    na PreTask (carrega_capa 0xDAA256), manda 8 mensagens tipo 6 de 1024 B
+    e a view so copia os pixels para ext+0x210+offset; no ultimo pedaco faz
+    img_set_src(img, ext). Nenhuma funcao de arquivo e alcancavel da view.
+    """
+
+    RECEITA_A = "reload_1.0_rc7_diag_b6a"
+    RECEITA_B = "reload_1.0_rc7_diag_b6b"
+    BLOB = 0x1AAA00
+    BLOB_XIP = 0x00DAAA00
+    BLOB_ENVIA = 0x1AAC00
+    BLOB_ENVIA_XIP = 0x00DAAC00
+    BLOB_MAX = 0x600
+    P_BURST = 0x0FF0C4
+    P_TYPE = 0x13223E
+    P_TBB = 0x132242
+    P_TITULO = 0x1AA0FE
+    P_CARREGA = 0x1AA188
+    CARREGA = 0x00DAA256
+    PH_DSC = 0x00DA8000
+    FALHA_BURST = 0x00CFF0DE
+    ENVIA_LR = (0xD088E1, 0xD08971, 0xD08BEF, 0xD0902D, 0xD0EED5)
+    OUTROS_LR = (0xD00C29, 0xCFF213)
+
+    aparelho = B4.aparelho
+    tipo5 = B4.tipo5
+    titulo = B4.titulo
+    xip_rom = B4.xip_rom
+    _epilogo = staticmethod(B4._epilogo)
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        p4 = os.path.join(cls.tmp, "b4.bin")
+        rc4, log4 = constroi("reload_1.0_rc7_diag_b4", p4)
+        cls.b4_rc, cls.b4_log = rc4, log4
+        cls.b4 = le(p4) if os.path.exists(p4) else b""
+        cls.blob_a = F6.monta_blob("a")
+        cls.blob_b = F6.monta_blob("b")
+        cls.b6a_rc, cls.b6a_log = constroi(cls.RECEITA_A,
+                                           os.path.join(cls.tmp, "b6a.bin"))
+        cls.b6a = (le(os.path.join(cls.tmp, "b6a.bin"))
+                   if os.path.exists(os.path.join(cls.tmp, "b6a.bin")) else b"")
+        cls.b6b_rc, cls.b6b_log = constroi(cls.RECEITA_B,
+                                           os.path.join(cls.tmp, "b6b.bin"))
+        cls.b6b = (le(os.path.join(cls.tmp, "b6b.bin"))
+                   if os.path.exists(os.path.join(cls.tmp, "b6b.bin")) else b"")
+
+    def roda(self, entrada, degrau, extra=()):
+        tmp = tempfile.mkdtemp(prefix="openpod_diag014x_")
+        src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
+        with open(src, "wb") as f:
+            f.write(entrada)
+        r = subprocess.run([sys.executable,
+                            os.path.join(RAIZ, "tools/fab_diag_b6.py"),
+                            "--in", src, "--out", dst, "--degrau", degrau]
+                           + list(extra),
+                           capture_output=True, text=True, cwd=RAIZ)
+        return r.returncode, os.path.exists(dst), le(src) == entrada
+
+    def ativo(self, nome):
+        with open(os.path.join(ATIVOS, nome), "rb") as f:
+            return f.read()
+
+    @staticmethod
+    def jpeg_do_mp3(mp3):
+        """O primeiro JPEG de um APIC do ID3v2.3/v2.4 (o ativo da RC7)."""
+        if mp3[:3] != b"ID3":
+            return None
+        n = ((mp3[6] & 0x7F) << 21) | ((mp3[7] & 0x7F) << 14) \
+            | ((mp3[8] & 0x7F) << 7) | (mp3[9] & 0x7F)
+        pos, fim = 10, 10 + n
+        while pos + 10 <= fim:
+            fid = mp3[pos:pos + 4]
+            tam = struct.unpack(">I", mp3[pos + 4:pos + 8])[0]
+            corpo = mp3[pos + 10:pos + 10 + tam]
+            if fid == b"APIC":
+                z = corpo.index(b"\0", 1)
+                p = z + 1 + 1
+                z = corpo.index(b"\0", p)
+                return corpo[z + 1:]
+            pos += 10 + tam
+        return None
+
+    def falsas(self, m, send_ret=1):
+        from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R1,
+                                       UC_ARM_REG_R2, UC_ARM_REG_LR)
+
+        def send(mq):
+            p = mq.r(UC_ARM_REG_R0)
+            n = struct.unpack("<H", mq.le(p + 0xA, 2))[0] + 0xC
+            mq.chamadas.append(("send", p, mq.le(p, n)))
+            return send_ret
+
+        def send_view(mq):
+            mq.chamadas.append(("send_view", mq.r(UC_ARM_REG_R0)))
+            return 0
+
+        def strncpy(mq):
+            dst, src, n = (mq.r(UC_ARM_REG_R0), mq.r(UC_ARM_REG_R1),
+                           mq.r(UC_ARM_REG_R2))
+            s = mq.cstr(src, n)
+            mq.escreve(dst, s + b"\0" * (n - len(s)))
+            return dst
+
+        def strlen(mq):
+            return len(mq.cstr(mq.r(UC_ARM_REG_R0), 0x1000))
+
+        def like(mq):
+            mq.chamadas.append(("like", mq.r(UC_ARM_REG_R0),
+                                mq.r(UC_ARM_REG_R1)))
+            return 1
+
+        def fim(mq):
+            mq.u.reg_write(UC_ARM_REG_LR, E.FIM | 1)
+            return 0
+
+        m.falsas[0x00D0D818] = send
+        m.falsas[0x00D0D880] = send_view
+        m.falsas[0x00D6DB90] = like
+        m.falsas[0x00D9FD54] = strncpy
+        m.falsas[0x00000AA2] = strlen
+        m.falsas[self.FALHA_BURST] = fim
+        m.falsas[0x00D322A0] = self._epilogo
+
+    def envia(self, m, path, dados, lr=0xD0EED5, ret=1):
+        from unicorn.arm_const import UC_ARM_REG_R0
+        m.chamadas.clear()
+        m.erros.clear()
+        buf = m.aloca(0x100, registra=False)
+        m.escreve(buf, path + b"\0")
+        if dados is None:
+            m.arquivos.pop(path, None)
+        else:
+            m.arquivos[path] = dados
+        sp = E.PILHA[0] + E.PILHA[1] - 0x100
+        m.escreve32(sp + 0x14, lr)
+        m.escreve32(sp + 4, 0)
+        m.chama(self.BLOB_ENVIA_XIP, (ret, 0, 0, 0),
+                salvos=[buf, E.AUDIO] + [0x11110000 + i for i in range(6)])
+        self.assertEqual(m.erros, [], hex(lr))
+        return sp, [c for c in m.chamadas
+                    if c[0] in ("send", "send_view", "like")]
+
+    LABEL_PROCESS = 0x00D32204
+
+    def _msg_tipo6(self, m, off, dados, tipo):
+        msg = m.aloca(0x414, registra=False)
+        m.escreve(msg, b"\0" * 0x414)
+        m.escreve(msg + 0, b"\x04")
+        m.escreve(msg + 2, b"\x03")
+        m.escreve(msg + 4, bytes([tipo]))
+        m.escreve(msg + 6, b"\x03")
+        m.escreve(msg + 0xC, b"\x01")
+        m.escreve32(msg + 0x10, off)
+        if dados is not None:
+            m.escreve(msg + 0x14, dados)
+        return msg
+
+    def tipo6(self, m, view, off, dados=None, tipo=6):
+        """Tipo 6 pelo label_process inteiro (0xD32204; push em 0xD3220C)."""
+        ext = m.le32(view + 0x30)
+        msg = self._msg_tipo6(m, off, dados, tipo)
+        n0 = len(m.chamadas)
+        salvos = [msg, view, msg + 0x14] + [0x11110000 + i for i in range(5)]
+        epilogo = m.falsas.pop(0x00D322A0, None)
+        tj = E.TJPGDEC
+        E.TJPGDEC = (tj[0], 0x00D32300)
+        try:
+            m.chama(self.LABEL_PROCESS, (msg, 0, 0, 0), salvos=salvos)
+        finally:
+            E.TJPGDEC = tj
+            if epilogo is not None:
+                m.falsas[0x00D322A0] = epilogo
+        return ext, m.chamadas[n0:]
+
+    def tipo6_direto(self, m, view, off, dados=None, tipo=6):
+        """Tipo 6 direto na view (guardas que o label_process nao alcanca)."""
+        ext = m.le32(view + 0x30)
+        msg = self._msg_tipo6(m, off, dados, tipo)
+        n0 = len(m.chamadas)
+        salvos = [msg, view, msg + 0x14] + [0x11110000 + i for i in range(5)]
+        m.chama(self.BLOB_XIP, (0, 0, 0, tipo), salvos=salvos)
+        return ext, m.chamadas[n0:]
+
+    def test_100_b6_construida(self):
+        self.assertEqual(self.b4_rc, 0, self.b4_log[-1500:])
+        self.assertEqual(self.b6a_rc, 0, self.b6a_log[-2000:])
+        self.assertEqual(self.b6b_rc, 0, self.b6b_log[-2000:])
+        for img, tipo in ((self.b6a, b"\x05\x2b"), (self.b6b, b"\x06\x2b")):
+            self.assertEqual(len(img), 0x200000)
+            self.assertEqual(img[self.P_TYPE:self.P_TYPE + 2], tipo)
+            self.assertEqual(desvio(img, self.P_TBB), self.BLOB_XIP)
+            self.assertEqual(desvio(img, self.P_BURST), self.BLOB_ENVIA_XIP)
+        self.assertEqual(self.b6a[self.BLOB:self.BLOB + 2], b"\x05\x2b")
+        self.assertEqual(self.b6b[self.BLOB:self.BLOB + 2], b"\x06\x2b")
+
+    def test_101_reprodutivel(self):
+        tmp = tempfile.mkdtemp(prefix="openpod_diag014r_")
+        for receita in (self.RECEITA_A, self.RECEITA_B):
+            shas = []
+            for i in range(2):
+                p = os.path.join(tmp, f"{receita}{i}.bin")
+                rc, log = constroi(receita, p)
+                self.assertEqual(rc, 0, log[-1500:])
+                shas.append(sha(le(p)))
+            self.assertEqual(shas[0], shas[1], receita)
+
+    def test_102_diff_exato(self):
+        for nome, img, blob, tipo in (
+                ("a", self.b6a, self.blob_a, b"\x05\x2b"),
+                ("b", self.b6b, self.blob_b, b"\x06\x2b")):
+            dif = [i for i in range(len(img)) if img[i] != self.b4[i]]
+            regioes = [(self.P_TBB, 4), (self.P_BURST, 12),
+                       (self.BLOB, self.BLOB_MAX)]
+            if nome == "b":
+                regioes.append((self.P_TYPE, 2))
+            for i in dif:
+                self.assertTrue(any(o <= i < o + t for o, t in regioes),
+                                f"B6{nome}: byte fora do patch: 0x{i:06X}")
+                self.assertGreaterEqual(i, 0x00E000)
+                self.assertFalse(0xD000 <= i < 0xE000)
+                self.assertLess(i, 0x1FC000)
+            self.assertEqual(img[self.P_TYPE:self.P_TYPE + 2], tipo)
+            self.assertEqual(img[self.P_TITULO:self.P_TITULO + 4],
+                             self.b4[self.P_TITULO:self.P_TITULO + 4])
+            self.assertEqual(img[self.P_CARREGA:self.P_CARREGA + 4],
+                             self.b4[self.P_CARREGA:self.P_CARREGA + 4])
+            self.assertEqual(img[self.P_BURST + 4:self.P_BURST + 12],
+                             b"\x00\xbf" * 4)
+            self.assertEqual(img[self.BLOB:self.BLOB + len(blob)], blob)
+
+    def test_103_decodificacao(self):
+        self.assertEqual(self.b6a[self.BLOB:self.BLOB + 0x200],
+                         self.b4[self.BLOB:self.BLOB + 0x200])
+        self.assertEqual(self.b6b[self.BLOB:self.BLOB + 2], b"\x06\x2b")
+        self.assertIn(b"\x05\x2b", self.b6b[self.BLOB:self.BLOB + 0x200])
+        for img, tipo in ((self.b6a, b"\x05\x2b"), (self.b6b, b"\x06\x2b")):
+            self.assertEqual(img[self.P_TYPE:self.P_TYPE + 2], tipo)
+            self.assertEqual(desvio(img, self.P_TBB), self.BLOB_XIP)
+            self.assertEqual(desvio(img, self.P_BURST), self.BLOB_ENVIA_XIP)
+            self.assertEqual(img[self.BLOB_ENVIA:self.BLOB_ENVIA + 4],
+                             b"\x2d\xe9\xf0\x41")
+        self.assertIn(b"\x40\xf2\x5c\x21", self.blob_a)  # movw r1,#0x25C
+        self.assertIn(b"\x42\xf2\x10\x21", self.blob_b)  # movw r1,#0x2210
+        self.assertIn(b"\xb3\xf5\xe0\x5f", self.blob_b)  # cmp.w r3,#0x1C00
+
+    def test_104_recusas(self):
+        for degrau, img in (("a", self.b6a), ("b", self.b6b)):
+            for nome, entrada in (("rc7", self.rc7), ("propria", img)):
+                rc, criou, intacta = self.roda(entrada, degrau,
+                                               ["--em", "0x1a8000"])
+                self.assertNotEqual(rc, 0, f"{degrau}:{nome}")
+                self.assertFalse(criou, f"{degrau}:{nome}")
+                self.assertTrue(intacta, f"{degrau}:{nome}")
+            rc, criou, intacta = self.roda(self.b4, degrau,
+                                           ["--em", "0x1A9000"])
+            self.assertNotEqual(rc, 0, degrau)
+            self.assertFalse(criou, degrau)
+            self.assertTrue(intacta, degrau)
+            rc, criou, intacta = self.roda(self.b4, degrau, ["--dry-run"])
+            self.assertEqual((rc, criou), (0, False), degrau)
+            self.assertTrue(intacta, degrau)
+            for tipo in ("mesmo", "symlink", "hardlink"):
+                tmp = tempfile.mkdtemp(prefix="openpod_diag014l_")
+                src = os.path.join(tmp, "in.bin")
+                dst = os.path.join(tmp, "out.bin")
+                with open(src, "wb") as f:
+                    f.write(self.b4)
+                if tipo == "mesmo":
+                    dst = src
+                else:
+                    (os.symlink if tipo == "symlink" else os.link)(src, dst)
+                r = subprocess.run([sys.executable,
+                                    os.path.join(RAIZ, "tools/fab_diag_b6.py"),
+                                    "--in", src, "--out", dst,
+                                    "--degrau", degrau],
+                                   capture_output=True, cwd=RAIZ)
+                self.assertNotEqual(r.returncode, 0, f"{degrau}:{tipo}")
+                self.assertEqual(le(src), self.b4, f"{degrau}:{tipo}")
+
+    def test_105_premissas(self):
+        self.assertEqual(F6.confere_premissas(bytearray(self.b4),
+                                              self.blob_a, "a"), [])
+        self.assertEqual(F6.confere_premissas(bytearray(self.b4),
+                                              self.blob_b, "b"), [])
+        for outra in (self.rc7, self.b6a, self.b6b):
+            self.assertTrue(F6.confere_premissas(bytearray(outra),
+                                                 self.blob_a, "a"))
+        for off in (self.P_TBB, self.P_BURST, self.P_TYPE,
+                    self.P_TITULO, self.P_CARREGA, self.BLOB):
+            d = bytearray(self.b4)
+            d[off] ^= 0x01
+            self.assertTrue(F6.confere_premissas(d, self.blob_a, "a"),
+                            hex(off))
+        d = bytearray(self.b4)
+        d[self.BLOB + 0x2D9] ^= 0xFF
+        self.assertTrue(any("virgem" in e for e in
+                            F6.confere_premissas(d, self.blob_a, "a")))
+        self.assertTrue(F6.confere_premissas(bytearray(self.b4),
+                                             self.blob_b, "a"))
+        self.assertTrue(F6.confere_premissas(bytearray(self.b4),
+                                             self.blob_a, "b"))
+
+    def test_106_emulacao_b6a(self):
+        path = b"0:/A/B.mp3"
+        m, view = self.aparelho(self.b6a)
+        self.falsas(m)
+        for p, src in ((b"0:/A/B.mp3", 0), (b"0:\\A.mp3", 0),
+                       (b"lixo", self.PH_DSC), (b"", self.PH_DSC)):
+            ext, novas = self.tipo5(m, view, p)
+            self.assertEqual(m.erros, [], p)
+            self.assertEqual([c[0] for c in novas], ["img_set_src"], p)
+            self.assertEqual([c[2] for c in novas], [src], p)
+        sp, c = self.envia(m, path, b"ID3\x04\x00\x00\x00\x00\x00\x00")
+        self.assertEqual([x[0] for x in c], ["send", "send_view", "like"])
+        msg = c[0][1]
+        self.assertEqual(c[0][2][4], 5)
+        self.assertEqual(struct.unpack("<I", c[0][2][0x10:0x14])[0], len(path))
+        self.assertEqual(struct.unpack("<H", c[0][2][0xA:0xC])[0], len(path) + 9)
+        self.assertEqual(m.cstr(msg + 0x14), path)
+        self.assertEqual(c[2][2], sp + 4)
+        sp, c = self.envia(m, path, b"RIFF\x00\x00\x00\x00\x00\x00")
+        self.assertEqual([x[0] for x in c], ["send", "send_view", "like"])
+        self.assertEqual(struct.unpack("<I", c[0][2][0x10:0x14])[0], 0)
+        self.assertEqual(struct.unpack("<H", c[0][2][0xA:0xC])[0], 9)
+        self.assertEqual(m.cstr(c[0][1] + 0x14), b"")
+        sp, c = self.envia(m, path, None)
+        self.assertEqual([x[0] for x in c], ["send", "send_view", "like"])
+        self.assertEqual(struct.unpack("<I", c[0][2][0x10:0x14])[0], 0)
+        sp, c = self.envia(m, path, b"ID3\x04\x00\x00\x00\x00\x00\x00",
+                           ret=0)
+        self.assertEqual([x[0] for x in c], ["send", "send_view"])
+        self.assertEqual(c[0][2][4], 5)
+        for lr in self.ENVIA_LR:
+            _, c = self.envia(m, path, b"ID3\x04\x00\x00\x00\x00\x00\x00",
+                              lr=lr)
+            self.assertEqual([x[0] for x in c], ["send", "send_view", "like"], hex(lr))
+        for lr in self.OUTROS_LR:
+            _, c = self.envia(m, path, b"ID3\x04\x00\x00\x00\x00\x00\x00",
+                              lr=lr)
+            self.assertEqual([x[0] for x in c], ["like"], hex(lr))
+        self.assertEqual(m.abertos, {})
+
+    def test_107_emulacao_b6b_view(self):
+        m, view = self.aparelho(self.b6b)
+        self.falsas(m)
+        m.chamadas.clear()
+        ext = m.le32(view + 0x30)
+        m.escreve(ext + 0x210, b"\xAA" * 0x2000)
+        for off in range(0, 0x2000, 0x400):
+            _, novas = self.tipo6(m, view, off,
+                                  bytes([off // 0x400]) * 0x400)
+            self.assertEqual(m.erros, [], hex(off))
+            nomes = [c[0] for c in novas]
+            self.assertEqual(nomes.count("img_set_src"),
+                             1 if off == 0x1C00 else 0, hex(off))
+            self.assertFalse(any(n in nomes for n in
+                                 ("f_open", "f_read", "f_close", "calloc",
+                                  "free")), hex(off))
+        self.assertEqual(m.le(ext + 0x210, 0x2000),
+                         b"".join(bytes([i]) * 0x400 for i in range(8)))
+        self.assertEqual([c[2] for c in m.chamadas if c[0] == "img_set_src"],
+                         [ext])
+        for off in (0x1C01, 0x1C02, 0x2000):
+            _, novas = self.tipo6(m, view, off, b"\x00" * 0x400)
+            self.assertEqual(m.erros, [], hex(off))
+            self.assertEqual([c[0] for c in novas], [], hex(off))
+        for nome in ("pagina", "view", "ext", "img"):
+            m, view = self.aparelho(self.b6b)
+            self.falsas(m)
+            ext = m.le32(view + 0x30)
+            if nome == "pagina":
+                m.escreve32(E.PAGINAS, 0)
+            elif nome == "view":
+                m.escreve32(m.le32(E.PAGINAS) + 0xAC, 0)
+            elif nome == "ext":
+                m.escreve32(view + 0x30, 0)
+            else:
+                m.escreve32(ext + 0xC, 0)
+            _, novas = self.tipo6_direto(m, view, 0, b"\x00" * 0x400)
+            self.assertEqual(m.erros, [], nome)
+            self.assertEqual([c[0] for c in novas], [], nome)
+
+    def test_108_emulacao_b6b_envia(self):
+        path = b"0:/A/B.mp3"
+        dados = self.ativo("01_capa_v23.mp3")
+        jpeg = self.jpeg_do_mp3(dados)
+        self.assertIsNotNone(jpeg)
+        ref = E.referencia(le(os.path.join(RAIZ, "firmware/ORIGINAL/"
+                                           "GN438_original.bin")), jpeg)
+        m, view = self.aparelho(self.b6b)
+        self.falsas(m)
+        sp, c = self.envia(m, path, dados)
+        self.assertEqual([x[0] for x in c], ["send"] * 8 + ["send_view", "like"])
+        self.assertEqual([x[2][4] for x in c[:8]], [6] * 8)
+        self.assertEqual([struct.unpack("<I", x[2][0x10:0x14])[0]
+                          for x in c[:8]], list(range(0, 0x2000, 0x400)))
+        self.assertEqual([struct.unpack("<H", x[2][0xA:0xC])[0]
+                          for x in c[:8]], [0x408] * 8)
+        self.assertEqual(b"".join(x[2][0x14:0x414] for x in c[:8]), ref)
+        self.assertEqual(m.abertos, {})
+        m, view = self.aparelho(self.b6b)
+        self.falsas(m, send_ret=0)
+        sp, c = self.envia(m, path, dados)
+        self.assertEqual([x[0] for x in c], ["send", "send", "send_view", "like"])
+        self.assertEqual(c[0][2][4], 6)
+        self.assertEqual(c[1][2][4], 5)
+        self.assertEqual(struct.unpack("<I", c[1][2][0x10:0x14])[0], 0)
+        self.assertEqual(m.abertos, {})
+        m, view = self.aparelho(self.b6b)
+        self.falsas(m)
+        sp, c = self.envia(m, path, b"notjpeg")
+        self.assertEqual([x[0] for x in c], ["send", "send_view", "like"])
+        self.assertEqual(c[0][2][4], 5)
+        self.assertEqual(m.abertos, {})
+        sp, c = self.envia(m, path, dados, ret=0)
+        self.assertEqual([x[0] for x in c], ["send", "send_view"])
+        self.assertEqual(c[0][2][4], 5)
+        for lr in self.ENVIA_LR:
+            _, c = self.envia(m, path, dados, lr=lr)
+            self.assertEqual([x[0] for x in c],
+                             ["send"] * 8 + ["send_view", "like"],
+                             hex(lr))
+        for lr in self.OUTROS_LR:
+            _, c = self.envia(m, path, dados, lr=lr)
+            self.assertEqual([x[0] for x in c], ["like"], hex(lr))
+
+    def test_109_bit_thumb_nos_indiretos(self):
+        from capstone import (Cs, CS_ARCH_ARM, CS_MODE_THUMB,
+                              CS_MODE_LITTLE_ENDIAN)
+        from capstone.arm import ARM_OP_REG
+
+        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_LITTLE_ENDIAN)
+        md.detail = True
+
+        def indiretos(cod, base):
+            achados, mov = [], {}
+            for i in md.disasm(cod, base):
+                if i.mnemonic in ("movw", "movt"):
+                    rd = i.reg_name(i.operands[0].reg)
+                    imm = i.operands[1].imm
+                    if i.mnemonic == "movw":
+                        mov[rd] = imm & 0xFFFF
+                    else:
+                        mov[rd] = (mov.get(rd, 0) & 0xFFFF) | (imm << 16)
+                elif i.mnemonic in ("bx", "blx") and i.operands:
+                    op = i.operands[0]
+                    if op.type == ARM_OP_REG and i.reg_name(op.reg) in mov:
+                        rd = i.reg_name(op.reg)
+                        achados.append((i.address, rd, mov.pop(rd)))
+            return achados
+
+        for cod, nome in ((self.blob_a, "B6a"), (self.blob_b, "B6b")):
+            for end, reg, alvo in indiretos(cod, self.BLOB_XIP):
+                self.assertTrue(alvo & 1,
+                                f"{nome}: {reg}=0x{alvo:08X} par em "
+                                f"0x{end:08X} (falta o bit Thumb)")
+
+    def test_110_tabela_alinhada(self):
+        from capstone import (Cs, CS_ARCH_ARM, CS_MODE_THUMB,
+                              CS_MODE_LITTLE_ENDIAN)
+        tabela = b"".join(struct.pack("<I", a) for a in
+                          (0xD088E0, 0xD08970, 0xD08BEE, 0xD0902C,
+                           0xD0EED4))
+        for cod in (self.blob_a, self.blob_b):
+            off = cod.index(tabela)
+            end = self.BLOB_XIP + off
+            self.assertEqual(end % 4, 0,
+                             f"a tabela em 0x{end:08X} nao e 4-alinhada")
+            md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_LITTLE_ENDIAN)
+            md.detail = True
+            achou = False
+            for i in md.disasm(cod[self.BLOB_ENVIA - self.BLOB:],
+                               self.BLOB_ENVIA_XIP):
+                if i.mnemonic == "adr":
+                    imm = i.operands[1].imm
+                elif i.mnemonic == "addw":
+                    imm = i.operands[2].imm
+                else:
+                    continue
+                if i.reg_name(i.operands[0].reg) != "r1":
+                    continue
+                alvo = ((i.address + 4) & ~3) + imm
+                self.assertEqual(alvo, end,
+                                 f"o adr em 0x{i.address:08X} aponta "
+                                 f"0x{alvo:08X}")
+                achou = True
+                break
+            self.assertTrue(achou, "o envia_path nao tem o adr r1, chamadores")
+
+    def test_111_pilha(self):
+        from unicorn import UC_HOOK_CODE
+        from unicorn.arm_const import UC_ARM_REG_SP
+        path = b"0:/A/B.mp3"
+        dados = self.ativo("01_capa_v23.mp3")
+        m, view = self.aparelho(self.b6b)
+        self.falsas(m)
+        buf = m.aloca(0x100, registra=False)
+        m.escreve(buf, path + b"\0")
+        m.arquivos[path] = dados
+        sp = E.PILHA[0] + E.PILHA[1] - 0x100
+        m.escreve32(sp + 0x14, 0xD0EED5)
+        mn = [0xFFFFFFFF]
+
+        def cb(uc, a, tam, ud):
+            s = uc.reg_read(UC_ARM_REG_SP)
+            if s < mn[0]:
+                mn[0] = s
+
+        m.u.hook_add(UC_HOOK_CODE, cb)
+        m.chama(self.BLOB_ENVIA_XIP, (1, 0, 0, 0),
+                salvos=[buf, E.AUDIO] + [0x11110000 + i for i in range(6)])
+        self.assertEqual(m.erros, [])
+        usado = sp - mn[0]
+        self.assertLessEqual(usado, 512, f"o B6b usa {usado} B de pilha")
+        self.assertGreaterEqual(2048 - 152 - usado, 512,
+                                f"sobram {2048 - 152 - usado} B")
+
+    def test_113_view_sem_arquivo(self):
+        """A view nao alcanca f_open/f_read/f_lseek/f_close/carrega_capa."""
+        from capstone import (Cs, CS_ARCH_ARM, CS_MODE_THUMB,
+                              CS_MODE_LITTLE_ENDIAN)
+        from capstone.arm import ARM_OP_REG, ARM_OP_IMM
+        arquivo = {0xD777CC, 0xD76854, 0xD76C0A, 0xD77C9C, self.CARREGA}
+        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_LITTLE_ENDIAN)
+        md.detail = True
+        for cod, nome in ((self.blob_a, "B6a"), (self.blob_b, "B6b")):
+            alvos, mov = set(), {}
+            for i in md.disasm(cod[:0x200], self.BLOB_XIP):
+                if i.mnemonic in ("movw", "movt"):
+                    rd = i.reg_name(i.operands[0].reg)
+                    imm = i.operands[1].imm
+                    if i.mnemonic == "movw":
+                        mov[rd] = imm & 0xFFFF
+                    else:
+                        mov[rd] = (mov.get(rd, 0) & 0xFFFF) | (imm << 16)
+                elif i.mnemonic in ("bl", "blx", "bx") and i.operands:
+                    op = i.operands[0]
+                    if op.type == ARM_OP_IMM:
+                        alvos.add(op.imm & ~1)
+                    elif op.type == ARM_OP_REG and i.reg_name(op.reg) in mov:
+                        alvos.add(mov.pop(i.reg_name(op.reg)) & ~1)
+            self.assertFalse(arquivo & alvos,
+                             f"{nome}: a view alcanca {arquivo & alvos}")
+        for marca in (b"\x47\xf2\xcd\x7c\xc0\xf2\xd7\x0c\xe0\x47",
+                      b"\x46\xf6\x55\x0c\xc0\xf2\xd7\x0c\xe0\x47",
+                      b"\x47\xf6\x9d\x4c\xc0\xf2\xd7\x0c\xe0\x47"):
+            self.assertIn(marca, self.blob_a[self.BLOB_ENVIA - self.BLOB:])
+        self.assertIn(b"\x4a\xf2\x57\x2c\xc0\xf2\xda\x0c\xe0\x47",
+                      self.blob_b[self.BLOB_ENVIA - self.BLOB:])
+
+    def test_114_emulacao_b6b_ativos(self):
+        path = b"0:/A/B.mp3"
+        validos = ("01_capa_v23.mp3", "02_capa_v24.mp3",
+                   "03_capa_v24_cabecalho_estendido.mp3")
+        falhas = ("04_capa_progressiva.mp3", "05_capa_png.mp3",
+                  "06_sem_capa.mp3", "07_sem_tag.mp3")
+        m, view = self.aparelho(self.b6b)
+        self.falsas(m)
+        for nome in validos:
+            _, c = self.envia(m, path, self.ativo(nome))
+            self.assertEqual([x[0] for x in c],
+                             ["send"] * 8 + ["send_view", "like"], nome)
+            self.assertEqual([x[2][4] for x in c[:8]], [6] * 8, nome)
+            self.assertEqual(m.abertos, {}, nome)
+        for nome in falhas:
+            _, c = self.envia(m, path, self.ativo(nome))
+            self.assertEqual([x[0] for x in c],
+                             ["send", "send_view", "like"], nome)
+            self.assertEqual(c[0][2][4], 5, nome)
+            self.assertEqual(struct.unpack("<I", c[0][2][0x10:0x14])[0], 0,
+                             nome)
+            self.assertEqual(m.abertos, {}, nome)
+
+    def test_112_mapa_e_receita(self):
+        import build as B
+        for rec in (self.RECEITA_A, self.RECEITA_B):
+            self.assertIn(rec, B.RECEITAS)
+            passo = B.RECEITAS[rec][-1]
+            self.assertEqual(passo[0], "fab_diag_b6.py")
+            self.assertIn("--degrau", passo[1])
+            self.assertNotIn("fab_diag_b6.py", B.MAPA)
+        t = le(os.path.join(RAIZ, "tests/test_catraca.py")).decode()
+        self.assertNotIn(self.RECEITA_A, t)
+        self.assertNotIn(self.RECEITA_B, t)
 
 
 class Mapa(Base):

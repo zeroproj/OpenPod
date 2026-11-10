@@ -721,6 +721,45 @@ RELOAD_1_0_RC7_DIAG_B5B = RELOAD_1_0_RC7_DIAG_B4 + [
      "diag B5b: carrega a capa no tipo 5 com o monitor desligado"),
 ]
 
+# ---------------------------------------------------------------------------
+# os degraus B6a e B6b da ficha 014: o trabalho de arquivo sai da ViewTask e
+# vai para o envia_path da PreTask (0x00DAAC00), depois do get_path.
+#
+# O B6a e o B4 exato com f_open(caminho,1), f_read de 10 B, f_close e free
+# na PreTask: "ID3" -> tipo 5 com o caminho (a view do B4 mostra "No data");
+# qualquer falha -> tipo 5 vazio. O B6b aloca um contexto de 0x2210 B, copia
+# o caminho para +0x110, chama o carrega_capa(0xDAA256) da RC7 e manda 8
+# mensagens tipo 6 de 1024 B; a view copia os pixels para ext+0x210+offset e
+# faz img_set_src(img, ext) no ultimo. Nenhuma funcao de arquivo sai da view.
+#
+# O `0xD0D818` devolve 0 em falha (ring cheio ou mensagem nula) e != 0 em
+# sucesso; o B6b testa `beq` para o caminho de falha. O `0xD0D881` (aviso
+# da view) e chamado depois do ultimo send de cada caminho, como a fabrica
+# faz em `0xD084D8`.
+#
+# PATCH (contra o B4; B6a: 2 pontos + o blob; B6b: 3 pontos + o blob):
+#     tipo     1 byte   0x0013223E: so no B6b, `cmp r3,#5` vira `cmp r3,#6`
+#     tbb      4 bytes  0x00132242: `b.w label_dispatch` (+0) -- NAO `bl`
+#     rajada  12 bytes  0x000FF0C4: `bl envia_path` (+0x200) + 4 `nop`
+#     codigo 1536 bytes 0x001AAA00: label_dispatch (+0) e envia_path (+0x200)
+#
+# O `b.w` e obrigatorio: o `label_process` comeca em `0xD32204` e empilha em
+# `0xD3220C`; o epilogo `0xD322A0` faz `pop {r4,r5,r6,pc}`. Um `bl` deixaria
+# o LR no topo da pilha e o `pop` sairia 4 B deslocado.
+#
+# A ferramenta NAO entra no MAPA: ela patcha dentro do lote que a RC7 ja
+# montou e no codigo da fabrica, e o `tests/test_rc7.py` (protegido, C2)
+# recusa um lote do MAPA que cruze o lote da RC7.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC7_DIAG_B6A = RELOAD_1_0_RC7_DIAG_B4 + [
+    ("fab_diag_b6.py", ["--em", "0x1a8000", "--degrau", "a"],
+     "diag B6a: abre o MP3 na PreTask e so olha o ID3"),
+]
+RELOAD_1_0_RC7_DIAG_B6B = RELOAD_1_0_RC7_DIAG_B4 + [
+    ("fab_diag_b6.py", ["--em", "0x1a8000", "--degrau", "b"],
+     "diag B6b: decodifica a capa na PreTask e manda pixels"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -749,6 +788,9 @@ RECEITAS = {
     # os degraus B5a/B5b da ficha 013 (diagnostico: nao entram na catraca)
     "reload_1.0_rc7_diag_b5a": RELOAD_1_0_RC7_DIAG_B5A,
     "reload_1.0_rc7_diag_b5b": RELOAD_1_0_RC7_DIAG_B5B,
+    # os degraus B6a/B6b da ficha 014 (diagnostico: nao entram na catraca)
+    "reload_1.0_rc7_diag_b6a": RELOAD_1_0_RC7_DIAG_B6A,
+    "reload_1.0_rc7_diag_b6b": RELOAD_1_0_RC7_DIAG_B6B,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
