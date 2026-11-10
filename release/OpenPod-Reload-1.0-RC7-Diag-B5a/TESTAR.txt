@@ -1,0 +1,27 @@
+OpenPod Reload 1.0 RC7 Diag B5a — TESTAR
+
+O que e: a B4 exata + o tipo 5 abrindo o MP3 na ViewTask. Este degrau
+NAO desenha capa: so faz f_open(caminho, leitura), le 10 bytes, f_close.
+Se o cabecalho comecar com "ID3" -> img_set_src(NULL) ("No data");
+qualquer falha -> cinza. Sem JPEG, sem carrega_capa, sem monitor.
+Base do kit: B4 (imagem 39bea488...; .up 16c4cf05...).
+Imagem carimbada 27718899... · .up CRC 0xEE60 · sha a2267f4f...
+Bytes contra o B4: 1428 bytes em 4 setores.
+
+INSTALAR (pelo cartao): copie OpenPod_OpenPodReload1.0RC7DiagB5a.up
+para a RAIZ do cartao como update.up; Config -> Atualizar por SD -> Sim;
+apague o update.up depois. (Musicas: tests/assets/rc7/01..07)
+
+ROTEIRO (marque um)
+  [ ] TOCA sem o quadrado cinza e mostra "No data" (ID3 lido)
+  [ ] TOCA com o quadrado cinza (sem ID3/caminho invalido/ausente)
+  [ ] Musica 06_sem_capa.mp3: toca; cinza ou "No data", sem travar
+  [ ] Musica 07_sem_tag.mp3: toca; cinza, sem travar
+  [ ] Trocar de faixa 01 -> 04 -> 02: sem reiniciar
+  [ ] Parar, sair e entrar na Tocando Agora 10 vezes: sem travar
+  [ ] CONGELA (a tela para, sem reiniciar)
+  [ ] REINICIA (sozinho) — quantos SEGUNDOS depois de dar play? ____
+  [ ] Config: Informacoes = "RC7 diag B5a"
+
+AVISOS: a B5a mantem o monitor da fabrica ligado; se o f_open travar, o
+watchdog reinicia. A volta de seguranca e a RC6. Nao e para uso normal.
