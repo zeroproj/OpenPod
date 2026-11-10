@@ -173,3 +173,14 @@ volta a fazer só o `set_text` da fábrica. **Não** há troca de `bl` nem
 - O texto exato do rótulo 2 (nome da faixa? pasta?) sem captura no aparelho.
 - Se a transitória “capa anterior até o tipo 5 chegar” é visível no aparelho
   (depende do tempo da fila; o emulador não roda a ViewTask).
+
+## Resultado do B4 no aparelho (decisor, 2026-11-10)
+
+- Ao dar play, a música **tocou normal**, sem congelar e sem reiniciar.
+- No lugar do quadrado cinza apareceu o texto **"No data"**.
+- Leitura (coordenação):
+  - **CONFIRMADO pelo patch:** no B4, só o tratamento do tipo 5 (`label_dispatch`) mexe na imagem depois de criada. A RC7 cria a imagem com o cinza `0xDA8000` (`0xDAA082`..`0xDAA092`), e o caminho inválido reaplica o mesmo cinza.
+  - Logo, a imagem só deixa de ser o cinza pelo ramo de sucesso: `img_set_src(img, NULL)` com caminho começando por `0:/` ou `0:\`.
+  - **PROVÁVEL:** o "No data" é o aviso do próprio LVGL 8 ao desenhar uma imagem sem fonte válida.
+  - Conclusão **PROVÁVEL forte:** a mensagem tipo 5 chegou à view com um caminho válido.
+- Pendentes no roteiro: troca de faixa 01 → 04 → 02 e sair/entrar 10 vezes.
