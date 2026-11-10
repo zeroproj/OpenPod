@@ -169,3 +169,14 @@ continua, agora em `+0x500`.
 - **Próximo:** o B5a separa as duas causas.
   - Se o B5a também travar, a causa é abrir o arquivo na ViewTask.
   - Se não travar, a causa está no decode.
+
+## Resultado do B5a no aparelho (decisor, 2026-11-10)
+
+- **Trava ao selecionar a música.** O B5a só faz `f_open` + `f_read` de 10 B + `f_close` no tratamento do tipo 5; não decodifica.
+- Conclusão (**PROVÁVEL forte**, junto com B/B2/B5b):
+  - **Abrir arquivo dentro do `label_process` na ViewTask trava**, com ou sem o banco. O `get_path` do B também faz `f_open`.
+  - A causa **não é** o mutex do banco nem o decode JPEG. Isso derruba a hipótese principal da Q2.
+  - A fábrica faz o `f_open` do `get_path` na PreTask (rajada) sem travar.
+- **Próximo:** tirar todo acesso a arquivo da ViewTask.
+  - Ler e decodificar a capa fora dela, na PreTask ou em outra tarefa da fábrica.
+  - Entregar só os pixels prontos à view, com dono claro do buffer.
