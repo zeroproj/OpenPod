@@ -156,3 +156,11 @@ continua, agora em `+0x500`.
   decode; se o B5a também falhar, o problema não é o decode.
 - **Em todos os casos:** trocar de faixa, parar, sair e entrar têm de
   continuar normais; o monitor tem de voltar em todos os caminhos.
+
+## Resultado do B5b no aparelho (decisor, 2026-11-10)
+
+- **Trava:** ao dar play, a tela do player **abre e fica travada**.
+- Leitura (coordenação): **HIPÓTESE**. A trava acontece dentro do tratamento do tipo 5, no `f_open` ou no decode, com o monitor da ViewTask desligado.
+- **Próximo:** o B5a separa as duas causas.
+  - Se o B5a também travar, a causa é abrir o arquivo na ViewTask.
+  - Se não travar, a causa está no decode.
