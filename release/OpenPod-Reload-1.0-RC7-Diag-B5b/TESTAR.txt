@@ -5,7 +5,8 @@ na ViewTask, com o monitor da ViewTask desligado durante o trabalho e
 religado em todos os caminhos. Mesmo caminho do ultimo -> nao faz nada
 (ext+0x10). Sucesso -> img_set_src(img, ext); falha/progressiva/PNG/
 pequena -> cinza. Arquivo fechado e tudo liberado.
-Base do kit: B4 (imagem 39bea488...; .up 16c4cf05...).
+Base do kit: ORIGINAL de fabrica (FIRM e2a7b863...), como os kits
+anteriores. A imagem-alvo parte do B4 (39bea488...).
 Imagem carimbada 4056ed15... · .up CRC 0x8C2F · sha 96e28bcf...
 Bytes contra o B4: 1356 bytes em 5 setores.
 

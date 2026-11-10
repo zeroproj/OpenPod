@@ -4,7 +4,7 @@
 #
 # OpenPod OpenPod Reload 1.0 RC7 Diag B5a
 #
-# Grava 4 setores de 4096 B (16 KiB). O bootloader (0x0..0xD000)
+# Grava 28 setores de 4096 B (112 KiB). O bootloader (0x0..0xD000)
 # nao e endereçado. write_flash sempre com 0 no 2o argumento, a
 # partir de um arquivo por setor (docs/WRITE_FLASH_SEMANTICS.md).
 #
@@ -37,9 +37,33 @@ die() {
         log "$(m ja_gravou) $WROTE $(m ja_gravou2)"
         log "$(m reversao)"
         log "***   (de dentro de $DADOS)"
+        log "***   sudo $TOOL --id $DEV write_flash 0x48000 0 0x1000 base_48000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x53000 0 0x1000 base_53000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0xC7000 0 0x1000 base_C7000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0xCC000 0 0x1000 base_CC000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0xCD000 0 0x1000 base_CD000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0xCE000 0 0x1000 base_CE000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0xCF000 0 0x1000 base_CF000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0xD0000 0 0x1000 base_D0000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0xD1000 0 0x1000 base_D1000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0xD2000 0 0x1000 base_D2000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0xD3000 0 0x1000 base_D3000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0xFF000 0 0x1000 base_FF000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x109000 0 0x1000 base_109000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x10A000 0 0x1000 base_10A000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x121000 0 0x1000 base_121000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x122000 0 0x1000 base_122000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x12E000 0 0x1000 base_12E000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x131000 0 0x1000 base_131000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x132000 0 0x1000 base_132000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x156000 0 0x1000 base_156000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x1A3000 0 0x1000 base_1A3000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x1A4000 0 0x1000 base_1A4000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x1A5000 0 0x1000 base_1A5000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x1A6000 0 0x1000 base_1A6000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x1A7000 0 0x1000 base_1A7000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x1A8000 0 0x1000 base_1A8000.bin"
+        log "***   sudo $TOOL --id $DEV write_flash 0x1A9000 0 0x1000 base_1A9000.bin"
         log "***   sudo $TOOL --id $DEV write_flash 0x1AA000 0 0x1000 base_1AA000.bin"
         log "$(m diag)"
     else
@@ -207,10 +231,34 @@ m() {
 # --------------------------------------------------------------------------
 
 log "======================================================================"
-log "$(m hdr) OPENPOD_OPENPODRELOAD1.0RC7DIAGB5A   (4 $(m setores), 16 KiB)"
+log "$(m hdr) OPENPOD_OPENPODRELOAD1.0RC7DIAGB5A   (28 $(m setores), 112 KiB)"
+log " 0x048000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_48000.bin"
+log " 0x053000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_53000.bin"
+log " 0x0C7000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_C7000.bin"
+log " 0x0CC000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_CC000.bin"
+log " 0x0CD000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_CD000.bin"
+log " 0x0CE000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_CE000.bin"
+log " 0x0CF000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_CF000.bin"
+log " 0x0D0000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_D0000.bin"
+log " 0x0D1000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_D1000.bin"
+log " 0x0D2000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_D2000.bin"
+log " 0x0D3000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_D3000.bin"
 log " 0x0FF000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_FF000.bin"
+log " 0x109000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_109000.bin"
 log " 0x10A000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_10A000.bin"
+log " 0x121000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_121000.bin"
+log " 0x122000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_122000.bin"
+log " 0x12E000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_12E000.bin"
+log " 0x131000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_131000.bin"
+log " 0x132000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_132000.bin"
+log " 0x156000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_156000.bin"
+log " 0x1A3000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_1A3000.bin"
 log " 0x1A4000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_1A4000.bin"
+log " 0x1A5000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_1A5000.bin"
+log " 0x1A6000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_1A6000.bin"
+log " 0x1A7000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_1A7000.bin"
+log " 0x1A8000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_1A8000.bin"
+log " 0x1A9000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_1A9000.bin"
 log " 0x1AA000 +0x1000   <- OpenPod_OpenPodReload1.0RC7DiagB5a_1AA000.bin"
 log "$(m boot_na)"
 log "======================================================================"
@@ -231,14 +279,62 @@ ck_file() {
     $(m obtido) $g"
     log "        OK   $1"
 }
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_48000.bin" 686de926ce218ab8654f0a1565ab4206a787e18de8951edeef859c6ce6f3abda
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_53000.bin" 375f0cd07c44dbdcce0851620088623eb65d3838b25cd03b2726df5e5433a4de
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_C7000.bin" f678974cafcb27f9b636e9713360e6f34a9d03f1b6082f3de9897e1513f3a421
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_CC000.bin" ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_CD000.bin" d0c5465d70e6235fa28a635d78a052866a4cb88715d490652196225e4dd9d463
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_CE000.bin" 09d0c2e38fd6444a74e5c81a9c0128258e0ca7c844791482060d7198cb480d9e
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_CF000.bin" f43003839101eec5f795415ed777e13f98a0c064a0e7fab105e794e6c7bf7a6a
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_D0000.bin" dbfdb7cc759998de66d982f46deeaf1c620bc30e76cfc7d121e3691b2a3187e6
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_D1000.bin" e2fb141bed6667eda01dc0643d2596b7d49864926e61bc1d326b7542dbbb7415
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_D2000.bin" 8aea4c36ba5f9cdf27c088842264167c543dae1a23a173f92904c158a74d8bbd
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_D3000.bin" 9e242a69a939a614a750587d1e62df82126d0068ab6b6a72d76deca52a0639b3
 ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_FF000.bin" 43a5058b2539d0b3752f2390a485e3fa6f8c2fb700cdca71c1839fde9a5ab4a2
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
 ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_10A000.bin" 8c35d232644fbcec0e57519558b61e1d3f0a7b0d269bbadde0c4eae6ba5316d3
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_121000.bin" ba21f47d4ae0797174245e1bd9fb837afdfd8619184d01b4d1553116e3daed1e
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_122000.bin" f1a868b530c26ea9b1c55b95e453cd32d6d8c97101f944ba367273c1beb214fe
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_12E000.bin" 9fa129ccd988f4c2a6a962867782b42305e82bc5610b8111f312b5779d9297cb
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_131000.bin" 030d3b7bce7cd133207ce440fc1dc7f3137bdab0cc62e4fe7a1a746434ff579e
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_132000.bin" 8e53b1c5dd6b993d9052c3ee04b4a4c1fa543f5676d507c7ea7b8ffa63977942
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_156000.bin" 09ea275aa3916096700af353b3a9b51b3f51ab9fcad3a8ee616a504bae18d60d
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_1A3000.bin" af75be67379e86296b217b520d2ef959fcfaff0bbe6aae9f712e4422452ab683
 ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_1A4000.bin" 030dcec967b7bff3b6a1bff24815b78ee780b02f91d8eb02da753d4a8bb2f3df
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_1A5000.bin" 635b023a309245579152502c2e06268e963f0f2158bcd6f41838bf3d9d81760c
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_1A6000.bin" 25d6784a3323dc277f51e9bcff59c53121c11c743f2be8e68cc398f1921c4dcc
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_1A7000.bin" 142b9638e43a185341ae27973131aa4bc2cf998c5d16defb8852bd1ba5fe0b02
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_1A8000.bin" 380953cff47806c257df31a7599300111b386cbc098fd69c42e16001448d0544
+ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_1A9000.bin" 5153d4d74d7f85164aa63adfebcc3e37e858724cd29f5862ea42b685c6850342
 ck_file "OpenPod_OpenPodReload1.0RC7DiagB5a_1AA000.bin" f368c350209e050de2fde920fbe2552583c0758a1dac255b16b32b14a8614602
-ck_file "base_FF000.bin" 2b44bef648c5f8fcc08072cc529a8002cf37b11c3ce5ce8e88e1b2a24ed6d820
+ck_file "base_48000.bin" cd43df9cf6f193ab32cd4c0963555f95e95e7ecb02b836bc720c2d1873dcbc01
+ck_file "base_53000.bin" 5decc107dd674f7b6bdd34436f9a7e9b68900c61a7552df7a24be1f7f85bf4c5
+ck_file "base_C7000.bin" ae29fc778567f832164a237fd2f523dd6eedb4eefad4c7d843676d63931039b4
+ck_file "base_CC000.bin" 83597203bed419cc2f76f1b8c942194d07a4b23c34f67e2e7834864361dd6688
+ck_file "base_CD000.bin" ab039386aa645f414a0580730cc4b62ca7831c9d4d8dff7b01c80f9b7be16f5f
+ck_file "base_CE000.bin" f46bdf8b56e3b463e8461ea5b35bfae201cafda178ac8296a5c2d8bc19cbf175
+ck_file "base_CF000.bin" cb87b8bb4828c63b87c36788f17d54049cf1b4c21e5757e0204a5e693fecf683
+ck_file "base_D0000.bin" 0d7deca9d471b627b9eaede3872d233da2b9b643006476fe654f3d504713a8cf
+ck_file "base_D1000.bin" 0d7ab5dc9d9ad6d369103ebd1db42c77e31d4969bece99fdb25943bd1df1db41
+ck_file "base_D2000.bin" a0e9f30c578c5f06f9d0428b53eb181e1097ad5a6342f3837e4f6646c0a1f3fe
+ck_file "base_D3000.bin" b53d3f48030da1ab150ad3d52b4a21771ce6ae766d1750d589fa4d811a12fe3b
+ck_file "base_FF000.bin" f4cce2c7eb1bab2ded6433ce9f925810f29c4d62778c1a2c744d6a6afc5683fd
+ck_file "base_109000.bin" 40e5a7786b3a7c82c786da0effb5036c6da0c234462dfaa5c435581cf5f03411
 ck_file "base_10A000.bin" ad962e28861a9a9914ef70e26cfc50283fa51daee636051a4907db930839dd6a
+ck_file "base_121000.bin" dbea2b9d18646cad64d3a5ea402a2a633bb0c4036fca689ad997ecb2545ba9ac
+ck_file "base_122000.bin" dc3b6a4a0150763564474047400cebac7b4e331820901505eacf3644083c7c48
+ck_file "base_12E000.bin" e135e686ad0de20f085fc204494b51873731b520ad24930487896b63b29109cc
+ck_file "base_131000.bin" 93a71390d6fc97d25914e309237068a629084dd7ecece96a005469c1720e465c
+ck_file "base_132000.bin" fa5a5bba47c3517b8aabda238496f2a9b0f407516f89d96f4f4fbf07f2203536
+ck_file "base_156000.bin" b1791e9f5e5a62402d93ada9f3174129843ed8af22b7d23904d5cd472e9b43c5
+ck_file "base_1A3000.bin" 6f4ef0b382a9fa4d2792e8446613308544b251e2d512ea1b5d3b83ce8f1d10e4
 ck_file "base_1A4000.bin" f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
-ck_file "base_1AA000.bin" f40bc113d430a60cab21a0dc82e159566e2598442c3cbc74788912749b7be0ce
+ck_file "base_1A5000.bin" f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
+ck_file "base_1A6000.bin" f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
+ck_file "base_1A7000.bin" f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
+ck_file "base_1A8000.bin" f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
+ck_file "base_1A9000.bin" f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
+ck_file "base_1AA000.bin" f47a8ec3e9aff2318d896942282ad4fe37d6391c82914f54a5da8a37de1300c6
 
 log "$(m p2)"
 # --- espera ativa pelo aparelho ---------------------------------
@@ -321,14 +417,14 @@ ck() {
 }
 ck "bootloader" 0 51532 861184003923634be0f2ae9883456035b40d1ea72f97682890238edfae3acb31
 ck "ptable" 53248 64 9f93d4435e7cb819b2dad2f38edf91fb0a0af44654c4d9fcd3df174bf3380a2d
-ck "FIRM" 57344 1647984 cd26e3a3bc999a9b308166d52edc05cf395e9fc4c4314011539e7fde4546827e
+ck "FIRM" 57344 1647984 e2a7b86339030b94268dac7d562a167613a3e769c866790353b4921cad85dbdc
 ck "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3f8b4ace
 [ "$F" -eq 0 ] || die "$(m estado_err)"
 
 log ""
 log "======================================================================"
 log "$(m conf1)"
-log "$(m escreve) 16 KiB / 4 $(m setores)"
+log "$(m escreve) 112 KiB / 28 $(m setores)"
 log "$(m muda) OpenPod OpenPod Reload 1.0 RC7 Diag B5a"
 log "$(m conf4)"
 log "======================================================================"
@@ -352,10 +448,34 @@ wr() {
     $(m obtido) $g"
     log "        $(m setor_ok)"
 }
-wr "4/6 1/4" 0xFF000 "OpenPod_OpenPodReload1.0RC7DiagB5a_FF000.bin" 43a5058b2539d0b3752f2390a485e3fa6f8c2fb700cdca71c1839fde9a5ab4a2
-wr "4/6 2/4" 0x10A000 "OpenPod_OpenPodReload1.0RC7DiagB5a_10A000.bin" 8c35d232644fbcec0e57519558b61e1d3f0a7b0d269bbadde0c4eae6ba5316d3
-wr "4/6 3/4" 0x1A4000 "OpenPod_OpenPodReload1.0RC7DiagB5a_1A4000.bin" 030dcec967b7bff3b6a1bff24815b78ee780b02f91d8eb02da753d4a8bb2f3df
-wr "4/6 4/4" 0x1AA000 "OpenPod_OpenPodReload1.0RC7DiagB5a_1AA000.bin" f368c350209e050de2fde920fbe2552583c0758a1dac255b16b32b14a8614602
+wr "4/6 1/28" 0x48000 "OpenPod_OpenPodReload1.0RC7DiagB5a_48000.bin" 686de926ce218ab8654f0a1565ab4206a787e18de8951edeef859c6ce6f3abda
+wr "4/6 2/28" 0x53000 "OpenPod_OpenPodReload1.0RC7DiagB5a_53000.bin" 375f0cd07c44dbdcce0851620088623eb65d3838b25cd03b2726df5e5433a4de
+wr "4/6 3/28" 0xC7000 "OpenPod_OpenPodReload1.0RC7DiagB5a_C7000.bin" f678974cafcb27f9b636e9713360e6f34a9d03f1b6082f3de9897e1513f3a421
+wr "4/6 4/28" 0xCC000 "OpenPod_OpenPodReload1.0RC7DiagB5a_CC000.bin" ef8ffb2966867c44f8a87315ad7469a97018d0b7367ce864c19ffa102a8ba165
+wr "4/6 5/28" 0xCD000 "OpenPod_OpenPodReload1.0RC7DiagB5a_CD000.bin" d0c5465d70e6235fa28a635d78a052866a4cb88715d490652196225e4dd9d463
+wr "4/6 6/28" 0xCE000 "OpenPod_OpenPodReload1.0RC7DiagB5a_CE000.bin" 09d0c2e38fd6444a74e5c81a9c0128258e0ca7c844791482060d7198cb480d9e
+wr "4/6 7/28" 0xCF000 "OpenPod_OpenPodReload1.0RC7DiagB5a_CF000.bin" f43003839101eec5f795415ed777e13f98a0c064a0e7fab105e794e6c7bf7a6a
+wr "4/6 8/28" 0xD0000 "OpenPod_OpenPodReload1.0RC7DiagB5a_D0000.bin" dbfdb7cc759998de66d982f46deeaf1c620bc30e76cfc7d121e3691b2a3187e6
+wr "4/6 9/28" 0xD1000 "OpenPod_OpenPodReload1.0RC7DiagB5a_D1000.bin" e2fb141bed6667eda01dc0643d2596b7d49864926e61bc1d326b7542dbbb7415
+wr "4/6 10/28" 0xD2000 "OpenPod_OpenPodReload1.0RC7DiagB5a_D2000.bin" 8aea4c36ba5f9cdf27c088842264167c543dae1a23a173f92904c158a74d8bbd
+wr "4/6 11/28" 0xD3000 "OpenPod_OpenPodReload1.0RC7DiagB5a_D3000.bin" 9e242a69a939a614a750587d1e62df82126d0068ab6b6a72d76deca52a0639b3
+wr "4/6 12/28" 0xFF000 "OpenPod_OpenPodReload1.0RC7DiagB5a_FF000.bin" 43a5058b2539d0b3752f2390a485e3fa6f8c2fb700cdca71c1839fde9a5ab4a2
+wr "4/6 13/28" 0x109000 "OpenPod_OpenPodReload1.0RC7DiagB5a_109000.bin" 3bc16bacee418a50f79df0aa7c3f5604241fc55f126ee8d7bec7d802849312c2
+wr "4/6 14/28" 0x10A000 "OpenPod_OpenPodReload1.0RC7DiagB5a_10A000.bin" 8c35d232644fbcec0e57519558b61e1d3f0a7b0d269bbadde0c4eae6ba5316d3
+wr "4/6 15/28" 0x121000 "OpenPod_OpenPodReload1.0RC7DiagB5a_121000.bin" ba21f47d4ae0797174245e1bd9fb837afdfd8619184d01b4d1553116e3daed1e
+wr "4/6 16/28" 0x122000 "OpenPod_OpenPodReload1.0RC7DiagB5a_122000.bin" f1a868b530c26ea9b1c55b95e453cd32d6d8c97101f944ba367273c1beb214fe
+wr "4/6 17/28" 0x12E000 "OpenPod_OpenPodReload1.0RC7DiagB5a_12E000.bin" 9fa129ccd988f4c2a6a962867782b42305e82bc5610b8111f312b5779d9297cb
+wr "4/6 18/28" 0x131000 "OpenPod_OpenPodReload1.0RC7DiagB5a_131000.bin" 030d3b7bce7cd133207ce440fc1dc7f3137bdab0cc62e4fe7a1a746434ff579e
+wr "4/6 19/28" 0x132000 "OpenPod_OpenPodReload1.0RC7DiagB5a_132000.bin" 8e53b1c5dd6b993d9052c3ee04b4a4c1fa543f5676d507c7ea7b8ffa63977942
+wr "4/6 20/28" 0x156000 "OpenPod_OpenPodReload1.0RC7DiagB5a_156000.bin" 09ea275aa3916096700af353b3a9b51b3f51ab9fcad3a8ee616a504bae18d60d
+wr "4/6 21/28" 0x1A3000 "OpenPod_OpenPodReload1.0RC7DiagB5a_1A3000.bin" af75be67379e86296b217b520d2ef959fcfaff0bbe6aae9f712e4422452ab683
+wr "4/6 22/28" 0x1A4000 "OpenPod_OpenPodReload1.0RC7DiagB5a_1A4000.bin" 030dcec967b7bff3b6a1bff24815b78ee780b02f91d8eb02da753d4a8bb2f3df
+wr "4/6 23/28" 0x1A5000 "OpenPod_OpenPodReload1.0RC7DiagB5a_1A5000.bin" 635b023a309245579152502c2e06268e963f0f2158bcd6f41838bf3d9d81760c
+wr "4/6 24/28" 0x1A6000 "OpenPod_OpenPodReload1.0RC7DiagB5a_1A6000.bin" 25d6784a3323dc277f51e9bcff59c53121c11c743f2be8e68cc398f1921c4dcc
+wr "4/6 25/28" 0x1A7000 "OpenPod_OpenPodReload1.0RC7DiagB5a_1A7000.bin" 142b9638e43a185341ae27973131aa4bc2cf998c5d16defb8852bd1ba5fe0b02
+wr "4/6 26/28" 0x1A8000 "OpenPod_OpenPodReload1.0RC7DiagB5a_1A8000.bin" 380953cff47806c257df31a7599300111b386cbc098fd69c42e16001448d0544
+wr "4/6 27/28" 0x1A9000 "OpenPod_OpenPodReload1.0RC7DiagB5a_1A9000.bin" 5153d4d74d7f85164aa63adfebcc3e37e858724cd29f5862ea42b685c6850342
+wr "4/6 28/28" 0x1AA000 "OpenPod_OpenPodReload1.0RC7DiagB5a_1AA000.bin" f368c350209e050de2fde920fbe2552583c0758a1dac255b16b32b14a8614602
 rm -f "$WORK/sec.bin"
 
 log "$(m p5)"
@@ -383,9 +503,33 @@ else
     log " [6/6] $(m res_err)"
     log ""
     log "$(m nao_desligue)"
+    log "     sudo $TOOL --id $DEV write_flash 0x48000 0 0x1000 base_48000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x53000 0 0x1000 base_53000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0xC7000 0 0x1000 base_C7000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0xCC000 0 0x1000 base_CC000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0xCD000 0 0x1000 base_CD000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0xCE000 0 0x1000 base_CE000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0xCF000 0 0x1000 base_CF000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0xD0000 0 0x1000 base_D0000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0xD1000 0 0x1000 base_D1000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0xD2000 0 0x1000 base_D2000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0xD3000 0 0x1000 base_D3000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0xFF000 0 0x1000 base_FF000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x109000 0 0x1000 base_109000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x10A000 0 0x1000 base_10A000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x121000 0 0x1000 base_121000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x122000 0 0x1000 base_122000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x12E000 0 0x1000 base_12E000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x131000 0 0x1000 base_131000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x132000 0 0x1000 base_132000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x156000 0 0x1000 base_156000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x1A3000 0 0x1000 base_1A3000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x1A4000 0 0x1000 base_1A4000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x1A5000 0 0x1000 base_1A5000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x1A6000 0 0x1000 base_1A6000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x1A7000 0 0x1000 base_1A7000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x1A8000 0 0x1000 base_1A8000.bin"
+    log "     sudo $TOOL --id $DEV write_flash 0x1A9000 0 0x1000 base_1A9000.bin"
     log "     sudo $TOOL --id $DEV write_flash 0x1AA000 0 0x1000 base_1AA000.bin"
 fi
 log "======================================================================"

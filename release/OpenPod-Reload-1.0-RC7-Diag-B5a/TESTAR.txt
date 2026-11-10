@@ -4,7 +4,8 @@ O que e: a B4 exata + o tipo 5 abrindo o MP3 na ViewTask. Este degrau
 NAO desenha capa: so faz f_open(caminho, leitura), le 10 bytes, f_close.
 Se o cabecalho comecar com "ID3" -> img_set_src(NULL) ("No data");
 qualquer falha -> cinza. Sem JPEG, sem carrega_capa, sem monitor.
-Base do kit: B4 (imagem 39bea488...; .up 16c4cf05...).
+Base do kit: ORIGINAL de fabrica (FIRM e2a7b863...), como os kits
+anteriores. A imagem-alvo parte do B4 (39bea488...).
 Imagem carimbada 27718899... · .up CRC 0xEE60 · sha a2267f4f...
 Bytes contra o B4: 1428 bytes em 4 setores.
 
