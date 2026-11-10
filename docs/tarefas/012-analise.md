@@ -183,4 +183,4 @@ volta a fazer só o `set_text` da fábrica. **Não** há troca de `bl` nem
   - Logo, a imagem só deixa de ser o cinza pelo ramo de sucesso: `img_set_src(img, NULL)` com caminho começando por `0:/` ou `0:\`.
   - **PROVÁVEL:** o "No data" é o aviso do próprio LVGL 8 ao desenhar uma imagem sem fonte válida.
   - Conclusão **PROVÁVEL forte:** a mensagem tipo 5 chegou à view com um caminho válido.
-- Pendentes no roteiro: troca de faixa 01 → 04 → 02 e sair/entrar 10 vezes.
+- Roteiro completo (decisor): trocou de faixa, parou a música, saiu e entrou: **tudo normal**, sem travar nem reiniciar.
