@@ -53,6 +53,7 @@ import diag_trava_asm as G  # noqa: E402
 import fab_diag_trava as F  # noqa: E402
 import fab_diag_b3 as F3  # noqa: E402
 import fab_diag_b4 as F4  # noqa: E402
+import fab_diag_b5 as F5  # noqa: E402
 import emu_rc7 as E  # noqa: E402
 
 SHA_RC7 = ("3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab6456"
@@ -1117,7 +1118,7 @@ class B4(Base):
         m.falsas[0x00D322A0] = self._epilogo
         return m, view
 
-    def tipo5(self, m, view, path, texto=True):
+    def tipo5(self, m, view, path, texto=True, alvo=None):
         ext = m.le32(view + 0x30)
         msg = m.aloca(0x414, registra=False)
         m.escreve(msg, b"\0" * 0x414)
@@ -1131,7 +1132,7 @@ class B4(Base):
         n0 = len(m.chamadas)
         salvos = [msg, view, msg + 0x14 if texto else 0]
         salvos += [0x11110000 + i for i in range(5)]
-        m.chama(self.BLOB_XIP, (0, 0, 0, 5), salvos=salvos)
+        m.chama(alvo or self.BLOB_XIP, (0, 0, 0, 5), salvos=salvos)
         return ext, m.chamadas[n0:]
 
     def titulo(self, m, view, texto=b"TIT"):
@@ -1461,6 +1462,392 @@ class Comportamento(Base):
         self.assertEqual(nomes.count("f_open"), 0)
         srcs = [c[2] for c in novas if c[0] == "img_set_src"]
         self.assertEqual(set(srcs), {PH_DSC})
+
+
+class B5(Base):
+    r"""Os degraus B5a/B5b da ficha 013 (abrir a capa no tipo 5).
+
+    O B5a abre o MP3 e le 10 bytes: "ID3" -> img_set_src(img, NULL); qualquer
+    falha -> cinza. O B5b compara o caminho com ext+0x10, desliga o monitor
+    da ViewTask, chama carrega_capa(ext), religa e, no sucesso, faz
+    img_set_src(img, ext). O envia_path do B4 continua, agora em +0x500."""
+
+    RECEITA_A = "reload_1.0_rc7_diag_b5a"
+    RECEITA_B = "reload_1.0_rc7_diag_b5b"
+    BLOB = 0x1AAA00
+    BLOB_XIP = 0x00DAAA00
+    BLOB_B = 0x1AAC00
+    BLOB_B_XIP = 0x00DAAC00
+    BLOB_ENVIA = 0x1AAF00
+    BLOB_ENVIA_XIP = 0x00DAAF00
+    BLOB_MAX = 0x600
+    P_BURST = 0x0FF0C4
+    P_TYPE = 0x13223E
+    P_TBB = 0x132242
+    P_TITULO = 0x1AA0FE
+    P_CARREGA = 0x1AA188
+    TITULO_EPILOGO = 0x00DAA1D0
+    CARREGA = 0x00DAA256
+    GET_TASK = 0x00D6AE38
+    UNREG = 0x00D46ACC
+    REG = 0x00D46A20
+    PH_DSC = 0x00DA8000
+
+    aparelho = B4.aparelho
+    tipo5 = B4.tipo5
+    titulo = B4.titulo
+    xip_rom = B4.xip_rom
+    _epilogo = staticmethod(B4._epilogo)
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        p4 = os.path.join(cls.tmp, "b4.bin")
+        rc4, log4 = constroi("reload_1.0_rc7_diag_b4", p4)
+        cls.b4_rc, cls.b4_log = rc4, log4
+        cls.b4 = le(p4) if os.path.exists(p4) else b""
+        cls.blob_a = F5.monta_blob("a")
+        cls.blob_b = F5.monta_blob("b")
+        p5a = os.path.join(cls.tmp, "b5a.bin")
+        rc5a, log5a = constroi(cls.RECEITA_A, p5a)
+        cls.b5a_rc, cls.b5a_log = rc5a, log5a
+        cls.b5a = le(p5a) if os.path.exists(p5a) else b""
+        p5b = os.path.join(cls.tmp, "b5b.bin")
+        rc5b, log5b = constroi(cls.RECEITA_B, p5b)
+        cls.b5b_rc, cls.b5b_log = rc5b, log5b
+        cls.b5b = le(p5b) if os.path.exists(p5b) else b""
+
+    def roda(self, entrada, degrau, extra=()):
+        tmp = tempfile.mkdtemp(prefix="openpod_diag013x_")
+        src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
+        with open(src, "wb") as f:
+            f.write(entrada)
+        r = subprocess.run([sys.executable,
+                            os.path.join(RAIZ, "tools/fab_diag_b5.py"),
+                            "--in", src, "--out", dst, "--degrau", degrau]
+                           + list(extra),
+                           capture_output=True, text=True, cwd=RAIZ)
+        return r.returncode, os.path.exists(dst), le(src) == entrada
+
+    def monitor(self, m, get_ret=0x12345678, unreg_ret=1):
+        from unicorn.arm_const import UC_ARM_REG_R0
+
+        def get(mq):
+            m.chamadas.append(("get_task", mq.r(UC_ARM_REG_R0)))
+            return get_ret
+
+        def unreg(mq):
+            m.chamadas.append(("unreg", mq.r(UC_ARM_REG_R0)))
+            return unreg_ret
+
+        def reg(mq):
+            m.chamadas.append(("reg", mq.r(UC_ARM_REG_R0)))
+            return 1
+
+        m.falsas[self.GET_TASK] = get
+        m.falsas[self.UNREG] = unreg
+        m.falsas[self.REG] = reg
+
+    def ativo(self, nome):
+        with open(os.path.join(ATIVOS, nome), "rb") as f:
+            return f.read()
+
+    def test_80_b5_construida(self):
+        self.assertEqual(self.b5a_rc, 0, self.b5a_log[-2000:])
+        self.assertEqual(self.b5b_rc, 0, self.b5b_log[-2000:])
+        self.assertEqual(len(self.b5a), 0x200000)
+        self.assertEqual(len(self.b5b), 0x200000)
+        self.assertEqual(self.b5a[self.P_TYPE:self.P_TYPE + 2], b"\x05\x2b")
+        self.assertEqual(self.b5b[self.P_TYPE:self.P_TYPE + 2], b"\x05\x2b")
+
+    def test_81_reprodutivel(self):
+        tmp = tempfile.mkdtemp(prefix="openpod_diag013r_")
+        for receita in (self.RECEITA_A, self.RECEITA_B):
+            shas = []
+            for i in range(2):
+                p = os.path.join(tmp, f"{receita}{i}.bin")
+                rc, log = constroi(receita, p)
+                self.assertEqual(rc, 0, log[-1500:])
+                shas.append(sha(le(p)))
+            self.assertEqual(shas[0], shas[1], receita)
+
+    def test_82_diff_exato(self):
+        for nome, img, alvo in (("a", self.b5a, self.BLOB_XIP),
+                                ("b", self.b5b, self.BLOB_B_XIP)):
+            dif = [i for i in range(len(img)) if img[i] != self.b4[i]]
+            regioes = [(self.P_TBB, 4), (self.P_BURST, 12),
+                       (self.BLOB, self.BLOB_MAX)]
+            for i in dif:
+                self.assertTrue(any(o <= i < o + t for o, t in regioes),
+                                f"B5{nome}: byte fora do patch: 0x{i:06X}")
+                self.assertGreaterEqual(i, 0x00E000)
+                self.assertFalse(0xD000 <= i < 0xE000)
+                self.assertLess(i, 0x1FC000)
+            self.assertEqual(img[self.P_TYPE:self.P_TYPE + 2], b"\x05\x2b")
+            self.assertEqual(img[self.P_TITULO:self.P_TITULO + 4],
+                             self.b4[self.P_TITULO:self.P_TITULO + 4])
+            self.assertEqual(img[self.P_CARREGA:self.P_CARREGA + 4],
+                             self.b4[self.P_CARREGA:self.P_CARREGA + 4])
+            self.assertEqual(desvio(img, self.P_TBB), alvo)
+            self.assertEqual(desvio(img, self.P_BURST), self.BLOB_ENVIA_XIP)
+            self.assertEqual(img[self.P_BURST + 4:self.P_BURST + 12],
+                             b"\x00\xbf" * 4)
+
+    def test_83_decodificacao(self):
+        self.assertEqual(self.b5a[self.BLOB:self.BLOB + 2], b"\x05\x2b")
+        self.assertEqual(self.b5b[self.BLOB + 0x200:self.BLOB + 0x202],
+                         b"\x05\x2b")
+        for img in (self.b5a, self.b5b):
+            self.assertEqual(img[self.BLOB_ENVIA:self.BLOB_ENVIA + 4],
+                             b"\x2d\xe9\xf0\x41")
+            self.assertEqual(desvio(img, self.P_BURST), self.BLOB_ENVIA_XIP)
+        self.assertEqual(self.b5a[self.BLOB + 0x200:self.BLOB + 0x500],
+                         b"\x00" * 0x300)
+        self.assertEqual(self.b5b[self.BLOB:self.BLOB + 0x200],
+                         b"\x00" * 0x200)
+
+    def test_84_recusas(self):
+        for nome, entrada in (("rc7", self.rc7), ("b5a", self.b5a)):
+            rc, criou, intacta = self.roda(entrada, "a", ["--em", "0x1a8000"])
+            self.assertNotEqual(rc, 0, nome)
+            self.assertFalse(criou, nome)
+            self.assertTrue(intacta, nome)
+        rc, criou, intacta = self.roda(self.b4, "a", ["--em", "0x1A9000"])
+        self.assertNotEqual(rc, 0)
+        self.assertFalse(criou)
+        self.assertTrue(intacta)
+        rc, criou, intacta = self.roda(self.b4, "a", ["--dry-run"])
+        self.assertEqual((rc, criou), (0, False))
+        self.assertTrue(intacta)
+        rc, criou, intacta = self.roda(self.b4, "c")
+        self.assertNotEqual(rc, 0)
+        self.assertFalse(criou)
+        self.assertTrue(intacta)
+        for tipo in ("mesmo", "symlink", "hardlink"):
+            tmp = tempfile.mkdtemp(prefix="openpod_diag013l_")
+            src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
+            with open(src, "wb") as f:
+                f.write(self.b4)
+            if tipo == "mesmo":
+                dst = src
+            else:
+                (os.symlink if tipo == "symlink" else os.link)(src, dst)
+            r = subprocess.run([sys.executable,
+                                os.path.join(RAIZ, "tools/fab_diag_b5.py"),
+                                "--in", src, "--out", dst, "--degrau", "a"],
+                               capture_output=True, cwd=RAIZ)
+            self.assertNotEqual(r.returncode, 0, tipo)
+            self.assertEqual(le(src), self.b4, tipo)
+
+    def test_85_premissas(self):
+        self.assertEqual(F5.confere_premissas(bytearray(self.b4),
+                                              self.blob_a, "a"), [])
+        self.assertEqual(F5.confere_premissas(bytearray(self.b4),
+                                              self.blob_b, "b"), [])
+        for outra in (self.rc7, self.b5a):
+            self.assertTrue(F5.confere_premissas(bytearray(outra),
+                                                 self.blob_a, "a"))
+        for off in (self.P_TBB, self.P_BURST, self.P_TYPE,
+                    self.P_TITULO, self.P_CARREGA):
+            d = bytearray(self.b4)
+            d[off] ^= 0x01
+            self.assertTrue(F5.confere_premissas(d, self.blob_a, "a"), hex(off))
+        d = bytearray(self.b4)
+        d[self.BLOB + 0x2D9] ^= 0xFF
+        self.assertTrue(any("virgem" in e
+                            for e in F5.confere_premissas(d, self.blob_a, "a")))
+        d = bytearray(self.b4)
+        d[self.BLOB] ^= 0xFF
+        self.assertTrue(F5.confere_premissas(d, self.blob_a, "a"))
+
+    def test_86_emulacao_b5a(self):
+        m, view = self.aparelho(self.b5a)
+        m.arquivos[b"0:/A/B.mp3"] = b"ID3\x04\x00\x00\x00\x00\x00\x00"
+        m.arquivos[b"0:/A/C.mp3"] = b"RIFF\x00\x00\x00\x00\x00\x00"
+        for path, src, nomes in (
+                (b"0:/A/B.mp3", 0,
+                 ["calloc", "f_open", "f_read", "f_close", "free",
+                  "img_set_src"]),
+                (b"0:/A/C.mp3", self.PH_DSC,
+                 ["calloc", "f_open", "f_read", "f_close", "free",
+                  "img_set_src"]),
+                (b"0:/A/FALTA.mp3", self.PH_DSC,
+                 ["calloc", "f_open", "free", "img_set_src"]),
+                (b"lixo", self.PH_DSC, ["img_set_src"]),
+                (b"", self.PH_DSC, ["img_set_src"])):
+            ext, novas = self.tipo5(m, view, path)
+            self.assertEqual(m.erros, [], path)
+            self.assertEqual([c[0] for c in novas], nomes, path)
+            self.assertEqual([c[2] for c in novas if c[0] == "img_set_src"],
+                             [src], path)
+            self.assertEqual(m.cstr(ext + 0x110), path, path)
+            self.assertNotIn("get_task", [c[0] for c in novas], path)
+
+    def test_87_emulacao_b5b(self):
+        path = b"0:/A/B.mp3"
+        dados = self.ativo("01_capa_v23.mp3")
+        m, view = self.aparelho(self.b5b)
+        self.monitor(m)
+        m.arquivos[path] = dados
+        m.arquivos[b"0:/A/C.mp3"] = dados
+        ext, novas = self.tipo5(m, view, path, alvo=self.BLOB_B_XIP)
+        self.assertEqual(m.erros, [])
+        nomes = [c[0] for c in novas]
+        self.assertEqual(nomes[0], "img_set_src")
+        self.assertEqual(nomes[1:3], ["get_task", "unreg"])
+        self.assertEqual(nomes[-3:], ["get_task", "reg", "img_set_src"])
+        self.assertIn("calloc", nomes)
+        self.assertIn("f_open", nomes)
+        self.assertIn("f_close", nomes)
+        self.assertEqual(m.abertos, {})
+        srcs = [c[2] for c in novas if c[0] == "img_set_src"]
+        self.assertEqual(srcs, [self.PH_DSC, ext])
+        self.assertEqual(m.cstr(ext + 0x10), path)
+        self.assertEqual(novas[1][1], 3)
+        self.assertEqual(novas[2][1], 0x12345678)
+        self.assertEqual(novas[-2][1], 0x12345678 + 0x50)
+        n0 = len(m.chamadas)
+        self.tipo5(m, view, path, alvo=self.BLOB_B_XIP)
+        self.assertEqual(m.chamadas[n0:], [])
+        n0 = len(m.chamadas)
+        self.tipo5(m, view, b"0:/A/C.mp3", alvo=self.BLOB_B_XIP)
+        self.assertEqual([c[0] for c in m.chamadas[n0:]][0], "img_set_src")
+        self.assertEqual(m.cstr(ext + 0x10), b"0:/A/C.mp3")
+
+    def test_88_emulacao_b5b_falhas(self):
+        path = b"0:/A/B.mp3"
+        dados = self.ativo("01_capa_v23.mp3")
+        m, view = self.aparelho(self.b5b)
+        self.monitor(m)
+        m.arquivos[path] = b"notjpeg"
+        _, novas = self.tipo5(m, view, path, alvo=self.BLOB_B_XIP)
+        self.assertEqual(m.erros, [])
+        nomes = [c[0] for c in novas]
+        self.assertEqual(nomes[0], "img_set_src")
+        self.assertEqual(nomes[1:3], ["get_task", "unreg"])
+        self.assertEqual(nomes[-2:], ["get_task", "reg"])
+        self.assertEqual([c[2] for c in novas if c[0] == "img_set_src"],
+                         [self.PH_DSC])
+        self.assertEqual(m.abertos, {})
+        m, view = self.aparelho(self.b5b)
+        self.monitor(m, unreg_ret=0)
+        m.arquivos[path] = dados
+        ext, novas = self.tipo5(m, view, path, alvo=self.BLOB_B_XIP)
+        self.assertEqual([c[0] for c in novas if c[0] == "reg"], [])
+        self.assertEqual([c[2] for c in novas if c[0] == "img_set_src"],
+                         [self.PH_DSC, ext])
+        m, view = self.aparelho(self.b5b)
+        self.monitor(m, get_ret=0)
+        m.arquivos[path] = dados
+        ext, novas = self.tipo5(m, view, path, alvo=self.BLOB_B_XIP)
+        self.assertEqual(novas[1][1], 3)
+        self.assertNotIn("unreg", [c[0] for c in novas])
+        self.assertNotIn("reg", [c[0] for c in novas])
+        self.assertEqual([c[2] for c in novas if c[0] == "img_set_src"],
+                         [self.PH_DSC, ext])
+        m, view = self.aparelho(self.b5b)
+        self.monitor(m)
+        _, novas = self.tipo5(m, view, b"lixo", alvo=self.BLOB_B_XIP)
+        self.assertEqual([c[0] for c in novas], ["img_set_src"])
+
+    def test_89_guarda_nulos(self):
+        for img, alvo in ((self.b5a, self.BLOB_XIP),
+                          (self.b5b, self.BLOB_B_XIP)):
+            for nome in ("pagina", "view", "titulo", "ext", "img", "texto"):
+                m, view = self.aparelho(img)
+                self.monitor(m)
+                ext = m.le32(view + 0x30)
+                if nome == "pagina":
+                    m.escreve32(E.PAGINAS, 0)
+                elif nome == "view":
+                    m.escreve32(m.le32(E.PAGINAS) + 0xAC, 0)
+                elif nome == "titulo":
+                    m.escreve32(view + 4, 0)
+                elif nome == "ext":
+                    m.escreve32(view + 0x30, 0)
+                elif nome == "img":
+                    m.escreve32(ext + 0xC, 0)
+                n0 = len(m.chamadas)
+                self.tipo5(m, view, b"0:/A.mp3", texto=(nome != "texto"),
+                           alvo=alvo)
+                self.assertEqual(m.erros, [], nome)
+                self.assertEqual(m.chamadas[n0:], [], nome)
+
+    def test_90_mapa_e_receita(self):
+        import build as B
+        for rec in (self.RECEITA_A, self.RECEITA_B):
+            self.assertIn(rec, B.RECEITAS)
+            passo = B.RECEITAS[rec][-1]
+            self.assertEqual(passo[0], "fab_diag_b5.py")
+            self.assertIn("--degrau", passo[1])
+            self.assertNotIn("fab_diag_b5.py", B.MAPA)
+        t = le(os.path.join(RAIZ, "tests/test_catraca.py")).decode()
+        self.assertNotIn(self.RECEITA_A, t)
+        self.assertNotIn(self.RECEITA_B, t)
+
+    def test_91_bit_thumb_nos_indiretos(self):
+        from capstone import (Cs, CS_ARCH_ARM, CS_MODE_THUMB,
+                              CS_MODE_LITTLE_ENDIAN)
+        from capstone.arm import ARM_OP_REG
+
+        md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_LITTLE_ENDIAN)
+        md.detail = True
+
+        def indiretos(cod, base):
+            achados, mov = [], {}
+            for i in md.disasm(cod, base):
+                if i.mnemonic in ("movw", "movt"):
+                    rd = i.reg_name(i.operands[0].reg)
+                    imm = i.operands[1].imm
+                    if i.mnemonic == "movw":
+                        mov[rd] = imm & 0xFFFF
+                    else:
+                        mov[rd] = (mov.get(rd, 0) & 0xFFFF) | (imm << 16)
+                elif i.mnemonic in ("bx", "blx") and i.operands:
+                    op = i.operands[0]
+                    if op.type == ARM_OP_REG and i.reg_name(op.reg) in mov:
+                        rd = i.reg_name(op.reg)
+                        achados.append((i.address, rd, mov.pop(rd)))
+            return achados
+
+        for cod, base, nome in ((self.blob_a, self.BLOB_XIP, "B5a"),
+                                (self.blob_b, self.BLOB_B_XIP, "B5b")):
+            for end, reg, alvo in indiretos(cod, base):
+                self.assertTrue(alvo & 1,
+                                f"{nome}: {reg}=0x{alvo:08X} par em "
+                                f"0x{end:08X} (falta o bit Thumb)")
+
+    def test_92_tabela_alinhada(self):
+        from capstone import (Cs, CS_ARCH_ARM, CS_MODE_THUMB,
+                              CS_MODE_LITTLE_ENDIAN)
+        tabela = b"".join(struct.pack("<I", a) for a in
+                          (0xD088E0, 0xD08970, 0xD08BEE, 0xD0902C,
+                           0xD0EED4))
+        for cod, base in ((self.blob_a, self.BLOB_XIP),
+                          (self.blob_b, self.BLOB_B_XIP)):
+            off = cod.index(tabela)
+            end = self.BLOB_ENVIA_XIP + (off - (self.BLOB_ENVIA - self.BLOB))
+            self.assertEqual(end % 4, 0,
+                             f"a tabela em 0x{end:08X} nao e 4-alinhada")
+            md = Cs(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_LITTLE_ENDIAN)
+            md.detail = True
+            achou = False
+            for i in md.disasm(cod[self.BLOB_ENVIA - self.BLOB:],
+                               self.BLOB_ENVIA_XIP):
+                if i.mnemonic == "adr":
+                    imm = i.operands[1].imm
+                elif i.mnemonic == "addw":
+                    imm = i.operands[2].imm
+                else:
+                    continue
+                if i.reg_name(i.operands[0].reg) != "r1":
+                    continue
+                alvo = ((i.address + 4) & ~3) + imm
+                self.assertEqual(alvo, end,
+                                 f"o adr em 0x{i.address:08X} aponta 0x{alvo:08X}")
+                achou = True
+                break
+            self.assertTrue(achou, "o envia_path nao tem o adr r1, chamadores")
 
 
 class Mapa(Base):
