@@ -117,3 +117,9 @@ mensagem que não chega ao `label_process`), é proibido.
   carimbado, 2 setores de patch); B6b `542ecbb8…` (1263 B, 2 setores).
   `.up` B6a CRC `0xFC0A`, sha `d99758e9…`; B6b CRC `0x9E9E`, sha
   `1c06cbdf…`.
+
+## Resultado do B6b no aparelho (decisor, 2026-11-10)
+
+- **A capa apareceu** na Tocando Agora, com o B6b corrigido (`a78a169`, `.up` `1c06cbdf…`, CRC `0x9E9E`).
+- **CONFIRMADO no aparelho:** ler e decodificar a capa na PreTask e entregar os pixels à view em 8 mensagens tipo 6 funciona.
+- Observação: o decisor gravou antes da conferência final da coordenação e da revisão GLM. Ainda falta registrar a impressão dele.
