@@ -202,3 +202,12 @@ continua, agora em `+0x500`.
   - A fábrica pode não abrir nem decodificar imagem com música tocando.
   - Ela faz isso fora da ViewTask, numa tarefa dedicada que avisa a view por evento.
   - Isso combina com B/B5a/B5b: abrir arquivo na ViewTask durante a reprodução trava.
+
+### O firmware do D30
+
+- **Arquivo:** `~/Downloads/D30 Firmware Update/D30 setup 2.0.up`, sha `1309e801…`.
+- **CONFIRMADO (cabeçalho):** marca **SL6806**, outro SoC, com payload `0x3FB000` (flash de 4 MiB). **Nunca gravar no GN-438.**
+- **CONFIRMADO (strings):** sem `APIC` e sem código de capa de álbum.
+  - Os acertos de `cover` são do Bluetooth.
+  - O JPEG serve à câmera/fotos (`JpegDec*`, `_pic_proc_`).
+- **Conclusão:** também não serve de modelo para a capa.
