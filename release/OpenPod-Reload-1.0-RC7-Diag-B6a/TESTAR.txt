@@ -1,0 +1,31 @@
+OpenPod Reload 1.0 RC7 Diag B6a — TESTAR
+
+O que e: a B4 exata + o trabalho de arquivo na PreTask. No envia_path da
+PreTask (depois do get_path) ela faz calloc, f_open(caminho, leitura), le
+10 bytes, f_close e free. Se o cabecalho comecar com "ID3" -> tipo 5 com o
+caminho; qualquer falha -> tipo 5 vazio (cinza). A view e identica a do B4:
+nao abre arquivo, nao decodifica JPEG. Sem monitor (a PreTask nao e
+monitorada). Este e o degrau DECISOR: prova que abrir arquivo na PreTask,
+durante a musica, nao trava.
+Base do kit: ORIGINAL de fabrica (FIRM e2a7b863...), como os kits
+anteriores. A imagem-alvo parte do B4 (39bea488...).
+Imagem carimbada f2af454d... · .up CRC 0x6CB1 · sha ead8320d...
+Bytes contra o B4 (imagens carimbadas): 1013 bytes em 2 setores.
+
+INSTALAR (pelo cartao): copie OpenPod_OpenPodReload1.0RC7DiagB6a.up
+para a RAIZ do cartao como update.up; Config -> Atualizar por SD -> Sim;
+apague o update.up depois. (Musicas: tests/assets/rc7/01..07)
+
+ROTEIRO (marque um)
+  [ ] TOCA sem o quadrado cinza e mostra "No data" (ID3 lido)
+  [ ] TOCA com o quadrado cinza (sem ID3/caminho invalido/ausente)
+  [ ] Musica 06_sem_capa.mp3: toca; cinza ou "No data", sem travar
+  [ ] Musica 07_sem_tag.mp3: toca; cinza, sem travar
+  [ ] Trocar de faixa 01 -> 04 -> 02: sem reiniciar
+  [ ] Parar, sair e entrar na Tocando Agora 10 vezes: sem travar
+  [ ] CONGELA (a tela para, sem reiniciar)
+  [ ] REINICIA (sozinho) — quantos SEGUNDOS depois de dar play? ____
+  [ ] Config: Informacoes = "RC7 diag B6a"
+
+AVISOS: a PreTask nao e monitorada; se o f_open travar, o watchdog NAO
+reinicia. A volta de seguranca e a RC6. Nao e para uso normal.
