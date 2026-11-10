@@ -1245,10 +1245,12 @@ class B4(Base):
     def test_72_envia_path_guarda(self):
         """O envia_path so manda o tipo 5 vindo da ViewTask (0x8238F1).
 
-        O lr salvo pela rajada em [r7+0x14] e comparado com a tabela dos
-        cinco chamadores da ViewTask; a MainTask (0xD00C28) e a MediaTask
-        (0xCFF212) pulam a mensagem e o 0xD0D880, mas mantem o like
-        getter. A fabrica termina a mensagem de rotulo com o 0xD0D880."""
+        O lr salvo pela rajada em [r7+0x14] chega com o bit0 de Thumb
+        (impar: 0xD088E1 etc.); a guarda limpa o bit0 (bic) e compara com
+        a tabela par dos cinco chamadores da ViewTask. A MainTask
+        (0xD00C29) e a MediaTask (0xCFF213) pulam a mensagem e o 0xD0D880,
+        mas mantem o like getter. A fabrica termina a mensagem de rotulo
+        com o 0xD0D880."""
         from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R1,
                                        UC_ARM_REG_R2)
         m = E.Maquina(self.b4)
@@ -1298,7 +1300,7 @@ class B4(Base):
             return [c for c in m.chamadas
                     if c[0] in ("send", "send_view", "like")]
 
-        for lr in (0xD088E0, 0xD08970, 0xD08BEE, 0xD0902C, 0xD0EED4):
+        for lr in (0xD088E1, 0xD08971, 0xD08BEF, 0xD0902D, 0xD0EED5):
             c = envia(lr)
             self.assertEqual([x[0] for x in c],
                              ["send", "send_view", "like"], hex(lr))
@@ -1312,7 +1314,7 @@ class B4(Base):
                              len(path), hex(lr))
             self.assertEqual(m.cstr(msg + 0x14), path, hex(lr))
             self.assertEqual(c[2][2], sp + 4, hex(lr))
-        for lr in (0xD00C28, 0xCFF212):
+        for lr in (0xD00C29, 0xCFF213):
             c = envia(lr)
             self.assertEqual([x[0] for x in c], ["like"], hex(lr))
             self.assertEqual(c[0][2], sp + 4, hex(lr))

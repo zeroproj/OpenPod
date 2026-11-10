@@ -93,7 +93,6 @@ ESTRUTURA = (
 # ---------------------------------------------------------------------------
 # o codigo novo
 # ---------------------------------------------------------------------------
-
 def monta_blob():
     """Monta tools/diag_b4.s e devolve os bytes do .text."""
     with open(FONTE, "r") as f:
@@ -121,6 +120,7 @@ def confere_blob(cod):
             ("43f6f108c0f28208", "a mensagem 0x008238F1"),
             ("052088f80400", "o tipo 5 em msg+4"),
             ("012088f80c00", "o msg+0xc = 1"),
+            ("786920f00100", "o ldr do lr + bic do bit0"),
             ("4df61903c0f2d003", "o 0xD0D819"),
             ("4df68103c0f2d003", "o 0xD0D881"),
             ("4df69133c0f2d603", "o like getter 0xD6DB91"),

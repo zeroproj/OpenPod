@@ -138,6 +138,30 @@ volta a fazer só o `set_text` da fábrica. **Não** há troca de `bl` nem
   (`test_72_envia_path_guarda`) exercita os cinco retornos e os dois
   callers de fora no emulador.
 
+## Revisão GLM (B4): o bit0 do lr salvo
+
+- **MÉDIA corrigida — a guarda comparava o lr ímpar com a tabela par.** O
+  `bl` do Thumb salva o retorno com bit0=1: a rajada guarda em `[sp+0x14]`
+  `0xD088E1`, `0xD08971`, `0xD08BEF`, `0xD0902D`, `0xD0EED5` (e os de
+  fora `0xCFF213`, `0xD00C29`). A tabela `chamadores` é par; sem limpar o
+  bit0 a guarda nunca batia e o tipo 5 nunca saía (o B4 ficava sem
+  efeito). Agora o `envia_path` faz `bic r0, r0, #1` logo depois do
+  `ldr r0, [r7, #0x14]`; a tabela continua par.
+- **Travas.** O `test_72` escreve os lrs como o hardware (ímpares: os
+  cinco da ViewTask e os de fora `0xCFF213`/`0xD00C29`) e exige que só os
+  cinco enviem; sem o `bic` ele falha. O `confere_blob` exige a sequência
+  `ldr r0,[r7,#0x14]` + `bic r0,r0,#1` (`786920f00100`); sem ela o
+  `fab_diag_b4.py` recusa.
+- **BAIXA corrigida — o comentário de tamanho do `build.py`.** O blob tem
+  731 bytes (727 + 4 do `bic`); o `build.py:684` dizia 673. O
+  `fab_diag_b4.py` confere o `len(cod)` real contra o `BLOB_MAX`.
+- **BAIXA registrada — o tipo 5 reaplica o `img_set_src` sempre** (a
+  RC7/fábrica só mexia na imagem quando o caminho mudava). É custo, não
+  quebra; fica para a ficha de produção (R1+).
+- **BAIXA registrada — o terminador do `get_path`.** O `strncpy` assume
+  texto NUL-terminado; a fábrica tem o mesmo risco nos construtores de
+  rótulo, então não é regressão nova.
+
 ## O que não dá para saber só pelo ORIGINAL
 
 - Se a fila da view entrega a mensagem tipo 5 ao `page_music_play_label_process`

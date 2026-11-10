@@ -107,6 +107,9 @@ envia_path:
     mov  r6, r0               @ 1 = get_path ok
     @ guard: so a ViewTask envia o tipo 5 (0x8238F1 e o buffer global dela)
     ldr  r0, [r7, #0x14]      @ o lr salvo pela rajada
+    @ o `bl` do Thumb salva o retorno com o bit0=1 (estado Thumb); a tabela
+    @ e par, entao limpa o bit0 antes de comparar (senao nunca bate).
+    bic  r0, r0, #1
     adr  r1, chamadores
     movs r2, #5
 1:  ldr  r3, [r1], #4

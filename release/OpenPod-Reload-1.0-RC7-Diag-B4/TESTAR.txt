@@ -8,7 +8,7 @@ volta a fazer so o set_text (0x1AA0FE -> b.w 0xDAA1D0) e o carrega_capa
 continua cortado (0x1AA188). Sem get_path na ViewTask, sem f_open, sem
 JPEG. Caminho valido: SEM o quadrado cinza (src nulo); invalido/vazio/
 ausente: cinza. Base: a RC7 exata (3af97713...). Imagem carimbada
-5f0e35bd... · .up CRC 0x8C7B · sha 74618ccf...
+be813283... · .up CRC 0x33B9 · sha cda0ca4d...
 
 INSTALAR (pelo cartao): copie OpenPod_OpenPodReload1.0RC7DiagB4.up para a
 RAIZ do cartao como update.up; Config -> Atualizar por SD -> Sim; apague o

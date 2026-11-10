@@ -681,7 +681,9 @@ RELOAD_1_0_RC7_DIAG_B3 = RELOAD_1_0_RC7 + [
 #     rajada  12 bytes  0x000FF0C4: `bl envia_path` + 4 `nop`
 #     titulo   4 bytes  0x001AA0FE: `b.w 0xDAA1D0` (so o set_text)
 #     carrega  4 bytes  0x001AA188: `movs r0,#0` + `nop` (como no B3)
-#     codigo 673 bytes  0x001AAA00: label_dispatch (+0) e envia_path (+0x200)
+#     codigo 731 bytes  0x001AAA00: label_dispatch (+0) e envia_path (+0x200)
+#                       (o `fab_diag_b4.py` confere o `len(cod)` real;
+#                        727 + 4 do `bic` do bit0 do lr)
 #
 # A ferramenta NAO entra no MAPA: ela patcha dentro do lote que a RC7 ja
 # montou e no codigo da fabrica, e o `tests/test_rc7.py` (protegido, C2)
