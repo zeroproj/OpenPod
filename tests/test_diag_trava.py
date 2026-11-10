@@ -52,6 +52,7 @@ sys.path.insert(0, os.path.join(RAIZ, "tests"))
 import diag_trava_asm as G  # noqa: E402
 import fab_diag_trava as F  # noqa: E402
 import fab_diag_b3 as F3  # noqa: E402
+import fab_diag_b4 as F4  # noqa: E402
 import emu_rc7 as E  # noqa: E402
 
 SHA_RC7 = ("3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab6456"
@@ -918,6 +919,286 @@ class B3(Base):
             self.assertEqual(srcs, [self.PH_DSC], nome)   # cinza, sem parar
             self.assertEqual(m.cstr(ctx + 0x110), b"", nome)
             self.assertEqual(m.cstr(ctx + 0x10), b"", nome)
+
+
+class B4(Base):
+    r"""O degrau B4 da ficha 012 (o caminho completo vindo da MainTask).
+
+    A rajada 0x00CFF0A8 passa a mandar, logo depois do get_path, uma
+    mensagem da propria fabrica (classe 3, tipo 5) com o caminho no texto.
+    A view trata o tipo 5 em 0x00D32204 (o `cmp r3,#5` + o `bl
+    label_dispatch`), copia o texto para ext+0x110, valida com as guardas do
+    B3 e aplica: valido -> img_set_src(img, 0); invalido/vazio -> cinza
+    0x00DA8000. O TITULO volta a fazer so o set_text (0x001AA0FE ->
+    `b.w 0xDAA1D0`); o carrega_capa continua cortado (0x001AA188). O tipo 5
+    NAO pode cair no `bhi 0xD322A0` e a view/ext/img/texto podem ser nulos."""
+
+    RECEITA = "reload_1.0_rc7_diag_b4"
+    BLOB = 0x1AAA00
+    BLOB_XIP = 0x00DAAA00
+    BLOB_ENVIA = 0x1AAC00
+    BLOB_ENVIA_XIP = 0x00DAAC00
+    CAPTURA = 0x1088D8
+    ALVO_CAPTURA = 0x00D084F8
+    P_BURST = 0x0FF0C4
+    P_TYPE = 0x13223E
+    P_TBB = 0x132242
+    P_TITULO = 0x1AA0FE
+    P_CARREGA = 0x1AA188
+    TITULO_EPILOGO = 0x00DAA1D0
+    PH_DSC = 0x00DA8000
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        p4 = os.path.join(cls.tmp, "b4.bin")
+        rc4, log4 = constroi(cls.RECEITA, p4)
+        cls.b4_rc, cls.b4_log = rc4, log4
+        cls.b4 = le(p4) if os.path.exists(p4) else b""
+        cls.blob = F4.monta_blob()
+
+    def roda(self, entrada, extra=()):
+        tmp = tempfile.mkdtemp(prefix="openpod_diag012x_")
+        src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
+        with open(src, "wb") as f:
+            f.write(entrada)
+        r = subprocess.run([sys.executable,
+                            os.path.join(RAIZ, "tools/fab_diag_b4.py"),
+                            "--in", src, "--out", dst]
+                           + list(extra),
+                           capture_output=True, text=True, cwd=RAIZ)
+        return r.returncode, os.path.exists(dst), le(src) == entrada
+
+    def test_60_b4_construida(self):
+        self.assertEqual(self.rc7_rc, 0, self.rc7_log[-2000:])
+        self.assertEqual(self.b4_rc, 0, self.b4_log[-2000:])
+        self.assertEqual(sha(self.rc7), SHA_RC7)
+        self.assertEqual(len(self.b4), 0x200000)
+        self.assertEqual(self.b4[self.CAPTURA:self.CAPTURA + 4],
+                         self.rc7[self.CAPTURA:self.CAPTURA + 4])
+
+    def test_61_reprodutivel(self):
+        tmp = tempfile.mkdtemp(prefix="openpod_diag012r_")
+        shas = []
+        for i in range(2):
+            p = os.path.join(tmp, f"{i}.bin")
+            rc, log = constroi(self.RECEITA, p)
+            self.assertEqual(rc, 0, log[-1500:])
+            shas.append(sha(le(p)))
+        self.assertEqual(shas[0], shas[1])
+
+    def test_62_diff_exato(self):
+        dif = [i for i in range(len(self.b4)) if self.b4[i] != self.rc7[i]]
+        regioes = [(self.P_TYPE, 2), (self.P_TBB, 4), (self.P_BURST, 12),
+                   (self.P_TITULO, 4), (self.P_CARREGA, 4),
+                   (self.BLOB, len(self.blob))]
+        for i in dif:
+            self.assertTrue(any(o <= i < o + t for o, t in regioes),
+                            f"byte fora do patch: 0x{i:06X}")
+            self.assertGreaterEqual(i, 0x00E000)
+            self.assertFalse(0xD000 <= i < 0xE000)
+            self.assertLess(i, 0x1FC000)
+            self.assertFalse(self.CAPTURA <= i < self.CAPTURA + 4,
+                             "a captura 0x001088D8 nao pode mudar")
+        self.assertEqual(self.b4[self.P_TYPE:self.P_TYPE + 2], b"\x05\x2b")
+        self.assertEqual(self.b4[self.P_TYPE + 2:self.P_TYPE + 4],
+                         self.rc7[self.P_TYPE + 2:self.P_TYPE + 4])
+        self.assertEqual(self.b4[self.P_BURST + 4:self.P_BURST + 12],
+                         b"\x00\xbf\x00\xbf\x00\xbf\x00\xbf")
+        self.assertEqual(self.b4[self.P_CARREGA:self.P_CARREGA + 4],
+                         b"\x00\x20\x00\xbf")
+        self.assertEqual(self.b4[self.BLOB:self.BLOB + len(self.blob)],
+                         self.blob)
+
+    def test_63_decodificacao(self):
+        self.assertEqual(desvio(self.b4, self.CAPTURA), self.ALVO_CAPTURA)
+        self.assertEqual(desvio(self.b4, self.P_TBB), self.BLOB_XIP)
+        self.assertEqual(desvio(self.b4, self.P_BURST), self.BLOB_ENVIA_XIP)
+        self.assertEqual(desvio(self.b4, self.P_TITULO), self.TITULO_EPILOGO)
+        for v in (0x2830, 0x283A, 0x282F, 0x285C):
+            self.assertIn(struct.pack("<H", v), self.blob, hex(v))
+        self.assertEqual(self.blob[self.BLOB_ENVIA - self.BLOB:
+                                   self.BLOB_ENVIA - self.BLOB + 4],
+                         b"\x2d\xe9\xf0\x41")
+
+    def test_64_recusas(self):
+        for nome, entrada in (("rc6", self.rc6),
+                              ("truncada", self.rc7[:0x100000]),
+                              ("b4", self.b4)):
+            rc, criou, intacta = self.roda(entrada, ["--em", "0x1a8000"])
+            self.assertNotEqual(rc, 0, nome)
+            self.assertFalse(criou, nome)
+            self.assertTrue(intacta, nome)
+        for extra in (["--em", "0x1A9000"], ["--dry-run"]):
+            rc, criou, intacta = self.roda(self.rc7, extra + ["--em", "0x1a8000"]
+                                           if extra[0] == "--dry-run" else extra)
+            if extra[0] == "--dry-run":
+                self.assertEqual((rc, criou), (0, False), extra)
+            else:
+                self.assertNotEqual(rc, 0, extra)
+            self.assertTrue(intacta, extra)
+        for tipo in ("mesmo", "symlink", "hardlink"):
+            tmp = tempfile.mkdtemp(prefix="openpod_diag012l_")
+            src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
+            with open(src, "wb") as f:
+                f.write(self.rc7)
+            if tipo == "mesmo":
+                dst = src
+            else:
+                (os.symlink if tipo == "symlink" else os.link)(src, dst)
+            r = subprocess.run([sys.executable,
+                                os.path.join(RAIZ, "tools/fab_diag_b4.py"),
+                                "--in", src, "--out", dst],
+                               capture_output=True, cwd=RAIZ)
+            self.assertNotEqual(r.returncode, 0, tipo)
+            self.assertEqual(le(src), self.rc7, tipo)
+
+    def test_65_premissas(self):
+        self.assertEqual(F4.confere_premissas(bytearray(self.rc7), self.blob),
+                         [])
+        for outra in (self.rc6, self.b4):
+            self.assertTrue(F4.confere_premissas(bytearray(outra), self.blob))
+        d = bytearray(self.rc7)
+        d[self.CAPTURA + 1] ^= 0x01
+        self.assertTrue(F4.confere_premissas(d, self.blob))
+        d = bytearray(self.rc7)
+        d[self.P_BURST] ^= 0x01
+        self.assertTrue(F4.confere_premissas(d, self.blob))
+        d = bytearray(self.rc7)
+        d[self.P_TYPE] ^= 0x01
+        self.assertTrue(F4.confere_premissas(d, self.blob))
+        d = bytearray(self.rc7)
+        d[self.P_TBB] ^= 0x01
+        self.assertTrue(F4.confere_premissas(d, self.blob))
+        d = bytearray(self.rc7)
+        d[self.P_TITULO] ^= 0x01
+        self.assertTrue(F4.confere_premissas(d, self.blob))
+        d = bytearray(self.rc7)
+        d[self.BLOB] ^= 0xFF
+        self.assertTrue(any("virgem" in e
+                            for e in F4.confere_premissas(d, self.blob)))
+        d = bytearray(self.rc7)
+        d[self.P_CARREGA:self.P_CARREGA + 4] = b"\x00\x20\x00\xbf"
+        self.assertTrue(any("carrega_capa" in e
+                            for e in F4.confere_premissas(d, self.blob)))
+
+    def xip_rom(self, m):
+        from unicorn import UC_HOOK_MEM_WRITE
+
+        def _hook(uc, acesso, end, tam, val, ud):
+            if end < E.XIP + 0x200000 and end + tam > E.XIP:
+                m.erros.append(f"escrita em XIP 0x{end:08X} ({tam} B)")
+            return True
+
+        m.u.hook_add(UC_HOOK_MEM_WRITE, _hook)
+
+    @staticmethod
+    def _epilogo(mq):
+        from unicorn.arm_const import UC_ARM_REG_LR
+        mq.u.reg_write(UC_ARM_REG_LR, E.FIM | 1)
+        return None
+
+    def aparelho(self, img):
+        m = E.Maquina(img)
+        self.xip_rom(m)
+        m.u.mem_map(0x5F000000, 0x1000)
+        pag, view = m.aloca(0x200, registra=False), m.aloca(0x34, registra=False)
+        m.escreve32(E.PAGINAS, pag)
+        m.escreve32(pag + 0xAC, view)
+        m.escreve32(view + 0, ROT_CONT)
+        m.escreve32(view + 4, ROT_TIT)
+        m.escreve32(view + 8, ROT_LETRA)
+        m.escreve(E.AUDIO, b"\x02")
+        m.escreve32(E.AUDIO + 0x20, 7)
+        salvos = [0x11110000 + i for i in range(8)]
+        salvos[1] = view
+        m.chama(CRIA, (TELA,), salvos=salvos)
+        self.assertEqual(m.erros, [])
+        m.falsas[0x00D322A0] = self._epilogo
+        return m, view
+
+    def tipo5(self, m, view, path, texto=True):
+        ext = m.le32(view + 0x30)
+        msg = m.aloca(0x414, registra=False)
+        m.escreve(msg, b"\0" * 0x414)
+        m.escreve(msg + 0, b"\x04")
+        m.escreve(msg + 2, b"\x03")
+        m.escreve(msg + 4, b"\x05")
+        m.escreve(msg + 6, b"\x03")
+        m.escreve(msg + 0xC, b"\x01")
+        m.escreve(msg + 0x10, struct.pack("<I", len(path)))
+        m.escreve(msg + 0x14, path + b"\0")
+        n0 = len(m.chamadas)
+        salvos = [msg, view, msg + 0x14 if texto else 0]
+        salvos += [0x11110000 + i for i in range(5)]
+        m.chama(self.BLOB_XIP, (0, 0, 0, 5), salvos=salvos)
+        return ext, m.chamadas[n0:]
+
+    def titulo(self, m, view, texto=b"TIT"):
+        pt = m.aloca(0x100, registra=False)
+        m.escreve(pt, texto + b"\0")
+        n0 = len(m.chamadas)
+        m.chama(TITULO, (ROT_TIT, pt))
+        return m.chamadas[n0:]
+
+    def test_66_emulacao_tipo5(self):
+        m, view = self.aparelho(self.b4)
+        for path, src in ((b"0:/A/B.mp3", 0), (b"0:\\A.mp3", 0),
+                          (b"lixo", self.PH_DSC), (b"", self.PH_DSC)):
+            ext, novas = self.tipo5(m, view, path)
+            self.assertEqual(m.erros, [], path)
+            self.assertEqual([c[0] for c in novas], ["img_set_src"], path)
+            self.assertEqual([c[2] for c in novas], [src], path)
+            self.assertEqual(m.cstr(ext + 0x110), path, path)
+        # ausente: sem o tipo 5, o TITULO so faz set_text e nao toca a imagem
+        novas = self.titulo(m, view)
+        self.assertEqual([c[0] for c in novas], ["label_set_text"])
+
+    def test_67_emulacao_titulo_so_set_text(self):
+        m, view = self.aparelho(self.b4)
+        ext, novas = self.tipo5(m, view, b"0:/A.mp3")
+        self.assertEqual([c[0] for c in novas], ["img_set_src"])
+        self.assertEqual([c[2] for c in novas], [0])
+        n0 = len(m.chamadas)
+        novas = self.titulo(m, view, b"TIT")
+        self.assertEqual([c[0] for c in novas], ["label_set_text"])
+        self.assertEqual([c[0] for c in m.chamadas[n0:]], ["label_set_text"])
+        self.assertNotIn("img_set_src", [c[0] for c in m.chamadas[n0:]])
+
+    def test_68_emulacao_xip_rom(self):
+        m, view = self.aparelho(self.b4)
+        self.tipo5(m, view, b"0:/A.mp3")
+        self.assertFalse(any("XIP" in e for e in m.erros), m.erros)
+
+    def test_69_mapa_e_receita(self):
+        import build as B
+        self.assertIn(self.RECEITA, B.RECEITAS)
+        passo = B.RECEITAS[self.RECEITA][-1]
+        self.assertEqual(passo[0], "fab_diag_b4.py")
+        self.assertIn("--em", passo[1])
+        self.assertIn("0x1a8000", passo[1])
+        self.assertNotIn("fab_diag_b4.py", B.MAPA)
+        t = le(os.path.join(RAIZ, "tests/test_catraca.py")).decode()
+        self.assertNotIn(self.RECEITA, t)
+
+    def test_70_guarda_nulos(self):
+        for nome in ("pagina", "view", "titulo", "ext", "img", "texto"):
+            m, view = self.aparelho(self.b4)
+            ext = m.le32(view + 0x30)
+            if nome == "pagina":
+                m.escreve32(E.PAGINAS, 0)
+            elif nome == "view":
+                m.escreve32(m.le32(E.PAGINAS) + 0xAC, 0)
+            elif nome == "titulo":
+                m.escreve32(view + 4, 0)
+            elif nome == "ext":
+                m.escreve32(view + 0x30, 0)
+            elif nome == "img":
+                m.escreve32(ext + 0xC, 0)
+            n0 = len(m.chamadas)
+            self.tipo5(m, view, b"0:/A.mp3", texto=(nome != "texto"))
+            self.assertEqual(m.erros, [], nome)
+            self.assertEqual([c[0] for c in m.chamadas[n0:]], [], nome)
 
 
 class Comportamento(Base):
