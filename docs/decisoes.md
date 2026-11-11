@@ -14,3 +14,16 @@
 | D10 | 2026-10-30 | Economia do plano Claude (decisor: "quero substituir o claude, pois ele é caro e eu uso para outro projeto"). A partir da ficha 007: **Claude só faz a análise do ORIGINAL, a ficha e os testes protegidos (Fases A e B)** e para. Fases C/D (R0 pelo Codex, despacho, acompanhamento, `ci.sh`, 1ª análise e conferência final pelo Codex, revisão das correções R1/R2, pacote) passam para a **sessão da ficha no OpenCode com `opencode-go/glm-5.3`** (assinatura Go). Desenvolvedor continua **MiniMax M3**, agora `opencode-go/minimax-m3`. Revisor continua o Codex (Sol na R0 e na 1ª análise; Astra na final). Revisor de reserva sem cota do Codex: modelo Go em vez de Claude. |
 | D11 | 2026-10-30 | RC7: com letra `.lrc`, a **letra fica por cima da capa** (decisor: "Letra por cima da capa"); nada da fábrica muda na letra. |
 | D12 | 2026-10-30 | Complementa a D10 (que está no branch da ficha 007): **"Claude faz a ficha e o GLM no Go com o MiniMax; GLM substitui o Codex"**. Claude: análise do ORIGINAL, ficha e testes protegidos. **`opencode-go/glm-5.3`**: R0 da ficha, coordenação (despacho, `ci.sh`), 1ª análise do diff, revisão das correções e conferência final — no lugar do Codex. **`minimax/MiniMax-M3`** (API direta do MiniMax no OpenCode, não o do Go — decisor: "noa precisa usar o minimax do go, pode usar o minimax normal"): implementação. O Codex sai do ciclo padrão. |
+
+## 2026-11-11 — Cor dos ícones da home: grafite (versão futura, 2.1)
+
+- **Decisor:** "aprovado grafite e fica para versão futura".
+- **Grafite:** fundo do ícone cinza-escuro (~`#3A3A3E`), desenho branco. A moldura branca da seleção continua.
+- **Escolhida entre:** atual (colorida), grafite, um tom azul e prata. Prévia em `docs/previas/2026-11-11_cores_icones.png`.
+  Aproximação recolorida por computador; a versão final será desenhada com cuidado.
+- **Motivo:**
+  - Interface sóbria, de poucas cores (`OpenPod_Design_System.md` §10).
+  - A moldura se destaca mais.
+  - A capa do álbum vira o único elemento colorido.
+- **Não entra na 2.0**, congelada no B7b testado. Vai para a **2.1**: troca só a folha de ícones da home (`0x0CE000..0x0D2000`).
+- **Também observado:** a barra do topo da home mostra "OpenPod" ao centro, o relógio à esquerda e a bateria à direita (decisor confirmou a prévia).
