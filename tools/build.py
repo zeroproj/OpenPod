@@ -759,6 +759,38 @@ RELOAD_1_0_RC7_DIAG_B6B = RELOAD_1_0_RC7_DIAG_B4 + [
     ("fab_diag_b6.py", ["--em", "0x1a8000", "--degrau", "b"],
      "diag B6b: decodifica a capa na PreTask e manda pixels"),
 ]
+# ---------------------------------------------------------------------------
+# B7a/B7b da ficha 015 (diagnostico: nao entram na catraca).
+#
+# O B7a e o B6b exato + a regra de escala nova no carrega_capa (0xDAA256):
+# quatro `cmp #0x40` viram `cmp #0x38` (56). 500x500 passa de s=2 (125x125)
+# para s=3 (62x62), esticado para 64x64 pelo callback de saida.
+#
+# O B7b e o B7a + dois wrappers no lote: os callbacks de entrada (0xDAA404)
+# e saida (0xDAA476) do TJpgDec chamam o original e depois vPortYield
+# (0xC43634), N=1. Nao ha sleep; a primeira pausa e depois da primeira
+# leitura, entao o inicio da capa nao atrasa.
+#
+# PATCH (contra o B6b; B7a: 4 bytes; B7b: 4 + 8 + 4 + 88 + 34 bytes):
+#     escala    4 bytes  0x001AA32C, 0x001AA330, 0x001AA346, 0x001AA34E
+#     entrada   4 bytes  0x001AA30C: `orr r1,#1` -> ldr literal 0xDAAE01
+#     saida     4 bytes  0x001AA376: `orr r1,#1` -> ldr literal 0xDAAE21
+#     view      4 bytes  0x001AAABC: cmp.w r3,#0x1c00 -> b.w guarda
+#     wrappers 88 bytes  0x001AAE00: codigo + literais em +0x450/+0x454
+#     guarda   34 bytes  0x001AAE60: msg+0xA == 0x408 antes de copiar
+#
+# A ferramenta NAO entra no MAPA, pelo mesmo motivo do B6: patcha dentro do
+# lote da RC7 e o `tests/test_rc7.py` (protegido, C2) recusa lote do MAPA
+# que cruze 0x1A8000..0x1AB000.
+# ---------------------------------------------------------------------------
+RELOAD_1_0_RC7_DIAG_B7A = RELOAD_1_0_RC7_DIAG_B6B + [
+    ("fab_diag_b7.py", ["--em", "0x1a8000", "--degrau", "a"],
+     "diag B7a: escala 56 na capa (500x500 em 62x62)"),
+]
+RELOAD_1_0_RC7_DIAG_B7B = RELOAD_1_0_RC7_DIAG_B6B + [
+    ("fab_diag_b7.py", ["--em", "0x1a8000", "--degrau", "b"],
+     "diag B7b: B7a + vPortYield e guarda do tipo 6"),
+]
 
 RECEITAS = {
     "core1.0": CORE_1_0,
@@ -791,6 +823,9 @@ RECEITAS = {
     # os degraus B6a/B6b da ficha 014 (diagnostico: nao entram na catraca)
     "reload_1.0_rc7_diag_b6a": RELOAD_1_0_RC7_DIAG_B6A,
     "reload_1.0_rc7_diag_b6b": RELOAD_1_0_RC7_DIAG_B6B,
+    # os degraus B7a/B7b da ficha 015 (diagnostico: nao entram na catraca)
+    "reload_1.0_rc7_diag_b7a": RELOAD_1_0_RC7_DIAG_B7A,
+    "reload_1.0_rc7_diag_b7b": RELOAD_1_0_RC7_DIAG_B7B,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
