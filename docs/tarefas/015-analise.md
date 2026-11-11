@@ -127,3 +127,9 @@ exatamente entrada+saída; a primeira pausa ocorre depois de `f_open` e
 diff exato, recusas, premissas, emulação B7a (300/500/1000/48), emulação
 B7b (pixels, yields, primeira pausa), guarda da view e pilha. `sh tools/ci.sh`
 continua sem rodar `test_diag_trava.py`; a classe foi rodada à mão.
+
+## Resultado no aparelho (decisor, 2026-11-11)
+
+- **B7b gravado: a engasgada sumiu e a capa aparece rápido.** Toca normalmente.
+- **CONFIRMADO no aparelho:** ceder a vez (`0xC43634`, r0=1) a cada callback do TJpgDec resolve a disputa com a MediaTask.
+- O B7a (só a escala) não foi testado. O B7b inclui a escala do B7a.
