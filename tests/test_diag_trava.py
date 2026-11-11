@@ -55,6 +55,7 @@ import fab_diag_b3 as F3  # noqa: E402
 import fab_diag_b4 as F4  # noqa: E402
 import fab_diag_b5 as F5  # noqa: E402
 import fab_diag_b6 as F6  # noqa: E402
+import fab_diag_b7 as F7  # noqa: E402
 import emu_rc7 as E  # noqa: E402
 
 SHA_RC7 = ("3af97713c9d8e28c2b36b872fd5883d18af9e65bff443c5e99ab6456"
@@ -2441,6 +2442,373 @@ class B6(Base):
         t = le(os.path.join(RAIZ, "tests/test_catraca.py")).decode()
         self.assertNotIn(self.RECEITA_A, t)
         self.assertNotIn(self.RECEITA_B, t)
+
+
+class B7(Base):
+    r"""Os degraus B7a/B7b da ficha 015 (a capa de 500 nao engasga).
+
+    O B7a e o B6b exato + a regra de escala 56 no carrega_capa: as quatro
+    comparacoes com 64 viram 56. O B7b e o B7a + dois wrappers que chamam
+    o callback original do TJpgDec e depois vPortYield (0xC43634), N=1.
+    Nao ha sleep; a primeira pausa e depois da primeira leitura.
+    """
+
+    RECEITA_A = "reload_1.0_rc7_diag_b7a"
+    RECEITA_B = "reload_1.0_rc7_diag_b7b"
+    BLOB = 0x1AAA00
+    BLOB_XIP = 0x00DAAA00
+    BLOB_ENVIA_XIP = 0x00DAAC00
+    WRAP = 0x1AAE00
+    WRAP_XIP = 0x00DAAE00
+    WRAP_IN = 0x00DAAE01
+    WRAP_OUT = 0x00DAAE21
+    P_IN = 0x1AA30C
+    P_OUT = 0x1AA376
+    P_VIEW6 = 0x1AAABC
+    VIEW6 = 0x1AAE60
+    VIEW6_LEN = 0x22
+    ESCALA = (0x1AA32C, 0x1AA330, 0x1AA346, 0x1AA34E)
+    P_TYPE = 0x13223E
+    P_TBB = 0x132242
+    P_BURST = 0x0FF0C4
+    P_CARREGA = 0x1AA188
+    CARREGA = 0x00DAA256
+    YIELD = 0x00C43634
+    LABEL_PROCESS = 0x00D32204
+    FALHA_BURST = 0x00CFF0DE
+
+    aparelho = B6.aparelho
+    xip_rom = B4.xip_rom
+    falsas = B6.falsas
+    _epilogo = staticmethod(B4._epilogo)
+    tipo6 = B6.tipo6
+    tipo6_direto = B6.tipo6_direto
+
+    def _msg_tipo6(self, m, off, dados, tipo):
+        # O B7b exige o comprimento 0x408 em msg+0xA antes de copiar.
+        msg = B6._msg_tipo6(self, m, off, dados, tipo)
+        m.escreve(msg + 0xA, struct.pack("<H", 0x408))
+        return msg
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.b6b_rc, cls.b6b_log = constroi(
+            "reload_1.0_rc7_diag_b6b",
+            os.path.join(cls.tmp, "b6b_015.bin"))
+        cls.b6b = (le(os.path.join(cls.tmp, "b6b_015.bin"))
+                   if os.path.exists(os.path.join(cls.tmp, "b6b_015.bin"))
+                   else b"")
+        cls.b7a_rc, cls.b7a_log = constroi(
+            cls.RECEITA_A, os.path.join(cls.tmp, "b7a.bin"))
+        cls.b7a = (le(os.path.join(cls.tmp, "b7a.bin"))
+                   if os.path.exists(os.path.join(cls.tmp, "b7a.bin")) else b"")
+        cls.b7b_rc, cls.b7b_log = constroi(
+            cls.RECEITA_B, os.path.join(cls.tmp, "b7b.bin"))
+        cls.b7b = (le(os.path.join(cls.tmp, "b7b.bin"))
+                   if os.path.exists(os.path.join(cls.tmp, "b7b.bin")) else b"")
+        cls.blob = F7.monta_blob()
+
+    def roda(self, entrada, degrau, extra=()):
+        tmp = tempfile.mkdtemp(prefix="openpod_diag015x_", dir=RAIZ)
+        try:
+            src, dst = os.path.join(tmp, "in.bin"), os.path.join(tmp, "out.bin")
+            with open(src, "wb") as f:
+                f.write(entrada)
+            r = subprocess.run([sys.executable,
+                                os.path.join(RAIZ, "tools/fab_diag_b7.py"),
+                                "--in", src, "--out", dst, "--degrau", degrau]
+                               + list(extra),
+                               capture_output=True, text=True, cwd=RAIZ)
+            return r.returncode, os.path.exists(dst), le(src) == entrada
+        finally:
+            import shutil
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def ativo(self, nome):
+        with open(os.path.join(ATIVOS, nome), "rb") as f:
+            return f.read()
+
+    @staticmethod
+    def jpeg_do_mp3(mp3):
+        return B6.jpeg_do_mp3(mp3)
+
+    @staticmethod
+    def escala_b7(w, h):
+        """Maior s em 0..3 com (w>>s) >= 56 e (h>>s) >= 56; None se < 56."""
+        if w < 56 or h < 56:
+            return None
+        return max(s for s in range(4) if (w >> s) >= 56 and (h >> s) >= 56)
+
+    def referencia_b7(self, jpeg):
+        old = E.escala_de
+        E.escala_de = self.escala_b7
+        try:
+            return E.referencia(
+                le(os.path.join(RAIZ, "firmware/ORIGINAL/GN438_original.bin")),
+                jpeg)
+        finally:
+            E.escala_de = old
+
+    def carrega(self, img, jpeg, conta=False, pausa=False):
+        from unicorn import UC_HOOK_CODE
+        from unicorn.arm_const import UC_ARM_REG_R0, UC_ARM_REG_SP
+
+        m = E.Maquina(img)
+        tmp = m.aloca(0x2210, registra=False)
+        path = b"0:/A/B.mp3"
+        m.escreve(tmp + 0x110, path + b"\0")
+        m.arquivos[path] = E.tag_id3(3, [E.apic(3, jpeg)])
+        c = {"in": 0, "out": 0, "yield": 0}
+        sp0 = E.PILHA[0] + E.PILHA[1] - 0x100
+        mn = [sp0]
+
+        def code(uc, a, tam, ud):
+            if a == 0x00DAA404:
+                c["in"] += 1
+            elif a == 0x00DAA476:
+                c["out"] += 1
+
+        def spcb(uc, a, tam, ud):
+            s = uc.reg_read(UC_ARM_REG_SP)
+            if s < mn[0]:
+                mn[0] = s
+
+        m.u.hook_add(UC_HOOK_CODE, spcb)
+
+        if conta:
+            m.u.hook_add(UC_HOOK_CODE, code,
+                         begin=0x00DAA404, end=0x00DAA405)
+            m.u.hook_add(UC_HOOK_CODE, code,
+                         begin=0x00DAA476, end=0x00DAA477)
+        if pausa:
+            m.u.mem_map(0xE000E000, 0x1000)
+
+            def yld(mq):
+                c["yield"] += 1
+                mq.chamadas.append(("yield", mq.r(UC_ARM_REG_R0)))
+                return 0
+
+            m.falsas[self.YIELD] = yld
+        r = m.chama(self.CARREGA, (tmp,), tempo=180)
+        px = m.le(tmp + 0x210, 0x2000)
+        c["sp"] = mn[0]
+        c["sp0"] = sp0
+        return m, r, px, c
+
+    def test_115_b7_construida(self):
+        self.assertEqual(self.b6b_rc, 0, self.b6b_log[-2000:])
+        self.assertEqual(self.b7a_rc, 0, self.b7a_log[-2000:])
+        self.assertEqual(self.b7b_rc, 0, self.b7b_log[-2000:])
+        self.assertEqual(len(self.b7a), 0x200000)
+        self.assertEqual(len(self.b7b), 0x200000)
+        for off in self.ESCALA:
+            self.assertEqual(self.b6b[off], 0x40, hex(off))
+            self.assertEqual(self.b7a[off], 0x38, hex(off))
+        self.assertEqual(self.b7a[self.BLOB:self.BLOB + 0x600],
+                         self.b6b[self.BLOB:self.BLOB + 0x600])
+        self.assertEqual(self.b7b[self.P_IN:self.P_IN + 4],
+                         bytes.fromhex("dff8401b"))
+        self.assertEqual(self.b7b[self.P_OUT:self.P_OUT + 4],
+                         bytes.fromhex("dff8dc1a"))
+        self.assertEqual(self.b7b[self.WRAP:self.WRAP + 0x58],
+                         self.blob[0x400:0x458])
+        self.assertEqual((self.WRAP + 0x50) % 4, 0)
+        self.assertEqual(self.b7b[self.WRAP + 0x50:self.WRAP + 0x58],
+                         struct.pack("<II", self.WRAP_IN, self.WRAP_OUT))
+        for marca in ("4af2054c", "4af2774c", "43f2356c",
+                      "4af6c32c", "4af6fb2c"):
+            self.assertIn(bytes.fromhex(marca), self.blob)
+        self.assertEqual(self.b6b[self.P_VIEW6:self.P_VIEW6 + 4],
+                         b"\xb3\xf5\xe0\x5f")
+        self.assertEqual(self.b7a[self.P_VIEW6:self.P_VIEW6 + 4],
+                         b"\xb3\xf5\xe0\x5f")
+        self.assertEqual(self.b7b[self.P_VIEW6:self.P_VIEW6 + 4],
+                         F7.BRANCH_VIEW6)
+        self.assertEqual(self.b7b[self.VIEW6:self.VIEW6 + self.VIEW6_LEN],
+                         F7.VIEW6_COD)
+        self.assertEqual(self.b7b[self.P_TYPE:self.P_TYPE + 2], b"\x06\x2b")
+        self.assertEqual(desvio(self.b7b, self.P_TBB), self.BLOB_XIP)
+        self.assertEqual(desvio(self.b7b, self.P_BURST), self.BLOB_ENVIA_XIP)
+        self.assertEqual(self.b7b[self.P_CARREGA:self.P_CARREGA + 4],
+                         b"\x00\x20\x00\xbf")
+
+    def test_116_reprodutivel(self):
+        tmp = tempfile.mkdtemp(prefix="openpod_diag015r_", dir=RAIZ)
+        try:
+            for receita in (self.RECEITA_A, self.RECEITA_B):
+                shas = []
+                for i in range(2):
+                    p = os.path.join(tmp, f"{receita}{i}.bin")
+                    rc, log = constroi(receita, p)
+                    self.assertEqual(rc, 0, log[-1500:])
+                    shas.append(sha(le(p)))
+                self.assertEqual(shas[0], shas[1], receita)
+        finally:
+            import shutil
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_117_diff_exato(self):
+        dif_a = [i for i in range(len(self.b6b))
+                 if self.b7a[i] != self.b6b[i]]
+        self.assertEqual(dif_a, list(self.ESCALA))
+        regioes_b = [(self.P_IN, 4), (self.P_OUT, 4),
+                     (self.P_VIEW6, 4), (self.WRAP, 0x58),
+                     (self.VIEW6, self.VIEW6_LEN)] \
+                    + [(o, 1) for o in self.ESCALA]
+        dif_b = [i for i in range(len(self.b6b))
+                 if self.b7b[i] != self.b6b[i]]
+        for i in dif_b:
+            self.assertTrue(any(o <= i < o + t for o, t in regioes_b),
+                            f"B7b: byte fora do patch: 0x{i:06X}")
+            self.assertGreaterEqual(i, 0x00E000)
+            self.assertFalse(0xD000 <= i < 0xE000)
+            self.assertLess(i, 0x1FC000)
+        self.assertEqual(self.b7b[self.WRAP:self.WRAP + 0x58],
+                         self.blob[0x400:0x458])
+        for off in self.ESCALA:
+            self.assertEqual(self.b7a[off], 0x38)
+            self.assertEqual(self.b7a[off + 1], self.b6b[off + 1])
+
+    def test_118_recusas(self):
+        for degrau, img in (("a", self.b7a), ("b", self.b7b)):
+            for nome, entrada in (("rc7", self.rc7),
+                                  ("propria", img)):
+                rc, criou, intacta = self.roda(entrada, degrau,
+                                               ["--em", "0x1a8000"])
+                self.assertNotEqual(rc, 0, f"{degrau}:{nome}")
+                self.assertFalse(criou, f"{degrau}:{nome}")
+                self.assertTrue(intacta, f"{degrau}:{nome}")
+            rc, criou, intacta = self.roda(self.b6b, degrau,
+                                           ["--em", "0x1A9000"])
+            self.assertNotEqual(rc, 0, degrau)
+            self.assertFalse(criou, degrau)
+            self.assertTrue(intacta, degrau)
+            rc, criou, intacta = self.roda(self.b6b, degrau, ["--dry-run"])
+            self.assertEqual((rc, criou), (0, False), degrau)
+            self.assertTrue(intacta, degrau)
+            for tipo in ("mesmo", "symlink", "hardlink"):
+                tmp = tempfile.mkdtemp(prefix="openpod_diag015l_", dir=RAIZ)
+                try:
+                    src = os.path.join(tmp, "in.bin")
+                    dst = os.path.join(tmp, "out.bin")
+                    with open(src, "wb") as f:
+                        f.write(self.b6b)
+                    if tipo == "mesmo":
+                        dst = src
+                    else:
+                        (os.symlink if tipo == "symlink" else os.link)(src, dst)
+                    r = subprocess.run([sys.executable,
+                                        os.path.join(RAIZ, "tools/fab_diag_b7.py"),
+                                        "--in", src, "--out", dst,
+                                        "--degrau", degrau],
+                                       capture_output=True, cwd=RAIZ)
+                    self.assertNotEqual(r.returncode, 0, f"{degrau}:{tipo}")
+                    self.assertEqual(le(src), self.b6b, f"{degrau}:{tipo}")
+                finally:
+                    import shutil
+                    shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_119_premissas(self):
+        for degrau in ("a", "b"):
+            self.assertEqual(F7.confere_premissas(bytearray(self.b6b),
+                                                  self.blob, degrau), [])
+        for outra in (self.rc7, self.b7a, self.b7b):
+            self.assertTrue(F7.confere_premissas(bytearray(outra),
+                                                 self.blob, "b"))
+        for off in self.ESCALA + (self.P_IN, self.P_OUT,
+                                  self.BLOB, self.WRAP):
+            d = bytearray(self.b6b)
+            d[off] ^= 0x01
+            self.assertTrue(F7.confere_premissas(d, self.blob, "b"), hex(off))
+        d = bytearray(self.b6b)
+        d[self.P_TYPE] ^= 0x01
+        self.assertTrue(F7.confere_premissas(d, self.blob, "b"))
+        self.assertEqual(F7.confere_premissas(bytearray(self.b6b),
+                                              self.blob, "a"), [])
+
+    def test_120_emulacao_b7a(self):
+        casos = (("capa_a_300.jpg", 34, 361),
+                 ("capa_b_500.jpg", 77, 961),
+                 ("capa_d_1000.jpg", 164, 3969))
+        for nome, n_in, n_out in casos:
+            jpeg = self.ativo(nome)
+            m, r, px, c = self.carrega(self.b7a, jpeg, conta=True)
+            self.assertEqual(m.erros, [], nome)
+            self.assertEqual(r, 1, nome)
+            self.assertEqual(px, self.referencia_b7(jpeg), nome)
+            self.assertEqual((c["in"], c["out"]), (n_in, n_out), nome)
+            self.assertEqual(m.abertos, {}, nome)
+        m, r, px, _ = self.carrega(self.b7a, self.ativo("capa_pequena_48.jpg"))
+        self.assertEqual((r, px), (0, b"\0" * 0x2000))
+        self.assertEqual(m.erros, [])
+
+    def test_121_emulacao_b7b(self):
+        jpeg = self.ativo("capa_b_500.jpg")
+        _, _, px_a, c_a = self.carrega(self.b7a, jpeg, conta=True)
+        m, r, px_b, c_b = self.carrega(self.b7b, jpeg, conta=True, pausa=True)
+        self.assertEqual(m.erros, [])
+        self.assertEqual(r, 1)
+        self.assertEqual(px_b, px_a)
+        self.assertEqual((c_b["in"], c_b["out"]), (c_a["in"], c_a["out"]))
+        self.assertEqual(c_b["yield"], c_a["in"] + c_a["out"])
+        nomes = m.nomes()
+        i_y = nomes.index("yield")
+        self.assertIn("f_open", nomes[:i_y])
+        self.assertIn("f_read", nomes[:i_y])
+        self.assertEqual(m.abertos, {})
+        self.assertEqual(self.b7b[self.YIELD - XIP:self.YIELD - XIP + 2],
+                         b"\x38\xb1")  # cbz r0, +4 (o yield so com r0 != 0)
+
+    def test_123_guarda_view(self):
+        m, view = self.aparelho(self.b7b)
+        self.falsas(m)
+        ext = m.le32(view + 0x30)
+        m.escreve(ext + 0x210, b"\xAA" * 0x2000)
+        for off in range(0, 0x2000, 0x400):
+            _, novas = self.tipo6(m, view, off,
+                                  bytes([off // 0x400]) * 0x400)
+            self.assertEqual(m.erros, [], hex(off))
+            self.assertEqual([c[0] for c in novas].count("img_set_src"),
+                             1 if off == 0x1C00 else 0, hex(off))
+        m.escreve(ext + 0x210, b"\xAA" * 0x2000)
+        msg = self._msg_tipo6(m, 0, b"\xBB" * 0x400, 6)
+        m.escreve(msg + 0xA, struct.pack("<H", 0x400))
+        n0 = len(m.chamadas)
+        m.chama(self.BLOB_XIP, (0, 0, 0, 6),
+                salvos=[msg, view, msg + 0x14] + [0x11110000 + i
+                                                  for i in range(5)])
+        self.assertEqual(m.erros, [])
+        self.assertEqual([c[0] for c in m.chamadas[n0:]], [])
+        self.assertEqual(m.le(ext + 0x210, 0x400), b"\xAA" * 0x400)
+
+    def test_124_pilha_b7b(self):
+        _, _, _, c = self.carrega(self.b7b, self.ativo("capa_b_500.jpg"),
+                                  pausa=True)
+        usado = c["sp0"] - c["sp"]
+        self.assertLessEqual(usado, 512, f"o B7b usa {usado} B de pilha")
+        self.assertGreaterEqual(2048 - 152 - usado, 512,
+                                f"sobram {2048 - 152 - usado} B")
+
+    def test_122_callback_sem_trava(self):
+        # O leitor 0xDAA404 chama f_read/f_lseek; a saida 0xDAA476 so
+        # escreve pixels. O f_read adquire e solta a trava (0xD7533E /
+        # 0xD75328) dentro da propria chamada.
+        self.assertEqual(desvio(self.b6b, 0x17686A), 0x00D7533E)
+        self.assertEqual(desvio(self.b6b, 0x17688A), 0x00D75328)
+        self.assertEqual(desvio(self.b6b, 0x17693C), 0x00D75328)
+        self.assertIn(bytes.fromhex("4af2054cc0f2da0ce047"),
+                      self.blob[0x400:0x442])
+        self.assertIn(bytes.fromhex("4af2774cc0f2da0ce047"),
+                      self.blob[0x400:0x442])
+        self.assertIn(bytes.fromhex("43f2356cc0f2c40ce047"),
+                      self.blob[0x400:0x442])
+        self.assertEqual(self.b7b[self.P_VIEW6:self.P_VIEW6 + 4],
+                         F7.BRANCH_VIEW6)
+        self.assertEqual(self.b7b[self.VIEW6:self.VIEW6 + self.VIEW6_LEN],
+                         F7.VIEW6_COD)
+        self.assertEqual(self.b7a[self.P_VIEW6:self.P_VIEW6 + 4],
+                         b"\xb3\xf5\xe0\x5f")
 
 
 class Mapa(Base):
