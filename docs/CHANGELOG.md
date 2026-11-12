@@ -7,6 +7,28 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-11-12 — OpenPod Reload 2.0 (ficha 016): o B7b com carimbo
+
+- **O código é o B7b byte a byte.** Receita nova `reload_2.0` = a mesma
+  lista da `reload_1.0_rc7_diag_b7b`; sem carimbo, sha
+  `26ffa2721afa73a4109158a3cac66170f97858192876893c7972e7a002b2073d`
+  (provado por `tests/test_reload_2_0.py`). Muda só o carimbo
+  `Reload 2.0` em `0x1A4F00` (`patch_versao.py`).
+- Imagem carimbada `b88ce8e7723920b535b4fdebb5ec566fff8899faf6bb9a2da7ca40ada8a87634`.
+  `.up` 1.749.248 B, CRC `0x4D84`, sha
+  `8a3c54c2413e2c0f433b6aa5d075670e4bb16eb0bcdd6f7454d40c7cee239143`.
+  Kit `release/OpenPod-Reload-2.0/` (base ORIGINAL, formato da RC6).
+- Análise em `docs/tarefas/016-analise.md`: o avanço automático passa pela
+  PreTask e troca a capa; o ring da view (15360 B) pode encher em trocas
+  rápidas (8 × `0x414` por capa) e descarta título/tempo, com cinza
+  sujeito a descarte; a guarda de página descarta os pedaços e o `tmp` é
+  liberado; JPEG progressivo, PNG, sem capa, sem tag, <56 px e CMYK dão
+  cinza; escala de cinza mostra. Achado BAIXA: capa pode não atualizar sob
+  troca rápida (herdado do B7b, não é regressão).
+- **Aguardando o teste do decisor. Não publicar.**
+
+---
+
 ## 2026-10-21 — RC2 aprovada no aparelho (ficha 001)
 
 - Logo do OpenPod na abertura, fundo preto na abertura e no display, papel

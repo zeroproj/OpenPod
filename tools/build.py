@@ -791,6 +791,16 @@ RELOAD_1_0_RC7_DIAG_B7B = RELOAD_1_0_RC7_DIAG_B6B + [
     ("fab_diag_b7.py", ["--em", "0x1a8000", "--degrau", "b"],
      "diag B7b: B7a + vPortYield e guarda do tipo 6"),
 ]
+# ---------------------------------------------------------------------------
+# reload_2.0 (ficha 016): o codigo e o do B7b, byte a byte.
+#
+# A receita e a MESMA lista da `reload_1.0_rc7_diag_b7b`, de proposito: o
+# que foi provado no aparelho (B7b) e o que vai para a 2.0. A unica
+# diferenca e o carimbo de versao, aplicado DEPOIS pelo `patch_versao.py`
+# ("Reload 2.0" em 0x1A4F00) quando o kit e gerado. Sem carimbo, o sha e
+# `26ffa272…`, igual ao do B7b; o `tests/test_reload_2_0.py` prova isso.
+# ---------------------------------------------------------------------------
+RELOAD_2_0 = RELOAD_1_0_RC7_DIAG_B7B
 
 RECEITAS = {
     "core1.0": CORE_1_0,
@@ -826,6 +836,8 @@ RECEITAS = {
     # os degraus B7a/B7b da ficha 015 (diagnostico: nao entram na catraca)
     "reload_1.0_rc7_diag_b7a": RELOAD_1_0_RC7_DIAG_B7A,
     "reload_1.0_rc7_diag_b7b": RELOAD_1_0_RC7_DIAG_B7B,
+    # a 2.0 e o B7b byte a byte (so muda o carimbo na geracao do kit)
+    "reload_2.0": RELOAD_2_0,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
