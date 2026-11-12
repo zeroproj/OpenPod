@@ -5,8 +5,8 @@ focused on music, built from the stock system (`yp3_2.0.43`).
 
 *Um firmware novo para o **Iigenai GN-438**: visual limpo e moderno, foco em música, feito a partir do sistema de fábrica.*
 
-> ⚠️ **Beta.** Tested on one device only.
-> *Testada em um único aparelho.*
+> ⚠️ **Stable release, tested on one device only.**
+> *Versão estável, testada em um único aparelho.*
 
 ---
 
