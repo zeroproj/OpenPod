@@ -1,136 +1,86 @@
-# OpenPod — Reload 1.0
+# OpenPod — Reload 2.0
 
-**Site:** https://zeroproj.github.io/OpenPod/ — fonte em `docs/index.html`.
-Para publicar: *Settings → Pages → Source: main, pasta `/docs`*. O `.nojekyll`
-ao lado impede o Jekyll de tentar processar os `.md` da análise.
+Melhorar o **Iigenai GN-438**, um player YP3/Smartlink de baixo custo,
+mantendo o que já funciona e corrigindo o que incomoda. Nada de reescrever
+o firmware do zero nem de copiar outro aparelho.
 
-Melhorar o **Iigenai GN-438** — um player YP3/Smartlink de baixo custo
-— mantendo o que já funciona e corrigindo o que incomoda, sem reescrever
-o firmware do zero e sem copiar outro aparelho.
+**Site:** https://zeroproj.github.io/OpenPod/ (fonte em `docs/index.html`).
+O repositório público recebe **só a página e o kit** (`tools/publica_release.py`).
+O código-fonte e a análise ficam neste repositório local.
 
-> **Estado em 2026-09-24:** **OpenPod Reload 1.0** — refeito do ORIGINAL
-> (`yp3_2.0.43`) em degraus: RC1 update por SD → RC2 logo + fundo preto →
-> RC3 barra "OpenPod" + degradê → RC4 ícones novos + bateria prata/verde.
-> RC1 gerada, aguardando gravação. Detalhes em
-> [`docs/RELOAD_1_0.md`](docs/RELOAD_1_0.md).
+> **Estado em 2026-11-14:** **OpenPod Reload 2.0 publicada**: a RC6 mais a
+> capa do álbum na Tocando Agora. A capa é lida e decodificada na PreTask,
+> e os pixels vão para a view por mensagem, cedendo a vez durante o decode.
+> Próximo: ícones grafite na 2.1 (`docs/decisoes.md`, D13).
 >
-> As Alphas 0.1/0.2 foram descartadas (bugadas); a linha Core fica como
-> referência histórica.
->
-> Entrada obrigatória: **[`docs/ESTADO_ATUAL.md`](docs/ESTADO_ATUAL.md)**.
-
----
-
-> **Assumindo o projeto?** Leia **[`CONTINUAR.md`](CONTINUAR.md)** primeiro.
-> Ele tem o estado, a primeira coisa a fazer, o conserto que está pronto
-> para escrever e as três lições que custaram caro.
+> Entrada obrigatória: **[`docs/processo.md`](docs/processo.md)**, que tem o
+> estado e o ponto de retomada.
 
 ## Por onde começar
 
 | quero... | leia |
 |---|---|
-| entender o estado e o que está no aparelho | `docs/ESTADO_ATUAL.md` |
-| as regras do projeto | `CLAUDE.md` |
+| o estado e o que vem a seguir | `docs/processo.md` |
+| como uma ficha anda (desenvolvedor, revisão, conferência) | `docs/processo-padrao.md` |
+| as regras do projeto | `CLAUDE.md`, `AGENTS.md` |
+| as decisões do decisor | `docs/decisoes.md` |
+| o histórico das fichas | `docs/tarefas/` |
 | voltar o aparelho ao de fábrica | `recovery/VOLTAR_AO_ORIGINAL.md` |
-| como gravar, e o que já custou caro | `docs/PROTOCOLO_GRAVACAO.md` |
-| o firmware por dentro | `docs/FIRMWARE_ANALYSIS.md`, `docs/ARQUITETURA.md` |
-| a proposta da Reload Alpha | `docs/RELOAD_ALPHA.md` |
-| a referência visual anterior | `docs/PROJETO_MARTE.md`, `docs/OpenPod_Design_System.md` |
-
----
+| recuperar com o firmware destruído | `docs/MODO_DOWNLOAD.md`, `docs/NIVEIS_DE_GRAVACAO.md` |
+| o firmware por dentro | `docs/FIRMWARE_ANALYSIS.md`, `docs/ARQUITETURA.md`, `docs/GUI_ANALYSIS.md` |
 
 ## Estrutura
 
 ```
 firmware/
-  ORIGINAL/     GN438_original.bin — sagrado, modo 444, sha b7cd5eb9…
-  WORKING/      imagens de trabalho (GN438_reload_alpha_v001.bin)
-  RELEASE/      kits históricos (Core 1.0.1)
-  release/      pacotes publicados (Reload Alpha 0.1)
+  ORIGINAL/     GN438_original.bin: sagrado, sha b7cd5eb9…
+  RELEASE/      kits internos: Reload 2.0, RC6 e Recuperacao-pos-B27
   VENDOR/       Flashloader SL-DEV oficial da Shenju
   READBACK/     leituras feitas do aparelho
-
-recovery/       O RECOVERY OFICIAL — autossuficiente, copiável inteiro
-                `sudo sh RECOVERY.sh`, validado em hardware
-
-update/         pacotes .up para atualizar pelo cartão SD
-
-tools/          a receita e as ferramentas. `build.py` é o centro
-tests/          testes que não falam com o aparelho
-patches/        patches avulsos
+release/        kits: OpenPod-Reload-2.0 (atual), RC6 (volta segura), Fabrica
+recovery/       o recovery oficial, autossuficiente (`sudo sh RECOVERY.sh`)
+tools/          a receita (`build.py`) e as ferramentas de cada degrau
+tests/          testes sem o aparelho; `tools/ci.sh` roda os protegidos
 analysis/       varreduras, disassembly, mapas
-extracted/      gráficos, fontes e recursos extraídos
-assets/         a logo do OpenPod e material de referência
-marte/          estudo anterior NanoClone — histórico, não é base da Alpha
-docs/           o entendimento do firmware; `RELOAD_ALPHA.md` é a entrada atual
+assets/         logo e ícones do OpenPod
+docs/           o entendimento do firmware, as fichas e as decisões
 ```
 
----
+O que saiu na limpeza de 2026-11-14 está em `../OpenPod-arquivo-2026-11-14/`,
+fora do projeto: kits antigos, imagens de trabalho velhas, projetos anteriores
+e ferramentas da linha antiga. O que estava no git também continua no histórico.
 
 ## Como a imagem é construída
 
-Não é mais uma corrente de patches aplicados à mão. É uma **receita
-declarada**:
+A imagem sai de uma **receita declarada**, sempre a partir do ORIGINAL:
 
 ```sh
-python3 tools/build.py --receita reload_alpha --saida firmware/WORKING/GN438_reload_alpha_v001.bin
-python3 tools/build.py --so-lista
+python3 tools/build.py --receita reload_2.0 --saida <imagem>
+python3 tools/patch_versao.py --em 0x1A4F00 ...     # carimbo da versão
+python3 tools/gera_versao.py ...                    # kit (cabo + .up + Windows), base ORIGINAL
+sh tools/ci.sh                                      # antes de dizer "terminei"
 ```
 
-**Receita atual: `reload_alpha`, 5 passos** (update SD + 3 fundos + barra).
-A `core1.0` segue existindo como referência. Ver `docs/RELOAD_ALPHA.md`.
-
-O `build.py` confere o sha do ORIGINAL antes de começar, roda cada passo
-num arquivo próprio, impõe um **mapa de endereços da área livre** (cada
-ferramenta recebe `--em` e é recusada se escrever fora do seu lote), e é
-**determinístico** — a mesma receita dá a mesma imagem, byte a byte.
-
-Depois:
-
-```sh
-python3 tools/validate_firmware.py <imagem>     # estrutura, CRCs, partições
-python3 tools/gera_up.py --in <imagem> --out <pacote.up>
-python3 tools/make_install_kit.py  --base firmware/ORIGINAL/GN438_original.bin --alvo <imagem> --versao "OpenPod Reload Alpha 0.1" --saida release/OpenPod-Reload-Alpha-0.1
-```
-
----
+O `build.py` confere o sha do ORIGINAL, roda cada passo num arquivo próprio,
+impõe o mapa de lotes da área livre e é determinístico: a mesma receita dá a
+mesma imagem, byte a byte.
 
 ## As regras que custaram caro
 
-Cada uma tem um preço já pago; estão inteiras em
-`docs/PROTOCOLO_GRAVACAO.md`.
-
-- **O firmware ORIGINAL nunca é modificado.** É a âncora de tudo.
-- **`write_flash` grava a partir do byte 0 do arquivo.** O 2º argumento é
-  sempre `0`. Ler isso errado corrompeu a tabela de partições e brickou o
-  primeiro aparelho.
-- **Nunca passe um `.up` para o `write_flash`.** O `.up` é para o cartão
-  SD, onde o bootloader interpreta o cabeçalho.
-- **O setor `0x00D000` não é gravado.** O CRC da FIRM não é verificado
-  por nada — confirmado no aparelho.
-- **Conferência é por releitura do aparelho**, nunca por hash de arquivo
-  no PC.
-- **Aparência se decide pelo que melhora o uso, não por gosto.** Na Reload
-  Alpha a referência é o próprio firmware: fundo preto resolve fresta branca,
-  barra Data·OpenPod·Bateria organiza o topo. Sem copiar outro aparelho.
-- **Nada de hipótese apresentada como fato.** Cada afirmação carrega
-  classe: CONFIRMADO, PROVÁVEL, HIPÓTESE, DESCONHECIDO.
-
----
+- **O firmware ORIGINAL nunca é modificado.**
+- **Só o decisor grava no aparelho e só ele autoriza publicar** (o "pode").
+- **`write_flash` grava a partir do byte 0 do arquivo, e nunca recebe um `.up`.**
+- **O setor `0x00D000`, o bootloader e a PSMP não são gravados.**
+- **Firmware de outro aparelho nunca é gravado** (o B27 trocou até o bootloader).
+- **A ViewTask não toca em arquivo:** abrir arquivo nela trava o aparelho (fichas 011 a 014).
+- **Todo destino de `bx`/`blx` leva o bit Thumb.**
+- **Nada de hipótese apresentada como fato:** CONFIRMADO, PROVÁVEL ou HIPÓTESE.
 
 ## Hardware
 
 ```
 Iigenai GN-438      firmware yp3_2.0.43      USB 301a:2801
 flash 2 MiB         SoC SL6801              XIP em 0x00C00000
-display 128×160     LVGL v8                 sem cripto, sem compressão
-modo download       301a:2800, na ROM de máscara — sempre recuperável
+display 128×160     LVGL v8, FreeRTOS       sem cripto, sem compressão
+modo download       VOLUME↓ + RESET, na ROM de máscara: sempre recuperável
 ```
-
----
-
-## Crédito
-
-Reload Alpha não copia interface de outro aparelho. O estudo anterior
-NanoClone (Billy Blair, CC BY-SA 3.0) fica como histórico em `marte/` e
-`ATRIBUICAO.md` — não é base da Alpha.
