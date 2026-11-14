@@ -35,6 +35,7 @@ from asm import monta  # noqa: E402
 
 TAMANHO = 0x200000
 SHA_RC7 = G.SHA_RC7
+SHA_RC7_21 = "bec08640713646be2b132fbdc8bb9d63bc2da2a3b490823e8034f01e49d210ab"  # ficha 017: folha grafite
 
 # o codigo novo (arquivo / XIP)
 BLOB = 0x1AAA00
@@ -146,9 +147,9 @@ def confere_premissas(d, cod):
         return [f"a imagem tem {len(d)} bytes, esperado {TAMANHO} (2 MiB)"]
     erros = []
     sha = hashlib.sha256(bytes(d)).hexdigest()
-    if sha != SHA_RC7:
+    if sha not in (SHA_RC7, SHA_RC7_21):
         erros.append(f"sha256 da entrada {sha[:16]}..., esperado "
-                     f"{SHA_RC7[:16]}... (a RC7 exata)")
+                     f"{SHA_RC7[:16]}... ou a RC7 grafite ({SHA_RC7_21[:16]}...)")
     for i, alvo in enumerate(G.ENTRADAS):
         lido = A.desvio(d, G.TABELA + 4 * i)
         if lido is None or lido[0] != "b.w" or lido[1] != alvo:

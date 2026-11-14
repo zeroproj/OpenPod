@@ -173,6 +173,9 @@ TAMANHO = 0x200000                          # 2 MiB
 
 # --- a imagem que a ficha mediu
 SHA_RC4 = "74e8cb315958b053f9e36e366a32f103ba995f7a18316c1c01e3de89e3f3b6d4"
+# ficha 017: o mesmo lote com a folha da home em grafite (a unica diferenca)
+SHA_RC4_21 = "bd491c65bf5bf01fbb0417b462fef3a2c0b3665a14ca3286a183668e840a85a6"
+SHAS_RC4 = (SHA_RC4, SHA_RC4_21)
 
 # --- a tabela do portugues (idioma 8, 0x00D2108C)
 TABELA_PT = 0x053B84                         # 216 ponteiros XIP de 4 bytes
@@ -376,10 +379,12 @@ def confere_premissas(d, textos):
 
     erros = []
     got = hashlib.sha256(bytes(d)).hexdigest()
-    if got != SHA_RC4:
+    if got not in SHAS_RC4:
         erros.append(
             f"o sha256 da entrada e {got}\n"
             f"      a ficha fixa a RC4 exata, {SHA_RC4}\n"
+            f"      (ou a mesma receita com a folha grafite da 2.1, "
+            f"{SHA_RC4_21[:16]}...)\n"
             f"      esta ferramenta roda uma vez, sobre a RC4 — nem duas "
             f"vezes, nem sobre a RC3, nem sobre o ORIGINAL")
 

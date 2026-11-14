@@ -802,6 +802,20 @@ RELOAD_1_0_RC7_DIAG_B7B = RELOAD_1_0_RC7_DIAG_B6B + [
 # ---------------------------------------------------------------------------
 RELOAD_2_0 = RELOAD_1_0_RC7_DIAG_B7B
 
+# ---------------------------------------------------------------------------
+# reload_2.1 (ficha 017): a 2.0 com os icones da home em grafite.
+#
+# A receita e a MESMA lista da `reload_2.0`, com UMA diferenca: o passo que
+# aplica a folha da home (`fab_icones_home.py`) recebe
+# `--png assets/IconesHome_grafite.png`. O codigo nao muda; a folha (paleta e
+# pixels) e o carimbo de versao sao o que mudam.
+# ---------------------------------------------------------------------------
+RELOAD_2_1 = [
+    (t, (["--png", "assets/IconesHome_grafite.png"]
+         if t == "fab_icones_home.py" else extra), por)
+    for t, extra, por in RELOAD_2_0
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -838,6 +852,8 @@ RECEITAS = {
     "reload_1.0_rc7_diag_b7b": RELOAD_1_0_RC7_DIAG_B7B,
     # a 2.0 e o B7b byte a byte (so muda o carimbo na geracao do kit)
     "reload_2.0": RELOAD_2_0,
+    # a 2.1 e a 2.0 com a folha grafite (o resto da lista e igual)
+    "reload_2.1": RELOAD_2_1,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.

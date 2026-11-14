@@ -47,6 +47,31 @@ Forma, posição, tamanho e glifos continuam iguais.
 
 **Não publicar.** Commit obrigatório antes do sinal.
 
+## Entrega (ficha 017)
+
+- **`desenha_icones_home.py`**: `ESTILO=grafite` aplica só as três mudanças
+  da ficha. Sem `ESTILO`, com `GLIFO=255,255,255`, o sha continua
+  `fbdd1dc7…` (o atual). `assets/IconesHome_grafite.png` versionado
+  (sha `1493e2a4…`).
+- **`fab_icones_home.py`**: passou a aceitar uma lista de PNGs aprovados,
+  cada um com sha preso (o de hoje e o grafite). Nada mais mudou.
+- **`reload_2.1`**: a mesma lista da `reload_2.0`; a única diferença é o
+  `fab_icones_home.py` com `--png assets/IconesHome_grafite.png`.
+  Como os passos seguintes prendem o sha da imagem inteira, cada um deles
+  (textos, moldura, capa e os diags B4/B6b/B7b) ganhou também o sha exato
+  do prefixo 2.1 — a imagem é a mesma, só a folha difere. Eles continuam
+  conferindo as próprias regiões; nenhum byte do firmware muda.
+- **Teste**: `tests/test_reload_2_1.py` (6 testes OK). `sh tools/ci.sh`
+  verde.
+- **Prévia**: `docs/previas/2026-11-14_reload21_da_imagem.png`, montada
+  decodificando a folha da própria imagem 2.1. Bate com a aprovada
+  (diferença média do painel ~0,3/255, só pela quantização da paleta).
+- **Kit**: `gera_versao` sem `--base` (base padrão ORIGINAL), carimbo
+  `Reload 2.1` em `0x1A4F00`. Imagem `a99288bb…`; `.up` 1.749.248 B, CRC
+  `0x9750`, sha `9e5ae4ff…`. `release/OpenPod-Reload-2.1/` no formato da
+  2.0, com README (seção nova) e TESTAR curto.
+- **Pendente**: teste do decisor no aparelho. Não publicado.
+
 Regras de sempre:
 - Nunca alterar `firmware/ORIGINAL`, gravar no aparelho, fazer push ou merge.
 - Testes protegidos intactos; `sh tools/ci.sh` verde.

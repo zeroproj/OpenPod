@@ -97,6 +97,11 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import capa_album_asm as A  # noqa: E402
 
+# ficha 017: a mesma RC6 com a folha da home em grafite
+SHA_ENTRADA_21 = ("46d5f00ebc1bc5e32b51627d036904ea7127bb17783ea16edd2b48"
+                  "f77467f783")
+SHAS_ENTRADA = (A.SHA_ENTRADA, SHA_ENTRADA_21)
+
 
 # ---------------------------------------------------------------------------
 # premissas
@@ -108,10 +113,11 @@ def confere_premissas(d, cod):
     if len(d) != A.TAMANHO:
         return [f"a imagem tem {len(d)} bytes, esperado {A.TAMANHO} (2 MiB)"]
     sha = hashlib.sha256(bytes(d)).hexdigest()
-    if sha != A.SHA_ENTRADA:
+    if sha not in SHAS_ENTRADA:
         erros.append(f"sha256 da entrada {sha[:16]}..., esperado "
-                     f"{A.SHA_ENTRADA[:16]}... — a receita e a RC6 mais esta "
-                     f"ferramenta, e so a RC6 entra")
+                     f"{A.SHA_ENTRADA[:16]}... (ou a RC6 grafite da 2.1, "
+                     f"{SHA_ENTRADA_21[:16]}...) — a receita e a RC6 mais "
+                     f"esta ferramenta, e so a RC6 entra")
     for a, (fab, _novo) in sorted(A.TAM_VIEW.items()):
         if bytes(d[a:a + 2]) != fab:
             erros.append(f"o tamanho da view em 0x{a:06X} e "
