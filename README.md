@@ -6,7 +6,7 @@ o firmware do zero nem de copiar outro aparelho.
 
 **Site:** https://zeroproj.github.io/OpenPod/ (fonte em `docs/index.html`).
 O repositório público recebe **só a página e o kit** (`tools/publica_release.py`).
-O código-fonte e a análise ficam neste repositório local.
+O código-fonte e a análise ficam no repositório **privado** `zeroproj/OpenPod-dev` (remoto `privado`).
 
 > **Estado em 2026-11-14:** **OpenPod Reload 2.0 publicada**: a RC6 mais a
 > capa do álbum na Tocando Agora. A capa é lida e decodificada na PreTask,
