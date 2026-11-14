@@ -31,3 +31,5 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   - Auditoria do toolchain (D06) ainda não rodada.
   - Créditos "NanoClone" no README do pacote: confirmar com o decisor se sai.
   - Remoto privado para o código (Fase 1) — decisão do decisor.
+
+**2026-11-14:** limpeza do projeto (arquivo em `../OpenPod-arquivo-2026-11-14/`); código no privado `zeroproj/OpenPod-dev`; branch `privado-completo` apagado do público. **Ficha 017 em andamento** (DeepSeek grátis): **Reload 2.1** = 2.0 + ícones grafite (prévia aprovada).
