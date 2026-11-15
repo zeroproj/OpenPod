@@ -10,13 +10,18 @@ da Apple nem da fabrica.
 USO
     GLIFO=255,255,255 python3 tools/desenha_icones_home.py assets/IconesHome.png /tmp/ampliada.png
     ESTILO=grafite GLIFO=255,255,255 python3 tools/desenha_icones_home.py assets/IconesHome_grafite.png /tmp/ampliada.png
+    ESTILO=escuro_colorido python3 tools/desenha_icones_home.py assets/IconesHome_escuro_colorido.png /tmp/ampliada.png
 
 ESTILO
     Sem ESTILO, a saida e a folha aprovada em 2026-09-24 (sha fixado nos
     testes). ESTILO=grafite aplica so as tres mudancas da ficha 017: o
     degradê grafite nos nove icones, o furo do disco de musica em
     (60,60,66) e o miolo da engrenagem/linha da pasta em (60,60,66).
-    Forma, posicao, tamanho e glifos continuam iguais.
+    ESTILO=escuro_colorido aplica o desenho da D14 (ficha 018): o degradê
+    escuro (50,50,54) -> (26,26,28) nos nove icones, os furos internos em
+    (38,38,41) e o simbolo de cada icone no tom claro do degradê original
+    daquele icone (a ordem da folha). O GLIFO do ambiente nao vale nesse
+    estilo. Forma, posicao, tamanho e desenho dos glifos continuam iguais.
 """
 # Proposta de folha de icones OpenPod: 128x160, 9 circulos de 30px nas posicoes de fabrica.
 # Estilo: aro prata (casca da bateria 197,206,213), miolo grafite, simbolo verde (180,246,131).
@@ -50,8 +55,15 @@ if ESTILO=='':
 elif ESTILO=='grafite':
     CORES=[((84,84,90),(46,46,50)) for _ in range(9)]
     COR_FURO=(60,60,66); COR_DETALHE=(60,60,66)
+elif ESTILO=='escuro_colorido':
+    CORES=[((50,50,54),(26,26,28)) for _ in range(9)]
+    COR_FURO=(38,38,41); COR_DETALHE=(38,38,41)
+    # o tom claro (o 1o) do degrade original de cada icone, na ordem da folha
+    SIMBOLOS=[(255,94,98),(255,176,64),(255,82,82),(90,200,250),(255,190,70),
+              (120,220,120),(70,150,255),(160,166,176),(90,190,255)]
 else:
-    sys.exit(f"ERRO: ESTILO={ESTILO!r} desconhecido (use 'grafite' ou omita)")
+    sys.exit(f"ERRO: ESTILO={ESTILO!r} desconhecido "
+             f"(use 'grafite', 'escuro_colorido' ou omita)")
 _k=[0]
 GLOSS=_o_env=__import__('os').environ.get('GLOSS')=='1'
 def squircle_mask(sz,rad):
@@ -108,7 +120,10 @@ def pasta(cx,cy):
     d.polygon([(s(cx-9),s(cy-6)),(s(cx-3),s(cy-6)),(s(cx-1),s(cy-4)),(s(cx+9),s(cy-4)),(s(cx+9),s(cy+7)),(s(cx-9),s(cy+7))],fill=G)
     d.line([s(cx-9),s(cy-1.5),s(cx+9),s(cy-1.5)],fill=COR_DETALHE,width=int(s(1)))
 GLIFOS=[musica,play,mic,fm,livro,imagem,bt,gear,pasta]
-for (cx,cy),g in zip(CEN,GLIFOS):
-    base(cx,cy); g(cx,cy)
+for i,((cx,cy),g) in enumerate(zip(CEN,GLIFOS)):
+    base(cx,cy)
+    if ESTILO=='escuro_colorido':
+        G=SIMBOLOS[i]
+    g(cx,cy)
 out=img.resize((W,H),Image.LANCZOS)
 out.save(sys.argv[1]); out.resize((W*4,H*4),Image.NEAREST).save(sys.argv[2])

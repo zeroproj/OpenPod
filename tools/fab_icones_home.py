@@ -88,9 +88,10 @@ PREMISSAS, conferidas ANTES de escrever qualquer byte
         nao parte de um icone;
       - `assets/IconesHome.png` tem o sha256 e o tamanho (128x160) fixados
         pela ficha. Sem isso a ferramenta estaria gravando um desenho que
-        ninguem aprovou (dano D1). A ficha 017 acrescenta
-        `assets/IconesHome_grafite.png` a essa lista de PNGs aprovados,
-        tambem preso por sha256.
+        ninguem aprovou (dano D1). As fichas 017 e 018 acrescentam
+        `assets/IconesHome_grafite.png` e
+        `assets/IconesHome_escuro_colorido.png` a essa lista de PNGs
+        aprovados, tambem presos por sha256.
 
     As regioes "tem de ser as de fabrica" sao presas por sha256 em vez de
     coladas no fonte: 1 KiB de paleta e 18 KiB de pixels no fonte seriam
@@ -184,6 +185,8 @@ PNGS_APROVADOS = {
     SHA_PNG: "IconesHome.png",
     "1493e2a464089793b81a9705cc1ee40ba4ad84208387d66b355582e976db8544":
         "IconesHome_grafite.png",
+    "5eff7463214bd8004bce30352b660d75087bb3fa139731d52ab777bf57dffaa2":
+        "IconesHome_escuro_colorido.png",
 }
 
 # --- o degradê da barra: as MESMAS contas de fab_barra_degrade.py
