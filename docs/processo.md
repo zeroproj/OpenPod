@@ -33,3 +33,12 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   - Remoto privado para o código (Fase 1) — decisão do decisor.
 
 **2026-11-14:** limpeza do projeto (arquivo em `../OpenPod-arquivo-2026-11-14/`); código no privado `zeroproj/OpenPod-dev`; branch `privado-completo` apagado do público. **Ficha 017 entregue e Reload 2.1 publicada (2026-11-15)** com o "pode" do decisor: 2.0 + ícones grafite; só a folha da home muda (9739 B em `0x0CDDA0..0x0D2BCD`); público `origin/main` `956c6ef`.
+
+**2026-11-15 — retorno de usuário no Reddit (pendente, decisor: "ainda não, depois eu falo"):**
+- **Relato:** GN-408 (mesmo SL6801, flash ID 85148514), Reload 2.x gravada inteira pelo Flashloader. **Reinicia ao tocar música com capa.** A "1.0" antiga funcionou.
+- **Causa: HIPÓTESE.** Pode ser hardware do GN-408 ou um tipo de capa que nunca testamos. No segundo caso, o GN-438 também reiniciaria.
+- **Propostas, em espera:**
+  - pedir ao usuário um MP3 que reinicia;
+  - o decisor testar a 2.1 com músicas reais;
+  - gerar uma "2.1 sem capa" (RC6 + grafite);
+  - aviso no README público.
