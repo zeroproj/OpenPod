@@ -7,6 +7,28 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-11-14 — OpenPod Reload 2.1 (ficha 017): ícones da home em grafite
+
+- **O código é o da 2.0 byte a byte.** Receita nova `reload_2.1` = a mesma
+  lista da `reload_2.0`, com uma única diferença: `fab_icones_home.py`
+  recebe `--png assets/IconesHome_grafite.png`. Sem carimbo, sha
+  `956dffc18123fef465ffcf7811fc68ec4e7e50d9bc715510717625df166cadb4`;
+  a diferença contra a 2.0 fica só na paleta e nos pixels da folha
+  (`tests/test_reload_2_1.py`).
+- `desenha_icones_home.py` ganhou `ESTILO=grafite`: degradê `(84,84,90)`
+  → `(46,46,50)` nos nove ícones, e `(60,60,66)` no furo do disco, no
+  miolo da engrenagem e na linha da pasta. Sem `ESTILO`, o sha continua o
+  de hoje (`fbdd1dc7…`). `assets/IconesHome_grafite.png` versionado.
+- Imagem carimbada `a99288bb6af00060ca91bfefae29530667ea05a20224a5c7c6bc88e90ee1aafb`.
+  `.up` 1.749.248 B, CRC `0x9750`, sha
+  `9e5ae4ffa46be0a12ef8c71e7a8412ee4e763e96b55f5c50e45cb7b5dfbc25c5`.
+  Kit `release/OpenPod-Reload-2.1/` (base ORIGINAL, formato da 2.0).
+- Prévia da tela a partir da imagem construída em
+  `docs/previas/2026-11-14_reload21_da_imagem.png`.
+- **Aguardando o teste do decisor. Não publicar.**
+
+---
+
 ## 2026-11-12 — OpenPod Reload 2.0 (ficha 016): o B7b com carimbo
 
 - **O código é o B7b byte a byte.** Receita nova `reload_2.0` = a mesma

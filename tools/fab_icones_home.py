@@ -88,7 +88,9 @@ PREMISSAS, conferidas ANTES de escrever qualquer byte
         nao parte de um icone;
       - `assets/IconesHome.png` tem o sha256 e o tamanho (128x160) fixados
         pela ficha. Sem isso a ferramenta estaria gravando um desenho que
-        ninguem aprovou (dano D1).
+        ninguem aprovou (dano D1). A ficha 017 acrescenta
+        `assets/IconesHome_grafite.png` a essa lista de PNGs aprovados,
+        tambem preso por sha256.
 
     As regioes "tem de ser as de fabrica" sao presas por sha256 em vez de
     coladas no fonte: 1 KiB de paleta e 18 KiB de pixels no fonte seriam
@@ -177,6 +179,12 @@ HOME_PTR_FABRICA = XIP + HOME_PAL
 # --- o PNG aprovado
 PNG_PADRAO = "assets/IconesHome.png"
 SHA_PNG = "fbdd1dc714b1316b698cdf34bd1514595508f62250c5dc2da3fee910247d2b70"
+# ficha 017: o mesmo desenho em grafite, aprovado em 2026-11-14
+PNGS_APROVADOS = {
+    SHA_PNG: "IconesHome.png",
+    "1493e2a464089793b81a9705cc1ee40ba4ad84208387d66b355582e976db8544":
+        "IconesHome_grafite.png",
+}
 
 # --- o degradê da barra: as MESMAS contas de fab_barra_degrade.py
 COR_TOPO, COR_BASE = (64, 70, 82), (14, 16, 19)
@@ -227,9 +235,9 @@ def le_png(caminho):
         raise ValueError(f"{caminho} nao existe")
     bruto = open(caminho, "rb").read()
     sha = hashlib.sha256(bruto).hexdigest()
-    if sha != SHA_PNG:
+    if sha not in PNGS_APROVADOS:
         raise ValueError(f"{caminho} tem sha256 {sha}\n"
-                         f"         a ficha fixa {SHA_PNG}")
+                         f"         nenhum PNG aprovado tem esse sha")
     try:
         from PIL import Image
     except ImportError:

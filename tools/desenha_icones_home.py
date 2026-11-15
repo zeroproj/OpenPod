@@ -9,6 +9,14 @@ da Apple nem da fabrica.
 
 USO
     GLIFO=255,255,255 python3 tools/desenha_icones_home.py assets/IconesHome.png /tmp/ampliada.png
+    ESTILO=grafite GLIFO=255,255,255 python3 tools/desenha_icones_home.py assets/IconesHome_grafite.png /tmp/ampliada.png
+
+ESTILO
+    Sem ESTILO, a saida e a folha aprovada em 2026-09-24 (sha fixado nos
+    testes). ESTILO=grafite aplica so as tres mudancas da ficha 017: o
+    degradê grafite nos nove icones, o furo do disco de musica em
+    (60,60,66) e o miolo da engrenagem/linha da pasta em (60,60,66).
+    Forma, posicao, tamanho e glifos continuam iguais.
 """
 # Proposta de folha de icones OpenPod: 128x160, 9 circulos de 30px nas posicoes de fabrica.
 # Estilo: aro prata (casca da bateria 197,206,213), miolo grafite, simbolo verde (180,246,131).
@@ -33,9 +41,17 @@ def grad_shape(cx,cy,half,rad,top,bot):
     for i in range(sz):
         t=i/sz; gd.line([0,i,sz,i],fill=tuple(int(a+(b-a)*t) for a,b in zip(top,bot)))
     img.paste(g,(int(s(cx-half)),int(s(cy-half))),m)
-CORES=[((255,94,98),(214,30,70)),((255,176,64),(240,110,20)),((255,82,82),(200,20,40)),
-       ((90,200,250),(0,122,220)),((255,190,70),(245,130,20)),((120,220,120),(30,160,70)),
-       ((70,150,255),(20,80,220)),((160,166,176),(90,96,106)),((90,190,255),(20,110,230))]
+CORES_PADRAO=[((255,94,98),(214,30,70)),((255,176,64),(240,110,20)),((255,82,82),(200,20,40)),
+              ((90,200,250),(0,122,220)),((255,190,70),(245,130,20)),((120,220,120),(30,160,70)),
+              ((70,150,255),(20,80,220)),((160,166,176),(90,96,106)),((90,190,255),(20,110,230))]
+ESTILO=os.environ.get('ESTILO','')
+if ESTILO=='':
+    CORES=CORES_PADRAO; COR_FURO=(214,30,70); COR_DETALHE=(110,116,126)
+elif ESTILO=='grafite':
+    CORES=[((84,84,90),(46,46,50)) for _ in range(9)]
+    COR_FURO=(60,60,66); COR_DETALHE=(60,60,66)
+else:
+    sys.exit(f"ERRO: ESTILO={ESTILO!r} desconhecido (use 'grafite' ou omita)")
 _k=[0]
 GLOSS=_o_env=__import__('os').environ.get('GLOSS')=='1'
 def squircle_mask(sz,rad):
@@ -61,7 +77,7 @@ def base(cx,cy):
 import os as _o
 G=tuple(int(x) for x in _o.environ.get('GLIFO','180,246,131').split(',')); LW=s(1.8)
 def musica(cx,cy):
-    disc(cx,cy,8.5,G); disc(cx,cy,3,(214,30,70)); disc(cx,cy,1.2,G)
+    disc(cx,cy,8.5,G); disc(cx,cy,3,COR_FURO); disc(cx,cy,1.2,G)
 def play(cx,cy):
     d.arc([s(cx-8),s(cy-8),s(cx+8),s(cy+8)],40,330,fill=G,width=int(LW))
     d.polygon([(s(cx-2.5),s(cy-4.5)),(s(cx-2.5),s(cy+4.5)),(s(cx+4.5),s(cy))],fill=G)
@@ -87,10 +103,10 @@ def gear(cx,cy):
         a=k*math.pi/4
         x,y=cx+7.5*math.cos(a),cy+7.5*math.sin(a)
         d.polygon([(s(x+2.2*math.cos(a+b)),s(y+2.2*math.sin(a+b))) for b in (math.pi/2,-math.pi/2,-math.pi*0.8,math.pi*0.8)],fill=G)
-    disc(cx,cy,6.5,G); disc(cx,cy,2.8,(110,116,126))
+    disc(cx,cy,6.5,G); disc(cx,cy,2.8,COR_DETALHE)
 def pasta(cx,cy):
     d.polygon([(s(cx-9),s(cy-6)),(s(cx-3),s(cy-6)),(s(cx-1),s(cy-4)),(s(cx+9),s(cy-4)),(s(cx+9),s(cy+7)),(s(cx-9),s(cy+7))],fill=G)
-    d.line([s(cx-9),s(cy-1.5),s(cx+9),s(cy-1.5)],fill=(110,116,126),width=int(s(1)))
+    d.line([s(cx-9),s(cy-1.5),s(cx+9),s(cy-1.5)],fill=COR_DETALHE,width=int(s(1)))
 GLIFOS=[musica,play,mic,fm,livro,imagem,bt,gear,pasta]
 for (cx,cy),g in zip(CEN,GLIFOS):
     base(cx,cy); g(cx,cy)

@@ -202,6 +202,10 @@ TAMANHO = 0x200000                          # 2 MiB
 # --- a entrada: a RC5 exata (catraca, rodando no aparelho em 2026-10-23)
 SHA_ENTRADA = ("f9f2e05990adb5d3882bbf093a6251673139004571af7698f351"
                "4b02f1e08f50")
+# ficha 017: a mesma RC5 com a folha da home em grafite
+SHA_ENTRADA_21 = ("c01c71d2444fff674517c5d7e9b9844b04482bfc6cf2c2c3b"
+                  "e29c10cf6b2f9c8")
+SHAS_ENTRADA = (SHA_ENTRADA, SHA_ENTRADA_21)
 
 # --- a folha da home (INDEXED_8, 128x160)
 HOME_PAL, HOME_PX = 0x0CDD5C, 0x0CE15C
@@ -452,10 +456,11 @@ def confere_premissas(d):
         return [f"a imagem tem {len(d)} bytes, esperado {TAMANHO} (2 MiB)"]
 
     sha = hashlib.sha256(bytes(d)).hexdigest()
-    if sha != SHA_ENTRADA:
+    if sha not in SHAS_ENTRADA:
         erros.append(f"sha256 da entrada {sha[:16]}..., esperado "
-                    f"{SHA_ENTRADA[:16]}... — a receita e a RC5 mais esta "
-                    f"ferramenta, e so a RC5 entra")
+                    f"{SHA_ENTRADA[:16]}... (ou a RC5 grafite da 2.1, "
+                    f"{SHA_ENTRADA_21[:16]}...) — a receita e a RC5 mais "
+                    f"esta ferramenta, e so a RC5 entra")
 
     for a in sorted(GANCHOS):
         alvo = bl_alvo(d, a)
