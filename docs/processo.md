@@ -32,4 +32,4 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   - Créditos "NanoClone" no README do pacote: confirmar com o decisor se sai.
   - Remoto privado para o código (Fase 1) — decisão do decisor.
 
-**2026-11-14:** limpeza do projeto (arquivo em `../OpenPod-arquivo-2026-11-14/`); código no privado `zeroproj/OpenPod-dev`; branch `privado-completo` apagado do público. **Ficha 017 em andamento** (DeepSeek grátis): **Reload 2.1** = 2.0 + ícones grafite (prévia aprovada).
+**2026-11-14:** limpeza do projeto (arquivo em `../OpenPod-arquivo-2026-11-14/`); código no privado `zeroproj/OpenPod-dev`; branch `privado-completo` apagado do público. **Ficha 017 entregue e Reload 2.1 publicada (2026-11-15)** com o "pode" do decisor: 2.0 + ícones grafite; só a folha da home muda (9739 B em `0x0CDDA0..0x0D2BCD`); público `origin/main` `956c6ef`.
