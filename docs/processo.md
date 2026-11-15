@@ -42,3 +42,8 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   - o decisor testar a 2.1 com músicas reais;
   - gerar uma "2.1 sem capa" (RC6 + grafite);
   - aviso no README público.
+- **Atualização (decisor, 2026-11-15):** "eu tenho 300 músicas, eu nunca tive problemas".
+  - No GN-438, com a 2.x e a biblioteca real dele, a capa nunca reiniciou.
+  - **PROVÁVEL:** o reinício é específico do GN-408 (hardware) ou das músicas daquele usuário, e não um bug geral.
+  - Próximo: o MP3 ou o `.up` do usuário do GN-408. A ficha 019 (estresse da capa no emulador) fica como opcional.
+
