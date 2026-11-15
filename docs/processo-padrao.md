@@ -189,6 +189,10 @@ revisa o mapa de modelos com base nelas.
 - O desenvolvedor só escreve no próprio worktree.
 - Do decisor: publicar, gravar no aparelho, escopo, aceitar risco.
 - Página pública: descrição neutra, sem marcas de terceiros (sem "iPod").
+- **Versão que muda o visual:** antes de publicar, trocar a imagem da tela embutida no `docs/index.html`. São duas, PT e EN, a mesma
+  imagem em base64. Montá-la a partir dos ícones da versão e atualizar o `alt` das duas (ficha 018: o site ficou com os ícones da 2.0).
+- **Push público:** o `publica_release.py --push` pode travar sem mostrar nada (a saída fica capturada). Rodar sem `--push`, conferir
+  a lista e empurrar à mão com `git push --force --progress origin publico:main`. Depois, `git worktree remove --force .publicar-tmp`.
 
 ## 13. Contexto: sessão por ficha e leitura curta (D06)
 
