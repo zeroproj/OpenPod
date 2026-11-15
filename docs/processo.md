@@ -47,3 +47,4 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   - **PROVÁVEL:** o reinício é específico do GN-408 (hardware) ou das músicas daquele usuário, e não um bug geral.
   - Próximo: o MP3 ou o `.up` do usuário do GN-408. A ficha 019 (estresse da capa no emulador) fica como opcional.
 
+**Reload 2.2 publicada (2026-11-15)** com o "pode mandar a 2.2" do decisor: ícones escuros com símbolos coloridos (D14). Só a folha da home muda em relação à 2.1 (9665 B). Kit `release/OpenPod-Reload-2.2` (`.up` CRC 0x7147).
