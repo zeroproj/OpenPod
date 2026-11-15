@@ -816,6 +816,18 @@ RELOAD_2_1 = [
     for t, extra, por in RELOAD_2_0
 ]
 
+# ---------------------------------------------------------------------------
+# reload_2.2 (ficha 018): a 2.0 com os icones escuros e os simbolos
+# coloridos (D14). Mesma lista da `reload_2.0`, com UMA diferenca: o passo
+# `fab_icones_home.py` recebe `--png assets/IconesHome_escuro_colorido.png`.
+# O codigo nao muda; a folha (paleta e pixels) e o carimbo sao o que mudam.
+# ---------------------------------------------------------------------------
+RELOAD_2_2 = [
+    (t, (["--png", "assets/IconesHome_escuro_colorido.png"]
+         if t == "fab_icones_home.py" else extra), por)
+    for t, extra, por in RELOAD_2_0
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -854,6 +866,8 @@ RECEITAS = {
     "reload_2.0": RELOAD_2_0,
     # a 2.1 e a 2.0 com a folha grafite (o resto da lista e igual)
     "reload_2.1": RELOAD_2_1,
+    # a 2.2 e a 2.0 com a folha escura de simbolos coloridos (idem)
+    "reload_2.2": RELOAD_2_2,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.

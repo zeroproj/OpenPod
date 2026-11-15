@@ -42,7 +42,10 @@ SHA_B4 = ("39bea4883008bb840f515dd617cce1b46fcdec9c7ae3b7a8aee70d"
 # ficha 017: o mesmo B4 com a folha da home em grafite
 SHA_B4_21 = ("fcb71df7333d22a6e0f0be7bd5c41e10a0c33331a09d2d0af4d46d"
              "c6c521da02")
-SHAS_B4 = (SHA_B4, SHA_B4_21)
+# ficha 018: o mesmo B4 com a folha escura de simbolos coloridos
+SHA_B4_22 = ("6fd6ddb7d888fef3fdbcf9a21f3a112b56f832446b1ef08af3db80"
+             "770fc18d72")
+SHAS_B4 = (SHA_B4, SHA_B4_21, SHA_B4_22)
 
 BLOB = 0x1AAA00
 BLOB_XIP = A.XIP + BLOB                 # 0x00DAAA00
@@ -156,7 +159,8 @@ def confere_premissas(d, cod, degrau):
     if sha not in SHAS_B4:
         erros.append(f"sha256 da entrada {sha[:16]}..., esperado "
                      f"{SHA_B4[:16]}... (ou o B4 grafite da 2.1, "
-                     f"{SHA_B4_21[:16]}...) (o B4 exato)")
+                     f"{SHA_B4_21[:16]}...; ou o escuro_colorido da 2.2, "
+                     f"{SHA_B4_22[:16]}...) (o B4 exato)")
     if bytes(d[P_TYPE:P_TYPE + 2]) != CMP_R3_5:
         erros.append(f"0x{P_TYPE:06X} nao e cmp r3,#5 do B4")
     lido = A.desvio(d, P_TBB)

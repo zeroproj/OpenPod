@@ -175,7 +175,9 @@ TAMANHO = 0x200000                          # 2 MiB
 SHA_RC4 = "74e8cb315958b053f9e36e366a32f103ba995f7a18316c1c01e3de89e3f3b6d4"
 # ficha 017: o mesmo lote com a folha da home em grafite (a unica diferenca)
 SHA_RC4_21 = "bd491c65bf5bf01fbb0417b462fef3a2c0b3665a14ca3286a183668e840a85a6"
-SHAS_RC4 = (SHA_RC4, SHA_RC4_21)
+# ficha 018: o mesmo lote com a folha escura de simbolos coloridos
+SHA_RC4_22 = "35e9e8918d1d944842ad61808dbd40e3ef2ff55fb37b8df05dfd2a2ad6a05c3b"
+SHAS_RC4 = (SHA_RC4, SHA_RC4_21, SHA_RC4_22)
 
 # --- a tabela do portugues (idioma 8, 0x00D2108C)
 TABELA_PT = 0x053B84                         # 216 ponteiros XIP de 4 bytes
@@ -384,7 +386,8 @@ def confere_premissas(d, textos):
             f"o sha256 da entrada e {got}\n"
             f"      a ficha fixa a RC4 exata, {SHA_RC4}\n"
             f"      (ou a mesma receita com a folha grafite da 2.1, "
-            f"{SHA_RC4_21[:16]}...)\n"
+            f"{SHA_RC4_21[:16]}...; ou a folha escuro_colorido da 2.2, "
+            f"{SHA_RC4_22[:16]}...)\n"
             f"      esta ferramenta roda uma vez, sobre a RC4 — nem duas "
             f"vezes, nem sobre a RC3, nem sobre o ORIGINAL")
 

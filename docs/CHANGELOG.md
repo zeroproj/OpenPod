@@ -7,6 +7,30 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-11-15 — OpenPod Reload 2.2 (ficha 018): ícones escuros com símbolos coloridos
+
+- **O código é o da 2.1 byte a byte.** Receita nova `reload_2.2` = a mesma
+  lista da `reload_2.1`, com uma única diferença: `fab_icones_home.py`
+  recebe `--png assets/IconesHome_escuro_colorido.png`. Sem carimbo, sha
+  `4fdd31c03ad6672ca0b15b141345b7559b2517afca19f54de0d73753f842f769`;
+  a diferença contra a 2.1 fica só na paleta e nos pixels da folha
+  (`tests/test_reload_2_2.py`).
+- `desenha_icones_home.py` ganhou `ESTILO=escuro_colorido`: degradê
+  `(50,50,54)` → `(26,26,28)` nos nove ícones, furos internos `(38,38,41)`
+  e o símbolo de cada ícone no tom claro do degradê original daquele
+  ícone. Sem `ESTILO`, o sha continua `fbdd1dc7…`; com `grafite`,
+  `1493e2a4…`. `assets/IconesHome_escuro_colorido.png` versionado
+  (`5eff7463…`), idêntico ao PNG da prévia aprovada.
+- Imagem carimbada `7f14440a5d4abbf7a5e8ee31de999c377ce96aa27ba7e7985aaec77644ffe154`.
+  `.up` 1.749.248 B, CRC `0x7147`, sha
+  `732315731e671a5aa18ce6e42fa0119e639acde3f6b98c69e0bac950e92f3ce8`.
+  Kit `release/OpenPod-Reload-2.2/` (base ORIGINAL, formato da 2.1).
+- Prévia da tela a partir da imagem construída em
+  `docs/previas/2026-11-15_reload22_da_imagem.png`.
+- **Aguardando o teste do decisor. Não publicar.**
+
+---
+
 ## 2026-11-14 — OpenPod Reload 2.1 (ficha 017): ícones da home em grafite
 
 - **O código é o da 2.0 byte a byte.** Receita nova `reload_2.1` = a mesma

@@ -100,7 +100,10 @@ import capa_album_asm as A  # noqa: E402
 # ficha 017: a mesma RC6 com a folha da home em grafite
 SHA_ENTRADA_21 = ("46d5f00ebc1bc5e32b51627d036904ea7127bb17783ea16edd2b48"
                   "f77467f783")
-SHAS_ENTRADA = (A.SHA_ENTRADA, SHA_ENTRADA_21)
+# ficha 018: a mesma RC6 com a folha escura de simbolos coloridos
+SHA_ENTRADA_22 = ("ddb3234782f3ecf54593d2cbf0b4aaec00d5642159e05ecd05b9e9"
+                  "f02f02f8fb")
+SHAS_ENTRADA = (A.SHA_ENTRADA, SHA_ENTRADA_21, SHA_ENTRADA_22)
 
 
 # ---------------------------------------------------------------------------
@@ -116,7 +119,8 @@ def confere_premissas(d, cod):
     if sha not in SHAS_ENTRADA:
         erros.append(f"sha256 da entrada {sha[:16]}..., esperado "
                      f"{A.SHA_ENTRADA[:16]}... (ou a RC6 grafite da 2.1, "
-                     f"{SHA_ENTRADA_21[:16]}...) — a receita e a RC6 mais "
+                     f"{SHA_ENTRADA_21[:16]}...; ou a escuro_colorido da 2.2, "
+                     f"{SHA_ENTRADA_22[:16]}...) — a receita e a RC6 mais "
                      f"esta ferramenta, e so a RC6 entra")
     for a, (fab, _novo) in sorted(A.TAM_VIEW.items()):
         if bytes(d[a:a + 2]) != fab:
