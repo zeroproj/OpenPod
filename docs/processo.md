@@ -68,3 +68,4 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 **Reload 2.2.1 publicada (2026-11-16)** com o "pode" do decisor: limite de capa de 1000 px / 512 KiB (58 B a mais que a 2.2). Público `origin/main` `a0c60f0`. O crédito NanoClone saiu também do modelo `docs/pacote/README.md`.
 
 **2026-11-16 — retorno dos usuários:** decisor: "o pessoal testou e tá funcionando". A **2.2.1 funciona** com os aparelhos dos usuários (GN-408 incluído). O limite de capa resolveu o travamento das capas grandes.
+- **Pendente (decisor: "mais para o futuro pode trocar no site"):** trocar o GN-408 de "Em teste" para "Testado por usuários" no site e nos READMEs, quando o decisor pedir.
