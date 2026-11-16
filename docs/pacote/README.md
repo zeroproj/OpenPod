@@ -143,6 +143,3 @@ firmware.
 - Flashing tool (Windows): **Flashloader SL-DEV 6.9.5**, by **Shenju**,
   the chip maker. Redistributed unmodified, as a convenience. Not ours,
   and not part of OpenPod.
-- Visual direction references the **NanoClone** theme by **Billy Blair**
-  (CC-BY-SA 3.0). Only **measured colour values** were used —
-  no pixels were copied.

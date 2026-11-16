@@ -1,0 +1,38 @@
+OpenPod Reload 2.2.1 — TESTAR
+
+Base: Reload 2.2 (rodando). Kit: base ORIGINAL. Receita reload_2.2.1 = a MESMA lista
+da reload_2.2, com um passo a mais: fab_limite_capa.py (--limite-px 1000
+--limite-bytes 524288). Muda so o lote da capa e o carimbo:
+Config -> Informacoes = "Reload 2.2.1".
+Imagem carimbada: 3a0236f5... · .up 1.749.248 B · CRC 0x03CF · sha 0305cc2e...
+Codigo: byte a byte o da 2.2 (sem carimbo 4fdd31c0...), mais o limite da capa.
+
+O QUE MUDOU
+  Antes de decodificar a capa embutida, o aparelho confere o tamanho:
+  largura ou altura acima de 1000 px, ou imagem acima de 512 KiB (524288 B),
+  e ignorada. Nesse caso aparece a capa cinza e o som continua. Antes, a 2.2
+  tentava decodificar tudo: 1500 px / 842 KB travava o aparelho.
+
+INSTALAR (pelo cartao)
+  1. Copie OpenPod_OpenPodReload2.2.1.up para a RAIZ do cartao com o nome update.up
+  2. Config -> Atualizar por SD -> Sim
+  3. O aparelho reinicia, atualiza e volta
+  4. APAGUE o update.up do cartao
+
+ROTEIRO (marque ok / falhou)
+  [ ] Config -> Informacoes = "Reload 2.2.1"
+  [ ] Musica 01 de tests/assets/rc7: toca e mostra a capa como na 2.2
+  [ ] Os 5 MP3 de capa grande (640, 1000, 1500, 2000 e 3000 px):
+      [ ] 640 px  / ~160 KB -> capa aparece; medir o atraso do play
+      [ ] 1000 px / ~378 KB -> capa aparece; medir o atraso do play
+      [ ] 1500 px / ~642 KB -> capa cinza, som comeca na hora
+      [ ] 2000 px / ~968 KB -> capa cinza, som comeca na hora
+      [ ] 3000 px / ~1,6 MB -> capa cinza, som comeca na hora
+  [ ] Capa de 1200 px / ~495 KB (abaixo de 512 KiB, acima de 1000 px): capa cinza
+  [ ] Musica sem capa: capa cinza, som continua
+  [ ] Trocar de faixa varias vezes entre uma capa grande e uma pequena: nao trava
+  [ ] Home, Config, lista de musicas e Voltar continuam iguais a 2.2
+
+SE ALGO DER ERRADO
+  Volta de seguranca: reinstale a 2.2 pelo cartao (update.up da 2.2). Se nao
+  ligar ou o cartao falhar, use o cabo (Flashloader) com o kit da 2.2.

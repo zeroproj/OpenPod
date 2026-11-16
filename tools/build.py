@@ -828,6 +828,28 @@ RELOAD_2_2 = [
     for t, extra, por in RELOAD_2_0
 ]
 
+# ---------------------------------------------------------------------------
+# reload_2.2.1 (ficha 019): a 2.2 com o limite de tamanho da capa.
+#
+# Mesma lista da `reload_2.2`, com UMA diferenca: o passo novo
+# `fab_limite_capa.py`, que troca dois pontos do `carrega_capa` e escreve
+# duas rotinas na area livre do lote da capa. Os limites ficam aqui (e no
+# default da ferramenta) para serem faceis de mudar:
+#   LIMITE_PX     = 1000     (largura/altura maxima do JPEG)
+#   LIMITE_BYTES  = 524288   (512 KiB, o tamanho maximo do JPEG)
+# O carimbo de versao e aplicado DEPOIS pelo `patch_versao.py`
+# ("Reload 2.2.1" em 0x1A4F00) quando o kit e gerado.
+# ---------------------------------------------------------------------------
+LIMITE_PX_2_2_1 = 1000
+LIMITE_BYTES_2_2_1 = 512 * 1024
+
+RELOAD_2_2_1 = RELOAD_2_2 + [
+    ("fab_limite_capa.py",
+     ["--limite-px", str(LIMITE_PX_2_2_1),
+      "--limite-bytes", str(LIMITE_BYTES_2_2_1)],
+     "limite da capa: 1000 px e 512 KiB"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -868,6 +890,8 @@ RECEITAS = {
     "reload_2.1": RELOAD_2_1,
     # a 2.2 e a 2.0 com a folha escura de simbolos coloridos (idem)
     "reload_2.2": RELOAD_2_2,
+    # a 2.2.1 e a 2.2 com o limite de tamanho da capa
+    "reload_2.2.1": RELOAD_2_2_1,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
