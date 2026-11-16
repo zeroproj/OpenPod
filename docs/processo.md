@@ -48,3 +48,16 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   - Próximo: o MP3 ou o `.up` do usuário do GN-408. A ficha 019 (estresse da capa no emulador) fica como opcional.
 
 **Reload 2.2 publicada (2026-11-15)** com o "pode mandar a 2.2" do decisor: ícones escuros com símbolos coloridos (D14). Só a folha da home muda em relação à 2.1 (9665 B). Kit `release/OpenPod-Reload-2.2` (`.up` CRC 0x7147).
+
+**2026-11-15 — segundo relato do GN-408 (usuário do Reddit):**
+- **Ambiente:** 208 MP3 320 kbps do **SpotiFLAC**, que embute a capa sozinho; SD SanDisk Extreme 64 GB.
+- **Sintomas na 2.0:**
+  - o play começa **7–8 s depois**;
+  - na **troca de faixa trava e desliga**, em geral depois que a capa carrega.
+- A **ROM de fábrica do 438 roda perfeita no 408** e a RC6 ("v1.0") também. O hardware é praticamente o mesmo.
+- **HIPÓTESE forte (coordenação):** **capas grandes** (SpotiFLAC costuma embutir a capa em alta resolução, centenas de KB a MB).
+  - O TJpgDec decodifica o Huffman da imagem inteira mesmo em 1/8, e isso leva segundos na PreTask, que segura o fluxo do play.
+  - O travamento na troca pode ser a fila da view cheia ou trabalho sobreposto.
+  - As 300 músicas do decisor provavelmente têm capas pequenas.
+- **Teste para o decisor:** 5 MP3 com capa de 640/1000/1500/2000/3000 px (baseline, q95, 173 KB a 3,1 MB), entregues em zip.
+
