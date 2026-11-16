@@ -1,6 +1,6 @@
 # OpenPod
 
-Um firmware novo para o **Iigenai GN-438**: visual limpo e moderno, foco
+Um firmware novo para o **Ligenai GN-438**: visual limpo e moderno, foco
 em música, feito a partir do sistema de fábrica (yp3_2.0.43).
 
 **Site:** https://zeroproj.github.io/OpenPod/
@@ -13,7 +13,7 @@ Instruções no `README.md` do pacote. Windows: `windows/LEIA-ME.txt`.
 
 ## Serve no meu aparelho?
 
-Testado **só no Iigenai GN-438**. Outros aparelhos da família
+Testado **só no Ligenai GN-438**. Outros aparelhos da família
 Smartlink/YP3 são candidatos — **e é você quem decide testar**. Cada
 aparelho precisa do dump do próprio aparelho: gravar o firmware de outro
 modelo brica. Tire o seu dump antes, e assuma que o risco é seu.

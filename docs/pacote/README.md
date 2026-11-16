@@ -1,9 +1,9 @@
 # OpenPod — {CURTO}
 
-A new firmware for the **Iigenai GN-438** player: clean, modern look,
+A new firmware for the **Ligenai GN-438** player: clean, modern look,
 focused on music, built from the stock system (`yp3_2.0.43`).
 
-*Um firmware novo para o **Iigenai GN-438**: visual limpo e moderno, foco em música, feito a partir do sistema de fábrica.*
+*Um firmware novo para o **Ligenai GN-438**: visual limpo e moderno, foco em música, feito a partir do sistema de fábrica.*
 
 > ⚠️ **Beta.** Tested on one device only.
 > *Testada em um único aparelho.*
