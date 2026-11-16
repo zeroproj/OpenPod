@@ -60,4 +60,8 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   - O travamento na troca pode ser a fila da view cheia ou trabalho sobreposto.
   - As 300 músicas do decisor provavelmente têm capas pequenas.
 - **Teste para o decisor:** 5 MP3 com capa de 640/1000/1500/2000/3000 px (baseline, q95, 173 KB a 3,1 MB), entregues em zip.
+- **Teste do decisor (2.2, GN-438, 2026-11-15)**, MP3 com capa baseline q95 4:4:4:
+  - 640 px (173 KB) e 1000 px (392 KB) tocam, mas **o contador de tempo engasga** enquanto a capa carrega;
+  - **1500 px (842 KB) trava tudo.**
+  - **Hipótese das capas grandes CONFIRMADA no aparelho.** Ficha 019 (2.2.1) com `LIMITE_PX = 1000` e `LIMITE_BYTES = 512 KiB`.
 
