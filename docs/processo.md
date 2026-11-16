@@ -65,3 +65,4 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   - **1500 px (842 KB) trava tudo.**
   - **Hipótese das capas grandes CONFIRMADA no aparelho.** Ficha 019 (2.2.1) com `LIMITE_PX = 1000` e `LIMITE_BYTES = 512 KiB`.
 
+**Reload 2.2.1 publicada (2026-11-16)** com o "pode" do decisor: limite de capa de 1000 px / 512 KiB (58 B a mais que a 2.2). Público `origin/main` `a0c60f0`. O crédito NanoClone saiu também do modelo `docs/pacote/README.md`.
