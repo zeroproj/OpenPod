@@ -7,6 +7,40 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-11-15 — OpenPod Reload 2.2.1 (ficha 019): limite de tamanho da capa
+
+- **O código é o da 2.2 byte a byte**, mais o limite da capa. Receita nova
+  `reload_2.2.1` = a mesma lista da `reload_2.2` com um passo a mais:
+  `fab_limite_capa.py --limite-px 1000 --limite-bytes 524288`. Sem
+  carimbo, sha
+  `e477c1e78ac1c88db58d29b030f35d7f11c8d90f45ec695a9b63392ea9936402`;
+  a diferença contra a 2.2 fica em 58 bytes, só no lote da capa
+  (`tests/test_reload_2_2_1.py`).
+- O `carrega_capa` (`0xDAA256`) ganhou dois desvios para rotinas novas na
+  área livre do lote: em `0xDAA882`, antes de ler a imagem, recusa acima
+  de **512 KiB** (`524288 B`); em `0xDAA334`, depois do `jd_prepare`,
+  recusa largura ou altura acima de **1000 px**, sem chamar o
+  `jd_decomp`. Os dois caminhos caem no cinza que já existia
+  (`0xDAA8D6`/`0xDAA3C6`), com `tmp`/FIL liberados e arquivo fechado.
+  Endereços, rotinas e medição em `docs/tarefas/019-analise.md`.
+- Emulador (`carrega_capa` direto, instruções executadas): a 2.2 gasta
+  102.000.622 para 1000 px, 191.145.821 para 1500 px e 600.251.999 para
+  3000 px; a 2.2.1 recusa 1500/3000 em 766 instruções e 1200 px (abaixo
+  de 512 KiB, acima de 1000 px) em 10.817, sem `jd_decomp`. A 1000 px
+  continua com os mesmos pixels da 2.2.
+- No aparelho, o decisor relatou: 640 px / ~173 KB e 1000 px / ~392 KB
+  tocam (com engasgo do contador); 1500 px / ~842 KB trava. Os limites
+  mantidos recusam o caso que trava e aceitam o maior que toca.
+- Imagem carimbada
+  `3a0236f508ad63b292f0831cf5150a9e18cd4c07556d3dd60d3592b865dfdcb5`.
+  `.up` 1.749.248 B, CRC `0x03CF`, sha
+  `0305cc2e3bf8208dc59edc56eb45f80bb6623df212d59427fa2d9fdf9594b92a`.
+  Kit `release/OpenPod-Reload-2.2.1/` (base ORIGINAL, formato da 2.2),
+  com README e `TESTAR.txt` próprios.
+- **Aguardando o teste do decisor. Não publicar.**
+
+---
+
 ## 2026-11-15 — OpenPod Reload 2.2 (ficha 018): ícones escuros com símbolos coloridos
 
 - **O código é o da 2.1 byte a byte.** Receita nova `reload_2.2` = a mesma
