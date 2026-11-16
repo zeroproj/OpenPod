@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <tr><td>Chip</td><td>Smartlink <strong>SL6801</strong>, memória de 2 MB. No modo de gravação, o Flashloader mostra <code>chip name: sl6801</code>.</td></tr>
   <tr><td>Firmware</td><td><strong>yp3_2.0.43</strong></td></tr>
   <tr><td>Ligenai GN-438</td><td><span class="ok">Testado</span>: é o aparelho em que o OpenPod é feito.</td></tr>
-  <tr><td>GN-408</td><td><span class="talvez">Em teste</span>: mesmo chip e firmware; o OpenPod funcionou. Capas muito grandes travavam até a 2.2, o que foi corrigido na <strong>2.2.1</strong>.</td></tr>
+  <tr><td>GN-408</td><td><span class="ok">Testado por usuários</span>: mesmo chip e firmware; a 2.2.1 funciona.</td></tr>
   <tr><td>Outros SL6801</td><td>Não testados. Se tiver o mesmo chip e o mesmo firmware, é provável que funcione, mas o risco é seu.</td></tr>
 </table>
 <div class="aviso"><strong>Em aparelho que não é o GN-438, faça um backup antes.</strong> Com o <a href="https://github.com/ilyakurdyukov/smartlink_flash">smartlink_flash</a> (Linux/macOS): <code>sudo ./smtlink_dump --id 301a:2801 flash_id read_flash 0 2M meu_backup.bin</code>. Guarde o arquivo: só o backup do <strong>seu</strong> aparelho serve para voltar ao original dele.</div>
@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", function(){
 <p><strong>Só na primeira vez</strong> você precisa de um computador com Windows e do cabo USB. Depois, as próximas versões entram <strong>pelo cartão SD</strong>, direto no aparelho.</p>
 <div class="aviso">
   <strong>Antes de começar</strong><br>
-  · Para players com chip <strong>SL6801</strong>: testado no <strong>Ligenai GN-438</strong>, em teste no <strong>GN-408</strong>. Em outro aparelho, veja a <a href="#compatibilidade">compatibilidade</a> e faça backup antes.<br>
+  · Para players com chip <strong>SL6801</strong>: testado no <strong>Ligenai GN-438</strong> e no <strong>GN-408</strong>. Em outro aparelho, veja a <a href="#compatibilidade">compatibilidade</a> e faça backup antes.<br>
   · Computador <strong>na tomada</strong> e cabo USB <strong>de dados</strong> (cabo só de carga não funciona).<br>
   · Deixe conectado <strong>só</strong> o aparelho que vai gravar.<br>
   · As configurações (volume, equalizador, idioma) voltam ao padrão. As músicas do cartão continuam lá.
@@ -227,7 +227,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <tr><td>Chip</td><td>Smartlink <strong>SL6801</strong>, 2 MB memory. In flashing mode, the Flashloader shows <code>chip name: sl6801</code>.</td></tr>
   <tr><td>Firmware</td><td><strong>yp3_2.0.43</strong></td></tr>
   <tr><td>Ligenai GN-438</td><td><span class="ok">Tested</span>: the player OpenPod is built on.</td></tr>
-  <tr><td>GN-408</td><td><span class="talvez">In testing</span>: same chip and firmware; OpenPod worked. Very large covers froze it up to 2.2, fixed in <strong>2.2.1</strong>.</td></tr>
+  <tr><td>GN-408</td><td><span class="ok">Tested by users</span>: same chip and firmware; 2.2.1 works.</td></tr>
   <tr><td>Other SL6801</td><td>Not tested. With the same chip and firmware it will probably work, at your own risk.</td></tr>
 </table>
 <div class="aviso"><strong>On anything other than a GN-438, back up first.</strong> With <a href="https://github.com/ilyakurdyukov/smartlink_flash">smartlink_flash</a> (Linux/macOS): <code>sudo ./smtlink_dump --id 301a:2801 flash_id read_flash 0 2M my_backup.bin</code>. Keep that file: only <strong>your</strong> player's backup can restore it.</div>
@@ -242,7 +242,7 @@ document.addEventListener("DOMContentLoaded", function(){
 <p><strong>Only the first time</strong> you need a Windows computer and the USB cable. After that, new versions install <strong>from the SD card</strong>, right on the player.</p>
 <div class="aviso">
   <strong>Before you start</strong><br>
-  · For players with the <strong>SL6801</strong> chip: tested on the <strong>Ligenai GN-438</strong>, in testing on the <strong>GN-408</strong>. On another player, check <a href="#compatibility">compatibility</a> and back up first.<br>
+  · For players with the <strong>SL6801</strong> chip: tested on the <strong>Ligenai GN-438</strong> and the <strong>GN-408</strong>. On another player, check <a href="#compatibility">compatibility</a> and back up first.<br>
   · Computer <strong>plugged into power</strong> and a USB <strong>data</strong> cable (charge-only cables don't work).<br>
   · Connect <strong>only</strong> the player you want to flash.<br>
   · Settings (volume, equalizer, language) go back to default. Music on the card is kept.

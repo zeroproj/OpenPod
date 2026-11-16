@@ -2,7 +2,7 @@
 
 Um firmware novo para players com chip **Smartlink SL6801**: visual limpo e
 moderno, foco em música, feito a partir do sistema de fábrica (yp3_2.0.43).
-Compatível com o **Ligenai GN-438** (testado) e o **GN-408** (em teste).
+Compatível com o **Ligenai GN-438** (testado) e o **GN-408** (testado por usuários).
 
 **Site:** https://zeroproj.github.io/OpenPod/
 
@@ -14,7 +14,7 @@ Instruções no `README.md` do pacote. Windows: `windows/LEIA-ME.txt`.
 
 ## Serve no meu aparelho?
 
-Testado no **Ligenai GN-438** e em teste no **GN-408**, os dois com chip
+Testado no **Ligenai GN-438** e, por usuários, no **GN-408**, os dois com chip
 SL6801 e firmware yp3_2.0.43. Outros aparelhos da família Smartlink/YP3 são
 candidatos — **e é você quem decide testar**. Cada
 aparelho precisa do dump do próprio aparelho: gravar o firmware de outro
