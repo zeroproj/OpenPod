@@ -1,12 +1,13 @@
 # OpenPod — OpenPod Reload 2.2.1
 
-A new firmware for the **Ligenai GN-438** player: clean, modern look,
-focused on music, built from the stock system (`yp3_2.0.43`).
+A new firmware for players with the **Smartlink SL6801** chip: clean, modern
+look, focused on music, built from the stock system (`yp3_2.0.43`).
+Compatible with the **Ligenai GN-438** (tested) and the **GN-408** (in testing).
 
-*Um firmware novo para o **Ligenai GN-438**: visual limpo e moderno, foco em música, feito a partir do sistema de fábrica.*
+*Um firmware novo para players com chip **Smartlink SL6801**: visual limpo e moderno, foco em música, feito a partir do sistema de fábrica. Compatível com o **Ligenai GN-438** (testado) e o **GN-408** (em teste).*
 
-> ⚠️ **Stable release, tested on one device only.**
-> *Versão estável, testada em um único aparelho.*
+> ⚠️ **Stable release.** Tested on the Ligenai GN-438; in testing on the GN-408.
+> *Versão estável. Testada no Ligenai GN-438; em teste no GN-408.*
 
 ---
 
