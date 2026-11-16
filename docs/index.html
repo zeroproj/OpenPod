@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-lang="pt">
+<html lang="pt-BR" data-lang="pt" data-aba="novo">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -57,6 +57,13 @@ footer{margin-top:64px;color:var(--soft);font-size:13px;border-top:1px solid var
 .idioma{display:flex;justify-content:flex-end;gap:6px;margin-bottom:8px}
 .idioma button{font:600 13px "IBM Plex Mono",monospace;background:transparent;color:var(--soft);border:1.5px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer}
 .idioma button[aria-pressed="true"]{color:var(--ink);border-color:var(--accent)}
+.abas{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
+.abas button{font:700 15px Archivo,system-ui,sans-serif;background:transparent;color:var(--soft);border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left}
+.abas button small{display:block;font-weight:500;font-size:13px}
+.abas button[aria-selected="true"]{color:var(--ink);border-color:var(--accent);background:var(--card)}
+html[data-aba="novo"] .aba-atual{display:none}
+html[data-aba="atual"] .aba-novo{display:none}
+.ok{color:#1f9d55;font-weight:700}.talvez{color:#c07a00;font-weight:700}
 html[data-lang="pt"] [lang="en"]{display:none}
 html[data-lang="en"] [lang="pt"]{display:none}
 </style>
@@ -74,7 +81,16 @@ function idioma(l){
   try { localStorage.setItem("openpod-lang", l); } catch (e) {}
   document.querySelectorAll(".idioma button").forEach(function(b){ b.setAttribute("aria-pressed", b.dataset.l === l); });
 }
-document.addEventListener("DOMContentLoaded", function(){ idioma(document.documentElement.getAttribute("data-lang")); });
+function aba(a){
+  document.documentElement.setAttribute("data-aba", a);
+  try { localStorage.setItem("openpod-aba", a); } catch (e) {}
+  document.querySelectorAll(".abas button").forEach(function(b){ b.setAttribute("aria-selected", b.dataset.a === a); });
+}
+document.addEventListener("DOMContentLoaded", function(){
+  idioma(document.documentElement.getAttribute("data-lang"));
+  var a = null; try { a = localStorage.getItem("openpod-aba"); } catch (e) {}
+  aba(a === "atual" ? "atual" : "novo");
+});
 </script>
 </head>
 <body>
@@ -102,14 +118,32 @@ document.addEventListener("DOMContentLoaded", function(){ idioma(document.docume
   <li>Barra superior com degradê: relógio, <strong>OpenPod</strong> e bateria alinhados.</li>
   <li>Ícones novos na tela inicial, sem nomes, com <strong>moldura branca</strong> no item selecionado.</li>
   <li>Textos em português revisados (sem "ecrã", "ficheiro" e traduções erradas).</li>
+  <li><strong>Capa do álbum</strong> na tela Tocando Agora, lida do próprio MP3.</li>
   <li><strong>Atualizar por SD</strong>: as próximas versões entram pelo cartão, sem computador.</li>
 </ul>
+<p><small>Capa: JPEG comum (baseline) embutido no MP3. O ideal é <strong>300×300 a 500×500</strong>; até 1000×1000 e 512 KB funciona. Capa maior, JPEG progressivo ou PNG aparecem como um quadrado cinza, e a música toca normal.</small></p>
+
+<h2 id="compatibilidade">Compatibilidade</h2>
+<p>O OpenPod funciona em players com o chip <strong>Smartlink SL6801</strong> e o firmware de fábrica <strong>yp3_2.0.43</strong> (aparece nas configurações do aparelho).</p>
+<table>
+  <tr><td>Chip</td><td>Smartlink <strong>SL6801</strong>, memória de 2 MB. No modo de gravação, o Flashloader mostra <code>chip name: sl6801</code>.</td></tr>
+  <tr><td>Firmware</td><td><strong>yp3_2.0.43</strong></td></tr>
+  <tr><td>Iigenai GN-438</td><td><span class="ok">Testado</span>: é o aparelho em que o OpenPod é feito.</td></tr>
+  <tr><td>Iigenai GN-408</td><td><span class="talvez">Relatado por usuário</span>: mesmo chip e firmware; o OpenPod funcionou. Capas muito grandes travavam até a 2.2, o que foi corrigido na <strong>2.2.1</strong>.</td></tr>
+  <tr><td>Outros SL6801</td><td>Não testados. Se tiver o mesmo chip e o mesmo firmware, é provável que funcione, mas o risco é seu.</td></tr>
+</table>
+<div class="aviso"><strong>Em aparelho que não é o GN-438, faça um backup antes.</strong> Com o <a href="https://github.com/ilyakurdyukov/smartlink_flash">smartlink_flash</a> (Linux/macOS): <code>sudo ./smtlink_dump --id 301a:2801 flash_id read_flash 0 2M meu_backup.bin</code>. Guarde o arquivo: só o backup do <strong>seu</strong> aparelho serve para voltar ao original dele.</div>
 
 <h2 id="instalar">Como instalar</h2>
+<div class="abas" role="tablist">
+  <button type="button" role="tab" data-a="novo" onclick="aba('novo')">Ainda não tenho o OpenPod<small>primeira instalação, pelo computador</small></button>
+  <button type="button" role="tab" data-a="atual" onclick="aba('atual')">Já tenho o OpenPod<small>atualizar pelo cartão SD</small></button>
+</div>
+<div class="aba-novo">
 <p><strong>Só na primeira vez</strong> você precisa de um computador com Windows e do cabo USB. Depois, as próximas versões entram <strong>pelo cartão SD</strong>, direto no aparelho.</p>
 <div class="aviso">
   <strong>Antes de começar</strong><br>
-  · Só para o <strong>Iigenai GN-438</strong>. Em outro aparelho, não grave.<br>
+  · Feito e testado no <strong>Iigenai GN-438</strong>. Em outro aparelho, veja a <a href="#compatibilidade">compatibilidade</a> e faça backup antes.<br>
   · Computador <strong>na tomada</strong> e cabo USB <strong>de dados</strong> (cabo só de carga não funciona).<br>
   · Deixe conectado <strong>só</strong> o aparelho que vai gravar.<br>
   · As configurações (volume, equalizador, idioma) voltam ao padrão. As músicas do cartão continuam lá.
@@ -144,7 +178,9 @@ document.addEventListener("DOMContentLoaded", function(){ idioma(document.docume
 <div class="card"><h4>7. Confira</h4>
 <p>No aparelho, abra <code>Config → Informações</code>. Tem que aparecer a versão do OpenPod (começa com <code>Reload</code>). Pronto!</p></div>
 
-<h3>Próximas versões — pelo cartão SD (sem computador)</h3>
+</div>
+<div class="aba-atual">
+<h3>Atualizar pelo cartão SD (sem computador)</h3>
 <div class="card"><ol class="passos">
   <li>Baixe a versão mais recente (botão no topo da página). O arquivo já vem com o nome certo: <code>update.up</code>.</li>
   <li>Copie o <code>update.up</code> para a <strong>raiz</strong> do cartão (fora de qualquer pasta).</li>
@@ -153,8 +189,9 @@ document.addEventListener("DOMContentLoaded", function(){ idioma(document.docume
   <li><strong>Apague o <code>update.up</code> do cartão.</strong> Se ficar lá, ele tenta atualizar toda vez que liga.</li>
 </ol></div>
 
+</div>
 <h3>Deu algo errado?</h3>
-<p>Calma: o modo de gravação (passo 5) fica na memória do próprio chip e funciona mesmo se o aparelho não ligar. Repita os passos 5 e 6 para gravar de novo.</p>
+<p>Calma: o modo de gravação (segurar <strong>volume para baixo</strong> e apertar o <strong>RESET</strong>) fica na memória do próprio chip e funciona mesmo se o aparelho não ligar. Siga a primeira instalação, pelo computador, para gravar de novo.</p>
 
 <footer>OpenPod é um projeto independente, sem ligação com a Smartlink, a Shenju ou o fabricante do aparelho. Use por sua conta e risco. Esta página distribui só os arquivos de atualização; o código-fonte não é público.</footer>
 </div>
@@ -177,15 +214,33 @@ document.addEventListener("DOMContentLoaded", function(){ idioma(document.docume
   <li>Gradient top bar: clock, <strong>OpenPod</strong> and battery aligned.</li>
   <li>New home icons, no labels, with a <strong>white frame</strong> on the selected item.</li>
   <li>Reviewed Portuguese texts (the English texts are the stock ones).</li>
+  <li><strong>Album cover</strong> on Now Playing, read from the MP3 itself.</li>
   <li><strong>Update via SD</strong>: future versions install from the card, no computer needed.</li>
 </ul>
+<p><small>Cover: plain (baseline) JPEG embedded in the MP3. Best at <strong>300×300 to 500×500</strong>; up to 1000×1000 and 512 KB works. Larger covers, progressive JPEG or PNG show a grey square, and the music plays normally.</small></p>
+
+<h2 id="compatibility">Compatibility</h2>
+<p>OpenPod runs on players with the <strong>Smartlink SL6801</strong> chip and stock firmware <strong>yp3_2.0.43</strong> (shown in the player's settings).</p>
+<table>
+  <tr><td>Chip</td><td>Smartlink <strong>SL6801</strong>, 2 MB memory. In flashing mode, the Flashloader shows <code>chip name: sl6801</code>.</td></tr>
+  <tr><td>Firmware</td><td><strong>yp3_2.0.43</strong></td></tr>
+  <tr><td>Iigenai GN-438</td><td><span class="ok">Tested</span>: the player OpenPod is built on.</td></tr>
+  <tr><td>Iigenai GN-408</td><td><span class="talvez">User report</span>: same chip and firmware; OpenPod worked. Very large covers froze it up to 2.2, fixed in <strong>2.2.1</strong>.</td></tr>
+  <tr><td>Other SL6801</td><td>Not tested. With the same chip and firmware it will probably work, at your own risk.</td></tr>
+</table>
+<div class="aviso"><strong>On anything other than a GN-438, back up first.</strong> With <a href="https://github.com/ilyakurdyukov/smartlink_flash">smartlink_flash</a> (Linux/macOS): <code>sudo ./smtlink_dump --id 301a:2801 flash_id read_flash 0 2M my_backup.bin</code>. Keep that file: only <strong>your</strong> player's backup can restore it.</div>
 <p><small>The player menus are in Portuguese by default; English is available under <code>Config → Idioma</code>.</small></p>
 
 <h2 id="install">How to install</h2>
+<div class="abas" role="tablist">
+  <button type="button" role="tab" data-a="novo" onclick="aba('novo')">I don't have OpenPod yet<small>first install, with a computer</small></button>
+  <button type="button" role="tab" data-a="atual" onclick="aba('atual')">I already have OpenPod<small>update from the SD card</small></button>
+</div>
+<div class="aba-novo">
 <p><strong>Only the first time</strong> you need a Windows computer and the USB cable. After that, new versions install <strong>from the SD card</strong>, right on the player.</p>
 <div class="aviso">
   <strong>Before you start</strong><br>
-  · <strong>Iigenai GN-438</strong> only. Do not flash any other player.<br>
+  · Built and tested on the <strong>Iigenai GN-438</strong>. On another player, check <a href="#compatibility">compatibility</a> and back up first.<br>
   · Computer <strong>plugged into power</strong> and a USB <strong>data</strong> cable (charge-only cables don't work).<br>
   · Connect <strong>only</strong> the player you want to flash.<br>
   · Settings (volume, equalizer, language) go back to default. Music on the card is kept.
@@ -220,7 +275,9 @@ document.addEventListener("DOMContentLoaded", function(){ idioma(document.docume
 <div class="card"><h4>7. Check</h4>
 <p>On the player, open <code>Config → Informações</code> (Settings → Information). It must show the OpenPod version (it starts with <code>Reload</code>). Done!</p></div>
 
-<h3>Next versions — from the SD card (no computer)</h3>
+</div>
+<div class="aba-atual">
+<h3>Update from the SD card (no computer)</h3>
 <div class="card"><ol class="passos">
   <li>Download the latest version (button at the top). The file already has the right name: <code>update.up</code>.</li>
   <li>Copy <code>update.up</code> to the <strong>root</strong> of the card (not inside any folder).</li>
@@ -229,8 +286,9 @@ document.addEventListener("DOMContentLoaded", function(){ idioma(document.docume
   <li><strong>Delete <code>update.up</code> from the card.</strong> If it stays there, the player tries to update every time it starts.</li>
 </ol></div>
 
+</div>
 <h3>Something went wrong?</h3>
-<p>Don't worry: flashing mode (step 5) lives in the chip itself and works even if the player won't start. Repeat steps 5 and 6 to flash again.</p>
+<p>Don't worry: flashing mode (hold <strong>volume down</strong> and press <strong>RESET</strong>) lives in the chip itself and works even if the player won't start. Follow the first install, with a computer, to flash again.</p>
 
 <footer>OpenPod is an independent project, not affiliated with Smartlink, Shenju or the device maker. Use at your own risk. This page only distributes the update files; the source code is not public.</footer>
 </div>
