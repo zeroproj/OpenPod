@@ -95,6 +95,12 @@ def main():
     curto = a.nome_tela or re.sub(r"^OpenPod-Core-", "", a.versao).replace("-", " ")
     s = re.sub(r'<span class="ver">[^<]*</span>',
                '<span class="ver">%s</span>' % curto.replace("OpenPod ", ""), s)
+    # a data so muda quando a versao muda (republicar a mesma versao nao mexe na data)
+    import datetime
+    antes = re.search(r'<span class="ver">([^<]*)</span>', open(pag, encoding="utf-8").read())
+    if not antes or antes.group(1) != curto.replace("OpenPod ", ""):
+        s = re.sub(r'<span class="ver-data">[^<]*</span>',
+                   '<span class="ver-data">%s</span>' % datetime.date.today().strftime("%d/%m/%Y"), s)
     s = re.sub(r'(tree/main/release/)[^"]+', r"\g<1>" + a.versao, s)
     s = re.sub(r"(5\.7 Public Beta 2|Public Beta \d+)",
                a.versao.replace("OpenPod-Core-", "").replace("-", " "), s)
