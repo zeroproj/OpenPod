@@ -67,3 +67,4 @@ firmware/VENDOR/*.exe
 
 # zip de diagnostico, gerado sob demanda
 DIAG_*.zip
+referencias/
