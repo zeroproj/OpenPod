@@ -139,11 +139,6 @@ MAPA = {
     # exatamente ali. Divida tecnica herdada.
     "patch_cor_selecao.py":    (0x001A3518, 0x00E8),
     "relocate_lang_table.py":  (0x001A3600, 0x0700),
-    # Ficha 021 (Reload 3.0). O lote e o mesmo 0x001A3600 que o
-    # `relocate_lang_table.py` usava na linha Core: a ferramenta nova
-    # copia as duas tabelas de idioma para ca e acrescenta o id 216
-    # ("Apps"). O `relocate_lang_table.py` nao entra na receita 3.0.
-    "fab_apps_home.py":        (0x001A3600, 0x0700),
     "aplica_textos.py":        (0x001A3D00, 0x1200),
     # 0x001A4F00..0x001A5000 e do CARIMBO DE VERSAO (`patch_versao.py`,
     # aplicado pelo `make_install_kit`, regra R7). Ele nao roda nesta
@@ -861,8 +856,8 @@ RELOAD_2_2_1 = RELOAD_2_2 + [
 # Mesma lista da `reload_2.2.1`, com dois passos novos, nesta ordem:
 #
 #   1. `fab_apps_home.py` — troca 10 bytes do bloco do indice 5 da home
-#      (0xD011AE) para abrir a pagina 0x53, move as tabelas de idioma
-#      para 0x1A3600 e acrescenta o texto "Apps" (id 216).
+#      (0xD011AE) para abrir a pagina 0x53 e aponta o rotulo 5 para o
+#      id 159 de fabrica ("Aplicativos"/"APP").
 #   2. `fab_icones_home_apps.py` — troca so os pixels do indice 5 na
 #      folha escura colorida, mantendo a paleta da 2.2.
 #

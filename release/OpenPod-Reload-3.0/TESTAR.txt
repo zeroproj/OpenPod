@@ -3,15 +3,17 @@ OpenPod Reload 3.0 — TESTAR
 Base: Reload 2.2.1 (rodando). Kit: base ORIGINAL. Receita reload_3.0 = a MESMA
 lista da reload_2.2.1, com dois passos a mais: fab_apps_home.py e
 fab_icones_home_apps.py (--png assets/IconesHome_escuro_colorido_apps.png).
-Muda o indice 5 da home, o rotulo "Apps", a folha de icones e o carimbo:
-Config -> Informacoes = "Reload 3.0".
-Imagem sem carimbo: 4c82ee2a... · imagem carimbada: d99b72f2... · .up
-1.749.248 B · CRC 0xCC41 · sha ebfa2375...
+Muda o indice 5 da home, o rotulo (id 159: "Aplicativos" em PT; "APP" em
+EN/FR/DE/IT/ES; "Toepassing" em NL; "应用" em ZH), a folha de icones e o
+carimbo: Config -> Informacoes = "Reload 3.0".
+Imagem sem carimbo: 43aaf5d5... · imagem carimbada: fbc1ab89... · .up
+1.749.248 B · CRC 0xF401 · sha 259ca12e...
 
 O QUE MUDOU
-  O icone 5 da home, antes "Imagem", agora e "Apps". Ele abre um menu com
-  Despertador, Imagem e Dicionario. A Imagem continua acessivel; o Dicionario
-  precisa de 0:/dict/ e mostra erro sem ele. Os outros oito icones nao mudam.
+  O icone 5 da home, antes "Imagem", agora e "Apps" (rotulo de fabrica
+  "Aplicativos"). Ele abre um menu com Despertador, Imagem e Dicionario. A
+  Imagem continua acessivel; o Dicionario precisa de 0:/dict/ e mostra erro
+  sem ele. Os outros oito icones nao mudam.
 
   A pagina medida e 0x53; a ficha 021 diz 0x52. O 0x52 e "Desligar sozinho"
   (page_set_timershut_time_create). Se o indice 5 abrir "Desligar sozinho",
@@ -29,7 +31,7 @@ INSTALAR (pelo cartao)
 
 ROTEIRO (marque ok / falhou)
   [ ] Config -> Informacoes = "Reload 3.0"
-  [ ] Home: o icone 5 mostra "Apps" (antes "Imagem")
+  [ ] Home: o icone 5 mostra "Aplicativos" (antes "Imagem")
   [ ] Os outros oito icones continuam iguais e abrem o mesmo destino
   [ ] Indice 5 -> menu Apps com Despertador, Imagem e Dicionario
   [ ] Despertador abre; Esc volta ao Apps

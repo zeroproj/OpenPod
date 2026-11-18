@@ -6,11 +6,16 @@ fab_icones_home_apps.py — ficha 021 (Reload 3.0): o glifo do indice 5
 A FOLHA
 
     A folha da home e INDEXED_8, 128x160, paleta em 0x0CDD5C e pixels em
-    0x0CE15C (128*160 indices). A 2.2 ja gravou a folha escura colorida;
-    esta ferramenta NAO refaz a paleta: ela mantem os 1024 bytes da 2.2 e
-    troca apenas os indices dos pixels que o PNG novo mudou. Assim o resto
-    da tela fica byte a byte igual, e a diferenca contra a 2.2.1 e so o
-    icone 5.
+    0x0CE15C (128*160 indices). A 2.2 ja gravou a folha escura colorida e o
+    `fab_home_moldura.py` ja moveu a grade. Esta ferramenta NAO refaz a
+    paleta: ela mantem os 1024 bytes da 2.2 e troca apenas os indices dos
+    pixels do icone 5. Assim o resto da tela fica byte a byte igual, e a
+    diferenca contra a 2.2.1 e so o icone 5.
+
+    O PNG novo e o antigo estao na grade ANTES da moldura. Como a moldura
+    move a faixa do meio de y 62..97 para 70..105, o glifo do PNG cai 8
+    linhas abaixo no binario final (`DESLOC_Y`). Escrever so a diferenca
+    dos PNGs, ja deslocada, apaga o icone antigo e nao deixa resto.
 
     O PNG novo (`assets/IconesHome_escuro_colorido_apps.png`) e gerado por
     `desenha_icones_home.py` com `ESTILO=escuro_colorido GLIFO5=apps`. A
@@ -21,7 +26,8 @@ A FOLHA
     Os pixels do icone 5 sao remapeados para a PALETA EXISTENTE da 2.2
     (a mesma funcao de distancia de Chebyshev do `fab_icones_home.py`).
     Nenhuma entrada de paleta e criada ou trocada; o verde do glifo cai na
-    entrada mais proxima (119,219,119) da paleta, com erro maximo 9.
+    entrada mais proxima (119,219,119) da paleta, com erro medio 1,54 e
+    maximo 13.
 
 PREMISSAS, conferidas ANTES de escrever
 
@@ -48,12 +54,13 @@ import fab_icones_home as F  # noqa: E402
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PNG_NOVO = "assets/IconesHome_escuro_colorido_apps.png"
-SHA_NOVO = "b8d62cf81d53dffb358dae63a5d58e350232fa95faaf60f6228afefc4593711b"
+SHA_NOVO = "eccc855b6a944cd226411400bcc24eaa528f2f8d9f4aaa93f3577ebf5cb462cc"
 PNG_ANTIGO = "assets/IconesHome_escuro_colorido.png"
 SHA_ANTIGO = "5eff7463214bd8004bce30352b660d75087bb3fa139731d52ab777bf57dffaa2"
 SHEET_SHA_2_2 = ("751ca714aeeb4c4810a52334b287fe6db359aa866e398f746f5e7734"
                  "d6b4d742")
-CAIXA_ICONE5 = (88, 63, 121, 96)          # x0, y0, x1, y1 (exclusive)
+CAIXA_ICONE5 = (88, 70, 121, 101)         # caixa final, x0, y0, x1, y1
+DESLOC_Y = 8                              # fab_home_moldura: faixa 2 +8
 
 
 def le_png(caminho, sha_esperado):
@@ -129,7 +136,7 @@ def confere_resultado(d, orig, novo, caixa):
         for x in range(x0, x1):
             i = d[F.HOME_PX + y * F.HOME_LARG + x]
             c = pal[i]
-            ref = F.pixel(novo, x, y)
+            ref = F.pixel(novo, x, y - DESLOC_Y)
             e = [abs(c[k] - ref[k]) for k in range(3)]
             if max(e) > pior:
                 pior, pior_em = max(e), (x, y, c, ref)
@@ -198,10 +205,12 @@ def main():
         return 1
 
     x0, y0, x1, y1 = caixa
-    if (x0 < CAIXA_ICONE5[0] or y0 < CAIXA_ICONE5[1]
-            or x1 > CAIXA_ICONE5[2] or y1 > CAIXA_ICONE5[3]):
+    caixa_final = (x0, y0 + DESLOC_Y, x1, y1 + DESLOC_Y)
+    if (caixa_final[0] < CAIXA_ICONE5[0] or caixa_final[1] < CAIXA_ICONE5[1]
+            or caixa_final[2] > CAIXA_ICONE5[2]
+            or caixa_final[3] > CAIXA_ICONE5[3]):
         print(f"  RECUSADO — o PNG muda fora da caixa do icone 5: "
-              f"{caixa} contra {CAIXA_ICONE5}")
+              f"{caixa_final} contra {CAIXA_ICONE5}")
         print(f"\n  nada foi escrito em {a.dst}")
         return 1
 
@@ -209,8 +218,8 @@ def main():
     cache = {}
     for y in range(y0, y1):
         for x in range(x0, x1):
-            d[F.HOME_PX + y * F.HOME_LARG + x] = F.indice_mais_proximo(
-                pal, F.pixel(novo, x, y), cache)
+            d[F.HOME_PX + (y + DESLOC_Y) * F.HOME_LARG + x] = \
+                F.indice_mais_proximo(pal, F.pixel(novo, x, y), cache)
 
     print("  premissas conferidas:")
     print(f"    - 2 MiB; cabecalho 0x{F.HOME_CAB:06X} de fabrica")
@@ -218,13 +227,13 @@ def main():
     print(f"    - PNG antigo {SHA_ANTIGO[:16]}... e novo "
           f"{SHA_NOVO[:16]}...")
     print(f"    - os PNGs so diferem em x {x0}..{x1 - 1}, "
-          f"y {y0}..{y1 - 1} (icone 5)\n")
+          f"y {y0}..{y1 - 1}; no binario, +{DESLOC_Y} em y\n")
     print(f"  FOLHA  paleta 0x{F.HOME_PAL:06X}..0x{F.HOME_PX:06X} "
           f"INTOCADA")
     print(f"         pixels 0x{F.HOME_PX:06X}..0x{F.HOME_FIM:06X}: so a "
           f"caixa do icone 5 remapeada")
 
-    erros, medio, pior = confere_resultado(d, orig, novo, caixa)
+    erros, medio, pior = confere_resultado(d, orig, novo, caixa_final)
     if erros:
         print("  RECUSADO — a folha montada nao passa na conferencia:")
         for m in erros:

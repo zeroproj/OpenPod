@@ -70,49 +70,38 @@ O TBH em si (`0xD00FBE..0xD00FC7`) e as entradas 0..4 e 6..8 não mudam.
 É o que garante que os outros oito ícones continuam com o destino de
 fábrica.
 
-## 2. O texto "Apps" (id 216)
+## 2. O texto "Aplicativos" (id 159)
 
-O `get_string` (`0xD2108C`) usa um `tbb` em `0xD2109A` e uma tabela de
-9 entradas em `0xD2109E`:
+O firmware de fábrica já traz o texto no **id 159** em todas as tabelas
+de idioma. A medição no 2.2.1:
 
-```text
-05 0a 0c 0e 10 12 14 16 18
-```
+| Idioma | Tabela | id 159 |
+|---|---|---:|
+| PT | `0xC53B84` | `Aplicativos` |
+| EN | `0xC52AA4` | `APP` |
+| ZH | `0xC523E4` | `应用` |
+| FR | `0xC52E04` | `APP` |
+| DE | `0xC52744` | `APP` |
+| IT | `0xC534C4` | `APP` |
+| ES | `0xC53EE4` | `APP` |
+| HE | `0xC53164` | texto hebraico |
+| NL | `0xC53824` | `Toepassing` |
 
-O alvo é `0xD2109E + 2 * byte`; o idioma 8 (PT) cai em `0xD210CE` e o
-idioma 0 (EN) em `0xD210A8`. Os dois caminhos carregam um literal que
-aponta para a tabela do idioma.
-
-As tabelas de fábrica têm **216 ponteiros XIP** e **não têm folga**: o
-id 216 leria a tabela seguinte. A solução é copiar as duas tabelas para
-o lote reservado e acrescentar a 217ª entrada:
-
-```text
-0x001A3600  tabela PT, 217 ponteiros  868 B
-0x001A3964  tabela EN, 217 ponteiros  868 B
-0x001A3CC8  string "Apps\0"             5 B
-```
-
-Os 216 primeiros ponteiros são cópia exata da 2.2.1; o 217º aponta para
-`0xC01A3CC8`. Quatro ponteiros passam a apontar para as tabelas novas:
-
-```text
-0x001210E4  literal EN  0xC52AA4 -> 0xC01A3964
-0x00121104  literal PT  0xC53B84 -> 0xC01A3600
-0x00048778  vetor EN    0xC52AA4 -> 0xC01A3964
-0x00048798  vetor PT    0xC53B84 -> 0xC01A3600
-```
+O vetor de idiomas em `0x48774` tem 10 ponteiros: o primeiro
+(`0xC54244`) é o nome PT; os outros nove, em `0x48778..0x48798`, são as
+tabelas acima. Todos os 10 apontam para texto com NUL, e o id 159 é um
+ponteiro XIP válido em todas as nove tabelas. **Nada é realocado**: não
+há tabela nova, string nova, nem literal/vetor repontado.
 
 O rótulo do índice 5 na home é o id 4:
 
 ```text
 0x000486C4  [1, 3, 5, 6, 2, 4, 9, 10, 8]   (id 5 = 4)
-0x000486D8  4 -> 216
+0x000486D8  4 -> 159
 ```
 
-A tabela de ids é compartilhada pelos dois idiomas; por isso "Apps" é
-copiado nas duas tabelas. Os títulos do menu (`0xC486E8` =
-`[7, 4, 11]`: Despertador, Imagem, Dicionário) não mudam.
+A tabela de ids é compartilhada pelos idiomas. Os títulos do menu
+(`0xC486E8` = `[7, 4, 11]`: Despertador, Imagem, Dicionário) não mudam.
 
 ## 3. O desenho do ícone 5
 
@@ -124,17 +113,24 @@ refaz a paleta**. A ferramenta `fab_icones_home_apps.py`:
    (`751ca714…`);
 2. confere os shas dos dois PNGs:
    `assets/IconesHome_escuro_colorido.png` (`5eff7463…`) e
-   `assets/IconesHome_escuro_colorido_apps.png` (`b8d62cf8…`);
+   `assets/IconesHome_escuro_colorido_apps.png` (`eccc855b…`);
 3. confere que os PNGs só diferem dentro da caixa do ícone 5
-   (`x 88..120, y 63..95`);
-4. remapeia **só** os pixels dessa caixa para a paleta existente.
+   (`x 93..115, y 68..90`);
+4. remapeia **só** os pixels dessa caixa para a paleta existente, já
+   deslocados **+8 linhas**: o `fab_home_moldura.py` move a faixa do meio
+   de `y 62..97` para `y 70..105`, e é essa grade final que o binário tem.
 
-Resultado medido: 502 bytes mudam, todos dentro da caixa; erro médio
-1,37 e máximo 9 por canal contra o PNG (limites 2,0 e 64). A paleta, o
-cabeçalho e os outros oito ícones ficam byte a byte iguais aos da 2.2.
+Resultado medido: 452 bytes mudam, todos dentro da caixa final
+(`x 93..115, y 76..98`); erro médio 1,54 e máximo 13 por canal contra o
+PNG (limites 2,0 e 64). A paleta, o cabeçalho e os outros oito ícones
+ficam byte a byte iguais aos da 2.2. O deslocamento é o que apaga o
+ícone antigo; sem ele sobrava a linha verde da imagem em `y 91..94`.
 
 O PNG novo foi gerado por `desenha_icones_home.py` com
-`ESTILO=escuro_colorido GLIFO5=apps`. Sem `GLIFO5`, a saída continua com
+`ESTILO=escuro_colorido GLIFO5=apps` e é **idêntico** a
+`docs/previas/2026-11-17_IconesHome_apps_ref.png` (sha `eccc855b…`):
+quatro quadrados arredondados 2×2, lado 7,0, vão 3,0, raio 1,8, cor
+`(120,220,120)`, centrados no ícone. Sem `GLIFO5`, a saída continua com
 o sha antigo (`5eff7463…`); a prévia da home está em
 `docs/previas/2026-11-17_reload30_home.png`.
 
@@ -251,17 +247,14 @@ Receita `reload_3.0` = `reload_2.2.1` + dois passos, nesta ordem:
 ```
 
 Sem carimbo, sha256
-`4c82ee2aca01cfe5bb28475592a5c614de5892478cd2acbf3115987ac88f56b6`.
-A diferença contra a 2.2.1 é de 2.265 bytes, só nas regiões:
+`43aaf5d51c364e03f9934aba0348230dda4911c2e7264c34555f69554c36ec32`.
+A diferença contra a 2.2.1 é de 463 bytes, só nas regiões:
 
 | Região | Bytes | O que é |
 |---|---:|---|
 | `0x001011AE..0x001011B8` | 10 | o bloco do índice 5 |
-| `0x000486D8..0x000486DC` | 4 | id do rótulo 5: 4 → 216 |
-| `0x00048778`, `0x00048798` | 4 + 4 | vetores EN/PT |
-| `0x001210E4`, `0x00121104` | 4 + 4 | literais EN/PT |
-| `0x001A3600..0x001A3CCD` | 1.740 | tabelas + "Apps" |
-| `0x000CE15C..0x000D315C` | 502 | pixels do ícone 5 |
+| `0x000486D8..0x000486D9` | 1 | id do rótulo 5: 4 → 159 |
+| `0x000CE15C..0x000D315C` | 452 | pixels do ícone 5 (já na grade final) |
 
 Nada abaixo de `0xE000`, nada no setor `0xD000`, nada na PSMP; o
 bootloader e o ORIGINAL continuam iguais. O teste confere também que os
@@ -274,5 +267,9 @@ outros oito blocos do TBH e o TBH inteiro não mudaram.
   `ESCALADA-021`.
 - O Dicionário abre a 0x37 e, sem `0:/dict/`, mostra a falha de leitura;
   isso é da ficha dos jogos.
+- O rótulo usa o id 159 de fábrica; nenhuma tabela de idioma foi movida
+  ou copiada. A referência do desenho é
+  `docs/previas/2026-11-17_desenho_apps_ref.py` e a folha aprovada é
+  `docs/previas/2026-11-17_IconesHome_apps_ref.png`.
 - A prévia do Apps é uma montagem com a barra e a fonte do firmware; a
   tela real é a `page_home_menu_create` de fábrica, sem patch de layout.

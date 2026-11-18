@@ -58,7 +58,7 @@ windows/               Windows -> start here / comece aqui
   FlashloaderSL-DEV-6.9.5.exe
 cabo/                  USB cable path, used by install.sh
   flash_OpenPod_OpenPodReload3.0.sh
-  setores/             52 sector files / arquivos de setor
+  setores/             58 sector files / arquivos de setor
 ```
 
 You do not need to open `cabo/` by hand — `install.sh` does it.
@@ -78,17 +78,18 @@ You do not need to open `cabo/` by hand — `install.sh` does it.
 
 ## New in 3.0 / Novo na 3.0: Apps menu
 
-**Home icon 5 — formerly Images — is now Apps.** It opens a menu with
-Alarm, Images and Dictionary. Images stays reachable; Dictionary needs
+**Home icon 5 — formerly Images — is now Apps** (the Portuguese label is
+**Aplicativos**, from the stock id 159). It opens a menu with Alarm,
+Images and Dictionary. Images stays reachable; Dictionary needs
 `0:/dict/` and shows an error without it. The other eight home icons keep
 their factory destination. Press Esc from an item to return to Apps, and
 Esc from Apps to return home.
 
-*O icone 5 da home — antes Imagem — agora e Apps. Ele abre um menu com
-Despertador, Imagem e Dicionario. A Imagem continua acessivel; o
-Dicionario precisa de `0:/dict/` e mostra erro sem ele. Os outros oito
-icones mantem o destino de fabrica. Esc de um item volta ao Apps; Esc do
-Apps volta a home.*
+*O icone 5 da home — antes Imagem — agora e Apps (o rotulo em portugues e
+**Aplicativos**, do id 159 de fabrica). Ele abre um menu com Despertador,
+Imagem e Dicionario. A Imagem continua acessivel; o Dicionario precisa de
+`0:/dict/` e mostra erro sem ele. Os outros oito icones mantem o destino
+de fabrica. Esc de um item volta ao Apps; Esc do Apps volta a home.*
 
 ---
 

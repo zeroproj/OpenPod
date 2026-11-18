@@ -6,14 +6,15 @@ Prova o que a ficha pede:
 
 1. a receita `reload_3.0` e a MESMA lista da `reload_2.2.1`, com dois
    passos novos: o destino do indice 5 e o glifo Apps na folha;
-2. a diferenca 3.0 x 2.2.1 (sem carimbo) fica so no bloco do indice 5,
-   nas tabelas de idioma, nos quatro ponteiros e nos pixels do icone 5;
+2. a diferenca 3.0 x 2.2.1 (sem carimbo) fica so no bloco do indice 5, no
+   id do rotulo 5 (4 -> 159) e nos pixels do icone 5;
 3. o indice 5 da home leva a pagina 0x53 (o menu Apps), e a 0x52 e o
    "Desligar sozinho" — a ficha escreve 0x52, mas a medida e 0x53;
 4. os outros oito icones continuam com o destino de fabrica;
 5. a folha muda so no icone 5; a paleta da 2.2 fica intocada;
 6. nada abaixo de 0xE000, nem no setor 0xD000, nem na PSMP;
-7. o salto novo e Thumb e o texto "Apps" e o id 216.
+7. o salto novo e Thumb, o rotulo 5 usa o id 159 de fabrica e o texto
+   existe em todas as tabelas de idioma, sem realocar tabela nenhuma.
 
 NAO roda no `tools/ci.sh`: e teste de aceite da ficha, rodado a mao.
 """
@@ -30,7 +31,7 @@ import unittest
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ORIGINAL = os.path.join(RAIZ, "firmware/ORIGINAL/GN438_original.bin")
 SHA_22_1 = "e477c1e78ac1c88db58d29b030f35d7f11c8d90f45ec695a9b63392ea9936402"
-SHA_3_0 = "4c82ee2aca01cfe5bb28475592a5c614de5892478cd2acbf3115987ac88f56b6"
+SHA_3_0 = "43aaf5d51c364e03f9934aba0348230dda4911c2e7264c34555f69554c36ec32"
 
 XIP = 0xC00000
 STUB = 0x1011AE                    # offset do bloco do indice 5
@@ -45,21 +46,30 @@ TBH_ENTRY5 = TBH + 10
 PAGINA = 0x53
 PAGINA_ERRADA = 0x52
 
-PT_2_2 = 0x53B84
-EN_2_2 = 0x52AA4
-PT_NOVO = 0x1A3600
-EN_NOVO = 0x1A3964
-TEXTO = 0x1A3CC8
-ID_NOVO = 216
+ID_NOVO = 159
 ROTULO = 0x486D8
-VET_EN, VET_PT = 0x48778, 0x48798
-LIT_EN, LIT_PT = 0x1210E4, 0x121104
+ROTULOS = (1, 3, 5, 6, 2, 4, 9, 10, 8)
+
+# 0x48774 aponta para o nome PT; 0x48778..0x48798 para as 9 tabelas.
+VETOR = tuple(range(0x48774, 0x48774 + 10 * 4, 4))
+TABELAS = (
+    ("EN", 0xC52AA4),
+    ("ZH", 0xC523E4),
+    ("FR", 0xC52E04),
+    ("DE", 0xC52744),
+    ("IT", 0xC534C4),
+    ("ES", 0xC53EE4),
+    ("HE", 0xC53164),
+    ("NL", 0xC53824),
+    ("PT", 0xC53B84),
+)
+NOME_PT = 0xC54244
 
 SHEET_2_2 = ("751ca714aeeb4c4810a52334b287fe6db359aa866e398f746f5e7734"
              "d6b4d742")
 HOME_PAL, HOME_PX, HOME_FIM = 0x0CDD5C, 0x0CE15C, 0x0D315C
 HOME_LARG, HOME_ALT = 128, 160
-CAIXA_ICONE5 = (88, 63, 121, 96)
+CAIXA_ICONE5 = (88, 70, 121, 101)
 
 PROIBIDAS = {"patch_icones_home.py", "patch_home_barra.py",
              "patch_cor_selecao.py", "patch_menu_text.py",
@@ -81,6 +91,11 @@ def u32(d, off):
 
 def u16(d, off):
     return struct.unpack_from("<H", d, off)[0]
+
+
+def texto(d, p):
+    q = p - XIP
+    return bytes(d[q:d.find(b"\0", q)])
 
 
 def constroi(receita, destino):
@@ -140,9 +155,9 @@ class Reload30(unittest.TestCase):
         self.assertEqual(nome, "fab_icones_home_apps.py")
         self.assertIn("--png", args)
         self.assertIn("assets/IconesHome_escuro_colorido_apps.png", args)
-        self.assertEqual(b.MAPA.get("fab_apps_home.py"),
-                         (0x001A3600, 0x0700))
+        self.assertNotIn("fab_apps_home.py", b.MAPA)
         self.assertIsNone(b.MAPA.get("fab_icones_home_apps.py"))
+        self.assertFalse(any("relocate_lang_table" in x for x, _, _ in novo))
         self.assertFalse(set(x for x, _, _ in novo) & PROIBIDAS)
 
     def test_02_imagens(self):
@@ -215,27 +230,42 @@ class Reload30(unittest.TestCase):
         self.assertEqual([i for i in dif
                           if 0x0CDD50 <= i < HOME_PAL], [])
 
-    def test_06_texto_e_ponteiros(self):
+    def test_06_id_159_e_vetor_de_idiomas(self):
         a, b = self.saidas["reload_2.2.1"], self.saidas["reload_3.0"]
+        self.assertEqual(tuple(u32(a, 0x486C4 + 4 * i) for i in range(9)),
+                         ROTULOS)
         self.assertEqual(u32(a, ROTULO), 4)
         self.assertEqual(u32(b, ROTULO), ID_NOVO)
-        self.assertEqual(u32(a, VET_EN), XIP + EN_2_2)
-        self.assertEqual(u32(a, VET_PT), XIP + PT_2_2)
-        self.assertEqual(u32(a, LIT_EN), XIP + EN_2_2)
-        self.assertEqual(u32(a, LIT_PT), XIP + PT_2_2)
-        self.assertEqual(u32(b, VET_EN), XIP + EN_NOVO)
-        self.assertEqual(u32(b, VET_PT), XIP + PT_NOVO)
-        self.assertEqual(u32(b, LIT_EN), XIP + EN_NOVO)
-        self.assertEqual(u32(b, LIT_PT), XIP + PT_NOVO)
-        self.assertEqual(b[PT_NOVO:PT_NOVO + 4 * 216],
-                         a[PT_2_2:PT_2_2 + 4 * 216])
-        self.assertEqual(b[EN_NOVO:EN_NOVO + 4 * 216],
-                         a[EN_2_2:EN_2_2 + 4 * 216])
-        self.assertEqual(u32(b, PT_NOVO + 4 * 216), XIP + TEXTO)
-        self.assertEqual(u32(b, EN_NOVO + 4 * 216), XIP + TEXTO)
-        self.assertEqual(b[TEXTO:TEXTO + 5], b"Apps\0")
-        self.assertEqual(a[0x12109E:0x12109E + 9],
-                         b[0x12109E:0x12109E + 9])
+        self.assertEqual(tuple(u32(b, 0x486C4 + 4 * i) for i in range(9)),
+                         ROTULOS[:5] + (ID_NOVO,) + ROTULOS[6:])
+        # os 10 ponteiros do vetor de idiomas: o primeiro e o nome PT,
+        # os outros 9 sao as tabelas. Nenhum foi repontado.
+        self.assertEqual(len(VETOR), 10)
+        self.assertEqual(tuple(u32(a, off) for off in VETOR),
+                         (NOME_PT,) + tuple(base for _, base in TABELAS))
+        self.assertEqual(tuple(u32(b, off) for off in VETOR),
+                         tuple(u32(a, off) for off in VETOR))
+        for off in VETOR:
+            self.assertEqual(texto(a, u32(a, off)), texto(b, u32(b, off)))
+        # id 159 aponta para texto valido nas 9 tabelas, sem tocar nelas.
+        for nome, base in TABELAS:
+            off = base - XIP + 4 * ID_NOVO
+            self.assertEqual(u32(a, off), u32(b, off))
+            self.assertGreaterEqual(u32(b, off), XIP)
+            self.assertLess(u32(b, off), XIP + len(b))
+            self.assertTrue(texto(b, u32(b, off)))
+            self.assertEqual(a[base - XIP:base - XIP + 4 * 216],
+                             b[base - XIP:base - XIP + 4 * 216])
+        self.assertEqual(texto(b, u32(b, 0xC53B84 - XIP + 4 * ID_NOVO)),
+                         b"Aplicativos")
+        self.assertEqual(texto(b, u32(b, 0xC52AA4 - XIP + 4 * ID_NOVO)),
+                         b"APP")
+        self.assertEqual(texto(b, u32(b, 0xC53824 - XIP + 4 * ID_NOVO)),
+                         b"Toepassing")
+        self.assertEqual(texto(b, u32(b, 0xC523E4 - XIP + 4 * ID_NOVO)),
+                         "应用".encode())
+        self.assertEqual(b[0x1A3600:0x1A3D00], b"\xff" * 0x700)
+        self.assertEqual(b[0x1A3600:0x1A3D00], a[0x1A3600:0x1A3D00])
 
     def test_07_seguranca_e_thumb(self):
         a, b = self.saidas["reload_2.2.1"], self.saidas["reload_3.0"]
@@ -248,9 +278,6 @@ class Reload30(unittest.TestCase):
         permitido = [
             (STUB, STUB + len(STUB_NOVO)),
             (ROTULO, ROTULO + 4),
-            (VET_EN, VET_EN + 4), (VET_PT, VET_PT + 4),
-            (LIT_EN, LIT_EN + 4), (LIT_PT, LIT_PT + 4),
-            (PT_NOVO, PT_NOVO + 0x700),
             (HOME_PX + CAIXA_ICONE5[1] * HOME_LARG + CAIXA_ICONE5[0],
              HOME_PX + CAIXA_ICONE5[3] * HOME_LARG + CAIXA_ICONE5[2]),
         ]
