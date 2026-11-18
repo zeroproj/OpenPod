@@ -71,3 +71,5 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 - **Feito em 2026-11-16 (decisor: "pode trocar no site"):** trocar o GN-408 de "Em teste" para "Testado por usuários" no site e nos READMEs, quando o decisor pedir.
 
 **Reload 3.0 publicada (2026-11-17)** com o "pode publicar" do decisor: o menu Apps (ícone 5 → página 0x53, rótulo id 159 "Aplicativos", glifo de 4 quadrados verdes), com Despertador, Imagem e Dicionário. 463 B a mais que a 2.2.1. O site mostra a tela inicial da 3.0 e "Menu Aplicativos" nas novidades; a linha de versão foi atualizada pela ferramenta. **Próximo:** os jogos do SDK do SL6801_player (D15) dentro do Apps; a galeria de telas no site espera a foto da Tocando Agora com capa.
+- **Relógio (2026-11-17):** o decisor testou no GN-438, que não tem chave liga/desliga: desligou e religou e a hora ficou certa ("acho que eu tava errado"). **Sem defeito de relógio**; a ficha de diagnóstico do relógio não é necessária.
+
