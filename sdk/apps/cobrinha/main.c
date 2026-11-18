@@ -73,15 +73,20 @@ static uint32_t rnd(game_t *g)
 	return g->rng = x;
 }
 
+static const char *tr(const char *pt, const char *en)
+{
+	return FW_LANG == FW_LANG_PT ? pt : en;
+}
+
 static const char *snake_name(void)
 {
-	return FW_LANG == FW_LANG_PT ? "Cobrinha" : "Snake";
+	return tr("Cobrinha", "Snake");
 }
 
 static void set_score(game_t *g)
 {
 	char buf[16];
-	char *p = fw_put_str(buf, "Score ");
+	char *p = fw_put_str(buf, tr("Pontos ", "Score "));
 	fw_put_dec(p, g->score);
 	lv_label_set_text(g->score_label, buf);
 }
@@ -149,10 +154,10 @@ static void game_over(game_t *g)
 	g->state = OVER;
 	g->state_ms = 0;
 	char buf[48];
-	char *p = fw_put_str(buf, "Pontos ");
+	char *p = fw_put_str(buf, tr("Pontos ", "Score "));
 	p = fw_put_dec(p, g->score);
-	fw_put_str(p, "\n\nPlay: recomecar");
-	show_message(g, "Fim de jogo", buf);
+	fw_put_str(p, tr("\n\nPlay: recomeçar", "\n\nPlay: restart"));
+	show_message(g, tr("Fim de jogo", "Game over"), buf);
 	g->dirty = true;
 }
 
@@ -178,7 +183,9 @@ static void reset_round(game_t *g)
 	place_food(g);
 	set_score(g);
 	lv_obj_align(g->msg_title, LV_ALIGN_TOP_MID, 0, 4);
-	show_message(g, snake_name(), "Play: comecar\n/>>: virar\nBack 2x: sair");
+	show_message(g, snake_name(),
+		     tr("Play: começar\n<< >>: virar\nVOL 2x: sair",
+			"Play: start\n<< >>: turn\nVOL 2x: exit"));
 	g->dirty = true;
 }
 
@@ -232,7 +239,8 @@ static void play_action(game_t *g)
 		break;
 	case PLAYING:
 		g->state = PAUSED;
-		show_message(g, "Pausa", "Play: continuar");
+		show_message(g, tr("Pausa", "Paused"),
+			     tr("Play: continuar", "Play: resume"));
 		break;
 	case PAUSED:
 		hide_message(g);

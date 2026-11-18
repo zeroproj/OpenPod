@@ -47,8 +47,9 @@ os trata como mais um passo na mesma direção.
   que é a chave `language` da tabela de configurações persistidas.
 - Em `get_lang_str`, o `tbb` mapeia o índice 8 para a tabela `0xC53B84`.
   Lendo os ponteiros dessa tabela no ORIGINAL: id 0 = `Português`,
-  id 7 = `Despertador`, id 159 = `Aplicação`; a tabela inglesa `0xC52AA4`
-  (índice 0) tem `English`. Portanto **índice 8 = português**.
+  id 7 = `Despertador`; a tabela inglesa `0xC52AA4` (índice 0) tem
+  `English`. O id 159 sai como **`Aplicativos`** no texto final (o
+  ORIGINAL traz `Aplicação`). Portanto **índice 8 = português**.
 
 `fw.h` expõe `FW_LANG` (`*(volatile uint8_t *)0x00823D06`) e
 `FW_LANG_PT` (8). O menu e a tela da Cobrinha mostram **"Cobrinha"** nesse
@@ -94,7 +95,10 @@ Arquivo: `sdk/apps/cobrinha/main.c`.
   reduz o intervalo em 8 ms até o piso de 70 ms. Parede ou corpo =
   "Fim de jogo" com a pontuação.
 - **Controles:** ⏮/⏭ viram; Play inicia, pausa/continua e, no fim de jogo,
-  recomeça após 0,7 s; Back duas vezes em 0,8 s sai.
+  recomeça após 0,7 s; VOL duas vezes em 0,8 s sai. As mensagens seguem o
+  idioma do aparelho (`FW_LANG`): PT "Pontos"/"Fim de jogo"/"Pausa" e
+  "Play: começar/continuar/recomeçar"; EN "Score"/"Game over"/"Paused" e
+  "Play: start/resume/restart".
 - **Sem `.data`/`.bss`**, sem som; semente do `lv_tick_get` misturada ao
   `FW_SYSTICK_VAL`.
 
@@ -102,12 +106,12 @@ Arquivo: `sdk/apps/cobrinha/main.c`.
 
 - `tools/build_sdk.py --variante jogos` agora compila também
   `sdk/apps/cobrinha`.
-- SDK 3.1c: **11.468 B** em `0x00DAB000`, gancho `0x00DAD140`,
-  sha do app `029c44b394c44dfb…`; duas compilações dão o mesmo binário
+- SDK 3.1c: **11.688 B** em `0x00DAB000`, gancho `0x00DAD1C8`,
+  sha do app `d84c19a13e2112ef…`; duas compilações dão o mesmo binário
   (`--check-repro`).
 - Receita nova `reload_3.1c` = a lista da 3.1b (3.0 + `fab_sdk_jogos.py
   --variante jogos`) com o SDK novo.
-- Imagem 3.1c sem carimbo: sha `b84ac4988b5d7eda…`; contra a 3.0 muda só
+- Imagem 3.1c sem carimbo: sha `3e2d28d0db7cf7c2…`; contra a 3.0 muda só
   o lote `0x1AB000..` e os 4 bytes do `bl` em `0x123CF8`; nada abaixo de
   `0xE000`, setor `0xD000` e PSMP intocados.
 - **Contra a 3.1b publicada:** as diferenças são só o lote, o `bl` e o
@@ -122,13 +126,14 @@ o teste reconstrói a imagem dela pelo payload do `.up` versionado.
 
 ## 6. Testes
 
-`tests/test_reload_3_1c.py` (novo, 5 testes):
+`tests/test_reload_3_1c.py` (novo, 6 testes):
 
 1. reprodutibilidade, sem `.data`/`.bss`, bit Thumb;
 2. constantes de tecla e nenhum app usando `0x11`/`0x12`;
 3. fonte do idioma e tabela portuguesa no ORIGINAL;
 4. cinco linhas no menu (tabela de apps + geometria);
-5. diferença contra a 3.1b e limites de segurança de bytes.
+5. ida e volta do `bl` Thumb-2 para frente e para trás (`dec_bl`);
+6. diferença contra a 3.1b e limites de segurança de bytes.
 
 `tests/test_reload_3_1.py` (da ficha 022) continua passando.
 
@@ -149,8 +154,8 @@ Gerado por `gera_versao` **sem `--base`** (base ORIGINAL), carimbo
 
 | item | valor |
 |---|---|
-| imagem carimbada | `5dd7f3ee00e48072…` |
-| `.up` | 1.761.536 B, CRC `0xE744`, sha `aa99850cdec3e138…` |
+| imagem carimbada | `ab132eb6567e9d13…` |
+| `.up` | 1.761.536 B, CRC `0x57F2`, sha `4e3987b7bec2336e…` |
 | setores | 33 na imagem, 66 arquivos em `cabo/setores/` |
 
 `release/OpenPod-Reload-3.1c/` tem `README.md` ("New in 3.1c", jogos pelo

@@ -105,14 +105,16 @@ duas vezes volta ao menu. Sem som.*
 **Cobrinha (Snake).** A classic snake game: steer with ⏮/⏭, eat the red
 food, grow, and speed up. Hitting the wall or yourself ends the round.
 Play starts, pauses and resumes (and restarts after game over); Back
-twice returns to the menu. The name appears as **Cobrinha** in Portuguese
-and **Snake** in the other languages. *No sound.*
+twice returns to the menu. The name and the messages follow the player
+language: **Cobrinha** in Portuguese and **Snake** in the others.
+*No sound.*
 
 *Cobrinha. O clássico jogo da cobrinha: vire com ⏮/⏭, coma a comida
 vermelha, cresça e acelere. Bater na parede ou nela mesma termina a
 rodada. Play começa, pausa e continua (e recomeça no fim de jogo); Back
-duas vezes volta ao menu. O nome aparece como **Cobrinha** em português e
-**Snake** nos outros idiomas. Sem som.*
+duas vezes volta ao menu. O nome e as mensagens seguem o idioma do
+aparelho: **Cobrinha** em português e **Snake** nos outros idiomas.
+Sem som.*
 
 **Version screen.** `Settings → Information` shows **Reload 3.1c**.
 

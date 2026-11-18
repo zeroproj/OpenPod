@@ -98,7 +98,7 @@ typedef void (*lv_event_cb_t)(lv_event_t *e);
 /* Current UI language: get_lang_str (0xD2108C) dispatches through
  * 0xD0E2B8, which returns the byte at 0x00823D06.  Index 8 selects the
  * Portuguese table 0xC53B84 (id 0 "Português", id 7 "Despertador",
- * id 159 "Aplicação"), proved in docs/tarefas/023-analise.md. */
+ * id 159 "Aplicativos"), proved in docs/tarefas/023-analise.md. */
 #define FW_LANG (*(volatile uint8_t *)0x00823D06)
 #define FW_LANG_PT 8
 

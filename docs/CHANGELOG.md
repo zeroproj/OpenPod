@@ -29,18 +29,29 @@ número, hash e registro do que mudou.
   imagem indexada 4 bits no heap do LVGL, timer de 20 ms, liberação no
   `LV_EVENT_DELETE`; come 1 e acelera 8 ms até 70 ms. Sem som, sem
   `.data`/`.bss`.
-- **Build:** SDK jogos com 11.468 B em `0x00DAB000`, gancho `0x00DAD140`, sha `029c44b394c44dfb…`, reproduzível. Receita
-  nova `reload_3.1c` = 3.0 + `fab_sdk_jogos.py --variante jogos`.
-- **Imagem** sem carimbo sha `b84ac4988b5d7eda…`; contra a 3.0 só o lote
+- **Cobrinha em dois idiomas:** as mensagens seguem `FW_LANG`; em PT
+  "Pontos", "Fim de jogo", "Pausa" e "Play: começar/continuar/recomeçar"
+  com "<< >>: virar" e "VOL 2x: sair"; em EN "Score", "Game over",
+  "Paused" e "Play: start/resume/restart" com "<< >>: turn" e
+  "VOL 2x: exit".
+- **Build:** SDK jogos com 11.688 B em `0x00DAB000`, gancho `0x00DAD1C8`,
+  sha `d84c19a13e2112ef…`, reproduzível. Receita nova `reload_3.1c` =
+  3.0 + `fab_sdk_jogos.py --variante jogos`.
+- **Decodificador de `bl`:** `dec_bl` passou a usar `I = NOT(J XOR S)`
+  (`I = NOT(J XOR S)`), corrigindo `bl` para trás; teste de ida e volta
+  cobre frente e trás (`tests/test_reload_3_1c.py`). Nenhum byte de
+  imagem mudou por causa disso.
+- **Imagem** sem carimbo sha `3e2d28d0db7cf7c2…`; contra a 3.0 só o lote
   `0x1AB000+` e o `bl` do gancho. Contra a 3.1b publicada, só o lote, o
   `bl` e o carimbo antigo (15 bytes).
-- **Testes:** `tests/test_reload_3_1c.py` (5 testes) cobre teclas,
-  idioma, cinco linhas, reprodutibilidade/`.data`/`.bss`/Thumb, diff e
-  limites (`0xE000`, `0xD000`, PSMP); `tests/test_reload_3_1.py` segue
-  passando e `tools/ci.sh` verde.
+- **Testes:** `tests/test_reload_3_1c.py` (6 testes) cobre teclas,
+  idioma, cinco linhas, `dec_bl` frente/trás,
+  reprodutibilidade/`.data`/`.bss`/Thumb, diff e limites (`0xE000`,
+  `0xD000`, PSMP); `tests/test_reload_3_1.py` segue passando e
+  `tools/ci.sh` verde.
 - **Kit** `release/OpenPod-Reload-3.1c` por `gera_versao` **sem `--base`**:
-  carimbo "Reload 3.1c", imagem carimbada `5dd7f3ee…`, `.up` 1.761.536 B,
-  CRC `0xE744`, sha `aa99850c…`; `README.md` ("New in 3.1c", jogos pelo
+  carimbo "Reload 3.1c", imagem carimbada `ab132eb6…`, `.up` 1.761.536 B,
+  CRC `0x57F2`, sha `4e3987b7…`; `README.md` ("New in 3.1c", jogos pelo
   estilo, crédito a Dmitry Brant) e `TESTAR.txt` com a volta para a 3.1b.
   Análise em `docs/tarefas/023-analise.md`. Flashloader fica com a
   coordenação.

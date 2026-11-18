@@ -306,7 +306,7 @@ ck_file "OpenPod_OpenPodReload3.1c_109000.bin" 3bc16bacee418a50f79df0aa7c3f56042
 ck_file "OpenPod_OpenPodReload3.1c_10A000.bin" 8c35d232644fbcec0e57519558b61e1d3f0a7b0d269bbadde0c4eae6ba5316d3
 ck_file "OpenPod_OpenPodReload3.1c_121000.bin" ba21f47d4ae0797174245e1bd9fb837afdfd8619184d01b4d1553116e3daed1e
 ck_file "OpenPod_OpenPodReload3.1c_122000.bin" f1a868b530c26ea9b1c55b95e453cd32d6d8c97101f944ba367273c1beb214fe
-ck_file "OpenPod_OpenPodReload3.1c_123000.bin" 34236b4abacf7f28ba0f804258735faba28455610475ddb4289988c7a459fdbb
+ck_file "OpenPod_OpenPodReload3.1c_123000.bin" 596f209bcae2c0bf36a4410f20a7ebcca09af0af33f1b174f8a5cb2b318bda30
 ck_file "OpenPod_OpenPodReload3.1c_12E000.bin" 9fa129ccd988f4c2a6a962867782b42305e82bc5610b8111f312b5779d9297cb
 ck_file "OpenPod_OpenPodReload3.1c_131000.bin" 030d3b7bce7cd133207ce440fc1dc7f3137bdab0cc62e4fe7a1a746434ff579e
 ck_file "OpenPod_OpenPodReload3.1c_132000.bin" c85d831ba2bc0abb2457d1ef1a294cfa01e4b5cf063c1499fbf54b3865e6cc7a
@@ -319,9 +319,9 @@ ck_file "OpenPod_OpenPodReload3.1c_1A7000.bin" 142b9638e43a185341ae27973131aa4bc
 ck_file "OpenPod_OpenPodReload3.1c_1A8000.bin" 380953cff47806c257df31a7599300111b386cbc098fd69c42e16001448d0544
 ck_file "OpenPod_OpenPodReload3.1c_1A9000.bin" 5153d4d74d7f85164aa63adfebcc3e37e858724cd29f5862ea42b685c6850342
 ck_file "OpenPod_OpenPodReload3.1c_1AA000.bin" 0830a9923307dcb98e1a5aa1d19ae4e27d1ebdb4ae26d66c2914d954d1266e2a
-ck_file "OpenPod_OpenPodReload3.1c_1AB000.bin" 78cd0164df5cf66bb33eb6d121a0a5ee642b729b0e8e0ffd98c74471127a4b03
-ck_file "OpenPod_OpenPodReload3.1c_1AC000.bin" c581da32af37c7451c4a1d1df3618d39cb67b9c27280cb7260f21c95b458ed4a
-ck_file "OpenPod_OpenPodReload3.1c_1AD000.bin" 43ee085f5efbc0982fbd66d211659b3c8ca00195057c7b9e9c346592df60501c
+ck_file "OpenPod_OpenPodReload3.1c_1AB000.bin" 0bcc10ea8a28d11b4f9dbfe89900c93a691c92dceb6a9649ba19b5f478ca5fd8
+ck_file "OpenPod_OpenPodReload3.1c_1AC000.bin" 7e8448589e34be7d6b0cbee8a23e7e85fc2856e1cf7f39b86eadac5c01517dd5
+ck_file "OpenPod_OpenPodReload3.1c_1AD000.bin" ad0591fd72caa00135f0bd8ed7d6d7ac403600fc2677e3200d7ac02c932643ba
 ck_file "base_48000.bin" cd43df9cf6f193ab32cd4c0963555f95e95e7ecb02b836bc720c2d1873dcbc01
 ck_file "base_53000.bin" 5decc107dd674f7b6bdd34436f9a7e9b68900c61a7552df7a24be1f7f85bf4c5
 ck_file "base_C7000.bin" ae29fc778567f832164a237fd2f523dd6eedb4eefad4c7d843676d63931039b4
@@ -485,7 +485,7 @@ wr "4/6 14/33" 0x109000 "OpenPod_OpenPodReload3.1c_109000.bin" 3bc16bacee418a50f
 wr "4/6 15/33" 0x10A000 "OpenPod_OpenPodReload3.1c_10A000.bin" 8c35d232644fbcec0e57519558b61e1d3f0a7b0d269bbadde0c4eae6ba5316d3
 wr "4/6 16/33" 0x121000 "OpenPod_OpenPodReload3.1c_121000.bin" ba21f47d4ae0797174245e1bd9fb837afdfd8619184d01b4d1553116e3daed1e
 wr "4/6 17/33" 0x122000 "OpenPod_OpenPodReload3.1c_122000.bin" f1a868b530c26ea9b1c55b95e453cd32d6d8c97101f944ba367273c1beb214fe
-wr "4/6 18/33" 0x123000 "OpenPod_OpenPodReload3.1c_123000.bin" 34236b4abacf7f28ba0f804258735faba28455610475ddb4289988c7a459fdbb
+wr "4/6 18/33" 0x123000 "OpenPod_OpenPodReload3.1c_123000.bin" 596f209bcae2c0bf36a4410f20a7ebcca09af0af33f1b174f8a5cb2b318bda30
 wr "4/6 19/33" 0x12E000 "OpenPod_OpenPodReload3.1c_12E000.bin" 9fa129ccd988f4c2a6a962867782b42305e82bc5610b8111f312b5779d9297cb
 wr "4/6 20/33" 0x131000 "OpenPod_OpenPodReload3.1c_131000.bin" 030d3b7bce7cd133207ce440fc1dc7f3137bdab0cc62e4fe7a1a746434ff579e
 wr "4/6 21/33" 0x132000 "OpenPod_OpenPodReload3.1c_132000.bin" c85d831ba2bc0abb2457d1ef1a294cfa01e4b5cf063c1499fbf54b3865e6cc7a
@@ -498,9 +498,9 @@ wr "4/6 27/33" 0x1A7000 "OpenPod_OpenPodReload3.1c_1A7000.bin" 142b9638e43a18534
 wr "4/6 28/33" 0x1A8000 "OpenPod_OpenPodReload3.1c_1A8000.bin" 380953cff47806c257df31a7599300111b386cbc098fd69c42e16001448d0544
 wr "4/6 29/33" 0x1A9000 "OpenPod_OpenPodReload3.1c_1A9000.bin" 5153d4d74d7f85164aa63adfebcc3e37e858724cd29f5862ea42b685c6850342
 wr "4/6 30/33" 0x1AA000 "OpenPod_OpenPodReload3.1c_1AA000.bin" 0830a9923307dcb98e1a5aa1d19ae4e27d1ebdb4ae26d66c2914d954d1266e2a
-wr "4/6 31/33" 0x1AB000 "OpenPod_OpenPodReload3.1c_1AB000.bin" 78cd0164df5cf66bb33eb6d121a0a5ee642b729b0e8e0ffd98c74471127a4b03
-wr "4/6 32/33" 0x1AC000 "OpenPod_OpenPodReload3.1c_1AC000.bin" c581da32af37c7451c4a1d1df3618d39cb67b9c27280cb7260f21c95b458ed4a
-wr "4/6 33/33" 0x1AD000 "OpenPod_OpenPodReload3.1c_1AD000.bin" 43ee085f5efbc0982fbd66d211659b3c8ca00195057c7b9e9c346592df60501c
+wr "4/6 31/33" 0x1AB000 "OpenPod_OpenPodReload3.1c_1AB000.bin" 0bcc10ea8a28d11b4f9dbfe89900c93a691c92dceb6a9649ba19b5f478ca5fd8
+wr "4/6 32/33" 0x1AC000 "OpenPod_OpenPodReload3.1c_1AC000.bin" 7e8448589e34be7d6b0cbee8a23e7e85fc2856e1cf7f39b86eadac5c01517dd5
+wr "4/6 33/33" 0x1AD000 "OpenPod_OpenPodReload3.1c_1AD000.bin" ad0591fd72caa00135f0bd8ed7d6d7ac403600fc2677e3200d7ac02c932643ba
 rm -f "$WORK/sec.bin"
 
 log "$(m p5)"
@@ -515,7 +515,7 @@ ck2() {
 }
 ck2 "bootloader" 0 51532 861184003923634be0f2ae9883456035b40d1ea72f97682890238edfae3acb31
 ck2 "ptable" 53248 64 9f93d4435e7cb819b2dad2f38edf91fb0a0af44654c4d9fcd3df174bf3380a2d
-ck2 "FIRM" 57344 1647984 639c88e39e9da30d0229715f9bdeeb77b57193be9601aa9dc64bd4fbb835287d
+ck2 "FIRM" 57344 1647984 d46072a0dff45c2ae1a2a7f613595679b7c989a7dff03e6e9b4acfff963314e9
 ck2 "TONE" 1708032 8248 7f2882af95534ec56c6261ac14c74ddcf9a83c8deb4b5e97e333b2ee3f8b4ace
 
 log ""

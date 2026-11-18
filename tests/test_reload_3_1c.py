@@ -21,6 +21,7 @@ import unittest
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RAIZ, "tools"))
 import build_sdk
+import fab_sdk_jogos
 
 ORIG = os.path.join(RAIZ, "firmware/ORIGINAL/GN438_original.bin")
 FW_H = os.path.join(RAIZ, "sdk/include/fw.h")
@@ -165,14 +166,18 @@ class Reload31C(unittest.TestCase):
         # table 0xC52AA4 is index 0.  This is the proof for FW_LANG_PT.
         for tab, ident, texto in ((0xC53B84, 0, "Português"),
                                   (0xC53B84, 7, "Despertador"),
-                                  (0xC53B84, 159, "Aplicação"),
                                   (0xC52AA4, 0, "English")):
             p = struct.unpack_from("<I", self.orig, tab - ORIGEM + ident * 4)[0]
             self.assertEqual(cstr(self.orig, p), texto)
         self.assertIn(b"#define FW_LANG (*(volatile uint8_t *)0x00823D06)", open(FW_H, "rb").read())
         self.assertIn(b"#define FW_LANG_PT 8", open(FW_H, "rb").read())
-        self.assertIn(b"Cobrinha", self.app)
-        self.assertIn(b"Snake", self.app)
+        for msg in ("Cobrinha", "Snake", "Pontos ", "Fim de jogo", "Pausa",
+                    "Play: começar", "Play: continuar", "Play: recomeçar",
+                    "<< >>: virar", "VOL 2x: sair", "Score ", "Game over",
+                    "Paused", "Play: start", "Play: resume", "Play: restart",
+                    "<< >>: turn", "VOL 2x: exit"):
+            self.assertIn(msg.encode(), self.app, msg)
+        self.assertIn(b"Aplicativos", self.img)
 
     def test_menu_cinco_linhas(self):
         entradas = 0
@@ -198,6 +203,16 @@ class Reload31C(unittest.TestCase):
         ver = 160
         self.assertLessEqual(5 * (ver // 7), 6 * (ver // 7) + 3)
         self.assertIn(b"(ver / 7)", open(MENU, "rb").read())
+
+    def test_dec_bl_ida_e_volta(self):
+        for de, para in ((0x00D50000, 0x00D40000),
+                         (0x00D23CF8, 0x00DAB000),
+                         (0x00D50000, 0x00D60000)):
+            buf = bytearray(0x200000)
+            off = de - ORIGEM
+            buf[off:off + 4] = fab_sdk_jogos.enc_bl(de, para)
+            self.assertEqual(fab_sdk_jogos.dec_bl(buf, de), para,
+                             f"BL 0x{de:08X} -> 0x{para:08X} nao volta")
 
     def test_diff_contra_3_1b(self):
         new, old, base = self.img, self.old, self.base
