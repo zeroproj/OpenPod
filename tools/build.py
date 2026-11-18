@@ -893,6 +893,14 @@ RELOAD_3_1B = RELOAD_3_0 + [
     ("fab_sdk_jogos.py", ["--variante", "jogos"],
      "SDK em C + Flutter e Mp3tris na area livre"),
 ]
+# ficha 023: a mesma receita da 3.1b com o SDK novo (controles do GN-438 e
+# a Cobrinha).  As fontes do SDK sao compartilhadas, entao rodar a receita
+# `reload_3.1b` hoje tambem produz este SDK; o kit 3.1b publicado fica em
+# `release/OpenPod-Reload-3.1b/` e e a referencia de diferenca.
+RELOAD_3_1C = RELOAD_3_0 + [
+    ("fab_sdk_jogos.py", ["--variante", "jogos"],
+     "SDK em C + Flutter, Mp3tris e Cobrinha na area livre"),
+]
 
 RECEITAS = {
     "core1.0": CORE_1_0,
@@ -940,6 +948,8 @@ RECEITAS = {
     # ficha 022: degrau de diagnostico (so teclas) e degrau com os jogos
     "reload_3.1a_diag": RELOAD_3_1A_DIAG,
     "reload_3.1b": RELOAD_3_1B,
+    # ficha 023: controles do GN-438 e a Cobrinha
+    "reload_3.1c": RELOAD_3_1C,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.

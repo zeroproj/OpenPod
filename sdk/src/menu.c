@@ -2,9 +2,10 @@
  *
  * The factory builds the page and its three rows (Despertador, Imagem,
  * Dicionario).  This hook then replaces the third row with the first SDK
- * app and, in the games build, appends Mp3tris as a fourth row.  ENTER on
- * a row opens its overlay; every other key is forwarded to the factory's
- * row callback so navigation and Back keep working.
+ * app and appends the others, so the games build has five rows: Alarm,
+ * Images, Flutter, Mp3tris, Cobrinha.  ENTER (Play) on a row opens its
+ * overlay; every other key is forwarded to the factory's row callback so
+ * navigation and Back keep working.
  *
  * Based on the SL6801_player SDK by Dmitry Brant, used with permission.
  */
@@ -13,14 +14,16 @@
 #ifdef FW_DIAG
 void keytest_open(lv_obj_t *return_focus);
 static const fw_app_t fw_apps[] = {
-	{"Teste de teclas", keytest_open},
+	{"Teste de teclas", keytest_open, NULL},
 };
 #else
 void flutter_open(lv_obj_t *return_focus);
 void mp3tris_open(lv_obj_t *return_focus);
+void cobrinha_open(lv_obj_t *return_focus);
 static const fw_app_t fw_apps[] = {
-	{"Flutter", flutter_open},
-	{"Mp3tris", mp3tris_open},
+	{"Flutter", flutter_open, NULL},
+	{"Mp3tris", mp3tris_open, NULL},
+	{"Snake", cobrinha_open, "Cobrinha"},
 };
 #endif
 
@@ -46,6 +49,9 @@ static void append_row(lv_obj_t *list, const fw_app_t *app)
 {
 	lv_coord_t hor = lv_disp_get_hor_res(NULL);
 	lv_coord_t ver = lv_disp_get_ver_res(NULL);
+	const char *name = app->name;
+	if (app->name_pt && FW_LANG == FW_LANG_PT)
+		name = app->name_pt;
 
 	lv_obj_t *row = FW_MENU_LIST_ITEM_CREATE(list);
 	if (!row)
@@ -60,7 +66,7 @@ static void append_row(lv_obj_t *list, const fw_app_t *app)
 	lv_obj_t *text = lv_label_create(row);
 	lv_obj_set_width(text, (lv_coord_t)(hor - 4 - lv_obj_get_width(icon)));
 	lv_label_set_long_mode(text, LV_LABEL_LONG_SCROLL_CIRCULAR);
-	lv_label_set_text(text, app->name);
+	lv_label_set_text(text, name);
 	FW_MENU_LIST_ITEM_LAYOUT(row, 0, 0, 2);
 }
 
@@ -90,11 +96,9 @@ int hook_home_menu_create(void)
 			lv_label_set_text(icons[2], "");
 	}
 
-	if (FW_APP_COUNT > 1) {
-		lv_obj_t *first = items[0];
-		lv_obj_t *list = first ? fw_obj_parent(first) : NULL;
-		if (list)
-			append_row(list, &fw_apps[1]);
-	}
+	lv_obj_t *first = items[0];
+	lv_obj_t *list = first ? fw_obj_parent(first) : NULL;
+	for (unsigned i = 1; list && i < FW_APP_COUNT; i++)
+		append_row(list, &fw_apps[i]);
 	return 0;
 }

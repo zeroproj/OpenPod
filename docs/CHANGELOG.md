@@ -7,6 +7,57 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-11-18 — OpenPod Reload 3.1c (ficha 023): controles do GN-438 e a Cobrinha
+
+- **Teclas do GN-438:** `fw.h` passa a expor só os códigos medidos —
+  `FW_KEY_M` `0xA0`, `FW_KEY_M_LONG` `0xA2`, `FW_KEY_PREV` `0x14`,
+  `FW_KEY_NEXT` `0x13`, `FW_KEY_PREV_LONG` `0x87`, `FW_KEY_NEXT_LONG`
+  `0x89`, `FW_KEY_PLAY` `0x0A`, `FW_KEY_BACK` `0x81`. Nenhum app usa mais
+  `0x11`/`0x12` (cima/baixo não existem neste aparelho).
+- **Mp3tris:** ⏮/⏭ movem (segurar repete), M gira, segurar M derruba de
+  vez, Play desce uma linha. **Flutter:** M ou Play sobem. **Cobrinha**
+  (novo, `sdk/apps/cobrinha/`): vira com ⏮/⏭ em relação à direção, Play
+  inicia/pausa/continua/recomeça, Back 2x sai.
+- **Menu Aplicativos** com cinco linhas: Despertador, Imagem, Flutter,
+  Mp3tris, Cobrinha. A geometria de fábrica (`6*(ver/7)+3` na lista e
+  `ver/7` por linha) deixa 5×22 = 110 px em 135 px; as linhas extras
+  entram no mesmo grupo do LVGL. O nome é **Cobrinha** em português e
+  **Snake** nos outros idiomas, lendo o byte `0x00823D06` onde
+  `get_lang_str` (`0xD2108C` → `0xD0E2B8`) lê; índice 8 = tabela PT
+  `0xC53B84`, provado no ORIGINAL.
+- **Cobrinha:** campo 16×18 de células de 8 px, faixa de placar de 16 px,
+  imagem indexada 4 bits no heap do LVGL, timer de 20 ms, liberação no
+  `LV_EVENT_DELETE`; come 1 e acelera 8 ms até 70 ms. Sem som, sem
+  `.data`/`.bss`.
+- **Cobrinha em dois idiomas:** as mensagens seguem `FW_LANG`; em PT
+  "Pontos", "Fim de jogo", "Pausa" e "Play: começar/continuar/recomeçar"
+  com "<< >>: virar" e "VOL 2x: sair"; em EN "Score", "Game over",
+  "Paused" e "Play: start/resume/restart" com "<< >>: turn" e
+  "VOL 2x: exit".
+- **Build:** SDK jogos com 11.688 B em `0x00DAB000`, gancho `0x00DAD1C8`,
+  sha `d84c19a13e2112ef…`, reproduzível. Receita nova `reload_3.1c` =
+  3.0 + `fab_sdk_jogos.py --variante jogos`.
+- **Decodificador de `bl`:** `dec_bl` passou a usar `I = NOT(J XOR S)`
+  (`I = NOT(J XOR S)`), corrigindo `bl` para trás; teste de ida e volta
+  cobre frente e trás (`tests/test_reload_3_1c.py`). Nenhum byte de
+  imagem mudou por causa disso.
+- **Imagem** sem carimbo sha `3e2d28d0db7cf7c2…`; contra a 3.0 só o lote
+  `0x1AB000+` e o `bl` do gancho. Contra a 3.1b publicada, só o lote, o
+  `bl` e o carimbo antigo (15 bytes).
+- **Testes:** `tests/test_reload_3_1c.py` (6 testes) cobre teclas,
+  idioma, cinco linhas, `dec_bl` frente/trás,
+  reprodutibilidade/`.data`/`.bss`/Thumb, diff e limites (`0xE000`,
+  `0xD000`, PSMP); `tests/test_reload_3_1.py` segue passando e
+  `tools/ci.sh` verde.
+- **Kit** `release/OpenPod-Reload-3.1c` por `gera_versao` **sem `--base`**:
+  carimbo "Reload 3.1c", imagem carimbada `ab132eb6…`, `.up` 1.761.536 B,
+  CRC `0x57F2`, sha `4e3987b7…`; `README.md` ("New in 3.1c", jogos pelo
+  estilo, crédito a Dmitry Brant) e `TESTAR.txt` com a volta para a 3.1b.
+  Análise em `docs/tarefas/023-analise.md`. Flashloader fica com a
+  coordenação.
+
+---
+
 ## 2026-11-18 — OpenPod Reload 3.1 (ficha 022): SDK em C e jogos
 
 - **SDK em C portado da referência** (`SL6801_player`, commit `0361e2c`,

@@ -158,7 +158,9 @@ def sources(variante):
         apps.append(os.path.join(SDK, "apps/keytest"))
         incs += ["-DFW_DIAG"]
     elif variante == "jogos":
-        apps += [os.path.join(SDK, "apps/flutter"), os.path.join(SDK, "apps/mp3tris")]
+        apps += [os.path.join(SDK, "apps/flutter"),
+                 os.path.join(SDK, "apps/mp3tris"),
+                 os.path.join(SDK, "apps/cobrinha")]
     else:
         raise SystemExit("variante deve ser diag ou jogos")
     return incs, apps

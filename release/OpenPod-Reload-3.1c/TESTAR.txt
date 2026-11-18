@@ -1,0 +1,26 @@
+OpenPod Reload 3.1c — TESTAR
+
+Kit gerado SEM --base (base ORIGINAL); o .up reescreve a imagem inteira.
+Carimbo: Config -> Informacoes = "Reload 3.1c".
+Imagem carimbada: ab132eb6... · .up 1.761.536 B · CRC 0x57F2 · sha 4e3987b7...
+
+O QUE MUDOU
+  Menu Aplicativos (icone 5): Despertador, Imagem, Flutter, Mp3tris, Cobrinha.
+  Controles do GN-438: nao existe cima/baixo. Jogos sem som; a musica nao e
+  parada ao abrir app (decisao desta versao). As mensagens da Cobrinha seguem
+  o idioma do aparelho (PT/EN).
+
+ROTEIRO (marque ok / falhou)
+  [ ] Config -> Informacoes = "Reload 3.1c"
+  [ ] Menu Aplicativos mostra as CINCO linhas e o foco chega na Cobrinha
+  [ ] Flutter: M ou Play sobe; Back 2x sai
+  [ ] Mp3tris: << e >> movem (segurar repete); M gira; segurar M derruba;
+      Play desce uma linha; Back 2x sai
+  [ ] Cobrinha abre; << e >> viram em relacao a direcao dela
+  [ ] Cobrinha: come a comida, cresce, acelera; parede/corpo = "Fim de jogo"
+  [ ] Cobrinha: Play pausa e continua; no fim de jogo, Play recomeca
+  [ ] Cobrinha: Back 2x sai; mensagens em portugues e em ingles
+  [ ] Jogar com musica tocando e anotar se a animacao/musica engasga
+
+SE ALGO DER ERRADO
+  Volta de seguranca: reinstale a 3.1b pelo cartao (update.up da 3.1b).

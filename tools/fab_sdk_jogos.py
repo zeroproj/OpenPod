@@ -40,14 +40,21 @@ def sha(d):
 
 
 def dec_bl(d, addr):
+    """Decode a Thumb-2 BL (T1 encoding).
+
+    imm32 = SignExtend(S:I1:I2:imm10:imm11:'0'), with I1 = NOT(J1 XOR S)
+    and I2 = NOT(J2 XOR S).  Getting the I bits wrong only shows up when
+    S = 1 (a backward branch): the decode comes out 0xC00000 off, which
+    would accept a BL that the CPU reads as another address entirely.
+    """
     off = addr - 0x00C00000
     h1, h2 = struct.unpack_from("<HH", d, off)
     if (h1 & 0xF800) != 0xF000 or (h2 & 0xD000) != 0xD000:
         return None
     s = (h1 >> 10) & 1
-    i1, i2 = (h2 >> 13) & 1, (h2 >> 11) & 1
-    j1, j2 = 1 - i1, 1 - i2
-    imm = (s << 24) | (j1 << 23) | (j2 << 22) | ((h1 & 0x3FF) << 12) | ((h2 & 0x7FF) << 1)
+    j1, j2 = (h2 >> 13) & 1, (h2 >> 11) & 1
+    i1, i2 = 1 - (j1 ^ s), 1 - (j2 ^ s)
+    imm = (s << 24) | (i1 << 23) | (i2 << 22) | ((h1 & 0x3FF) << 12) | ((h2 & 0x7FF) << 1)
     if imm & (1 << 24):
         imm -= 1 << 25
     return (addr + 4 + imm) & 0xFFFFFFFF

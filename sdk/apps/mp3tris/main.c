@@ -1,8 +1,8 @@
 /*
- * Mp3tris: falling-block puzzle.  Left/Right move, Up rotates, a Center
- * press drops the piece one row, holding Center drops it to the bottom,
+ * Mp3tris: falling-block puzzle.  Prev/Next move (holding them repeats),
+ * M rotates, Play drops the piece one row, holding M drops it all the way,
  * Back twice exits.  Runs as a full-screen overlay opened from the
- * Applications menu.
+ * Applications menu.  The GN-438 has no Up/Down key.
  *
  * The board and the next-piece preview are 16-color images in RAM that are
  * redrawn in place; one object per cell would not fit in the 40 KB LVGL
@@ -272,7 +272,7 @@ static void game_over(game_t *g)
 	p = fw_put_dec(p, g->score);
 	p = fw_put_str(p, "\nBest ");
 	p = fw_put_dec(p, g->best);
-	fw_put_str(p, "\n\nCenter: again");
+	fw_put_str(p, "\n\nPlay: again");
 	show_message(g, "Fim de jogo", buf);
 	g->dirty = true;
 }
@@ -479,7 +479,7 @@ static void tick_cb(lv_timer_t *t)
 	}
 }
 
-static void center_down(game_t *g)
+static void play_down(game_t *g)
 {
 	switch (g->state) {
 	case READY:
@@ -501,7 +501,7 @@ static void input_cb(lv_event_t *e)
 	uint8_t code = lv_event_get_code(e);
 	if (code == LV_EVENT_PRESSED) {
 		g->press_handled = true;
-		center_down(g);
+		play_down(g);
 		return;
 	}
 	if (code != LV_EVENT_KEY)
@@ -517,23 +517,25 @@ static void input_cb(lv_event_t *e)
 		return;
 	}
 	switch (key) {
-	case FW_KEY_LEFT:
+	case FW_KEY_PREV:
+	case FW_KEY_PREV_LONG:
 		shift(g, -1);
 		break;
-	case FW_KEY_RIGHT:
+	case FW_KEY_NEXT:
+	case FW_KEY_NEXT_LONG:
 		shift(g, 1);
 		break;
-	case FW_KEY_UP:
+	case FW_KEY_M:
 		rotate(g);
 		break;
-	case FW_KEY_CENTER:
+	case FW_KEY_M_LONG:
+		hard_drop(g);
+		break;
+	case FW_KEY_PLAY:
 		if (g->press_handled)
 			g->press_handled = false;
 		else
-			center_down(g);
-		break;
-	case FW_KEY_CENTER_LONG:
-		hard_drop(g);
+			play_down(g);
 		break;
 	}
 	if (g->dirty) {
@@ -646,7 +648,8 @@ void mp3tris_open(lv_obj_t *return_focus)
 	lv_obj_t *root = g->ov->root;
 	build_scene(g, root);
 	g->state = READY;
-	show_message(g, "Mp3tris", "Left/Right: mover\nUp: girar\nCenter: descer\nSegure Center: cair\nBack duas vezes: sair\n\nCenter: comecar");
+	show_message(g, "Mp3tris",
+		     "\n/>>: mover\nM: girar\nPlay: descer\nSegure M: cair\nBack 2x: sair\n\nPlay: comecar");
 
 	lv_obj_add_event_cb(root, input_cb, LV_EVENT_PRESSED, g);
 	lv_obj_add_event_cb(root, input_cb, LV_EVENT_RELEASED, g);
