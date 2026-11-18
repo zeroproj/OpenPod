@@ -13,6 +13,7 @@
 # ---------------------------------------------------------------------------
 
 # saidas da construcao
+sdk/build*/
 firmware/WORKING/*.bin
 firmware/READBACK/*.bin
 firmware/VENDOR/*.zip
