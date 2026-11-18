@@ -172,6 +172,11 @@ MAPA = {
     # 0x001A8000 fica logo depois do `fab_home_moldura` (que termina em
     # 0x001A6480) e nao cruza nenhum lote acima.
     "fab_capa_album.py":      (0x001A8000, 0x3000),
+    # Ficha 022 (Reload 3.1). O SDK em C ocupa a area livre
+    # 0x001AB000..0x001FC000, logo depois do lote da capa e antes da PSMP.
+    # A ferramenta confere a area inteira 0xFF antes de escrever e so
+    # altera o lote e o `bl` de 4 bytes em 0x00123CF8.
+    "fab_sdk_jogos.py":       (0x001AB000, 0x51000),
     # Ficha 008 (RC7 trava ao tocar). A ferramenta das BISSECOES
     # (`fab_diag_trava.py`) NAO entra no MAPA de proposito: ela nao aloca
     # nada, so patcha 4/2/2 bytes DENTRO do lote que a RC7 ja montou, e o
@@ -872,6 +877,23 @@ RELOAD_3_0 = RELOAD_2_2_1 + [
      "glifo Apps no indice 5 da folha"),
 ]
 
+# ---------------------------------------------------------------------------
+# RELOAD 3.1 (ficha 022) — SDK em C na area livre, partindo da 3.0.
+#
+# O `fab_sdk_jogos.py` compila o SDK (zig cc), confere o sha256 da 3.0 e as
+# premissas (bl de fabrica, stub, area 0xFF) e grava so o lote 0x1AB000 e o
+# `bl` de 4 bytes em 0x123CF8.  O degrau `a` (diag) tem so o "Teste de
+# teclas"; o `b` tem Flutter e Mp3tris.
+# ---------------------------------------------------------------------------
+RELOAD_3_1A_DIAG = RELOAD_3_0 + [
+    ("fab_sdk_jogos.py", ["--variante", "diag"],
+     "SDK em C + Teste de teclas na area livre"),
+]
+RELOAD_3_1B = RELOAD_3_0 + [
+    ("fab_sdk_jogos.py", ["--variante", "jogos"],
+     "SDK em C + Flutter e Mp3tris na area livre"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -915,6 +937,9 @@ RECEITAS = {
     # a 2.2.1 e a 2.2 com o limite de tamanho da capa
     "reload_2.2.1": RELOAD_2_2_1,
     "reload_3.0": RELOAD_3_0,
+    # ficha 022: degrau de diagnostico (so teclas) e degrau com os jogos
+    "reload_3.1a_diag": RELOAD_3_1A_DIAG,
+    "reload_3.1b": RELOAD_3_1B,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.

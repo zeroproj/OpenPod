@@ -7,6 +7,39 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-11-17 — OpenPod Reload 3.1 (ficha 022): SDK em C e jogos
+
+- **SDK em C portado da referência** (`SL6801_player`, commit `0361e2c`,
+  crédito a Dmitry Brant, D15), compilado com `python3 -m ziglang cc`
+  0.13.0 e flags fixas em `tools/build_sdk.py`. Sem `.data`/`.bss`
+  (`sdk/app.ld`), com bit Thumb em todo ponteiro de função e build
+  reproduzível byte a byte.
+- **Gancho no menu Apps (0x53):** o `bl` de fábrica em `0x00123CF8`
+  (`0b f0 d2 f9`, alvo `0xD2F0A0`) passa a chamar o SDK. O criador de
+  fábrica monta Despertador e Imagem; o Dicionário (item 2) é reaproveitado
+  para o primeiro app e os demais entram como linhas. Ordem final:
+  **Despertador, Imagem, Flutter, Mp3tris**. O `Back` curto volta pelo
+  event cb de fábrica. A ficha pedia um item "Jogos" com tela própria; o
+  decisor mudou para jogos direto no menu (divergência registrada em
+  `docs/tarefas/022-analise.md`).
+- **3.1a diag:** só o "Teste de teclas" no lugar dos jogos. **3.1b:**
+  Flutter e Mp3tris. Código em `sdk/`, ferramentas `tools/build_sdk.py` e
+  `tools/fab_sdk_jogos.py`, receitas `reload_3.1a_diag` e `reload_3.1b`.
+- Tabela de funções do firmware em `docs/tarefas/022-analise.md`, travada
+  por `tests/test_reload_3_1.py::test_fw_h_addresses`; o teste passa (7
+  testes) e o `tools/ci.sh` está verde.
+- Imagens conferidas contra a 3.0 (só o lote + 4 bytes do `bl`): 3.1a diag
+  sha `3fc72a964d10c82b…`, 3.1b sha `9c02556d70719a95…`.
+- **Sem som** nesta versão (ficha 022 §4). A diretiva posterior de parar a
+  música ao abrir app **não fechou com prova**: o aviso existe na tabela
+  (id 140, `0xC5CFC7`), mas as páginas de Imagem (`0xD33AF4`, `0xD3404C`)
+  não o mostram nem chamam função de áudio; a API de mídia provável
+  (`0xD40660` → `0xD4124C`) pode bloquear e não é segura na tarefa de UI.
+  **ESCALADA-022** em `docs/tarefas/022-analise.md` §4. Kits e publicação
+  suspensos até a decisão do arquiteto.
+
+---
+
 ## 2026-11-17 — OpenPod Reload 3.0 (ficha 021): menu Apps na home
 
 - **O código é o da 2.2.1 byte a byte**, mais o desvio do índice 5 e o
