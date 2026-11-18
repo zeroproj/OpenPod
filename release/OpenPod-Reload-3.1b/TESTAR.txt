@@ -1,0 +1,18 @@
+OpenPod Reload 3.1b — TESTAR
+
+Kit gerado SEM --base (base ORIGINAL); o .up reescreve a imagem inteira.
+Carimbo: Config -> Informacoes = "Reload 3.1b".
+Imagem carimbada: d9671d9e... · .up 1.761.536 B · CRC 0xDEF5 · sha 2d614ab6...
+
+O QUE MUDOU
+  Menu Aplicativos (icone 5): Despertador, Imagem, Flutter e Mp3tris.
+  Jogos sem som; a musica nao e parada ao abrir app (decisao desta versao).
+
+ROTEIRO (marque ok / falhou)
+  [ ] Config -> Informacoes = "Reload 3.1b"
+  [ ] Flutter abre; jogar com o centro; Esc volta ao menu
+  [ ] Mp3tris abre; jogar com as setas/centro; Esc volta ao menu
+  [ ] Jogar com musica tocando e anotar se a animacao/musica engasga
+
+SE ALGO DER ERRADO
+  Volta de seguranca: reinstale a 3.0 pelo cartao (update.up da 3.0).

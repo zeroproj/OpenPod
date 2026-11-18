@@ -7,7 +7,7 @@ número, hash e registro do que mudou.
 
 ---
 
-## 2026-11-17 — OpenPod Reload 3.1 (ficha 022): SDK em C e jogos
+## 2026-11-18 — OpenPod Reload 3.1 (ficha 022): SDK em C e jogos
 
 - **SDK em C portado da referência** (`SL6801_player`, commit `0361e2c`,
   crédito a Dmitry Brant, D15), compilado com `python3 -m ziglang cc`
@@ -30,13 +30,18 @@ número, hash e registro do que mudou.
   testes) e o `tools/ci.sh` está verde.
 - Imagens conferidas contra a 3.0 (só o lote + 4 bytes do `bl`): 3.1a diag
   sha `3fc72a964d10c82b…`, 3.1b sha `9c02556d70719a95…`.
-- **Sem som** nesta versão (ficha 022 §4). A diretiva posterior de parar a
-  música ao abrir app **não fechou com prova**: o aviso existe na tabela
-  (id 140, `0xC5CFC7`), mas as páginas de Imagem (`0xD33AF4`, `0xD3404C`)
-  não o mostram nem chamam função de áudio; a API de mídia provável
-  (`0xD40660` → `0xD4124C`) pode bloquear e não é segura na tarefa de UI.
-  **ESCALADA-022** em `docs/tarefas/022-analise.md` §4. Kits e publicação
-  suspensos até a decisão do arquiteto.
+- **Kits** gerados por `gera_versao` **sem `--base`**:
+  `release/OpenPod-Reload-3.1a-Diag` (carimbo "Reload 3.1a diag"; imagem
+  carimbada `74b0e779…`, `.up` CRC `0x0C23`) e
+  `release/OpenPod-Reload-3.1b` (carimbo "Reload 3.1b"; imagem carimbada
+  `d9671d9e…`, `.up` CRC `0xDEF5`), com `README.md` ("New in 3.1" e crédito
+  a Dmitry Brant, link do repositório) e `TESTAR.txt` curto. O Flashloader
+  é copiado pela coordenação depois; não está versionado.
+- **Sem som** nesta versão (ficha 022 §4). O decisor escolheu a opção (a):
+  a 3.1 sai **sem parar a música** e com os jogos **sem som**, por
+  enquanto. Correção registrada: `0xD40660` monta o subcmd 5, que no
+  MediaTask é **`-next`** (`0xD430CC`), **não stop**; a análise anterior o
+  rotulou de stop por engano. Ver `docs/tarefas/022-analise.md` §4.
 
 ---
 

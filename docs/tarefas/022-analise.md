@@ -108,7 +108,7 @@ referência não tem a função, a coluna fica `—`.
   prólogos, Thumb nos `.o`, tabela de apps, ganchos/diffs/PSMP e recusas.
   `sh tools/ci.sh` verde.
 
-## 4. Som e parada da música — ESCALADA
+## 4. Som e parada da música — decisão: sem parada
 
 Decisão da ficha: **sem som** nesta versão se as regras de segurança não
 fecharem. O SDK não porta `sound.c`; os jogos são silenciosos.
@@ -126,26 +126,48 @@ jogo/app**, como a página de Imagem faria. A investigação no ORIGINAL:
   Nem a lista nem o visualizador chamam `get_lang_str(140)`, função de
   áudio ou `0xD23510` com o id 140. **Não há, neste firmware, caminho de
   fábrica que mostre o aviso ou pare a música ao abrir a imagem.**
-- A API de mídia provável é `0xD40630` (play), `0xD40660` (stop, cmd 5),
-  `0xD4067E` (pause) e `0xD4069C` (seek), que enfileiram por `0xD4124C`.
-  `0xD4124C` usa `0xD6AE38(8)` e `0x816DB2` com timeout `-1` — **pode
-  bloquear**. O stop interno `0xD40610` fecha `/dev/audio0` e dorme 10 ms.
-  Chamar qualquer um da tarefa de UI viola a 020 §2.
+- A API de mídia provável é `0xD40630` (play), `0xD4067E` (pause) e
+  `0xD4069C` (seek), que enfileiram por `0xD4124C`. **Correção:** o
+  `0xD40660` monta o subcmd 5, que no MediaTask é **`-next`**
+  (`0xD430CC`), **não stop**. A análise anterior o rotulou de stop por
+  engano; essa função não serve para parar a música. `0xD4124C` usa
+  `0xD6AE38(8)` e `0x816DB2` com timeout `-1` — **pode bloquear**; chamar
+  qualquer um da tarefa de UI viola a 020 §2. `0xD40610` fecha
+  `/dev/audio0` e dorme 10 ms, mas não é um caminho de stop da UI.
 - Não há chamada dessas funções nas páginas de imagem, e não foi achado um
   caminho alternativo comprovado (tarefa de áudio própria, semáforo ou
   fila não bloqueante) no nosso firmware.
 
-**Conclusão:** a parada de música **não fecha com prova**. Não foi
-implementada; os jogos continuam sem som e a música, se estiver tocando,
-não é parada. Fica para o arquiteto decidir entre (a) aceitar sem parada,
-(b) autorizar uma tarefa própria que enfileire o stop, ou (c) uma ficha
-nova de áudio. Kits e publicação ficam suspensos até essa decisão.
+**Decisão do decisor (a):** a 3.1 sai **sem parar a música** e com os
+jogos **sem som**, por enquanto. Não foi implementada parada; a música,
+se estiver tocando, continua. A correção do subcmd 5 (`-next`) fica
+registrada para não induzir uma ficha futura de áudio ao erro. Uma
+parada de música, se vier, exige ficha própria com prova de caminho e
+execução fora da tarefa de UI.
 
 ## 5. O que ficou de fora
 
 - Som dos jogos (ficha 022 §4: sem som).
-- Parada da música ao abrir app (diretiva nova; ver §4).
+- Parada da música ao abrir app: **fora por decisão (a)**; a 3.1 não para
+  a música (ver §4).
 - `fw_obj_parent` é PROVÁVEL como símbolo; o comportamento `[obj+4]` está
   confirmado.
 - Flashloader binário ausente em `firmware/VENDOR/`; o kit, quando sair,
   segue o aviso do `gera_versao`.
+
+## 6. Entrega
+
+Os dois kits foram gerados por `gera_versao` **sem `--base`** (base
+ORIGINAL; o `.up` reescreve a imagem inteira):
+
+| kit | carimbo | imagem carimbada | `.up` | CRC | setores |
+|---|---|---|---|---|---|
+| `release/OpenPod-Reload-3.1a-Diag/` | `Reload 3.1a diag` | `74b0e779…` | 1.753.344 B | `0x0C23` | 62 |
+| `release/OpenPod-Reload-3.1b/` | `Reload 3.1b` | `d9671d9e…` | 1.761.536 B | `0xDEF5` | 66 |
+
+Cada pacote tem `README.md` com a seção **New in 3.1**, o crédito ao
+`SL6801_player` de Dmitry Brant e o link do repositório, além de
+`TESTAR.txt` curto com a volta de segurança para a 3.0. Os kits internos
+ficam em `firmware/RELEASE/OpenPod Reload 3.1a Diag/` e
+`firmware/RELEASE/OpenPod Reload 3.1b/`. O Flashloader é copiado pela
+coordenação depois; não está versionado.
