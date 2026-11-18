@@ -1,7 +1,7 @@
 /*
  * Flutter: guide a puffball through gaps between crystal pillars.
- * Center flaps, Back twice exits.  Runs as a full-screen overlay opened
- * from the Applications menu.
+ * M or Play flaps, Back twice exits.  Runs as a full-screen overlay opened
+ * from the Applications menu.  The GN-438 has no Up/Down key.
  *
  * Positions and speeds are fixed point with 4 fractional bits; the
  * simulation runs in fixed 33 ms steps driven by an LVGL timer, catching
@@ -161,7 +161,7 @@ static void reset(game_t *g)
 	set_bird_src(g, &img_bird_down);
 	lv_obj_set_pos(g->bird, BIRD_X, (lv_coord_t)(g->y / FP));
 	set_score_text(g);
-	show_message(g, "Flutter", "Center: flap\nBack twice: exit");
+	show_message(g, "Flutter", "M / Play: subir\nBack 2x: sair");
 }
 
 static void flap(game_t *g)
@@ -207,7 +207,7 @@ static void die(game_t *g)
 	p = fw_put_dec(p, g->score);
 	p = fw_put_str(p, "  Best ");
 	p = fw_put_dec(p, g->best);
-	fw_put_str(p, "\nCenter: again");
+	fw_put_str(p, "\nPlay: again");
 	show_message(g, "Ouch!", buf);
 }
 
@@ -319,7 +319,7 @@ static void input_cb(lv_event_t *e)
 		g->last_back = now;
 		return;
 	}
-	if (key == FW_KEY_CENTER) {
+	if (key == FW_KEY_M || key == FW_KEY_PLAY) {
 		if (g->press_handled)
 			g->press_handled = false;
 		else

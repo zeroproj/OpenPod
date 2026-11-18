@@ -79,18 +79,28 @@ typedef void (*lv_event_cb_t)(lv_event_t *e);
 #define LV_KEY_LEFT 20
 #define LV_KEY_ESC 27
 
-/* Physical buttons as delivered in LV_EVENT_KEY (keyad_read 0xD21110).
- * Back short 0x81; Center 0x0A; Left 0x14; Right 0x13; Up 0x11; Down 0x12.
- * Center long 0x8B is forwarded by the key manager (watch_key_work_process
- * 0xCFC8F4) and is usable.  Back long 0x82 is consumed by the key manager
- * for volume and never reaches the UI: do not use it. */
+/* Physical buttons of the GN-438 as measured on the device (2026-11-18,
+ * "Teste de teclas" of 3.1a; keyad_read 0xD21110).  This player has no
+ * Up/Down: the old 0x11/0x12 codes never arrive.  The long variants of
+ * Prev/Next (0x87/0x89) are the auto-repeat events forwarded by the key
+ * manager.  Back long 0x82 is consumed for volume and never reaches the
+ * UI: do not use it.  Play 0x0A is LV_KEY_ENTER and may also be the power
+ * key on some units, so the apps use it only as a menu-like action. */
 #define FW_KEY_BACK 0x81
-#define FW_KEY_UP LV_KEY_UP
-#define FW_KEY_DOWN LV_KEY_DOWN
-#define FW_KEY_CENTER LV_KEY_ENTER
-#define FW_KEY_LEFT LV_KEY_LEFT
-#define FW_KEY_RIGHT LV_KEY_RIGHT
-#define FW_KEY_CENTER_LONG 0x8B
+#define FW_KEY_M 0xA0
+#define FW_KEY_M_LONG 0xA2
+#define FW_KEY_PREV 0x14
+#define FW_KEY_NEXT 0x13
+#define FW_KEY_PREV_LONG 0x87
+#define FW_KEY_NEXT_LONG 0x89
+#define FW_KEY_PLAY 0x0A
+
+/* Current UI language: get_lang_str (0xD2108C) dispatches through
+ * 0xD0E2B8, which returns the byte at 0x00823D06.  Index 8 selects the
+ * Portuguese table 0xC53B84 (id 0 "Português", id 7 "Despertador",
+ * id 159 "Aplicação"), proved in docs/tarefas/023-analise.md. */
+#define FW_LANG (*(volatile uint8_t *)0x00823D06)
+#define FW_LANG_PT 8
 
 #define LV_ALIGN_TOP_MID 2
 #define LV_ALIGN_CENTER 9

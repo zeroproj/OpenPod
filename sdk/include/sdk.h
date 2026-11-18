@@ -9,10 +9,12 @@ void *memcpy(void *dst, const void *src, size_t n);
 void *memmove(void *dst, const void *src, size_t n);
 size_t strlen(const char *s);
 
-/* An app shown in the Applications menu (page 0x53). */
+/* An app shown in the Applications menu (page 0x53).  name_pt is optional:
+ * when it is set and the UI language is Portuguese, the menu shows it. */
 typedef struct {
 	const char *name;
 	void (*open)(lv_obj_t *return_focus);
+	const char *name_pt;
 } fw_app_t;
 
 /* Full-screen overlay on the top layer.  It takes all key input until it
