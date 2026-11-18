@@ -64,6 +64,14 @@ footer{margin-top:64px;color:var(--soft);font-size:13px;border-top:1px solid var
 html[data-aba="novo"] .aba-atual{display:none}
 html[data-aba="atual"] .aba-novo{display:none}
 .ok{color:#1f9d55;font-weight:700}.talvez{color:#c07a00;font-weight:700}
+.menu{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 28px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.menu a{font:700 15px Archivo,system-ui,sans-serif;color:var(--soft);text-decoration:none;padding:8px 12px;border-radius:9px}
+.menu a[aria-current="page"]{color:var(--ink);background:var(--card);box-shadow:inset 0 0 0 1.5px var(--accent)}
+html[data-pag] [data-painel]{display:none}
+html[data-pag="inicio"] [data-painel="inicio"],html[data-pag="recursos"] [data-painel="recursos"],
+html[data-pag="videos"] [data-painel="videos"],html[data-pag="instalar"] [data-painel="instalar"]{display:block}
+.grupo{columns:2 260px;column-gap:28px;padding-left:20px}.grupo li{break-inside:avoid;margin:4px 0}
+pre{background:var(--code);border-radius:10px;padding:12px 14px;overflow-x:auto;font:13px/1.5 "IBM Plex Mono",monospace;white-space:pre-wrap;word-break:break-all}
 html[data-lang="pt"] [lang="en"]{display:none}
 html[data-lang="en"] [lang="pt"]{display:none}
 </style>
@@ -86,7 +94,23 @@ function aba(a){
   try { localStorage.setItem("openpod-aba", a); } catch (e) {}
   document.querySelectorAll(".abas button").forEach(function(b){ b.setAttribute("aria-selected", b.dataset.a === a); });
 }
+var ROTAS = {inicio:"inicio", compatibilidade:"inicio", compatibility:"inicio",
+  recursos:"recursos", features:"recursos", videos:"videos", video:"videos",
+  instalar:"instalar", install:"instalar"};
+function pag(p){
+  document.documentElement.setAttribute("data-pag", p);
+  document.querySelectorAll(".menu a").forEach(function(a){ a.setAttribute("aria-current", a.dataset.p === p ? "page" : "false"); });
+}
+function rota(){
+  var h = (location.hash || "").slice(1), p = ROTAS[h] || "inicio";
+  pag(p);
+  var el = h && document.getElementById(h);
+  if (el && el.offsetParent !== null && h !== "inicio" && h !== "recursos" && h !== "features" && h !== "videos" && h !== "video") el.scrollIntoView();
+  else window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", rota);
 document.addEventListener("DOMContentLoaded", function(){
+  rota();
   idioma(document.documentElement.getAttribute("data-lang"));
   var a = null; try { a = localStorage.getItem("openpod-aba"); } catch (e) {}
   aba(a === "atual" ? "atual" : "novo");
@@ -100,6 +124,13 @@ document.addEventListener("DOMContentLoaded", function(){
   <button type="button" data-l="en" onclick="idioma('en')">EN</button>
 </nav>
 <div lang="pt">
+<nav class="menu" aria-label="Seções">
+  <a href="#inicio" data-p="inicio">Início</a>
+  <a href="#recursos" data-p="recursos">Recursos</a>
+  <a href="#videos" data-p="videos">Vídeos</a>
+  <a href="#instalar" data-p="instalar">Como instalar</a>
+</nav>
+<div data-painel="inicio">
 <section class="hero">
   <div>
     <h1>OpenPod</h1>
@@ -137,6 +168,60 @@ document.addEventListener("DOMContentLoaded", function(){
 </table>
 <div class="aviso"><strong>Em aparelho que não é o GN-438, faça um backup antes.</strong> Com o <a href="https://github.com/ilyakurdyukov/smartlink_flash">smartlink_flash</a> (Linux/macOS): <code>sudo ./smtlink_dump --id 301a:2801 flash_id read_flash 0 2M meu_backup.bin</code>. Guarde o arquivo: só o backup do <strong>seu</strong> aparelho serve para voltar ao original dele.</div>
 
+</div>
+
+<div data-painel="recursos">
+<h2 id="recursos">Recursos</h2>
+<h3>Novo no OpenPod</h3>
+<ul class="grupo">
+  <li><strong>Capa do álbum</strong> na tela Tocando Agora, lida do próprio MP3</li>
+  <li><strong>Menu Aplicativos</strong> na tela inicial: Despertador e Imagem</li>
+  <li>Ícones novos: escuros, com símbolos coloridos, e <strong>moldura branca</strong> no selecionado</li>
+  <li>Barra superior com relógio, <strong>OpenPod</strong> e bateria</li>
+  <li>Logo do OpenPod na abertura e fundo preto nas telas</li>
+  <li>Seleção em barra de fundo, de ponta a ponta</li>
+  <li>Textos em português revisados</li>
+  <li><strong>Atualizar por SD</strong>: novas versões sem computador</li>
+</ul>
+<h3>O que o aparelho já faz (mantido)</h3>
+<ul class="grupo">
+  <li><strong>Música</strong>: artistas, álbuns, músicas, pastas e favoritos</li>
+  <li>Arquivos de áudio: MP3, AAC/M4A, WMA, FLAC, APE, WAV e OGG</li>
+  <li>Letra sincronizada (<code>.lrc</code>) e equalizador</li>
+  <li><strong>Vídeo</strong> em AVI (veja a aba <a href="#videos">Vídeos</a>)</li>
+  <li><strong>Imagens</strong> em JPEG</li>
+  <li><strong>Livro digital</strong> (<code>.txt</code>)</li>
+  <li><strong>Gravador de voz</strong></li>
+  <li><strong>Rádio FM</strong></li>
+  <li><strong>Bluetooth</strong> para fones e caixas de som</li>
+  <li><strong>Despertador</strong> (agora no menu Aplicativos)</li>
+</ul>
+<h3>Em breve (3.1)</h3>
+<ul class="grupo">
+  <li><strong>Jogos</strong> no menu Aplicativos</li>
+  <li>Capa do álbum carregando sem atrasar o relógio da música</li>
+</ul>
+</div>
+
+<div data-painel="videos">
+<h2 id="videos">Vídeos</h2>
+<p>O player de vídeo só toca um formato bem específico. Arquivos fora destas regras não aparecem ou não abrem:</p>
+<table>
+  <tr><td>Arquivo</td><td>extensão <code>.avi</code></td></tr>
+  <tr><td>Vídeo</td><td>MJPEG (cada quadro é um JPEG)</td></tr>
+  <tr><td>Tamanho</td><td><strong>exatamente 128×160</strong> (a tela em pé)</td></tr>
+  <tr><td>Áudio</td><td><strong>estéreo</strong> (2 canais), PCM 16 bits</td></tr>
+  <tr><td>Blocos</td><td>cada quadro de no máximo 30 KB</td></tr>
+</table>
+<h3>Como converter</h3>
+<p>Com o <a href="https://ffmpeg.org/">ffmpeg</a> (grátis, Windows/macOS/Linux), troque <code>entrada.mp4</code> pelo seu arquivo:</p>
+<pre>ffmpeg -i entrada.mp4 -vf "scale=128:160:force_original_aspect_ratio=decrease,pad=128:160:(ow-iw)/2:(oh-ih)/2,fps=20" -c:v mjpeg -q:v 5 -pix_fmt yuvj420p -c:a pcm_s16le -ar 44100 -ac 2 saida.avi</pre>
+<p>O vídeo fica em pé, com faixas pretas se não for 4:5. Copie o <code>saida.avi</code> para o cartão e abra em <code>Vídeo</code>.</p>
+<div class="aviso"><strong>Imagem espelhada?</strong> Em alguns aparelhos desta família o vídeo aparece invertido da esquerda para a direita. Se acontecer no seu, converta de novo trocando <code>fps=20</code> por <code>hflip,fps=20</code>.</div>
+<p><small>Dica: se o vídeo engasgar, diminua para <code>fps=15</code> ou aumente a compressão com <code>-q:v 8</code>.</small></p>
+</div>
+
+<div data-painel="instalar">
 <h2 id="instalar">Como instalar</h2>
 <div class="abas" role="tablist">
   <button type="button" role="tab" data-a="novo" onclick="aba('novo')">Ainda não tenho o OpenPod<small>primeira instalação, pelo computador</small></button>
@@ -175,7 +260,16 @@ document.addEventListener("DOMContentLoaded", function(){
   <li>Sem soltar o volume, aperte o botão <strong>RESET</strong> (o furinho na lateral).</li>
   <li><strong>Continue segurando o volume por uns 5 segundos.</strong></li>
 </ol>
-<p>A tela do aparelho fica <strong>apagada</strong> — é assim mesmo. Se o Windows perguntar se quer <strong>formatar</strong>, responda <strong>não</strong> e feche a janela.</p></div>
+<p>A tela do aparelho fica <strong>apagada</strong> — é assim mesmo. Se o Windows perguntar se quer <strong>formatar</strong>, responda <strong>não</strong> e feche a janela.</p>
+<p><strong>O botão <code>Burn</code> não ficou clicável?</strong> Tente nesta ordem (dica de um usuário do GN-408):</p>
+<ol type="a">
+  <li>Feche o gravador e tire o cabo USB. Deixe o aparelho desligado.</li>
+  <li><strong>Segure</strong> o <strong>volume para baixo</strong> e não solte.</li>
+  <li>Ainda segurando, aperte e solte o <strong>RESET</strong>.</li>
+  <li>Ainda segurando o volume, <strong>conecte o cabo</strong> no computador.</li>
+  <li>Espere <strong>3 segundos</strong> e solte o volume.</li>
+  <li>Abra o gravador: ele deve mostrar o aparelho conectado e o <code>Burn</code> fica clicável.</li>
+</ol></div>
 <div class="card"><h4>6. Grave</h4>
 <p>Clique em <code>Burn</code> e espere a barra chegar a <strong>100%</strong>. <strong>Não desconecte nada</strong> enquanto grava. No fim, o aparelho reinicia sozinho.</p></div>
 <div class="card"><h4>7. Confira</h4>
@@ -196,9 +290,17 @@ document.addEventListener("DOMContentLoaded", function(){
 <h3>Deu algo errado?</h3>
 <p>Calma: o modo de gravação (segurar <strong>volume para baixo</strong> e apertar o <strong>RESET</strong>) fica na memória do próprio chip e funciona mesmo se o aparelho não ligar. Siga a primeira instalação, pelo computador, para gravar de novo.</p>
 
+</div>
 <footer>OpenPod é um projeto independente, sem ligação com a Smartlink, a Shenju ou o fabricante do aparelho. Use por sua conta e risco. Esta página distribui só os arquivos de atualização; o código-fonte não é público.</footer>
 </div>
 <div lang="en">
+<nav class="menu" aria-label="Sections">
+  <a href="#inicio" data-p="inicio">Home</a>
+  <a href="#features" data-p="recursos">Features</a>
+  <a href="#video" data-p="videos">Videos</a>
+  <a href="#install" data-p="instalar">How to install</a>
+</nav>
+<div data-painel="inicio">
 <section class="hero">
   <div>
     <h1>OpenPod</h1>
@@ -237,6 +339,60 @@ document.addEventListener("DOMContentLoaded", function(){
 <div class="aviso"><strong>On anything other than a GN-438, back up first.</strong> With <a href="https://github.com/ilyakurdyukov/smartlink_flash">smartlink_flash</a> (Linux/macOS): <code>sudo ./smtlink_dump --id 301a:2801 flash_id read_flash 0 2M my_backup.bin</code>. Keep that file: only <strong>your</strong> player's backup can restore it.</div>
 <p><small>The player menus are in Portuguese by default; English is available under <code>Config → Idioma</code>.</small></p>
 
+</div>
+
+<div data-painel="recursos">
+<h2 id="features">Features</h2>
+<h3>New in OpenPod</h3>
+<ul class="grupo">
+  <li><strong>Album cover</strong> on Now Playing, read from the MP3 itself</li>
+  <li><strong>Apps menu</strong> on the home screen: Alarm Clock and Pictures</li>
+  <li>New icons: dark, with coloured symbols, and a <strong>white frame</strong> on the selected one</li>
+  <li>Top bar with clock, <strong>OpenPod</strong> and battery</li>
+  <li>OpenPod logo at startup and black backgrounds</li>
+  <li>Full-width selection bar</li>
+  <li>Reviewed Portuguese texts</li>
+  <li><strong>Update via SD</strong>: new versions without a computer</li>
+</ul>
+<h3>What the player already does (kept)</h3>
+<ul class="grupo">
+  <li><strong>Music</strong>: artists, albums, songs, folders and favourites</li>
+  <li>Audio files: MP3, AAC/M4A, WMA, FLAC, APE, WAV and OGG</li>
+  <li>Synced lyrics (<code>.lrc</code>) and equalizer</li>
+  <li><strong>Video</strong> in AVI (see the <a href="#video">Videos</a> tab)</li>
+  <li><strong>Pictures</strong> in JPEG</li>
+  <li><strong>Ebook</strong> (<code>.txt</code>)</li>
+  <li><strong>Voice recorder</strong></li>
+  <li><strong>FM radio</strong></li>
+  <li><strong>Bluetooth</strong> for headphones and speakers</li>
+  <li><strong>Alarm clock</strong> (now in the Apps menu)</li>
+</ul>
+<h3>Coming soon (3.1)</h3>
+<ul class="grupo">
+  <li><strong>Games</strong> in the Apps menu</li>
+  <li>Album cover loading without delaying the song's clock</li>
+</ul>
+</div>
+
+<div data-painel="videos">
+<h2 id="video">Videos</h2>
+<p>The video player only plays one specific format. Files outside these rules don't show up or don't open:</p>
+<table>
+  <tr><td>File</td><td><code>.avi</code> extension</td></tr>
+  <tr><td>Video</td><td>MJPEG (every frame is a JPEG)</td></tr>
+  <tr><td>Size</td><td><strong>exactly 128×160</strong> (portrait screen)</td></tr>
+  <tr><td>Audio</td><td><strong>stereo</strong> (2 channels), 16-bit PCM</td></tr>
+  <tr><td>Chunks</td><td>each frame at most 30 KB</td></tr>
+</table>
+<h3>How to convert</h3>
+<p>With <a href="https://ffmpeg.org/">ffmpeg</a> (free, Windows/macOS/Linux), replace <code>input.mp4</code> with your file:</p>
+<pre>ffmpeg -i input.mp4 -vf "scale=128:160:force_original_aspect_ratio=decrease,pad=128:160:(ow-iw)/2:(oh-ih)/2,fps=20" -c:v mjpeg -q:v 5 -pix_fmt yuvj420p -c:a pcm_s16le -ar 44100 -ac 2 output.avi</pre>
+<p>The video stays portrait, with black bars if it isn't 4:5. Copy <code>output.avi</code> to the card and open it in <code>Video</code>.</p>
+<div class="aviso"><strong>Mirrored picture?</strong> On some players of this family the video shows up flipped left to right. If that happens on yours, convert again replacing <code>fps=20</code> with <code>hflip,fps=20</code>.</div>
+<p><small>Tip: if the video stutters, lower it to <code>fps=15</code> or compress more with <code>-q:v 8</code>.</small></p>
+</div>
+
+<div data-painel="instalar">
 <h2 id="install">How to install</h2>
 <div class="abas" role="tablist">
   <button type="button" role="tab" data-a="novo" onclick="aba('novo')">I don't have OpenPod yet<small>first install, with a computer</small></button>
@@ -275,7 +431,16 @@ document.addEventListener("DOMContentLoaded", function(){
   <li>While holding volume, press the <strong>RESET</strong> button (the small hole on the side).</li>
   <li><strong>Keep holding volume for about 5 seconds.</strong></li>
 </ol>
-<p>The player's screen stays <strong>dark</strong> — that's expected. If Windows asks to <strong>format</strong>, answer <strong>no</strong> and close the window.</p></div>
+<p>The player's screen stays <strong>dark</strong> — that's expected. If Windows asks to <strong>format</strong>, answer <strong>no</strong> and close the window.</p>
+<p><strong>The <code>Burn</code> button isn't clickable?</strong> Try this order (tip from a GN-408 user):</p>
+<ol type="a">
+  <li>Close the flasher and unplug the USB cable. Leave the player off.</li>
+  <li><strong>Hold</strong> <strong>volume down</strong> and don't let go.</li>
+  <li>Still holding it, press and release <strong>RESET</strong>.</li>
+  <li>Still holding volume, <strong>plug the cable</strong> into the computer.</li>
+  <li>Wait <strong>3 seconds</strong>, then release volume.</li>
+  <li>Open the flasher: it should show the player connected and <code>Burn</code> becomes clickable.</li>
+</ol></div>
 <div class="card"><h4>6. Flash</h4>
 <p>Click <code>Burn</code> and wait for the bar to reach <strong>100%</strong>. <strong>Don't disconnect anything</strong> while it writes. At the end the player restarts by itself.</p></div>
 <div class="card"><h4>7. Check</h4>
@@ -296,6 +461,7 @@ document.addEventListener("DOMContentLoaded", function(){
 <h3>Something went wrong?</h3>
 <p>Don't worry: flashing mode (hold <strong>volume down</strong> and press <strong>RESET</strong>) lives in the chip itself and works even if the player won't start. Follow the first install, with a computer, to flash again.</p>
 
+</div>
 <footer>OpenPod is an independent project, not affiliated with Smartlink, Shenju or the device maker. Use at your own risk. This page only distributes the update files; the source code is not public.</footer>
 </div>
 </main>
