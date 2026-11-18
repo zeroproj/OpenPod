@@ -139,6 +139,11 @@ MAPA = {
     # exatamente ali. Divida tecnica herdada.
     "patch_cor_selecao.py":    (0x001A3518, 0x00E8),
     "relocate_lang_table.py":  (0x001A3600, 0x0700),
+    # Ficha 021 (Reload 3.0). O lote e o mesmo 0x001A3600 que o
+    # `relocate_lang_table.py` usava na linha Core: a ferramenta nova
+    # copia as duas tabelas de idioma para ca e acrescenta o id 216
+    # ("Apps"). O `relocate_lang_table.py` nao entra na receita 3.0.
+    "fab_apps_home.py":        (0x001A3600, 0x0700),
     "aplica_textos.py":        (0x001A3D00, 0x1200),
     # 0x001A4F00..0x001A5000 e do CARIMBO DE VERSAO (`patch_versao.py`,
     # aplicado pelo `make_install_kit`, regra R7). Ele nao roda nesta
@@ -850,6 +855,28 @@ RELOAD_2_2_1 = RELOAD_2_2 + [
      "limite da capa: 1000 px e 512 KiB"),
 ]
 
+# ---------------------------------------------------------------------------
+# reload_3.0 (ficha 021): a 2.2.1 com o menu Apps.
+#
+# Mesma lista da `reload_2.2.1`, com dois passos novos, nesta ordem:
+#
+#   1. `fab_apps_home.py` — troca 10 bytes do bloco do indice 5 da home
+#      (0xD011AE) para abrir a pagina 0x53, move as tabelas de idioma
+#      para 0x1A3600 e acrescenta o texto "Apps" (id 216).
+#   2. `fab_icones_home_apps.py` — troca so os pixels do indice 5 na
+#      folha escura colorida, mantendo a paleta da 2.2.
+#
+# O primeiro passo confere o sha256 da 2.2.1 inteira; por isso ele vem
+# antes do passo da folha (que muda a imagem). O segundo confere o sha da
+# regiao paleta+pixels da folha 2.2.
+# ---------------------------------------------------------------------------
+RELOAD_3_0 = RELOAD_2_2_1 + [
+    ("fab_apps_home.py", [], "indice 5 abre o menu Apps (0x53)"),
+    ("fab_icones_home_apps.py",
+     ["--png", "assets/IconesHome_escuro_colorido_apps.png"],
+     "glifo Apps no indice 5 da folha"),
+]
+
 RECEITAS = {
     "core1.0": CORE_1_0,
     "reload_alpha": RELOAD_ALPHA,
@@ -892,6 +919,7 @@ RECEITAS = {
     "reload_2.2": RELOAD_2_2,
     # a 2.2.1 e a 2.2 com o limite de tamanho da capa
     "reload_2.2.1": RELOAD_2_2_1,
+    "reload_3.0": RELOAD_3_0,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.

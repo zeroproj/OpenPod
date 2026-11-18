@@ -119,7 +119,16 @@ def gear(cx,cy):
 def pasta(cx,cy):
     d.polygon([(s(cx-9),s(cy-6)),(s(cx-3),s(cy-6)),(s(cx-1),s(cy-4)),(s(cx+9),s(cy-4)),(s(cx+9),s(cy+7)),(s(cx-9),s(cy+7))],fill=G)
     d.line([s(cx-9),s(cy-1.5),s(cx+9),s(cy-1.5)],fill=COR_DETALHE,width=int(s(1)))
+def apps(cx,cy):
+    for dx in (-5,5):
+        for dy in (-5,5):
+            d.rounded_rectangle([s(cx+dx-4),s(cy+dy-4),s(cx+dx+4),s(cy+dy+4)],radius=s(1.8),fill=G)
 GLIFOS=[musica,play,mic,fm,livro,imagem,bt,gear,pasta]
+GLIFO5=os.environ.get('GLIFO5','')
+if GLIFO5=='apps':
+    GLIFOS=GLIFOS.copy(); GLIFOS[5]=apps
+elif GLIFO5:
+    sys.exit(f"ERRO: GLIFO5={GLIFO5!r} desconhecido (use 'apps' ou omita)")
 for i,((cx,cy),g) in enumerate(zip(CEN,GLIFOS)):
     base(cx,cy)
     if ESTILO=='escuro_colorido':
