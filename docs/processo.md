@@ -76,3 +76,5 @@ no branch local `privado-completo`. Processo v1.8 (D06).
   - **(a) Vídeo espelhado:** gerar um `.avi` de teste com uma seta assimétrica e tocar no GN-438. Se espelhar, corrigir no blit do player (020 §3) e incluir no site.
   - **(b) exFAT:** confirmar que cartões de 64 GB+ em exFAT funcionam no GN-438 e pôr no site.
 
+**3.1b no aparelho (decisor, 2026-11-18):** os apps funcionam, os controles respondem e **a música tocando não atrapalhou** os jogos. Defeito: **o Mp3tris não gira a peça**, porque o GN-438 não tem a tecla "cima" (`0x11`). Mapa de teclas medido em `docs/BUTTON_ANALYSIS.md`: M `0xA0`/`0xA2`, VOL/Sair `0x81`, ⏭ `0x13`/`0x89`, ⏮ `0x14`/`0x87`, Play/Pause `0x0A`. Revisão do Big Pickle: APROVADO. A do MiMo esperava o limite grátis.
+

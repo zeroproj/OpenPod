@@ -815,3 +815,19 @@ Ainda não sabemos:
 > **Consequência:** não é possível, por análise estática, trocar o
 > significado de um botão físico. Qualquer patch de entrada precisaria
 > ser validado no aparelho, como foi feito nas versões V014–V057.
+
+## Códigos de tecla no LVGL — medidos no aparelho (decisor, 2026-11-18, app "Teste de teclas" da 3.1a)
+
+| Botão | Toque curto | Segurar |
+|---|---|---|
+| **M** | `0xA0` | `0xA2` |
+| **VOL / Sair** | `0x81` | — (não medido) |
+| **⏭** (>>) | `0x13` (`LV_KEY_RIGHT`) | `0x89` |
+| **⏮** (<<) | `0x14` (`LV_KEY_LEFT`) | `0x87` |
+| **Play/Pause** (centro) | `0x0A` (`LV_KEY_ENTER`) | — (não medido; pode ser o desligar) |
+
+- **CONFIRMADO:** o GN-438 **não tem** `LV_KEY_UP` (`0x11`) nem `LV_KEY_DOWN` (`0x12`).
+  - O SDK portado da referência usava `0x11` para "cima"; por isso a rotação do Mp3tris não funcionava.
+  - Os códigos `0x92`/`0x87` que a 020 chamou de "cima/baixo" são, na verdade, o **segurar** do ⏮ (`0x87`) e outros.
+- **Para jogos:** mover com ⏮ e ⏭; ação principal no **Play/Pause**; ação secundária (girar) no **M**; segurar o ⏮ ou o ⏭ (`0x87`/`0x89`) para repetição.
+- **Sair:** VOL/Sair (`0x81`), que o menu da fábrica já trata como voltar.
