@@ -72,4 +72,7 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 
 **Reload 3.0 publicada (2026-11-17)** com o "pode publicar" do decisor: o menu Apps (ícone 5 → página 0x53, rótulo id 159 "Aplicativos", glifo de 4 quadrados verdes), com Despertador, Imagem e Dicionário. 463 B a mais que a 2.2.1. O site mostra a tela inicial da 3.0 e "Menu Aplicativos" nas novidades; a linha de versão foi atualizada pela ferramenta. **Próximo:** os jogos do SDK do SL6801_player (D15) dentro do Apps; a galeria de telas no site espera a foto da Tocando Agora com capa.
 - **Relógio (2026-11-17):** o decisor testou no GN-438, que não tem chave liga/desliga: desligou e religou e a hora ficou certa ("acho que eu tava errado"). **Sem defeito de relógio**; a ficha de diagnóstico do relógio não é necessária.
+- **Pendências para uma ficha 3.x futura** (decisor: "quando chegarmos nela, fazemos o teste"):
+  - **(a) Vídeo espelhado:** gerar um `.avi` de teste com uma seta assimétrica e tocar no GN-438. Se espelhar, corrigir no blit do player (020 §3) e incluir no site.
+  - **(b) exFAT:** confirmar que cartões de 64 GB+ em exFAT funcionam no GN-438 e pôr no site.
 
