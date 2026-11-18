@@ -7,6 +7,71 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-11-17 — OpenPod Reload 3.0 (ficha 021): menu Apps na home
+
+- **O código é o da 2.2.1 byte a byte**, mais o desvio do índice 5 e o
+  id do rótulo. Receita nova `reload_3.0` = a mesma lista da `reload_2.2.1`
+  com dois passos a mais: `fab_apps_home.py` e `fab_icones_home_apps.py
+  --png assets/IconesHome_escuro_colorido_apps.png`. Sem carimbo, sha
+  `43aaf5d51c364e03f9934aba0348230dda4911c2e7264c34555f69554c36ec32`;
+  a diferença contra a 2.2.1 fica em 463 bytes: desvio 10, rótulo 1 e
+  folha 452 (`tests/test_reload_3_0.py`).
+- O índice 5 da home (`0xD00FC8` → `0xD011AE`) ganhou um desvio de 10
+  bytes em `0x1011AE`: `page=0x53`, `ctrl=2`, `event=1`, `origin=1`, e
+  volta ao tail `0xD011F2`. O desvio externo `0xD0129E → 0xD011BE` fica
+  intacto. O título usa o **id 159 de fábrica** (`Aplicativos` em PT;
+  `APP`, `应用`, `Toepassing` nos outros idiomas); o rótulo do índice 5
+  na tabela `0xC486C4` passa de 4 para 159. Nenhuma tabela de idioma é
+  copiada ou repontada. Detalhes em `docs/tarefas/021-analise.md`.
+- **A ficha 021 pede `0x52`; a medição dá `0x53`.** `view_page_create`
+  (`0xD23B10`) faz `subs r3,r5,#1; cmp r3,#0x52; tbb [pc,r3]`; a tabela
+  TBB fica em `0xD23B38` (arquivo `0x123B38`). Índice `0x52`/página `0x53`
+  → `0xD23CF8` → `page_home_menu_create` (Apps). Índice `0x51`/página
+  `0x52` → `0xD23CF2` → `page_set_timershut_time_create` ("Desligar
+  sozinho"). O `tests/test_reload_3_0.py` prova os dois caminhos e mantém
+  o teste de aceite da ficha; a divergência está registrada na análise.
+- Apps confirmado: Despertador → `0x1E` (`page_alarm_menu_event_cb
+  0xD2724C`); Imagem → `0x15` (`page_pict_list_event_cb 0xD33AF4`);
+  Dicionário → `0x37` (`page_dict_input_event_cb 0xD29934`). O play do
+  Dicionário é `0x38`; `0x35`/`0x36` são inválidos. O 020 tinha o mesmo
+  erro de um a menos.
+- Folha de ícones: `assets/IconesHome_escuro_colorido_apps.png` (sha
+  `eccc855b6a944cd226411400bcc24eaa528f2f8d9f4aaa93f3577ebf5cb462cc`,
+  idêntico a `docs/previas/2026-11-17_IconesHome_apps_ref.png`) difere da
+  2.2.1 só no ícone 5: no PNG, bbox `(93,68)-(115,90)`, 472 pixels; na
+  folha final, o glifo cai +8 linhas (`(93,76)-(115,98)`) e 452 bytes
+  mudam. `tools/desenha_icones_home.py` ganhou `GLIFO5=apps` com quatro
+  quadrados 2×2 (lado 7,0, vão 3,0, raio 1,8); sem a opção, o sha padrão
+  continua o mesmo. O `fab_icones_home_apps.py` roda depois do
+  `fab_home_moldura.py` e aplica esse deslocamento para não deixar resto
+  do ícone antigo.
+- Referências do desenho versionadas:
+  `docs/previas/2026-11-17_desenho_apps_ref.py`,
+  `docs/previas/2026-11-17_IconesHome_apps_ref.png` e
+  `docs/previas/2026-11-17_previa_apps_ref.png`.
+- Prévia da home conferida contra a folha lida da imagem construída, com a
+  barra/moldura da prévia aprovada; a prévia do menu Apps usa o layout
+  medido da `page_home_menu_create` (não há renderizador no repositório):
+  `docs/previas/2026-11-17_reload30_home_apps.png`,
+  `docs/previas/2026-11-17_reload30_home.png` e
+  `docs/previas/2026-11-17_reload30_apps.png`.
+- O `tests/test_reload_3_0.py` passa isolado (`python3 -m unittest
+  tests.test_reload_3_0 -v`); o `tools/ci.sh` é protegido e ainda não
+  lista o teste novo.
+- Imagem carimbada
+  `fbc1ab89c6bfcdce178488e4e618ca7ba92ac41647fdf6f26b45a9bc4c2cb773`.
+  `.up` 1.749.248 B, CRC `0xF401`, sha
+  `259ca12ebf2f47d5551b0048339c66b0a30e9a2e9a34e84bd1319d664c041ecf`.
+  Kit `release/OpenPod-Reload-3.0/` (base ORIGINAL, formato da 2.2.1),
+  com README e `TESTAR.txt` próprios.
+- **Flashloader:** o `FlashloaderSL-DEV-6.9.5.exe` não está versionado em
+  `firmware/VENDOR/` (só os `flashloader_readme_*.txt`), então o kit saiu
+  sem ele, como o da 2.2.1. O `.exe` precisa ser colocado em `windows/`
+  antes de publicar.
+- **Aguardando o teste do decisor. Não publicar.**
+
+---
+
 ## 2026-11-15 — OpenPod Reload 2.2.1 (ficha 019): limite de tamanho da capa
 
 - **O código é o da 2.2 byte a byte**, mais o limite da capa. Receita nova
