@@ -24,6 +24,9 @@ Antes de começar, ler:
 - **A mesma fonte tem de dar o mesmo binário, byte a byte**, em duas compilações: teste.
 - Registrar a versão e as flags em `tools/` e no `CHANGELOG`.
 
+## Mudança do decisor (2026-11-17)
+Sem menu ou tela "Jogos": os jogos entram **direto como itens do menu Aplicativos**, como na referência. A ordem é Despertador, Imagem, Flutter, Mp3tris. O Dicionário sai se der com segurança; senão, fica no fim. O item 2 abaixo vale com essa mudança.
+
 ## O que fazer
 1. **Portar o `fw.h` para o GN-438.**
    - Para **cada** função do firmware que o SDK e os apps usam, achar o endereço **no nosso ORIGINAL**: strings de assert/log, padrão
