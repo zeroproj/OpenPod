@@ -78,3 +78,5 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 
 **3.1b no aparelho (decisor, 2026-11-18):** os apps funcionam, os controles respondem e **a música tocando não atrapalhou** os jogos. Defeito: **o Mp3tris não gira a peça**, porque o GN-438 não tem a tecla "cima" (`0x11`). Mapa de teclas medido em `docs/BUTTON_ANALYSIS.md`: M `0xA0`/`0xA2`, VOL/Sair `0x81`, ⏭ `0x13`/`0x89`, ⏮ `0x14`/`0x87`, Play/Pause `0x0A`. Revisão do Big Pickle: APROVADO. A do MiMo esperava o limite grátis.
 
+**Ponto de retomada (2026-11-18):** a ficha 024 (Reload 3.2) está no worktree `tarefa-024` (terminal `deepseek-024`). O DeepSeek grátis bateu o limite e volta sozinho quando ele renovar. Depois: conferência da coordenação no ORIGINAL, revisão (Big Pickle), teste do decisor e publicação da 3.2, com o site atualizado (3.2 na lista; "previsto para dezembro": 3.3 jogos novos e 4.0). Também espera: a revisão do MiMo (teste de revisores, worktree `rev-mimo-022`).
+
