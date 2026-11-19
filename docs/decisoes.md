@@ -27,3 +27,4 @@
 - Funções nomeadas com tudo o que as fichas 001–025 provaram e com os scripts do SL6801_player (D15), adaptados aos endereços do GN-438.
 - Exportação em texto (funções, referências cruzadas, pseudo-código) para os agentes consultarem, versionada no repositório privado.
 - **Não muda o aparelho.** Os jogos novos passam para a 3.5. O site será atualizado na publicação da 3.3. |
+| D22 | 2026-11-19 | **Licença do SL6801_player confirmada: MIT** (resposta do autor, u/dmitrybrant, no Reddit: "the license is MIT. Feel free to use as you like, and credit would be appreciated"). Completa a D15. Manter o crédito no site e nos READMEs. O código portado leva o aviso de copyright MIT de Dmitry Brant no cabeçalho, como a MIT exige. Ele também confirmou: o som tem de ficar fora da tarefa de UI ("otherwise the system crashes and reboots"), igual ao nosso achado com arquivos; o modelo do aparelho dele é desconhecido (sem marcação nem anúncio). |
