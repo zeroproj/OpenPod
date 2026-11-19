@@ -69,7 +69,7 @@ html[data-aba="atual"] .aba-novo{display:none}
 .menu a[aria-current="page"]{color:var(--ink);background:var(--card);box-shadow:inset 0 0 0 1.5px var(--accent)}
 html[data-pag] [data-painel]{display:none}
 html[data-pag="inicio"] [data-painel="inicio"],html[data-pag="recursos"] [data-painel="recursos"],
-html[data-pag="videos"] [data-painel="videos"],html[data-pag="instalar"] [data-painel="instalar"],html[data-pag="recovery"] [data-painel="recovery"]{display:block}
+html[data-pag="videos"] [data-painel="videos"],html[data-pag="instalar"] [data-painel="instalar"],html[data-pag="recovery"] [data-painel="recovery"],html[data-pag="sobre"] [data-painel="sobre"]{display:block}
 .grupo{columns:2 260px;column-gap:28px;padding-left:20px}.grupo li{break-inside:avoid;margin:4px 0}
 pre{background:var(--code);border-radius:10px;padding:12px 14px;overflow-x:auto;font:13px/1.5 "IBM Plex Mono",monospace;white-space:pre-wrap;word-break:break-all}
 html[data-lang="pt"] [lang="en"]{display:none}
@@ -96,7 +96,7 @@ function aba(a){
 }
 var ROTAS = {inicio:"inicio", compatibilidade:"inicio", compatibility:"inicio",
   recursos:"recursos", features:"recursos", videos:"videos", video:"videos",
-  instalar:"instalar", install:"instalar", recovery:"recovery", "recovery-en":"recovery"};
+  instalar:"instalar", install:"instalar", recovery:"recovery", "recovery-en":"recovery", sobre:"sobre", about:"sobre"};
 function pag(p){
   document.documentElement.setAttribute("data-pag", p);
   document.querySelectorAll(".menu a").forEach(function(a){ a.setAttribute("aria-current", a.dataset.p === p ? "page" : "false"); });
@@ -105,7 +105,7 @@ function rota(){
   var h = (location.hash || "").slice(1), p = ROTAS[h] || "inicio";
   pag(p);
   var el = h && document.getElementById(h);
-  if (el && el.offsetParent !== null && h !== "inicio" && h !== "recursos" && h !== "features" && h !== "videos" && h !== "video" && h !== "recovery" && h !== "recovery-en") el.scrollIntoView();
+  if (el && el.offsetParent !== null && h !== "inicio" && h !== "recursos" && h !== "features" && h !== "videos" && h !== "video" && h !== "recovery" && h !== "recovery-en" && h !== "sobre" && h !== "about") el.scrollIntoView();
   else window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", rota);
@@ -130,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <a href="#videos" data-p="videos">Vídeos</a>
   <a href="#instalar" data-p="instalar">Como instalar</a>
   <a href="#recovery" data-p="recovery">Recovery</a>
+  <a href="#sobre" data-p="sobre">Sobre</a>
 </nav>
 <div data-painel="inicio">
 <section class="hero">
@@ -336,7 +337,37 @@ document.addEventListener("DOMContentLoaded", function(){
 <div class="aviso"><strong>Outro modelo?</strong> Os dois arquivos são do <strong>GN-438</strong>. Em qualquer outro aparelho, restaure o <strong>seu próprio backup</strong> (veja <a href="#compatibilidade">Compatibilidade</a>).</div>
 </div>
 
-<footer>OpenPod é um projeto independente, sem ligação com a Smartlink, a Shenju ou o fabricante do aparelho. Jogos e kit de apps baseados no <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a>, de Dmitry Brant (MIT). Use por sua conta e risco. Esta página distribui só os arquivos de atualização; o código-fonte não é público.</footer>
+<div data-painel="sobre">
+<h2 id="sobre">Sobre o OpenPod</h2>
+<p>O OpenPod é um firmware novo para players de música baratos com o chip <strong>Smartlink SL6801</strong>, começando pelo <strong>Ligenai GN-438</strong>. A ideia é transformar um aparelho simples num player dedicado à música, com visual limpo e navegação rápida.</p>
+<div class="card"><p><strong>A filosofia:</strong> usar o que o aparelho já faz bem e melhorar antes de substituir. O OpenPod não é um sistema escrito do zero: ele parte do firmware de fábrica (<code>yp3_2.0.43</code>), estudado por engenharia reversa, e muda aos poucos o que precisa mudar. Cada versão é testada no aparelho antes de sair.</p></div>
+
+<h3>Créditos e agradecimentos</h3>
+<table>
+  <tr><td><strong>Dmitry Brant</strong><br><a href="https://github.com/dbrant/SL6801_player">SL6801_player</a></td><td>O kit de desenvolvimento de apps para o SL6801, com jogos e um mapa detalhado do chip. Os <strong>jogos e o kit de apps</strong> do menu Aplicativos são baseados no trabalho dele, sob a <strong>licença MIT</strong>, com a permissão e a confirmação do autor. Também foi dele a confirmação de que o som não pode rodar na tarefa da tela. Obrigado, Dmitry!</td></tr>
+  <tr><td><strong>Ilya Kurdyukov</strong><br><a href="https://github.com/ilyakurdyukov/smartlink_flash">smartlink_flash</a></td><td>A ferramenta que lê e grava a memória flash desses chips pelo USB, no Linux e no macOS. Foi com ela que tiramos o backup original do GN-438 e que o instalador do Linux/macOS grava o OpenPod.</td></tr>
+  <tr><td><strong>Comunidade do Reddit</strong></td><td>Quem testou no <strong>GN-408</strong> e ajustou o passo a passo da instalação, quem reportou travamentos e quem testou capas de tamanhos diferentes. Cada relato virou correção.</td></tr>
+</table>
+
+<h3>No que nos inspiramos</h3>
+<ul>
+  <li><strong><a href="https://www.rockbox.org/">Rockbox</a></strong>: o firmware livre que deu vida nova a tantos players. Dele vêm as ideias de apps no aparelho, de um caminho seguro de volta ao original e de instruções claras. O Rockbox em si não cabe neste chip (são cerca de 512 KB de RAM), então o OpenPod segue o caminho possível: melhorar o firmware de fábrica.</li>
+  <li><strong>Os players de música dedicados clássicos</strong>: menus simples, poucas informações por tela, seleção clara e foco total na música.</li>
+</ul>
+
+<h3>Por dentro do aparelho</h3>
+<p>O firmware de fábrica usa componentes de código aberto, que o OpenPod mantém e aproveita: <strong><a href="https://lvgl.io/">LVGL</a></strong> (a interface gráfica), <strong><a href="https://www.freertos.org/">FreeRTOS</a></strong> (o sistema que divide as tarefas) e o <strong><a href="http://elm-chan.org/fsw/tjpgd/">TJpgDec</a></strong>, de ChaN (o decodificador de JPEG que desenha a capa do álbum). Para gravar pelo Windows, usamos o <strong>Flashloader SL-DEV</strong>, a ferramenta oficial do fabricante do chip.</p>
+
+<h3>Licenças</h3>
+<ul>
+  <li>O código do <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a> vem sob a licença MIT. O texto completo da licença vai no <code>README.md</code> de cada pacote.</li>
+  <li>O <strong>Flashloader SL-DEV</strong> é proprietário e é distribuído no pacote só para gravar o aparelho.</li>
+  <li>Esta página distribui os arquivos de atualização. O código-fonte do OpenPod não é público.</li>
+</ul>
+<div class="aviso">O OpenPod é um projeto <strong>independente</strong>, sem ligação com a Smartlink, a Shenju, a Ligenai ou qualquer fabricante. Os nomes citados pertencem aos seus donos.</div>
+</div>
+
+<footer>OpenPod é um projeto independente, sem ligação com a Smartlink, a Shenju ou o fabricante do aparelho. Jogos e kit de apps baseados no <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a>, de Dmitry Brant (MIT). <a href="#sobre">Créditos</a>. Use por sua conta e risco. Esta página distribui só os arquivos de atualização; o código-fonte não é público.</footer>
 </div>
 <div lang="en">
 <nav class="menu" aria-label="Sections">
@@ -345,6 +376,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <a href="#video" data-p="videos">Videos</a>
   <a href="#install" data-p="instalar">How to install</a>
   <a href="#recovery-en" data-p="recovery">Recovery</a>
+  <a href="#about" data-p="sobre">About</a>
 </nav>
 <div data-painel="inicio">
 <section class="hero">
@@ -552,7 +584,37 @@ document.addEventListener("DOMContentLoaded", function(){
 <div class="aviso"><strong>Another model?</strong> Both files are for the <strong>GN-438</strong>. On any other player, restore <strong>your own backup</strong> (see <a href="#compatibility">Compatibility</a>).</div>
 </div>
 
-<footer>OpenPod is an independent project, not affiliated with Smartlink, Shenju or the device maker. Games and apps kit based on <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a> by Dmitry Brant (MIT). Use at your own risk. This page only distributes the update files; the source code is not public.</footer>
+<div data-painel="sobre">
+<h2 id="about">About OpenPod</h2>
+<p>OpenPod is a new firmware for low-cost music players with the <strong>Smartlink SL6801</strong> chip, starting with the <strong>Ligenai GN-438</strong>. The idea is to turn a simple device into a player dedicated to music, with a clean look and fast navigation.</p>
+<div class="card"><p><strong>The philosophy:</strong> use what the device already does well, and improve before replacing. OpenPod is not a system written from scratch: it starts from the stock firmware (<code>yp3_2.0.43</code>), studied through reverse engineering, and changes only what needs changing, step by step. Every version is tested on the device before release.</p></div>
+
+<h3>Credits and thanks</h3>
+<table>
+  <tr><td><strong>Dmitry Brant</strong><br><a href="https://github.com/dbrant/SL6801_player">SL6801_player</a></td><td>The app development kit for the SL6801, with games and a detailed map of the chip. The <strong>games and the apps kit</strong> in the Apps menu are based on his work, under the <strong>MIT license</strong>, with the author's permission and confirmation. He also confirmed that sound must never run on the UI task. Thanks, Dmitry!</td></tr>
+  <tr><td><strong>Ilya Kurdyukov</strong><br><a href="https://github.com/ilyakurdyukov/smartlink_flash">smartlink_flash</a></td><td>The tool that reads and writes the flash of these chips over USB, on Linux and macOS. We used it to take the GN-438's original backup, and the Linux/macOS installer flashes OpenPod with it.</td></tr>
+  <tr><td><strong>The Reddit community</strong></td><td>Those who tested on the <strong>GN-408</strong> and refined the install steps, reported freezes and tested covers of different sizes. Every report became a fix.</td></tr>
+</table>
+
+<h3>What inspired us</h3>
+<ul>
+  <li><strong><a href="https://www.rockbox.org/">Rockbox</a></strong>: the free firmware that gave new life to so many players. From it come the ideas of apps on the device, a safe way back to stock, and clear instructions. Rockbox itself doesn't fit this chip (about 512 KB of RAM), so OpenPod takes the possible path: improving the stock firmware.</li>
+  <li><strong>The classic dedicated music players</strong>: simple menus, little information per screen, clear selection and full focus on music.</li>
+</ul>
+
+<h3>Inside the device</h3>
+<p>The stock firmware uses open-source components that OpenPod keeps and builds on: <strong><a href="https://lvgl.io/">LVGL</a></strong> (the graphical interface), <strong><a href="https://www.freertos.org/">FreeRTOS</a></strong> (the system that runs the tasks) and <strong><a href="http://elm-chan.org/fsw/tjpgd/">TJpgDec</a></strong> by ChaN (the JPEG decoder that draws the album cover). To flash on Windows we use <strong>Flashloader SL-DEV</strong>, the chip maker's official tool.</p>
+
+<h3>Licenses</h3>
+<ul>
+  <li>The code from <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a> is under the MIT license. The full license text ships in each package's <code>README.md</code>.</li>
+  <li><strong>Flashloader SL-DEV</strong> is proprietary and ships in the package only to flash the device.</li>
+  <li>This page distributes the update files. OpenPod's source code is not public.</li>
+</ul>
+<div class="aviso">OpenPod is an <strong>independent</strong> project, not affiliated with Smartlink, Shenju, Ligenai or any manufacturer. All names belong to their owners.</div>
+</div>
+
+<footer>OpenPod is an independent project, not affiliated with Smartlink, Shenju or the device maker. Games and apps kit based on <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a> by Dmitry Brant (MIT). <a href="#about">Credits</a>. Use at your own risk. This page only distributes the update files; the source code is not public.</footer>
 </div>
 </main>
 </body>
