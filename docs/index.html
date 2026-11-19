@@ -358,11 +358,14 @@ document.addEventListener("DOMContentLoaded", function(){
 <h3>Por dentro do aparelho</h3>
 <p>O firmware de fábrica usa componentes de código aberto, que o OpenPod mantém e aproveita: <strong><a href="https://lvgl.io/">LVGL</a></strong> (a interface gráfica), <strong><a href="https://www.freertos.org/">FreeRTOS</a></strong> (o sistema que divide as tarefas) e o <strong><a href="http://elm-chan.org/fsw/tjpgd/">TJpgDec</a></strong>, de ChaN (o decodificador de JPEG que desenha a capa do álbum). Para gravar pelo Windows, usamos o <strong>Flashloader SL-DEV</strong>, a ferramenta oficial do fabricante do chip.</p>
 
+<h3>Código-fonte e engenharia reversa</h3>
+<div class="card"><p><strong>Quer estudar o chip ou programar para ele?</strong> Vá ao projeto do Dmitry, o <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a>. Ele é <strong>aberto</strong> (licença MIT) e traz o kit de desenvolvimento, jogos de exemplo, o mapa do chip e as ferramentas de engenharia reversa dele. É o melhor ponto de partida para quem quer criar algo para o SL6801.</p>
+<p>A engenharia reversa do OpenPod é <strong>independente</strong>: feita por nós, a partir do firmware de fábrica do GN-438. Ela <strong>não é pública</strong>, e o código-fonte do OpenPod também não. Aqui distribuímos só os arquivos prontos para instalar.</p></div>
+
 <h3>Licenças</h3>
 <ul>
   <li>O código do <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a> vem sob a licença MIT. O texto completo da licença vai no <code>README.md</code> de cada pacote.</li>
   <li>O <strong>Flashloader SL-DEV</strong> é proprietário e é distribuído no pacote só para gravar o aparelho.</li>
-  <li>Esta página distribui os arquivos de atualização. O código-fonte do OpenPod não é público.</li>
 </ul>
 <div class="aviso">O OpenPod é um projeto <strong>independente</strong>, sem ligação com a Smartlink, a Shenju, a Ligenai ou qualquer fabricante. Os nomes citados pertencem aos seus donos.</div>
 </div>
@@ -605,11 +608,14 @@ document.addEventListener("DOMContentLoaded", function(){
 <h3>Inside the device</h3>
 <p>The stock firmware uses open-source components that OpenPod keeps and builds on: <strong><a href="https://lvgl.io/">LVGL</a></strong> (the graphical interface), <strong><a href="https://www.freertos.org/">FreeRTOS</a></strong> (the system that runs the tasks) and <strong><a href="http://elm-chan.org/fsw/tjpgd/">TJpgDec</a></strong> by ChaN (the JPEG decoder that draws the album cover). To flash on Windows we use <strong>Flashloader SL-DEV</strong>, the chip maker's official tool.</p>
 
+<h3>Source code and reverse engineering</h3>
+<div class="card"><p><strong>Want to study the chip or program for it?</strong> Go to Dmitry's project, <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a>. It is <strong>open</strong> (MIT license) and includes the development kit, example games, the chip map and his reverse-engineering tools. It is the best starting point for building something for the SL6801.</p>
+<p>OpenPod's reverse engineering is <strong>independent</strong>: our own work, from the GN-438's stock firmware. It is <strong>not public</strong>, and neither is OpenPod's source code. Here we only distribute the ready-to-install files.</p></div>
+
 <h3>Licenses</h3>
 <ul>
   <li>The code from <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a> is under the MIT license. The full license text ships in each package's <code>README.md</code>.</li>
   <li><strong>Flashloader SL-DEV</strong> is proprietary and ships in the package only to flash the device.</li>
-  <li>This page distributes the update files. OpenPod's source code is not public.</li>
 </ul>
 <div class="aviso">OpenPod is an <strong>independent</strong> project, not affiliated with Smartlink, Shenju, Ligenai or any manufacturer. All names belong to their owners.</div>
 </div>
