@@ -1,8 +1,9 @@
 /*
  * Cobrinha (Snake): full-screen 128x160 game.  A 16x18 field of 8 px cells
- * sits below a 16 px score strip.  Prev/Next turn the snake left/right
- * relative to its own direction, Play pauses and resumes (and restarts
- * after game over), Back twice exits.  The GN-438 has no Up/Down key.
+ * sits below a 16 px score strip.  The directions are absolute, as on a
+ * phone: Prev = left, Next = right, M = up, Play = down.  A direct
+ * half-turn is ignored.  Play also starts and restarts; holding M pauses
+ * and resumes; Back twice exits.  The GN-438 has no Up/Down key.
  *
  * The field is a 4-bit indexed image in an LVGL heap buffer, drawn in place
  * like Mp3tris; one object per cell would not fit in the 40 KB heap.  The
@@ -19,6 +20,7 @@
 #define FIELD_W (COLS * CELL)
 #define FIELD_H (ROWS * CELL)
 #define HUD_H 16
+#define MSG_H 112
 #define MAX_CELLS (COLS * ROWS)
 #define PALETTE_SIZE (16 * 4)
 #define IMG_SIZE (PALETTE_SIZE + FIELD_W / 2 * FIELD_H)
@@ -184,8 +186,8 @@ static void reset_round(game_t *g)
 	set_score(g);
 	lv_obj_align(g->msg_title, LV_ALIGN_TOP_MID, 0, 4);
 	show_message(g, snake_name(),
-		     tr("Play: começar\n<< >>: virar\nVOL 2x: sair",
-			"Play: start\n<< >>: turn\nVOL 2x: exit"));
+		     tr("Play: baixo\nM: cima\n<<: esquerda\n>>: direita\nSegure M: pausa\nVOL 2x: sair",
+			"Play: down\nM: up\n<<: left\n>>: right\nHold M: pause\nVOL 2x: exit"));
 	g->dirty = true;
 }
 
@@ -228,44 +230,42 @@ static void step(game_t *g)
 	g->dirty = true;
 }
 
-static void play_action(game_t *g)
+static void turn_abs(game_t *g, uint8_t d)
 {
-	switch (g->state) {
-	case READY:
+	if (g->state != PLAYING || g->next_dir != g->dir)
+		return;
+	if (d == ((g->dir + 2) & 3))
+		return;
+	g->next_dir = d;
+}
+
+static void play_key(game_t *g)
+{
+	if (g->state == READY) {
 		hide_message(g);
 		g->state = PLAYING;
 		g->state_ms = 0;
 		g->acc = 0;
-		break;
-	case PLAYING:
-		g->state = PAUSED;
-		show_message(g, tr("Pausa", "Paused"),
-			     tr("Play: continuar", "Play: resume"));
-		break;
-	case PAUSED:
+	} else if (g->state == OVER && g->state_ms >= RETRY_DELAY_MS) {
+		reset_round(g);
 		hide_message(g);
 		g->state = PLAYING;
 		g->acc = 0;
-		break;
-	case OVER:
-		if (g->state_ms >= RETRY_DELAY_MS) {
-			reset_round(g);
-			hide_message(g);
-			g->state = PLAYING;
-			g->acc = 0;
-		}
-		break;
 	}
+	turn_abs(g, 1); /* down */
 }
 
-static void turn(game_t *g, uint8_t delta)
+static void toggle_pause(game_t *g)
 {
-	if (g->state != PLAYING || g->next_dir != g->dir)
-		return;
-	uint8_t d = (uint8_t)((g->dir + delta) & 3);
-	if (d == ((g->dir + 2) & 3))
-		return;
-	g->next_dir = d;
+	if (g->state == PLAYING) {
+		g->state = PAUSED;
+		show_message(g, tr("Pausa", "Paused"),
+			     tr("Segure M: continuar", "Hold M: resume"));
+	} else if (g->state == PAUSED) {
+		hide_message(g);
+		g->state = PLAYING;
+		g->acc = 0;
+	}
 }
 
 static void tick_cb(lv_timer_t *t)
@@ -295,7 +295,7 @@ static void input_cb(lv_event_t *e)
 	uint8_t code = lv_event_get_code(e);
 	if (code == LV_EVENT_PRESSED) {
 		g->press_handled = true;
-		play_action(g);
+		play_key(g);
 		return;
 	}
 	if (code != LV_EVENT_KEY)
@@ -313,17 +313,23 @@ static void input_cb(lv_event_t *e)
 	switch (key) {
 	case FW_KEY_PREV:
 	case FW_KEY_PREV_LONG:
-		turn(g, 3);
+		turn_abs(g, 2); /* left */
 		break;
 	case FW_KEY_NEXT:
 	case FW_KEY_NEXT_LONG:
-		turn(g, 1);
+		turn_abs(g, 0); /* right */
+		break;
+	case FW_KEY_M:
+		turn_abs(g, 3); /* up */
+		break;
+	case FW_KEY_M_LONG:
+		toggle_pause(g);
 		break;
 	case FW_KEY_PLAY:
 		if (g->press_handled)
 			g->press_handled = false;
 		else
-			play_action(g);
+			play_key(g);
 		break;
 	}
 }
@@ -370,15 +376,15 @@ static void build_scene(game_t *g, lv_obj_t *root)
 	lv_img_set_src(g->img, &g->dsc);
 	lv_obj_set_pos(g->img, 0, HUD_H);
 
-	g->msg = fw_rect(root, (lv_coord_t)(w - 16), 66, lv_rgb(0x00, 0x00, 0x00));
+	g->msg = fw_rect(root, (lv_coord_t)(w - 16), MSG_H, lv_rgb(0x00, 0x00, 0x00));
 	lv_obj_set_style_border_width(g->msg, 1, 0);
 	lv_obj_set_style_border_color(g->msg, COLOR_SNAKE, 0);
-	lv_obj_set_pos(g->msg, 8, (lv_coord_t)(HUD_H + (FIELD_H - 66) / 2));
+	lv_obj_set_pos(g->msg, 8, (lv_coord_t)(HUD_H + (FIELD_H - MSG_H) / 2));
 	g->msg_title = fw_label(g->msg, "", COLOR_SNAKE);
 	g->msg_text = fw_label(g->msg, "", COLOR_TEXT);
 	lv_obj_set_style_text_align(g->msg_text, LV_TEXT_ALIGN_CENTER, 0);
 	lv_obj_align(g->msg_title, LV_ALIGN_TOP_MID, 0, 4);
-	lv_obj_align(g->msg_text, LV_ALIGN_TOP_MID, 0, 24);
+	lv_obj_align(g->msg_text, LV_ALIGN_TOP_MID, 0, 22);
 }
 
 void cobrinha_open(lv_obj_t *return_focus)

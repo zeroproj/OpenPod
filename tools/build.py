@@ -901,6 +901,13 @@ RELOAD_3_1C = RELOAD_3_0 + [
     ("fab_sdk_jogos.py", ["--variante", "jogos"],
      "SDK em C + Flutter, Mp3tris e Cobrinha na area livre"),
 ]
+# ficha 024: Parte A (direcoes absolutas da Cobrinha).  A Parte B (capa em
+# tarefa propria) ficou em ESCALADA-024 por falta de lugar provado para o
+# estado; por isso a receita e a mesma da 3.1c e so o SDK muda.
+RELOAD_3_2 = RELOAD_3_0 + [
+    ("fab_sdk_jogos.py", ["--variante", "jogos"],
+     "SDK em C + Cobrinha com direcoes absolutas"),
+]
 
 RECEITAS = {
     "core1.0": CORE_1_0,
@@ -950,6 +957,8 @@ RECEITAS = {
     "reload_3.1b": RELOAD_3_1B,
     # ficha 023: controles do GN-438 e a Cobrinha
     "reload_3.1c": RELOAD_3_1C,
+    # ficha 024: Cobrinha com direcoes absolutas (Parte A)
+    "reload_3.2": RELOAD_3_2,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
