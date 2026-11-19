@@ -31,6 +31,8 @@ WORK = os.path.join(RAIZ, "sdk/build/test_3_2")
 BASE30 = os.path.join(WORK, "base30.bin")
 IMG32 = os.path.join(WORK, "reload_3_2.bin")
 UP31C = os.path.join(RAIZ, "release/OpenPod-Reload-3.1c/OpenPod_OpenPodReload3.1c.up")
+KIT_DIR = os.path.join(RAIZ, "release/OpenPod-Reload-3.2")
+KIT_UP = os.path.join(KIT_DIR, "OpenPod_OpenPodReload3.2.up")
 SHA_3_0 = "43aaf5d51c364e03f9934aba0348230dda4911c2e7264c34555f69554c36ec32"
 LOTE = 0x001AB000
 LOTE_FIM = 0x001FC000
@@ -99,6 +101,15 @@ def imagem_3_1c(orig):
     base = bytearray(orig)
     base[:tam] = d[off:off + tam]
     return bytes(base)
+
+
+def crc16(b):
+    c = 0xFFFF
+    for x in b:
+        c ^= x << 8
+        for _ in range(8):
+            c = ((c << 1) ^ 0x1021) & 0xFFFF if c & 0x8000 else (c << 1) & 0xFFFF
+    return c
 
 
 class Reload32(unittest.TestCase):
@@ -190,6 +201,38 @@ class Reload32(unittest.TestCase):
             s = open(os.path.join(RAIZ, p)).read()
             self.assertIsNone(re.search(r"FW_KEY_UP|FW_KEY_DOWN|LV_KEY_UP|LV_KEY_DOWN|0x11|0x12", s),
                               f"{p} ainda usa cima/baixo")
+
+    def test_kit_3_2(self):
+        self.assertTrue(os.path.isfile(KIT_UP), KIT_UP)
+        for n in ("README.md", "TESTAR.txt", "install.sh"):
+            self.assertTrue(os.path.isfile(os.path.join(KIT_DIR, n)), n)
+        d = open(KIT_UP, "rb").read()
+        self.assertEqual(d[0:6], b"CONFIG")
+        self.assertEqual(d[0x16:0x1C], b"SL6801")
+        off, tam, crc = (struct.unpack_from("<I", d, 6)[0],
+                         struct.unpack_from("<I", d, 0x10)[0],
+                         struct.unpack_from("<H", d, 0x14)[0])
+        pay = d[off:off + tam]
+        self.assertEqual(crc16(pay), crc)
+        self.assertLessEqual(tam, PSMP)
+        self.assertEqual(pay[:0xD000], self.orig[:0xD000])
+        self.assertEqual(pay[0xD000:0xE000], self.orig[0xD000:0xE000])
+        # The .up is the raw 3.2 image plus only the version stamp: text at
+        # 0x1A4F00 and the literal at 0x10A59C.
+        dif = {i for i in range(tam) if pay[i] != self.img[i]}
+        permitido = (set(range(0x1A4F00, 0x1A4F00 + 11)) |
+                     set(range(0x10A59C, 0x10A5A0)))
+        self.assertTrue(dif)
+        self.assertTrue(dif <= permitido, f"kit mudou fora do carimbo: {sorted(dif - permitido)[:8]}")
+        self.assertEqual(struct.unpack_from("<I", pay, 0x10A59C)[0], 0x00DA4F00)
+        self.assertEqual(pay[0x1A4F00:0x1A4F0B], b"Reload 3.2\0")
+        self.assertEqual(pay[0x1AB000:0x1AB000 + len(self.app)], self.app)
+        readme = open(os.path.join(KIT_DIR, "README.md"), encoding="utf-8").read()
+        self.assertIn("New in 3.2", readme)
+        self.assertIn("Dmitry Brant", readme)
+        testar = open(os.path.join(KIT_DIR, "TESTAR.txt"), encoding="utf-8").read()
+        self.assertIn("Reload 3.2", testar)
+        self.assertIn("3.1c", testar)
 
     def test_diff_contra_3_0_e_3_1c(self):
         new, old, base = self.img, self.old, self.base

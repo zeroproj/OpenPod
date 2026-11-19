@@ -22,15 +22,24 @@ número, hash e registro do que mudou.
   sha `58611dd86c3878a7…`, reproduzível. Receita nova `reload_3.2` =
   3.0 + `fab_sdk_jogos.py --variante jogos` (só o fonte do SDK muda em
   relação à 3.1c).
-- **Testes:** `tests/test_reload_3_2.py` (6 testes) cobre reprodutibilidade,
-  sem `.data`/`.bss`, bit Thumb, receita, mapa absoluto, ajuda bilíngue e o
+- **Testes:** `tests/test_reload_3_2.py` (7 testes) cobre reprodutibilidade,
+  sem `.data`/`.bss`, bit Thumb, receita, mapa absoluto, ajuda bilíngue, o
   diff contra a 3.0 e a 3.1c publicada (só lote, `bl` do gancho e carimbo da
-  3.1c). `tools/ci.sh` verde. O `test_reload_3_1c.py` não foi alterado e não
-  roda no CI.
-- **Parte B (capa numa tarefa própria):** não implementada; o caminho atual
-  da capa fica igual à 3.1c. As provas e as opções estão em
-  `docs/tarefas/024-analise.md` e `docs/tarefas/ESCALADA-024.md`; não houve
-  kit nem publicação da 3.2.
+  3.1c) e o kit (`.up`, CRC, PSMP, carimbo e README/TESTAR).
+  `tools/ci.sh` verde. O `test_reload_3_1c.py` não foi alterado e não roda no
+  CI.
+- **Kit:** `release/OpenPod-Reload-3.2/` por `gera_versao.py` **sem
+  `--base`** (base ORIGINAL), carimbo **"Reload 3.2"** em `0x1A4F00`.
+  Imagem carimbada `3ea6af8c…`; `.up` `OpenPod_OpenPodReload3.2.up`,
+  1.761.536 B, CRC `0x6BAF`, sha `2437bbc9…`; 33 setores mudados e 66
+  arquivos de setor no pacote. `README.md` com "New in 3.2" e o crédito ao
+  **SL6801_player SDK, de Dmitry Brant**; `TESTAR.txt` com o roteiro curto
+  da Cobrinha, a capa como na 3.1c e a volta de segurança para a 3.1c.
+- **Parte B (capa numa tarefa própria):** não implementada nesta versão.
+  Decisão do decisor em 2026-11-18 (opção 4): a capa fica como na 3.1c e a
+  opção 1 (tabela de tarefas da fábrica) fica para dezembro, numa ficha
+  própria. Provas em `docs/tarefas/024-analise.md` e
+  `docs/tarefas/ESCALADA-024.md`. Nada foi publicado.
 
 ---
 

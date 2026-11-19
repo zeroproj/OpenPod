@@ -3,11 +3,12 @@
 Data: 2026-11-18. Base: `privado-completo` (Reload 3.1c). Branch:
 `limtistech/tarefa-024`.
 
-Resultado: **Parte A entregue**; **Parte B em `ESCALADA-024`**. A Parte B não
-foi implementada porque o único caminho que fecha as nove regras exige uma
-decisão de arquitetura (consumir uma fila da fábrica e marcar os pedaços da
-capa), e a ficha manda escalar quando não há lugar seguro provado. As opções
-estão no fim.
+Resultado: **Parte A entregue**; **Parte B adiada por decisão do decisor**.
+
+Decisão do decisor (2026-11-18), sobre a `ESCALADA-024`: **opção 4** — a
+Reload 3.2 sai **só com a Parte A** (Cobrinha com direções absolutas); a capa
+continua como na 3.1c. A Parte B (opção 1, tabela de tarefas da fábrica) fica
+para **dezembro**. O kit 3.2 foi gerado e está em `release/OpenPod-Reload-3.2`.
 
 ---
 
@@ -46,9 +47,10 @@ Build e testes:
   `58611dd86c3878a7…`, reproduzível (`--check-repro`).
 - Receita `reload_3.2` = `reload_3.0` + `fab_sdk_jogos.py --variante jogos`
   (a mesma cadeia da 3.1c; só o fonte do SDK muda).
-- `tests/test_reload_3_2.py` (6 testes) cobre reprodutibilidade, ausência de
-  `.data`/`.bss`, bit Thumb, receita, mapa absoluto na fonte, ajuda bilíngue
-  e o diff contra a 3.0 e a 3.1c publicada. Passa.
+- `tests/test_reload_3_2.py` (7 testes) cobre reprodutibilidade, ausência de
+  `.data`/`.bss`, bit Thumb, receita, mapa absoluto na fonte, ajuda bilíngue,
+  o diff contra a 3.0 e a 3.1c publicada e o kit (`.up`, CRC, PSMP,
+  carimbo, README/TESTAR). Passa.
 - `sh tools/ci.sh` verde.
 
 ---
@@ -186,7 +188,11 @@ a rotina de limite nem o `carrega_capa`.
 
 ## Opções para o decisor (ESCALADA-024)
 
-1. **Aprovar a tabela da fábrica (recomendada).** Consumir um id livre
+**Decisão de 2026-11-18: opção 4.** A 3.2 sai só com a Parte A; a Parte B
+(opção 1) fica para dezembro. As opções ficam registradas para a ficha de
+dezembro.
+
+1. **Aprovar a tabela da fábrica (recomendada para dezembro).** Consumir um id livre
    (6/7/0xC/0xD/0xE), criar a tarefa uma vez pela PreTask via `0xD6ACAC`,
    enviar o pedido por `0xD7DAFE` e marcar os pedaços com o hash em `msg+8`.
    Falta: patch do tratador tipo 6, prova de que ele ignora `+8`, medição de
@@ -198,17 +204,26 @@ a rotina de limite nem o `carrega_capa`.
    global: `envia_path` faz um pedaço por chamada e guarda o estado no
    contexto do pedido. É a opção de menor risco de tarefa, mas exige fatiar
    `carrega_capa`/o envio e medir o pico; alto risco de regressão no áudio.
-4. **Entregar só a Parte A.** É o que este pacote faz: a Cobrinha fica com
-   os controles novos e a capa continua como na 3.1c (já aprovada no
-   aparelho). Um kit 3.2 só com a Parte A pode ser gerado se o decisor
-   quiser; a Parte B vira uma ficha própria.
+4. **Entregar só a Parte A.** Foi a decisão: a Cobrinha fica com os
+   controles novos, a capa continua como na 3.1c (já aprovada no aparelho) e
+   o kit 3.2 foi gerado. A Parte B vira uma ficha própria em dezembro.
 
-## O que não foi feito
+## O que foi entregue e o que ficou para dezembro
 
-- Kit/release 3.2: não gerado (Parte B em escalada; o processo deixa kit e
-  publicação para a coordenação).
-- Parte B: nenhuma linha de firmware mudou no caminho da capa.
-- Medição da pilha da tarefa nova no emulador: depende da implementação.
+- **Kit 3.2:** gerado por `gera_versao.py` **sem `--base`** (base ORIGINAL),
+  carimbo **"Reload 3.2"** em `0x1A4F00`, em `release/OpenPod-Reload-3.2`.
+  `.up` `OpenPod_OpenPodReload3.2.up`, 1.761.536 B, CRC `0x6BAF`, sha
+  `2437bbc9…`; imagem carimbada `3ea6af8c…`; 33 setores mudados.
+- **README:** "New in 3.2 / Novo na 3.2" com a Cobrinha e os controles de
+  direção; crédito ao **SL6801_player SDK, de Dmitry Brant**, mantido.
+- **TESTAR.txt:** roteiro curto da Cobrinha (⏮ esquerda, ⏭ direita, M cima,
+  Play baixo/começar/recomeçar, segurar M pausa, VOL 2x sai, meia-volta
+  ignorada, mensagens PT/EN); outros jogos e capa como na 3.1c; volta de
+  segurança 3.1c.
+- **Parte B:** nenhuma linha de firmware mudou no caminho da capa; fica para
+  dezembro com a opção 1 (tabela de tarefas da fábrica).
+- **Medição da pilha da tarefa nova no emulador:** depende da implementação
+  da Parte B.
 - `tests/test_reload_3_1c.py` continua afirmando as strings antigas da
   Cobrinha e falharia se rodado depois desta mudança; ele não está em
   `tools/ci.sh` nem em `tests/PROTEGIDOS.sha256`. Não foi alterado. O teste
