@@ -7,6 +7,33 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-11-18 — OpenPod Reload 3.2 (ficha 024, Parte A): Cobrinha com direções absolutas
+
+- **Cobrinha:** as direções passam a ser absolutas, como no celular —
+  ⏮ `0x14` esquerda, ⏭ `0x13` direita, M `0xA0` cima, Play `0x0A` baixo.
+  A meia-volta direta é ignorada. Play inicia na tela inicial, recomeça no
+  fim de jogo e desce em jogo; segurar M `0xA2` pausa e continua; Back 2×
+  sai. O `LV_EVENT_PRESSED` do Play chama a mesma ação de Play, não pausa.
+- **Ajuda nos dois idiomas:** seis linhas com os botões novos (`Play: baixo`,
+  `M: cima`, `<<: esquerda`, `>>: direita`, `Segure M: pausa`,
+  `VOL 2x: sair`; em EN `Play: down`, `M: up`, `<<: left`, `>>: right`,
+  `Hold M: pause`, `VOL 2x: exit`). A caixa passou a 112 px para caber.
+- **Build:** SDK jogos com 11.868 B em `0x00DAB000`, gancho `0x00DAD23C`,
+  sha `58611dd86c3878a7…`, reproduzível. Receita nova `reload_3.2` =
+  3.0 + `fab_sdk_jogos.py --variante jogos` (só o fonte do SDK muda em
+  relação à 3.1c).
+- **Testes:** `tests/test_reload_3_2.py` (6 testes) cobre reprodutibilidade,
+  sem `.data`/`.bss`, bit Thumb, receita, mapa absoluto, ajuda bilíngue e o
+  diff contra a 3.0 e a 3.1c publicada (só lote, `bl` do gancho e carimbo da
+  3.1c). `tools/ci.sh` verde. O `test_reload_3_1c.py` não foi alterado e não
+  roda no CI.
+- **Parte B (capa numa tarefa própria):** não implementada; o caminho atual
+  da capa fica igual à 3.1c. As provas e as opções estão em
+  `docs/tarefas/024-analise.md` e `docs/tarefas/ESCALADA-024.md`; não houve
+  kit nem publicação da 3.2.
+
+---
+
 ## 2026-11-18 — OpenPod Reload 3.1c (ficha 023): controles do GN-438 e a Cobrinha
 
 - **Teclas do GN-438:** `fw.h` passa a expor só os códigos medidos —
