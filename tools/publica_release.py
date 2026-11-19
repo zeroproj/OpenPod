@@ -52,6 +52,9 @@ BRANCH = "publico"
 # decisao do mantenedor (2026-10-23), conferido pelo sha.
 FLASHLOADER = "FlashloaderSL-DEV-6.9.5.exe"
 REMOTO = "origin"
+# Kits de recuperacao: sobem SEMPRE, junto com qualquer versao (decisor, 2026-11-19).
+# Links fixos: recovery/ors/update.up e recovery/fr/update.up.
+RECUPERACAO = {"OpenPod-Recovery-System": "ors", "OpenPod-Factory-Reset": "fr"}
 
 
 def sh(*a, **kw):
@@ -132,6 +135,15 @@ def main():
             exes = [f for f in os.listdir(os.path.join(wt, "release", a.versao, "windows"))
                     if f.endswith(".exe")]
             exigir(exes == [FLASHLOADER], "esperava so %s em windows/, achei %s" % (FLASHLOADER, exes))
+        for kit, curto_rec in RECUPERACAO.items():
+            origem = os.path.join(RAIZ, "release", kit)
+            exigir(os.path.isdir(origem), "falta o kit de recuperacao release/%s" % kit)
+            shutil.copytree(origem, os.path.join(wt, "release", kit),
+                            ignore=None if a.com_flashloader else shutil.ignore_patterns("*.exe"))
+            ups = [f for f in os.listdir(origem) if f.endswith(".up")]
+            exigir(len(ups) == 1, "esperava um .up em release/%s" % kit)
+            os.makedirs(os.path.join(wt, "recovery", curto_rec))
+            shutil.copy2(os.path.join(origem, ups[0]), os.path.join(wt, "recovery", curto_rec, "update.up"))
         # links fixos: atual/update.up sempre e a versao mais recente (o nome ja
         # e o que o aparelho espera no cartao); o git guarda o conteudo uma vez so
         os.makedirs(os.path.join(wt, "atual"))

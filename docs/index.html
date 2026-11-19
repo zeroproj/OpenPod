@@ -69,7 +69,7 @@ html[data-aba="atual"] .aba-novo{display:none}
 .menu a[aria-current="page"]{color:var(--ink);background:var(--card);box-shadow:inset 0 0 0 1.5px var(--accent)}
 html[data-pag] [data-painel]{display:none}
 html[data-pag="inicio"] [data-painel="inicio"],html[data-pag="recursos"] [data-painel="recursos"],
-html[data-pag="videos"] [data-painel="videos"],html[data-pag="instalar"] [data-painel="instalar"]{display:block}
+html[data-pag="videos"] [data-painel="videos"],html[data-pag="instalar"] [data-painel="instalar"],html[data-pag="recovery"] [data-painel="recovery"]{display:block}
 .grupo{columns:2 260px;column-gap:28px;padding-left:20px}.grupo li{break-inside:avoid;margin:4px 0}
 pre{background:var(--code);border-radius:10px;padding:12px 14px;overflow-x:auto;font:13px/1.5 "IBM Plex Mono",monospace;white-space:pre-wrap;word-break:break-all}
 html[data-lang="pt"] [lang="en"]{display:none}
@@ -96,7 +96,7 @@ function aba(a){
 }
 var ROTAS = {inicio:"inicio", compatibilidade:"inicio", compatibility:"inicio",
   recursos:"recursos", features:"recursos", videos:"videos", video:"videos",
-  instalar:"instalar", install:"instalar"};
+  instalar:"instalar", install:"instalar", recovery:"recovery", "recovery-en":"recovery"};
 function pag(p){
   document.documentElement.setAttribute("data-pag", p);
   document.querySelectorAll(".menu a").forEach(function(a){ a.setAttribute("aria-current", a.dataset.p === p ? "page" : "false"); });
@@ -105,7 +105,7 @@ function rota(){
   var h = (location.hash || "").slice(1), p = ROTAS[h] || "inicio";
   pag(p);
   var el = h && document.getElementById(h);
-  if (el && el.offsetParent !== null && h !== "inicio" && h !== "recursos" && h !== "features" && h !== "videos" && h !== "video") el.scrollIntoView();
+  if (el && el.offsetParent !== null && h !== "inicio" && h !== "recursos" && h !== "features" && h !== "videos" && h !== "video" && h !== "recovery" && h !== "recovery-en") el.scrollIntoView();
   else window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", rota);
@@ -129,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <a href="#recursos" data-p="recursos">Recursos</a>
   <a href="#videos" data-p="videos">Vídeos</a>
   <a href="#instalar" data-p="instalar">Como instalar</a>
+  <a href="#recovery" data-p="recovery">Recovery</a>
 </nav>
 <div data-painel="inicio">
 <section class="hero">
@@ -300,9 +301,40 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </div>
 <h3>Deu algo errado?</h3>
-<p>Calma: o modo de gravação (segurar <strong>volume para baixo</strong> e apertar o <strong>RESET</strong>) fica na memória do próprio chip e funciona mesmo se o aparelho não ligar. Siga a primeira instalação, pelo computador, para gravar de novo.</p>
+<p>Calma: o modo de gravação (segurar <strong>volume para baixo</strong> e apertar o <strong>RESET</strong>) fica na memória do próprio chip e funciona mesmo se o aparelho não ligar. Siga a primeira instalação, pelo computador, para gravar de novo. Para voltar ao original, veja a aba <a href="#recovery">Recovery</a>.</p>
 
 </div>
+<div data-painel="recovery">
+<h2 id="recovery">Recovery: voltar ao firmware de fábrica</h2>
+<p>Quer voltar ao sistema original do aparelho? Há duas opções. As duas usam o firmware de fábrica do <strong>Ligenai GN-438</strong> (<code>yp3_2.0.43</code>).</p>
+<table>
+  <tr><td></td><td><strong>OpenPod Recovery System (ORS)</strong></td><td><strong>Factory Reset (FR)</strong></td></tr>
+  <tr><td>O que é</td><td>O firmware de fábrica com <strong>uma única mudança</strong>: o item <code>Atualizar por SD</code></td><td>O firmware de fábrica <strong>idêntico</strong>, byte a byte</td></tr>
+  <tr><td>Visual e funções</td><td>Os originais</td><td>Os originais</td></tr>
+  <tr><td>Voltar ao OpenPod depois</td><td>✅ <strong>Só com o cartão SD</strong></td><td>⚠️ Precisa do <strong>computador</strong> de novo</td></tr>
+  <tr><td>Indicado para</td><td>Quem quer o original, mas talvez volte ao OpenPod</td><td>Quem quer apagar qualquer vestígio do OpenPod</td></tr>
+</table>
+<div class="aviso"><strong>Recomendamos o ORS.</strong> Ele deixa o aparelho como o original e não fecha a porta: para voltar ao OpenPod, basta o cartão.</div>
+
+<h3>OpenPod Recovery System (recomendado)</h3>
+<div class="card"><div class="botoes"><a class="btn" href="https://github.com/zeroproj/OpenPod/raw/main/recovery/ors/update.up">Baixar o ORS (update.up)</a></div>
+<ol class="passos">
+  <li><strong>Se o aparelho está com o OpenPod:</strong> copie o <code>update.up</code> para a <strong>raiz</strong> do cartão, vá em <code>Config → Atualizar por SD → Sim</code> e apague o <code>update.up</code> depois.</li>
+  <li><strong>Se o aparelho não liga ou não tem o OpenPod:</strong> siga a aba <a href="#instalar">Como instalar</a>, primeira instalação pelo computador, escolhendo este arquivo no gravador.</li>
+  <li><strong>Para voltar ao OpenPod depois:</strong> baixe a versão mais recente, copie como <code>update.up</code> e use <code>Config → Atualizar por SD</code>.</li>
+</ol></div>
+
+<h3>Factory Reset</h3>
+<div class="card"><div class="botoes"><a class="btn sec" href="https://github.com/zeroproj/OpenPod/raw/main/recovery/fr/update.up">Baixar o Factory Reset (update.up)</a></div>
+<ol class="passos">
+  <li><strong>Pelo OpenPod:</strong> copie o <code>update.up</code> para a raiz do cartão e use <code>Config → Atualizar por SD → Sim</code>.</li>
+  <li><strong>Pelo computador:</strong> como na primeira instalação, escolhendo este arquivo.</li>
+  <li>Depois disso, o aparelho <strong>não tem mais</strong> <code>Atualizar por SD</code>: voltar ao OpenPod só pelo computador.</li>
+</ol></div>
+
+<div class="aviso"><strong>Outro modelo?</strong> Os dois arquivos são do <strong>GN-438</strong>. Em qualquer outro aparelho, restaure o <strong>seu próprio backup</strong> (veja <a href="#compatibilidade">Compatibilidade</a>).</div>
+</div>
+
 <footer>OpenPod é um projeto independente, sem ligação com a Smartlink, a Shenju ou o fabricante do aparelho. Use por sua conta e risco. Esta página distribui só os arquivos de atualização; o código-fonte não é público.</footer>
 </div>
 <div lang="en">
@@ -311,6 +343,7 @@ document.addEventListener("DOMContentLoaded", function(){
   <a href="#features" data-p="recursos">Features</a>
   <a href="#video" data-p="videos">Videos</a>
   <a href="#install" data-p="instalar">How to install</a>
+  <a href="#recovery-en" data-p="recovery">Recovery</a>
 </nav>
 <div data-painel="inicio">
 <section class="hero">
@@ -483,9 +516,40 @@ document.addEventListener("DOMContentLoaded", function(){
 
 </div>
 <h3>Something went wrong?</h3>
-<p>Don't worry: flashing mode (hold <strong>volume down</strong> and press <strong>RESET</strong>) lives in the chip itself and works even if the player won't start. Follow the first install, with a computer, to flash again.</p>
+<p>Don't worry: flashing mode (hold <strong>volume down</strong> and press <strong>RESET</strong>) lives in the chip itself and works even if the player won't start. Follow the first install, with a computer, to flash again. To go back to stock, see the <a href="#recovery-en">Recovery</a> tab.</p>
 
 </div>
+<div data-painel="recovery">
+<h2 id="recovery-en">Recovery: back to the stock firmware</h2>
+<p>Want the player's original system back? There are two options. Both use the stock firmware of the <strong>Ligenai GN-438</strong> (<code>yp3_2.0.43</code>).</p>
+<table>
+  <tr><td></td><td><strong>OpenPod Recovery System (ORS)</strong></td><td><strong>Factory Reset (FR)</strong></td></tr>
+  <tr><td>What it is</td><td>The stock firmware with <strong>one change</strong>: the <code>Update via SD</code> item</td><td>The stock firmware, <strong>identical</strong> byte for byte</td></tr>
+  <tr><td>Look and features</td><td>Stock</td><td>Stock</td></tr>
+  <tr><td>Back to OpenPod later</td><td>✅ <strong>SD card only</strong></td><td>⚠️ Needs the <strong>computer</strong> again</td></tr>
+  <tr><td>Best for</td><td>Going stock, maybe coming back to OpenPod</td><td>Removing every trace of OpenPod</td></tr>
+</table>
+<div class="aviso"><strong>We recommend the ORS.</strong> It brings back the stock firmware and keeps the door open: returning to OpenPod only takes the SD card.</div>
+
+<h3>OpenPod Recovery System (recommended)</h3>
+<div class="card"><div class="botoes"><a class="btn" href="https://github.com/zeroproj/OpenPod/raw/main/recovery/ors/update.up">Download the ORS (update.up)</a></div>
+<ol class="passos">
+  <li><strong>If the player runs OpenPod:</strong> copy <code>update.up</code> to the <strong>root</strong> of the card, go to <code>Config → Atualizar por SD → Sim</code> (Settings → Update via SD → Yes) and delete <code>update.up</code> afterwards.</li>
+  <li><strong>If the player won't start or doesn't have OpenPod:</strong> follow the <a href="#install">How to install</a> tab, first install with a computer, choosing this file in the flasher.</li>
+  <li><strong>To go back to OpenPod later:</strong> download the latest version, copy it as <code>update.up</code> and use <code>Update via SD</code>.</li>
+</ol></div>
+
+<h3>Factory Reset</h3>
+<div class="card"><div class="botoes"><a class="btn sec" href="https://github.com/zeroproj/OpenPod/raw/main/recovery/fr/update.up">Download the Factory Reset (update.up)</a></div>
+<ol class="passos">
+  <li><strong>From OpenPod:</strong> copy <code>update.up</code> to the root of the card and use <code>Config → Atualizar por SD → Sim</code>.</li>
+  <li><strong>With a computer:</strong> like the first install, choosing this file.</li>
+  <li>Afterwards the player <strong>no longer has</strong> <code>Update via SD</code>: going back to OpenPod needs the computer.</li>
+</ol></div>
+
+<div class="aviso"><strong>Another model?</strong> Both files are for the <strong>GN-438</strong>. On any other player, restore <strong>your own backup</strong> (see <a href="#compatibility">Compatibility</a>).</div>
+</div>
+
 <footer>OpenPod is an independent project, not affiliated with Smartlink, Shenju or the device maker. Use at your own risk. This page only distributes the update files; the source code is not public.</footer>
 </div>
 </main>
