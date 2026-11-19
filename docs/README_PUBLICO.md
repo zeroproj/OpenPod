@@ -31,6 +31,8 @@ atualização e a página do projeto.
 Projeto independente, sem ligação com a Smartlink, a Shenju ou o
 fabricante do aparelho.
 
+Jogos e kit de apps: baseados no **SL6801_player**, de Dmitry Brant
+(<https://github.com/dbrant/SL6801_player>), licença MIT.
 Gravador Linux/macOS: **smartlink_flash**, de Ilya Kurdyukov.
 Gravador Windows: **Flashloader SL-DEV 6.9.5**, da Shenju (programa
 proprietário do fabricante do chip), em `windows/` do pacote.
