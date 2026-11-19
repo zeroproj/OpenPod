@@ -28,3 +28,8 @@
 - Exportação em texto (funções, referências cruzadas, pseudo-código) para os agentes consultarem, versionada no repositório privado.
 - **Não muda o aparelho.** Os jogos novos passam para a 3.5. O site será atualizado na publicação da 3.3. |
 | D22 | 2026-11-19 | **Licença do SL6801_player confirmada: MIT** (resposta do autor, u/dmitrybrant, no Reddit: "the license is MIT. Feel free to use as you like, and credit would be appreciated"). Completa a D15. Manter o crédito no site e nos READMEs. O código portado leva o aviso de copyright MIT de Dmitry Brant no cabeçalho, como a MIT exige. Ele também confirmou: o som tem de ficar fora da tarefa de UI ("otherwise the system crashes and reboots"), igual ao nosso achado com arquivos; o modelo do aparelho dele é desconhecido (sem marcação nem anúncio). |
+| D23 | 2026-11-19 | **Recovery no site** (decisor: "tornar a RC1 o OpenPod Recovery System e o outro o Factory Reset… criar uma aba recovery… recomendamos o ORS").
+- **ORS** = receita `reload_1.0_rc1`: fábrica mais `Atualizar por SD`; 77 B a mais que o ORIGINAL, sha sem carimbo `a427c62e…`, a RC1 aprovada no aparelho. Kit `release/OpenPod-Recovery-System`.
+- **FR** = o ORIGINAL puro (`b7cd5eb9…`). Kit `release/OpenPod-Factory-Reset`.
+- Os dois sobem **sempre** no público (`publica_release.py`), com links fixos `recovery/ors/update.up` e `recovery/fr/update.up`.
+- Aba **Recovery** no site, PT/EN, com o ORS recomendado. |
