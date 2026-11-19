@@ -80,3 +80,6 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 
 **Ponto de retomada (2026-11-18):** a ficha 024 (Reload 3.2) está no worktree `tarefa-024` (terminal `deepseek-024`). O DeepSeek grátis bateu o limite e volta sozinho quando ele renovar. Depois: conferência da coordenação no ORIGINAL, revisão (Big Pickle), teste do decisor e publicação da 3.2, com o site atualizado (3.2 na lista; "previsto para dezembro": 3.3 jogos novos e 4.0). Também espera: a revisão do MiMo (teste de revisores, worktree `rev-mimo-022`).
 
+**Ficha 024 (2026-11-18):** Reload 3.2 = 3.1c + Cobrinha com direções absolutas. A capa numa tarefa própria foi adiada para dezembro (ESCALADA-024; opção 1, tabela de tarefas da fábrica). Kit `release/OpenPod-Reload-3.2` (`.up` CRC 0x6BAF). Contra o kit da 3.1c testado, só mudam o lote, o `bl` do gancho e o carimbo.
+- **Pendência de processo (dezembro):** as receitas antigas (`reload_3.1b`, `reload_3.1c`) compilam o SDK **atual**, então não reproduzem mais o binário que foi testado. Corrigir com fonte do SDK por versão: tag do git por receita ou cópia congelada dos apps de cada versão.
+
