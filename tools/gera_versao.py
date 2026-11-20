@@ -118,8 +118,11 @@ def main():
         parar("a imagem mexe no bootloader, no setor 0xD000 ou na PSMP. PARE.")
 
     curto = a.versao.replace("OpenPod-Core-", "").replace("-", " ")   # "5.7 Public Beta 3"
-    beta = re.sub(r".*?(Beta\s*\d+).*", r"\1", curto) or "Beta"        # "Beta 3"
-    up = "OpenPod_" + beta.replace(" ", "")                            # "OpenPod_Beta3"
+    if "Beta" in curto:
+        beta = re.sub(r".*?(Beta\s*\d+).*", r"\1", curto) or "Beta"    # "Beta 3"
+    else:
+        beta = curto                                                   # "Reload 3.3"
+    up = "OpenPod_" + beta.replace(" ", "")                            # "OpenPod_Reload3.3"
 
     interno = os.path.join(RAIZ, "firmware", "RELEASE", a.versao.replace("-", " "))
     publico = os.path.join(RAIZ, "release", a.versao)

@@ -7,6 +7,52 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-11-20 — OpenPod Reload 3.3 (ficha 025): pular rápido e a capa fora do heap da CPU1
+
+- **Parte 0 (dois núcleos):** o CRIA/APAGA da capa do álbum rodava na
+  ViewTask/CPU1 e chamava `CALLOC` `0xCF7840`/`FREE` `0xCF7884`, o heap do
+  FreeRTOS da CPU0. Agora usa `lv_mem_alloc` `0xD58188`/`lv_mem_free`
+  `0xD5811C` (LVGL, CPU1): o `calloc(1,0x2210)` vira um trampolim de 40 B em
+  `0xDAA9D8` que aloca, zera com o `memset` `0xBAA` e devolve 0 se faltar
+  memória; o `cmp r7,#0` de fábrica leva ao cinza. O `lv_mem_alloc` devolve
+  0 de forma provada (`cbnz r0` em `0xD5819C`); o `0xCF7840` já checa o
+  livre antes do `0x9D50` (máscara ROM) e devolve 0 no caso conhecido.
+- **Página não recriada:** a fábrica **não** recria a página Tocando Agora
+  na troca de faixa (`page4_media_cb` `0xD088B4` só manda tipos 3/5/6; o
+  `page_music_play_create` `0xD31E7C` é a entrada da página). O defeito por
+  pulo não é o CRIA/APAGA; a guarda da Parte 1 cobre o decode velho.
+- **Parte 1.1 (desvio provado):** a API visível de fila não tem contagem
+  (`0x9068` create, `0x8FFC` reset, `0xB372` send/recv, `0x9442` delete) e
+  o struct da fila é alocado na máscara ROM. O campo equivalente provado é
+  o índice da faixa em `[0x0081BC84+0x20]`, gravado no comando 5
+  (`0xD08966`) e lido pelo `get_path`. O `carrega_capa` copia o índice para
+  `jd+0x12C` e cada yield do B7b aborta (devolve 0) quando ele muda.
+- **Parte 1.2 (ring):** antes dos 8 pedaços tipo 6, `envia_path`
+  `0xDAAC68` confere o livre do ring (`[0x0081BBC8]`, `0xD6A9EA`) e exige
+  `0x30C0` (8×(0x414+4) = `0x20C0` mais `0x1000` de reserva); sem espaço,
+  libera o tmp e manda o tipo 5 vazio.
+- **Parts 0/1 no mesmo lote:** a Parte 1 usa a área zerada do lote da capa
+  `0x1AAF00..0x1AB000` (depois do B7b), sem mexer no `capa_album.s` (que é
+  montado por todas as receitas desde a RC7: mudá-lo quebraria a catraca).
+  Receita `reload_3.3` = `reload_3.2` + `fab_reload_3_3.py` +
+  `fab_reload_3_3_guardas.py`.
+- **Testes:** `tests/test_reload_3_3.py` (11 testes) cobre reprodutibilidade,
+  o diff contra a 3.2 só no lote `0x1AA000`, os `bl`/trampolim/rotinas, o
+  heap da CPU1 sem `0xCF7840`/`0xCF7885`, e em unicorn o trampolim
+  (aloca/zera/devolve 0), a captura do índice, a guarda do índice (yield e
+  aborto) e a guarda do ring (`0x30C0`/`0x30BF`). `tools/ci.sh` verde.
+- **Parte 2 (relógio sem engasgo):** não entrou; fica para ficha própria.
+- **Kit:** `release/OpenPod-Reload-3.3/` por `gera_versao.py` **sem
+  `--base`** (base ORIGINAL), carimbo **"Reload 3.3"** em `0x1A4F00`.
+  Imagem carimbada `6246ae9e…`; `.up` `OpenPod_OpenPodReload3.3.up`,
+  1.761.536 B, CRC `0xA202`, sha `d25a94d5…`; 33 setores. `README.md` com
+  "New in 3.3"; `TESTAR.txt` com o roteiro de pular 10 músicas, a capa da
+  faixa em que parou, capas de 640/1000 px (sem a Parte 2) e a volta para
+  a 3.2. O `gera_versao.py` passou a aceitar versões sem "Beta" (nome do
+  `.up` como `OpenPod_OpenPodReload3.3`), preservando o caminho Beta.
+
+---
+
 ## 2026-11-18 — OpenPod Reload 3.2 (ficha 024, Parte A): Cobrinha com direções absolutas
 
 - **Cobrinha:** as direções passam a ser absolutas, como no celular —
