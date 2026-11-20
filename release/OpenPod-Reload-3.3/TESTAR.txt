@@ -1,0 +1,30 @@
+OpenPod Reload 3.3 — TESTAR
+
+Kit gerado SEM --base (base ORIGINAL); o .up reescreve a imagem inteira.
+Carimbo: Config -> Informacoes = "Reload 3.3".
+Imagem carimbada: d1097080... · .up 1.761.536 B · CRC 0x5C81 · sha 53fba055...
+
+O QUE MUDOU
+  Parte 0.2: a capa do album nao chama mais o heap do FreeRTOS pela CPU
+  da interface; usa o alocador do LVGL e, se faltar memoria, mostra o
+  cinza.
+  Parte 1.2: a capa so comeca a enviar quando o ring da view tem 0x30C0
+  livres (os 8 pedacos mais 4 KiB de reserva para a fabrica); sem espaco,
+  manda o tipo 5 vazio.
+  A Parte 1.1 (abortar a capa velha) saiu na revisao: o indice da faixa
+  so muda depois que o decode termina, entao nao detectava o pulo. Fica
+  para a tarefa da capa, com a contagem da fila da PreTask.
+  A Parte 2 (relogio sem engasgo) nao entrou.
+
+ROTEIRO (marque ok / falhou)
+  [ ] Config -> Informacoes = "Reload 3.3"
+  [ ] Pular 10 musicas seguidas e rapido, com capa: nao reinicia
+  [ ] A capa da musica em que voce parou aparece (se o ring encheu, pode
+      aparecer a anterior; a Parte 1.1 nao entrou)
+  [ ] Capas de 640 e 1000 px: a capa aparece; o relogio pode engasgar
+      (a Parte 2 nao entrou)
+  [ ] Jogos (Flutter, Mp3tris, Cobrinha) e a capa normal como na 3.2
+  [ ] Entrar e sair da pagina Tocando Agora com musica tocando: nao trava
+
+SE ALGO DER ERRADO
+  Volta de seguranca: reinstale a 3.2 pelo cartao (update.up da 3.2).

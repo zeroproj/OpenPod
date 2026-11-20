@@ -908,6 +908,14 @@ RELOAD_3_2 = RELOAD_3_0 + [
     ("fab_sdk_jogos.py", ["--variante", "jogos"],
      "SDK em C + Cobrinha com direcoes absolutas"),
 ]
+# ficha 025: Parte 0 (o contexto da capa sai do heap do FreeRTOS e vai
+# para o LVGL, na CPU1) pela imagem da 3.2, sem mexer no capa_album.s.
+RELOAD_3_3 = RELOAD_3_2 + [
+    ("fab_reload_3_3.py", [],
+     "Parte 0: contexto da capa no lv_mem_alloc/lv_mem_free"),
+    ("fab_reload_3_3_guardas.py", [],
+     "Parte 1: indice da faixa no yield e reserva do ring"),
+]
 
 RECEITAS = {
     "core1.0": CORE_1_0,
@@ -959,6 +967,8 @@ RECEITAS = {
     "reload_3.1c": RELOAD_3_1C,
     # ficha 024: Cobrinha com direcoes absolutas (Parte A)
     "reload_3.2": RELOAD_3_2,
+    # ficha 025: Parte 0 (LVGL no lugar do heap na CPU1)
+    "reload_3.3": RELOAD_3_3,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
