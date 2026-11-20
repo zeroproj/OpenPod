@@ -28,6 +28,8 @@ atualização e a página do projeto.
 
 ## Créditos
 
+A lista completa, com os links dos originais e das nossas cópias (forks): [`REFERENCIAS.md`](REFERENCIAS.md).
+
 Projeto independente, sem ligação com a Smartlink, a Shenju ou o
 fabricante do aparelho.
 

@@ -155,6 +155,10 @@ def main():
                 "# Gravador da Shenju: proprietario.\n"
                 "release/*/windows/*.exe\n")
 
+        refs = os.path.join(RAIZ, "docs", "REFERENCIAS_PUBLICO.md")
+        exigir(os.path.isfile(refs), "nao achei docs/REFERENCIAS_PUBLICO.md")
+        shutil.copy2(refs, os.path.join(wt, "REFERENCIAS.md"))
+
         readme = os.path.join(RAIZ, "docs", "README_PUBLICO.md")
         if os.path.isfile(readme):
             t = open(readme, encoding="utf-8").read().replace("{VERSAO}", a.versao)

@@ -83,3 +83,22 @@ no branch local `privado-completo`. Processo v1.8 (D06).
 **Ficha 024 (2026-11-18):** Reload 3.2 = 3.1c + Cobrinha com direções absolutas. A capa numa tarefa própria foi adiada para dezembro (ESCALADA-024; opção 1, tabela de tarefas da fábrica). Kit `release/OpenPod-Reload-3.2` (`.up` CRC 0x6BAF). Contra o kit da 3.1c testado, só mudam o lote, o `bl` do gancho e o carimbo.
 - **Pendência de processo (dezembro):** as receitas antigas (`reload_3.1b`, `reload_3.1c`) compilam o SDK **atual**, então não reproduzem mais o binário que foi testado. Corrigir com fonte do SDK por versão: tag do git por receita ou cópia congelada dos apps de cada versão.
 
+
+## Referências externas (o "anexo") — D29, 2026-11-20
+Todo projeto de terceiros que lemos ou usamos passa por estes passos, nesta ordem:
+1. **Fork na conta zeroproj** (`GH_TOKEN=$(gh auth token --user zeroproj) gh repo fork <dono>/<repo> --clone=false`). Se o fork já
+   existe, **sincronizar** antes de ler (`gh repo sync zeroproj/<repo>`). Pedido do decisor: "sempre que eu pedir para ler o projeto
+   do Dmitry, faz um fork para dentro do nosso projeto". Forks atuais: `SL6801_player`, `smartlink_flash`, `epet`.
+2. **Clonar do nosso fork** em `referencias/<repo>` (fora do commit, está no `.gitignore`) e fazer `checkout` do commit exato. O
+   commit vai na ficha e no `REFERENCIAS_PUBLICO.md`.
+3. **Ler e portar, nunca executar** os scripts da referência.
+4. **Endereços de outra compilação não valem**: cada endereço é achado e provado no nosso ORIGINAL.
+5. **Licença:**
+   - código MIT portado leva o aviso no cabeçalho de cada arquivo e o texto completo em `sdk/LICENSE-<projeto>.txt`;
+   - o texto completo também vai no `README.md` de cada pacote;
+   - projeto sem licença (Camagotchi, por exemplo) não entra no firmware.
+6. **Crédito público:**
+   - uma linha em `docs/REFERENCIAS_PUBLICO.md`, publicado como `REFERENCIAS.md` no repositório público;
+   - os créditos da aba Sobre do site;
+   - o `README_PUBLICO.md`.
+7. **Nunca** publicar ROM, código-fonte nosso ou a engenharia reversa: o público recebe só o kit, a página e a lista de referências.
