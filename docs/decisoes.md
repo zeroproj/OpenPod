@@ -36,3 +36,10 @@
 | — | 2026-11-20 | **Achado (não é decisão):** o SL6801 tem **dois núcleos** (README do SL6801_player, `1e62711`): CPU0 = FreeRTOS e tarefas, CPU1 = interface. Chamada ao kernel a partir da CPU1 corrompe a CPU0 e trava/reinicia. Confirmado que o CRIA/APAGA da capa (2.0–3.2) chama calloc/free do heap do FreeRTOS na CPU1. Entrou como Parte 0 da ficha 025. |
 | D24 | 2026-11-20 | **Caixa-preta (`crashlog.txt`)** (decisor: "pode colocar essa questão do crashlog.txt"). Ficha 026, depois da 3.3. Porta a ideia do `blackbox.c` do SL6801_player (MIT, com crédito), com cada endereço provado no nosso ORIGINAL. Primeiro um kit de diagnóstico com app de teste; na versão pública só depois do teste no aparelho. |
 | D25 | 2026-11-20 | **Calendário** (decisor): a **3.3 sai na segunda, 23/11/2026**, a última de novembro. A partir de dezembro, **as atualizações saem todo dia 10**. A 3.5 (jogos novos) fica para 10/12/2026; a 3.4 é interna (Ghidra, D21). No site, em Recursos → Próximas versões. |
+| D26 | 2026-11-20 | **3.6 (10/01/2027): player na tela inicial** (decisor: "gostei, coloca para versão 3.6"). Modelo aprovado: `assets/ideias/ideia_9icones_player_menor.png`.
+- Os **9 ícones ficam** onde estão, um pouco mais juntos.
+- Embaixo, um **cartão fixo e compacto**: capa, nome, ▶/❚❚, artista, tempo restante e barra de progresso.
+- **Sem música:** "Nada tocando · Escolha em Música".
+- Etapas, nesta ordem: (1) o nome; (2) o estado e o tempo (HIPÓTESE: achar na RAM onde a fábrica guarda; a 3.4/Ghidra ajuda); (3) a capa (decodificada na CPU0, regra dos dois núcleos).
+- Se a etapa 2 ou 3 não fechar a tempo, a 3.6 sai com o que estiver provado.
+- As opções A/B (4 ou 3 ícones, `ideia_inicial_3ou4.png`) ficam guardadas: dependem de abrir telas da fábrica pelo menu Aplicativos. |
