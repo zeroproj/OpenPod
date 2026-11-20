@@ -135,6 +135,23 @@ retorno do `printf` em vez de `NULL`. No **nosso** ORIGINAL:
 4. O `carrega_capa` da CPU0 continua com `0xCF7840`/`0xCF7884` e o
    `0xCF7840` continua checando o livre.
 
+## Parte 0.2 — o patch da 3.3 (feito e verde)
+
+- `tools/fab_reload_3_3.py` aplica as três trocas sobre a 3.2 exata (sha
+  `aa7e7a5a...`), com as premissas conferidas antes de escrever:
+  alloc `0xDAA03E` → 6 `nop` + `bl 0xDAA9D8`; trampolim `0xDAA9D8`
+  (40 B, `lv_mem_alloc(0x2210)` + `memset` + `cbz`); `FREE` em
+  `0xDAA0D0`/`0xDAA0D4` e `0xDAA246`/`0xDAA24A` → `0xD5811D`.
+- Receita `reload_3.3` em `tools/build.py` (`RELOAD_3_2` + a ferramenta).
+- `tests/test_reload_3_3.py` (7 testes): reprodutível; diferença contra a
+  3.2 só nos quatro intervalos do lote `0x1AA000`; `bl` e trampolim
+  conferidos por capstone; `FREE` no LVGL; nenhum `0xCF7840`/`0xCF7885`
+  no CRIA/APAGA (e os dois ainda no `carrega_capa` da CPU0); em unicorn,
+  o trampolim chama `lv_mem_alloc(0x2210)`, zera os `0x2210` B e devolve
+  o ponteiro; se a alocação devolve 0, não chama `memset` e devolve 0.
+- `sh tools/ci.sh` verde (as travas antigas não mudam; a 3.3 não entra na
+  catraca até o kit).
+
 ## Parte 1 — anotações (a continuar)
 
 - A fila da PreTask: `0x0081D68C`, id `0xB`, `0xD6AE38(0xB)`; o handler
