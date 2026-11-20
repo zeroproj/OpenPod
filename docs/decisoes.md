@@ -34,3 +34,4 @@
 - Os dois sobem **sempre** no público (`publica_release.py`), com links fixos `recovery/ors/update.up` e `recovery/fr/update.up`.
 - Aba **Recovery** no site, PT/EN, com o ORS recomendado. |
 | — | 2026-11-20 | **Achado (não é decisão):** o SL6801 tem **dois núcleos** (README do SL6801_player, `1e62711`): CPU0 = FreeRTOS e tarefas, CPU1 = interface. Chamada ao kernel a partir da CPU1 corrompe a CPU0 e trava/reinicia. Confirmado que o CRIA/APAGA da capa (2.0–3.2) chama calloc/free do heap do FreeRTOS na CPU1. Entrou como Parte 0 da ficha 025. |
+| D24 | 2026-11-20 | **Caixa-preta (`crashlog.txt`)** (decisor: "pode colocar essa questão do crashlog.txt"). Ficha 026, depois da 3.3. Porta a ideia do `blackbox.c` do SL6801_player (MIT, com crédito), com cada endereço provado no nosso ORIGINAL. Primeiro um kit de diagnóstico com app de teste; na versão pública só depois do teste no aparelho. |
