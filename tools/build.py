@@ -912,9 +912,7 @@ RELOAD_3_2 = RELOAD_3_0 + [
 # para o LVGL, na CPU1) pela imagem da 3.2, sem mexer no capa_album.s.
 RELOAD_3_3 = RELOAD_3_2 + [
     ("fab_reload_3_3.py", [],
-     "Parte 0: contexto da capa no lv_mem_alloc/lv_mem_free"),
-    ("fab_reload_3_3_guardas.py", [],
-     "Parte 1: indice da faixa no yield e reserva do ring"),
+     "Parte 0.2: contexto da capa no lv_mem_alloc/lv_mem_free"),
 ]
 
 RECEITAS = {
@@ -985,6 +983,10 @@ RECEITAS = {
 # a reaproveita-los. Esta tudo no git, no commit da limpeza.
 FORA = [
     ("patch_versao.py",  "aplicado pelo make_install_kit (regra R7)"),
+    ("fab_reload_3_3_guardas.py",
+     "retirada da 3.3 em 2026-11-20: no aparelho a guarda do ring impediu "
+     "a capa de aparecer; vai para a tarefa da capa (dezembro), conferida "
+     "uma vez so, antes do 1o pedaco"),
 ]
 
 
