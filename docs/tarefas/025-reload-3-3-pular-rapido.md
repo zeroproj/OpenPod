@@ -39,7 +39,12 @@ compilação** (`0xCD8C7A` não é `bl` no nosso ORIGINAL): só o conceito vale,
      livre. Justificar os ~8 KiB fixos no heap.
 3. **Provar** se a fábrica recria a página Tocando Agora ao trocar de faixa. Se recria, o CRIA/APAGA roda a cada pulo, e essa é a causa
    mais provável do relato. Se não, registrar.
-4. Depois da Parte 0, fazer a Parte 1. Se a Parte 0 sozinha explicar o defeito, a Parte 1 continua (é guarda barata), mas a Parte 2
+4. **O calloc pode não devolver 0 na falta de memória.** O README do Dmitry (seção "Gotchas") diz que o `oal_malloc` devolve **o retorno do
+   `printf`** (um número pequeno) em vez de NULL quando o heap acaba, e que quem chama escreve por esse ponteiro ruim. As fichas 003/007
+   dizem que o nosso `0xCF7840` "devolve 0 se faltar". **Provar no ORIGINAL qual é o certo** (o `0xCF7840` chama `0x9D50` e o `memset`
+   `0xBAA`: ver o que acontece quando `0x9D50` falha). Se o Dmitry estiver certo, todo `cmp rX,#0` depois do calloc nas nossas rotinas
+   não protege nada: conferir o livre do heap (`FW_HEAP_FREE` dele = `0x800C64`, provar o nosso) **antes** de alocar, com folga.
+5. Depois da Parte 0, fazer a Parte 1. Se a Parte 0 sozinha explicar o defeito, a Parte 1 continua (é guarda barata), mas a Parte 2
    pode virar ficha própria.
 
 ## Parte 1 (obrigatória) — guardas sem estado global
