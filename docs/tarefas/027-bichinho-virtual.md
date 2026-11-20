@@ -1,11 +1,11 @@
-# Ficha 027 — Bichinho virtual (Reload 3.5)
+# Ficha 027 — Bichinho virtual (Reload 3.6)
 
-Tipo: **Risco + Pesada** (código novo; vai ao aparelho e ao público). Base: a **3.3** publicada (ficha 025).
-Desenvolvedor: `opencode/deepseek-v4.1-flash-free`. Decisão D27 (2026-11-20). Prazo da 3.5: **10/12/2026**.
-**Começa depois do `PRONTO-025`.** A ordem entre esta ficha e a 026 (caixa-preta) é do decisor. Proposta: a 027 vem antes, porque tem data.
+Tipo: **Risco + Pesada** (código novo; vai ao aparelho e ao público). Base: a **3.5** publicada (ficha 028).
+Desenvolvedor: `opencode-go/deepseek-v4.1-flash`. Decisões D27 e D28 (2026-11-20). Prazo da 3.6: **10/01/2027** (era a 3.5; trocada pela D28).
+**Começa depois da ficha 028 (player na tela inicial, 3.5).** A ordem com a 026 (caixa-preta) é do decisor.
 
 ## O que é
-Um bichinho virtual **nosso**, como app no menu Aplicativos, junto com os jogos da 3.5. Ele tem fome, alegria, energia, higiene e
+Um bichinho virtual **nosso**, como app no menu Aplicativos, junto com os jogos da 3.6. Ele tem fome, alegria, energia, higiene e
 saúde, que caem com o tempo. O usuário alimenta, brinca, limpa, põe para dormir e dá remédio. Ele cresce, e se ficar abandonado
 adoece. Modelo proposto: `assets/ideias/ideia_bichinho_virtual.png`. As 5 telas são casa, menu (M), precisa de você, status e
 dormindo.
@@ -39,7 +39,7 @@ dormindo.
 2. **Se provada a tempo.** Salvar no cartão e contar o tempo com o aparelho desligado.
    - (a) Provar o `f_write` no nosso ORIGINAL e gravar **pela CPU0**, como na caixa-preta.
    - (b) HIPÓTESE: o aparelho tem um relógio que continua certo depois de desligado. Provar ou descartar.
-   - Sem prova até a véspera de 10/12, a 3.5 sai só com a etapa 1, e o decisor é avisado.
+   - Sem prova até a véspera de 10/01, a 3.6 sai só com a etapa 1, e o decisor é avisado.
 
 ## O que entregar
 1. `docs/tarefas/027-analise.md`, com:
@@ -47,7 +47,7 @@ dormindo.
    - o tamanho do código, dos desenhos e do estado;
    - o espaço livre restante na área de patches;
    - a tabela do ritmo das necessidades.
-2. Uma receita nova = a da 3.3 + o bichinho + os jogos da 3.5, combinados com a coordenação.
+2. Uma receita nova = a da 3.5 + o bichinho + os jogos da 3.6, combinados com a coordenação.
 3. Testes no computador da lógica do bichinho, sem o aparelho, e `sh tools/ci.sh` verde.
 4. Capturas das 5 telas renderizadas a partir do código, para comparar com o modelo.
 
