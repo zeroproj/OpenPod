@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Testes de aceite da ficha 025 (Reload 3.3, Parte 0.2 e Parte 1.2).
+"""Testes de aceite da ficha 025 (Reload 3.3, só a Parte 0.2).
 
 Rode a mao (o `tools/ci.sh` tambem roda):
 
@@ -7,18 +7,18 @@ Rode a mao (o `tools/ci.sh` tambem roda):
 
 Cobre:
 
-  - a receita 3.3 e reproduzivel e difere da 3.2 so no lote da capa
-    (Parte 0.2, a area 0x1AAF00..0x1AAF4F de volta a 0xFF e a guarda do
-    ring), sem tocar abaixo de 0xE000, no setor 0xD000 nem na PSMP;
+  - a receita 3.3 e reproduzivel e **byte a byte o Diag A** (sha
+    368a7c8c98f6b6b6...), a imagem aprovada no aparelho; difere da 3.2 so
+    na Parte 0.2, sem tocar abaixo de 0xE000, no setor 0xD000 nem na PSMP;
   - o trampolim da Parte 0.2: `bl`, bytes, `lv_mem_alloc(0x2210)`,
     `memset` e devolucao 0 sem memoria (unicorn);
   - o wrapper B7b REAL (0xDAAE20) chamado por um chamador de verdade
     (`emu_rc7.Maquina.chama`, frame de 16 B), com callback e yield
     stubs: SP, PC e r4-r6 voltam iguais aos da 3.2 (o antigo `add sp,#4`
     da Parte 1.1 reprovaria aqui);
-  - a guarda do ring chamada pelo `envia_path` REAL (0xDAAC00): com
-    `0x30C0` livres manda os 8 tipo 6; com `0x30BF` manda so o tipo 5,
-    preservando SP, PC e r4-r6 (comparado com a 3.2).
+  - o `envia_path` REAL (0xDAAC00) roda igual ao da 3.2: os 8 tipo 6, sem
+    chamar a guarda do ring (que saiu da receita), preservando SP, PC e
+    r4-r6. A reserva do ring fica para a tarefa da capa.
 """
 import hashlib
 import os
@@ -31,7 +31,6 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RAIZ, "tools"))
 sys.path.insert(0, os.path.join(RAIZ, "tests"))
 import fab_reload_3_3 as F  # noqa: E402
-import fab_reload_3_3_guardas as G  # noqa: E402
 import capa_album_asm as A  # noqa: E402
 import emu_rc7 as E  # noqa: E402
 
@@ -41,6 +40,7 @@ WORK = os.path.join(RAIZ, "sdk/build/test_3_3")
 IMG32 = os.path.join(WORK, "reload_3_2.bin")
 IMG33A = os.path.join(WORK, "reload_3_3_a.bin")
 IMG33B = os.path.join(WORK, "reload_3_3_b.bin")
+SHA_DIAG_A = ("368a7c8c98f6b6b68c7e38853a69673bb05d5216219406f8ccdc9a858a73713d")
 
 
 def sha_file(p):
@@ -73,16 +73,15 @@ class Reload33(unittest.TestCase):
     def test_repro(self):
         self.assertEqual(sha_file(IMG33A), sha_file(IMG33B))
 
+    def test_imagem_e_o_diag_a(self):
+        self.assertEqual(sha_file(IMG33A), SHA_DIAG_A)
+
     def test_diff_so_no_lote_da_capa(self):
         self.assertEqual(len(self.o32), len(self.o33))
         dif = [i for i in range(len(self.o32)) if self.o32[i] != self.o33[i]]
         self.assertTrue(dif)
-        ring = G.monta_rotinas()
         permitido = ((F.ALLOC, F.ALLOC + 16), (F.FREE1, F.FREE1 + 8),
-                     (F.FREE2, F.FREE2 + 8), (F.TRAMP, F.TRAMP + 40),
-                     (G.GUARDA_R, G.GUARDA_R + 4),
-                     (G.R_LIVRE, G.R_GUARDA_R),
-                     (G.R_GUARDA_R, G.R_GUARDA_R + len(ring)))
+                     (F.FREE2, F.FREE2 + 8), (F.TRAMP, F.TRAMP + 40))
         fora = [i for i in dif if not any(a <= i < b for a, b in permitido)]
         self.assertEqual(fora, [], "mudou fora dos intervalos permitidos")
         self.assertTrue(all(i >= 0xE000 for i in dif))
@@ -173,16 +172,6 @@ class Reload33(unittest.TestCase):
         from unicorn.arm_const import UC_ARM_REG_R0
         self.assertEqual(u.reg_read(UC_ARM_REG_R0), 0)
 
-    def test_parte1_bl_e_rotina_ring(self):
-        ring = G.monta_rotinas()
-        self.assertEqual(A.desvio(self.o33, G.GUARDA_R),
-                         ("bl", G.X_R_GUARDA_R))
-        self.assertEqual(bytes(self.o33[G.R_LIVRE:G.R_GUARDA_R]),
-                         b"\xff" * (G.R_GUARDA_R - G.R_LIVRE))
-        self.assertEqual(bytes(self.o33[G.R_GUARDA_R:
-                                         G.R_GUARDA_R + len(ring)]), ring)
-        self.assertEqual(G.confere_rotinas(ring), [])
-
     def _roda_wrapper(self, imagem):
         m = E.Maquina(imagem)
         jd = 0x00810000
@@ -211,7 +200,7 @@ class Reload33(unittest.TestCase):
                              E.PILHA[0] + E.PILHA[1] - 0x100)
             self.assertEqual([m.r(x) for x in E.SALVOS], salvos)
 
-    def _roda_envia(self, imagem, livre):
+    def _roda_envia(self, imagem):
         m = E.Maquina(imagem)
         sp = E.PILHA[0] + E.PILHA[1] - 0x100
         # o guarda de chamadores do envia_path le [sp+0x14]
@@ -226,7 +215,7 @@ class Reload33(unittest.TestCase):
 
         def ring_free(_mq):
             chamadas.append("ring_free")
-            return livre
+            return 0
 
         def send(mq):
             tipo = mq.le(mq.r(E.UC_ARM_REG_R0) + 4, 1)[0]
@@ -253,11 +242,13 @@ class Reload33(unittest.TestCase):
         self.assertEqual(m.erros, [])
         return m, chamadas, salvos
 
-    def test_ring_guard_envia_path(self):
-        m32, c32, salvos = self._roda_envia(self.o32, 0x30C0)
-        m33, c33, _ = self._roda_envia(self.o33, 0x30C0)
+    def test_envia_path_igual_ao_da_3_2(self):
+        self.assertEqual(self.o33[0x1AAC00:0x1AAD58],
+                         self.o32[0x1AAC00:0x1AAD58])
+        m32, c32, salvos = self._roda_envia(self.o32)
+        m33, c33, _ = self._roda_envia(self.o33)
         self.assertNotIn("ring_free", c32)
-        self.assertIn("ring_free", c33)
+        self.assertNotIn("ring_free", c33)
         self.assertEqual([c for c in c32 if isinstance(c, tuple)],
                          [("send", 6)] * 8)
         self.assertEqual([c for c in c33 if isinstance(c, tuple)],
@@ -267,17 +258,6 @@ class Reload33(unittest.TestCase):
             self.assertEqual(m.r(E.UC_ARM_REG_SP),
                              E.PILHA[0] + E.PILHA[1] - 0x100)
             self.assertEqual([m.r(x) for x in E.SALVOS], salvos)
-
-        m32b, c32b, _ = self._roda_envia(self.o32, 0x30BF)
-        m33b, c33b, _ = self._roda_envia(self.o33, 0x30BF)
-        self.assertEqual([c for c in c32b if isinstance(c, tuple)],
-                         [("send", 6)] * 8)
-        self.assertEqual([c for c in c33b if isinstance(c, tuple)],
-                         [("send", 5)])
-        for m in (m32b, m33b):
-            self.assertEqual(m.r(E.UC_ARM_REG_PC), E.FIM)
-            self.assertEqual(m.r(E.UC_ARM_REG_SP),
-                             E.PILHA[0] + E.PILHA[1] - 0x100)
 
 
 if __name__ == "__main__":

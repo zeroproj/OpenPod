@@ -143,7 +143,7 @@ retorno do `printf` em vez de `NULL`. No **nosso** ORIGINAL:
   (40 B, `lv_mem_alloc(0x2210)` + `memset` + `cbz`); `FREE` em
   `0xDAA0D0`/`0xDAA0D4` e `0xDAA246`/`0xDAA24A` → `0xD5811D`.
 - Receita `reload_3.3` em `tools/build.py` (`RELOAD_3_2` + a ferramenta).
-- `tests/test_reload_3_3.py` (7 testes): reprodutível; diferença contra a
+- `tests/test_reload_3_3.py` (10 testes): reprodutível; diferença contra a
   3.2 só nos quatro intervalos do lote `0x1AA000`; `bl` e trampolim
   conferidos por capstone; `FREE` no LVGL; nenhum `0xCF7840`/`0xCF7885`
   no CRIA/APAGA (e os dois ainda no `carrega_capa` da CPU0); em unicorn,
@@ -152,9 +152,25 @@ retorno do `printf` em vez de `NULL`. No **nosso** ORIGINAL:
 - `sh tools/ci.sh` verde (as travas antigas não mudam; a 3.3 não entra na
   catraca até o kit).
 
-## Parte 1 — a revisão mandou retirar a 1.1
+## Resultado no aparelho (2026-11-20) — decisão da coordenação
 
-### 1.1 Desistir da capa velha — RETIRADA
+- **3.3 (Parte 0.2 + Parte 1.2):** tudo funciona, mas a **capa não
+  aparece** em nenhuma música.
+- **Diag A = 3.2 + só a Parte 0.2** (sha `368a7c8c98f6b6b6…`, kit
+  `release/OpenPod-Reload-3.3-Diag-A` no `privado-completo`): as capas
+  aparecem; pulou 10 músicas rápido e **não reiniciou**, só um atraso no
+  início; entrar/sair do player OK.
+- **Conclusão (CONFIRMADO por eliminação, porque A + B = 3.3):** a guarda
+  do ring da Parte 1.2 impede a capa. **Causa provável:** ela confere
+  `0x30C0` livres antes de cada um dos 8 pedaços; lá pelo 4º a view ainda
+  não consumiu.
+- **Decisão:** a 3.3 pública passa a ser **só a Parte 0.2**. A receita é
+  `RELOAD_3_2 + [fab_reload_3_3.py]`; a imagem nova tem de ser byte a
+  byte o Diag A (`368a7c8c…`). A guarda do ring sai da receita e vai para
+  a lista `FORA`; a reserva do ring vai para a tarefa da capa (dezembro),
+  conferida **uma vez só, antes do 1º pedaço**, e medida no aparelho.
+
+## Parte 1.1 — RETIRADA
 
 A revisão (`docs/tarefas/025-revisao.md`, CRÍTICO 1 e 2) confirmou que a
 guarda do yield em `0xDAAE30` não funciona:
@@ -168,42 +184,43 @@ guarda do yield em `0xDAAE30` não funciona:
   própria PreTask. A comparação via valores iguais e não abortava a capa
   velha.
 
-Decisão da coordenação: **retirar a Parte 1.1 inteira**. `0xDAA324` e
-`0xDAAE30` voltam aos bytes da 3.2 e a área `0xDAAF00..0xDAAF4F` volta a
-`0xFF`. Desistir da capa velha precisa da **contagem da fila da
+Decisão: **retirar a Parte 1.1 inteira**. `0xDAA324` e `0xDAAE30` voltam
+aos bytes da 3.2. Desistir da capa velha precisa da **contagem da fila da
 PreTask** e fica para a tarefa da capa.
 
-### 1.2 Não atropelar a fábrica no ring — MANTIDA
+## Parte 1.2 — RETIRADA DA RECEITA
 
 - `[0x0081BBC8]` é o struct do ring; `0xD6A9EA` devolve o livre (o
   mesmo que `0xCF83E4` usa em `0xCF8400`).
 - Cada mensagem tipo 6 leva `0x414` B + 4 B de cabeçalho = `0x418`;
   8 = `0x20C0`. Reserva de `0x1000` para a fábrica → exigir `0x30C0`.
-- `envia_path` `0xDAAC68` (`movw r0,#0x38f1`) vira `bl` para a guarda em
-  `0xDAAF50`; se o livre for menor, desvia para `0xDAACFA` (libera o
-  tmp) e o `0xDAAD06` manda o tipo 5 vazio. Se for maior, repõe `0x38f1`
-  e volta ao `movt` original.
+- A guarda conferia **antes de cada pedaço** e, no aparelho, impediu a
+  capa de aparecer: por volta do 4º pedaço a view ainda não tinha
+  consumido o ring. Ela **não** entra na 3.3 pública. A reserva do ring
+  vai para a tarefa da capa (dezembro), conferida **uma vez só, antes do
+  1º pedaço**, e medida no aparelho.
+- `tools/fab_reload_3_3_guardas.py` (257 linhas) continua no repositório,
+  mas na lista `FORA` de `tools/build.py`, com o motivo e a data.
 
-### 1.3 Medição
+## Parte 1.3 — testes da 3.3 pública
 
-`tests/test_reload_3_3.py` (10 testes, verdes; agora roda no
-`tools/ci.sh`):
-- reprodução e diff: a 3.3 difere da 3.2 só no lote `0x1AA000`
-  (Parte 0.2, a área `0x1AAF00..0x1AAF4F` em `0xFF` e a guarda do ring);
-- estáticos: `bl`, trampolim, `FREE` no LVGL, rotina do ring byte a byte;
+`tests/test_reload_3_3.py` (10 testes, verdes; roda no `tools/ci.sh`):
+- **a imagem é byte a byte o Diag A** (`368a7c8c…`);
+- reprodução e diff: a 3.3 difere da 3.2 só na Parte 0.2 (alloc,
+  trampolim e os dois `FREE`), sem `<0xE000`, setor `0xD000` ou PSMP;
+- estáticos: `bl`, trampolim, `FREE` no LVGL, `corpo_cria`/`corpo_apaga`
+  sem `0xCF7840`/`0xCF7885`;
 - unicorn: o trampolim aloca/zera/devolve e devolve 0 sem memória;
 - **wrapper B7b real**: `emu_rc7.Maquina.chama` executa `0xDAAE20` com
   um chamador de verdade (frame de 16 B), callback e yield reais/stubs;
   SP, PC e r4-r6 voltam iguais aos da 3.2. Nada de frame artificial;
-- **guarda do ring real**: `Maquina.chama` executa o `envia_path`
-  `0xDAAC00` inteiro (com o `carrega_capa` real e um MP3 de capa);
-  com `0x30C0` livres manda os 8 tipo 6; com `0x30BF` manda só o tipo 5;
-  SP, PC e r4-r6 voltam iguais aos da 3.2.
+- **`envia_path` real**: `Maquina.chama` executa `0xDAAC00` inteiro
+  (com o `carrega_capa` real e um MP3 de capa) e prova que ele é **igual
+  ao da 3.2**: os 8 tipo 6, sem chamar a guarda do ring, com SP, PC e
+  r4-r6 iguais aos da 3.2.
 
-### Ferramentas
+## Ferramentas
 
-- `tools/fab_reload_3_3_guardas.py` (257 linhas) aplica só a Parte 1.2
-  sobre a Parte 0 exata (sha `368a7c8c...`); premissas de bytes e área.
-- `tools/build.py`: `RELOAD_3_3 = RELOAD_3_2 + [fab_reload_3_3.py,
-  fab_reload_3_3_guardas.py]`.
+- `tools/build.py`: `RELOAD_3_3 = RELOAD_3_2 + [fab_reload_3_3.py]`;
+  `fab_reload_3_3_guardas.py` em `FORA`.
 - `sh tools/ci.sh` verde.
