@@ -152,78 +152,58 @@ retorno do `printf` em vez de `NULL`. No **nosso** ORIGINAL:
 - `sh tools/ci.sh` verde (as travas antigas não mudam; a 3.3 não entra na
   catraca até o kit).
 
-## Parte 1 — feito (guardas sem estado global)
+## Parte 1 — a revisão mandou retirar a 1.1
 
-### 1.1 Desistir da capa velha (o desvio provado)
+### 1.1 Desistir da capa velha — RETIRADA
 
-A API de fila visível **não tem contagem**: `0x9068` é o create,
-`0x8FFC` o reset, `0xB372` o send/recv, `0x9442` o delete; os wrappers
-`0xD7DA88`/`0xD7DAB4`/`0xD7DAB8`/`0xD7DABC` são event group, não fila.
-O struct da fila é alocado na máscara ROM (`0x9068`), então o offset de
-`uxMessagesWaiting` não se prova no dump.
+A revisão (`docs/tarefas/025-revisao.md`, CRÍTICO 1 e 2) confirmou que a
+guarda do yield em `0xDAAE30` não funciona:
 
-Campo equivalente **provado**: o índice da faixa em `[0x0081BC84+0x20]`.
-- `page4_media_cb`, comando 5: `0xD0895E ldr r3,=0x0081BC84`,
-  `0xD08966 str r2,[r3,#0x20]` — a troca de faixa grava o índice novo.
-- O `get_path` `0xCFEFC4` recebe esse índice (o caller `0xD0138E`
-  passa `r1`); o caminho da capa sai dele.
-- O `carrega_capa` copia o índice para `jd+0x118+0x14` (`0x12C`) logo
-  depois do `jd_prepare` (`0xDAA324`, no lugar do `ldrh`); o CTX usa
-  `+0x00..+0x12` e o `+0x14` está livre.
-- Cada yield do B7b (`b7_common` `0xDAAE30`) compara o capturado com o
-  atual; se mudou, devolve 0 e o `jd_decomp` para; o `carrega_capa` cai
-  no caminho de falha (fecha e libera).
-- Janela: a captura é depois do `jd_prepare`; um pulo **antes** dele
-  ainda não é visto, mas o decode nem começou. Um pulo durante o
-  `jd_decomp` (o caso que trava) é visto no yield seguinte.
-- **Desvio:** a ficha pedia a contagem da fila; como ela não existe na
-  API visível, o índice é o campo provado de “o usuário pulou”. O
-  arquiteto pode aprovar o equivalente ou exigir a contagem (ESCALADA).
+- o `bl` para a guarda não tem palavra extra no frame: os wrappers
+  `0xDAAE00`/`0xDAAE20` fazem `push {r4,r5,r6,lr}` (16 B, `lr` em
+  `SP+12`), e a guarda terminava com `add sp,#4; pop {r4-r6,pc}` —
+  deslocava a pilha e saltava para lixo no primeiro yield de toda capa;
+- o índice `[0x0081BC84+0x20]` só muda **depois** que o decode termina:
+  a mensagem de pulo fica em `MgrTaskQue` e a gravação do índice roda na
+  própria PreTask. A comparação via valores iguais e não abortava a capa
+  velha.
 
-### 1.2 Não atropelar a fábrica no ring
+Decisão da coordenação: **retirar a Parte 1.1 inteira**. `0xDAA324` e
+`0xDAAE30` voltam aos bytes da 3.2 e a área `0xDAAF00..0xDAAF4F` volta a
+`0xFF`. Desistir da capa velha precisa da **contagem da fila da
+PreTask** e fica para a tarefa da capa.
+
+### 1.2 Não atropelar a fábrica no ring — MANTIDA
 
 - `[0x0081BBC8]` é o struct do ring; `0xD6A9EA` devolve o livre (o
   mesmo que `0xCF83E4` usa em `0xCF8400`).
 - Cada mensagem tipo 6 leva `0x414` B + 4 B de cabeçalho = `0x418`;
   8 = `0x20C0`. Reserva de `0x1000` para a fábrica → exigir `0x30C0`.
-- `envia_path` `0xDAAC68` (`movw r0,#0x38f1`) vira `bl` para a guarda;
-  se o livre for menor, desvia para `0xDAACFA` (libera o tmp) e o
-  `0xDAAD06` manda o tipo 5 vazio. Se for maior, repõe `0x38f1` e volta
-  ao `movt` original.
+- `envia_path` `0xDAAC68` (`movw r0,#0x38f1`) vira `bl` para a guarda em
+  `0xDAAF50`; se o livre for menor, desvia para `0xDAACFA` (libera o
+  tmp) e o `0xDAAD06` manda o tipo 5 vazio. Se for maior, repõe `0x38f1`
+  e volta ao `movt` original.
 
 ### 1.3 Medição
 
-`tests/test_reload_3_3.py` (11 testes, verdes):
+`tests/test_reload_3_3.py` (10 testes, verdes; agora roda no
+`tools/ci.sh`):
 - reprodução e diff: a 3.3 difere da 3.2 só no lote `0x1AA000`
-  (Parte 0 + Parte 1), sem `<0xE000`, setor `0xD000` ou PSMP;
-- estáticos: `bl`s, trampolim, `FREE` no LVGL, rotinas byte a byte;
-- unicorn: o trampolim aloca/zera/devolve e devolve 0 sem memória; a
-  captura grava `0x12345678` em `jd+0x12C`; a guarda do índice chama o
-  yield e devolve o retorno original quando o índice é igual, e devolve
-  0 sem yield quando muda; a guarda do ring vai para o caminho de
-  sucesso com `0x30C0` e para a falha com `0x30BF`.
-- O decode completo (pixels) não foi refeito nesta sessão: com o índice
-  igual, a guarda devolve exatamente o retorno do callback original e a
-  única escrita nova é no CTX livre; o caminho de pixels é o da 3.2.
-  O kit `TESTAR.txt` cobre o aparelho.
+  (Parte 0.2, a área `0x1AAF00..0x1AAF4F` em `0xFF` e a guarda do ring);
+- estáticos: `bl`, trampolim, `FREE` no LVGL, rotina do ring byte a byte;
+- unicorn: o trampolim aloca/zera/devolve e devolve 0 sem memória;
+- **wrapper B7b real**: `emu_rc7.Maquina.chama` executa `0xDAAE20` com
+  um chamador de verdade (frame de 16 B), callback e yield reais/stubs;
+  SP, PC e r4-r6 voltam iguais aos da 3.2. Nada de frame artificial;
+- **guarda do ring real**: `Maquina.chama` executa o `envia_path`
+  `0xDAAC00` inteiro (com o `carrega_capa` real e um MP3 de capa);
+  com `0x30C0` livres manda os 8 tipo 6; com `0x30BF` manda só o tipo 5;
+  SP, PC e r4-r6 voltam iguais aos da 3.2.
 
 ### Ferramentas
 
-- `tools/fab_reload_3_3_guardas.py` (350 linhas) aplica a Parte 1 sobre
-  a Parte 0 exata (sha `368a7c8c...`); premissas de bytes e área zerada.
+- `tools/fab_reload_3_3_guardas.py` (257 linhas) aplica só a Parte 1.2
+  sobre a Parte 0 exata (sha `368a7c8c...`); premissas de bytes e área.
 - `tools/build.py`: `RELOAD_3_3 = RELOAD_3_2 + [fab_reload_3_3.py,
   fab_reload_3_3_guardas.py]`.
 - `sh tools/ci.sh` verde.
-
-## Parte 1 — anotações (histórico)
-
-- A fila da PreTask: `0x0081D68C`, id `0xB`, `0xD6AE38(0xB)`; o handler
-  `0xD0ED0C` lê o tipo em `[msg+8]`.
-- Ainda **não** há prova da função/campo de contagem de mensagens: os
-  wrappers `0xD7DA88..0xD7DC12` não expõem contagem; `0xD7DB2E` é reset
-  (`0x8FFC` = `xQueueGenericReset`), `0xD7DB1E` é delete (`0x9442`) e
-  `0xD7DC12` é reset (`0x87A6`). `0xB372`/`0x936A`/`0x95D4`/`0x8FFC`
-  estão na máscara ROM. Voltar aqui depois da Parte 0.
-- O ring da view: `0x0081BBC0`, `+8` struct, `+0xC` contador; init
-  `0xCF8210`; livre `0xD6A9EA`; envio `0xCF83E4` exige `livre >= len+4`.
-  Reserva da Parte 1.2: 8×`0x414` + `0x1000` = `0x30A0`.
