@@ -152,7 +152,70 @@ retorno do `printf` em vez de `NULL`. No **nosso** ORIGINAL:
 - `sh tools/ci.sh` verde (as travas antigas não mudam; a 3.3 não entra na
   catraca até o kit).
 
-## Parte 1 — anotações (a continuar)
+## Parte 1 — feito (guardas sem estado global)
+
+### 1.1 Desistir da capa velha (o desvio provado)
+
+A API de fila visível **não tem contagem**: `0x9068` é o create,
+`0x8FFC` o reset, `0xB372` o send/recv, `0x9442` o delete; os wrappers
+`0xD7DA88`/`0xD7DAB4`/`0xD7DAB8`/`0xD7DABC` são event group, não fila.
+O struct da fila é alocado na máscara ROM (`0x9068`), então o offset de
+`uxMessagesWaiting` não se prova no dump.
+
+Campo equivalente **provado**: o índice da faixa em `[0x0081BC84+0x20]`.
+- `page4_media_cb`, comando 5: `0xD0895E ldr r3,=0x0081BC84`,
+  `0xD08966 str r2,[r3,#0x20]` — a troca de faixa grava o índice novo.
+- O `get_path` `0xCFEFC4` recebe esse índice (o caller `0xD0138E`
+  passa `r1`); o caminho da capa sai dele.
+- O `carrega_capa` copia o índice para `jd+0x118+0x14` (`0x12C`) logo
+  depois do `jd_prepare` (`0xDAA324`, no lugar do `ldrh`); o CTX usa
+  `+0x00..+0x12` e o `+0x14` está livre.
+- Cada yield do B7b (`b7_common` `0xDAAE30`) compara o capturado com o
+  atual; se mudou, devolve 0 e o `jd_decomp` para; o `carrega_capa` cai
+  no caminho de falha (fecha e libera).
+- Janela: a captura é depois do `jd_prepare`; um pulo **antes** dele
+  ainda não é visto, mas o decode nem começou. Um pulo durante o
+  `jd_decomp` (o caso que trava) é visto no yield seguinte.
+- **Desvio:** a ficha pedia a contagem da fila; como ela não existe na
+  API visível, o índice é o campo provado de “o usuário pulou”. O
+  arquiteto pode aprovar o equivalente ou exigir a contagem (ESCALADA).
+
+### 1.2 Não atropelar a fábrica no ring
+
+- `[0x0081BBC8]` é o struct do ring; `0xD6A9EA` devolve o livre (o
+  mesmo que `0xCF83E4` usa em `0xCF8400`).
+- Cada mensagem tipo 6 leva `0x414` B + 4 B de cabeçalho = `0x418`;
+  8 = `0x20C0`. Reserva de `0x1000` para a fábrica → exigir `0x30C0`.
+- `envia_path` `0xDAAC68` (`movw r0,#0x38f1`) vira `bl` para a guarda;
+  se o livre for menor, desvia para `0xDAACFA` (libera o tmp) e o
+  `0xDAAD06` manda o tipo 5 vazio. Se for maior, repõe `0x38f1` e volta
+  ao `movt` original.
+
+### 1.3 Medição
+
+`tests/test_reload_3_3.py` (11 testes, verdes):
+- reprodução e diff: a 3.3 difere da 3.2 só no lote `0x1AA000`
+  (Parte 0 + Parte 1), sem `<0xE000`, setor `0xD000` ou PSMP;
+- estáticos: `bl`s, trampolim, `FREE` no LVGL, rotinas byte a byte;
+- unicorn: o trampolim aloca/zera/devolve e devolve 0 sem memória; a
+  captura grava `0x12345678` em `jd+0x12C`; a guarda do índice chama o
+  yield e devolve o retorno original quando o índice é igual, e devolve
+  0 sem yield quando muda; a guarda do ring vai para o caminho de
+  sucesso com `0x30C0` e para a falha com `0x30BF`.
+- O decode completo (pixels) não foi refeito nesta sessão: com o índice
+  igual, a guarda devolve exatamente o retorno do callback original e a
+  única escrita nova é no CTX livre; o caminho de pixels é o da 3.2.
+  O kit `TESTAR.txt` cobre o aparelho.
+
+### Ferramentas
+
+- `tools/fab_reload_3_3_guardas.py` (350 linhas) aplica a Parte 1 sobre
+  a Parte 0 exata (sha `368a7c8c...`); premissas de bytes e área zerada.
+- `tools/build.py`: `RELOAD_3_3 = RELOAD_3_2 + [fab_reload_3_3.py,
+  fab_reload_3_3_guardas.py]`.
+- `sh tools/ci.sh` verde.
+
+## Parte 1 — anotações (histórico)
 
 - A fila da PreTask: `0x0081D68C`, id `0xB`, `0xD6AE38(0xB)`; o handler
   `0xD0ED0C` lê o tipo em `[msg+8]`.

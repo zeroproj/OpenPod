@@ -17,7 +17,10 @@ Nao entra no tools/ci.sh (que e protegido); o teste cobre:
     o memset e devolve 0 (o `cmp r7,#0` de fabrica leva ao cinza);
   - `corpo_cria` e `corpo_apaga` nao chamam mais `0xCF7840`/`0xCF7885`
     (heap do FreeRTOS na CPU1), mas o `carrega_capa` da CPU0 continua
-    chamando o heap de fabrica.
+    chamando o heap de fabrica;
+  - a Parte 1: o indice da faixa e capturado em `jd+0x12C` e o yield
+    aborta quando ele muda; o ring exige `0x30C0` livres antes dos 8
+    pedacos e cai no caminho de falha quando nao ha espaco.
 """
 import hashlib
 import os
@@ -29,6 +32,7 @@ import unittest
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RAIZ, "tools"))
 import fab_reload_3_3 as F  # noqa: E402
+import fab_reload_3_3_guardas as G  # noqa: E402
 import capa_album_asm as A  # noqa: E402
 
 ORIG = os.path.join(RAIZ, "firmware/ORIGINAL/GN438_original.bin")
@@ -70,8 +74,15 @@ class Reload33(unittest.TestCase):
         self.assertEqual(len(self.o32), len(self.o33))
         dif = [i for i in range(len(self.o32)) if self.o32[i] != self.o33[i]]
         self.assertTrue(dif)
+        cap, gid, ring = G.monta_rotinas()
         permitido = ((F.ALLOC, F.ALLOC + 16), (F.FREE1, F.FREE1 + 8),
-                     (F.FREE2, F.FREE2 + 8), (F.TRAMP, F.TRAMP + 40))
+                     (F.FREE2, F.FREE2 + 8), (F.TRAMP, F.TRAMP + 40),
+                     (G.CAPTURA, G.CAPTURA + 4),
+                     (G.GUARDA_I, G.GUARDA_I + 4),
+                     (G.GUARDA_R, G.GUARDA_R + 4),
+                     (G.R_CAPTURA, G.R_CAPTURA + len(cap)),
+                     (G.R_GUARDA_I, G.R_GUARDA_I + len(gid)),
+                     (G.R_GUARDA_R, G.R_GUARDA_R + len(ring)))
         fora = [i for i in dif if not any(a <= i < b for a, b in permitido)]
         self.assertEqual(fora, [], "mudou fora dos quatro intervalos")
         self.assertTrue(all(i >= 0xE000 for i in dif))
@@ -173,6 +184,107 @@ class Reload33(unittest.TestCase):
         self.assertEqual(ch["memset"], [])
         from unicorn.arm_const import UC_ARM_REG_R0
         self.assertEqual(u.reg_read(UC_ARM_REG_R0), 0)
+
+    def test_parte1_bls_e_rotinas(self):
+        cap, gid, ring = G.monta_rotinas()
+        for p, alvo in ((G.CAPTURA, G.X_R_CAPTURA),
+                        (G.GUARDA_I, G.X_R_GUARDA_I),
+                        (G.GUARDA_R, G.X_R_GUARDA_R)):
+            self.assertEqual(A.desvio(self.o33, p), ("bl", alvo))
+        for r, c in ((G.R_CAPTURA, cap), (G.R_GUARDA_I, gid),
+                     (G.R_GUARDA_R, ring)):
+            self.assertEqual(bytes(self.o33[r:r + len(c)]), c)
+        self.assertEqual(G.confere_rotinas((cap, gid, ring)), [])
+
+    def _maquina(self):
+        from unicorn import Uc, UC_ARCH_ARM, UC_MODE_THUMB
+        XIP, RAM, HEAP, PILHA = 0x00C00000, 0x00800000, 0x20000000, 0x30000000
+        FIM = 0x3F000000
+        u = Uc(UC_ARCH_ARM, UC_MODE_THUMB)
+        u.mem_map(XIP, 0x200000)
+        u.mem_write(XIP, self.o33)
+        u.mem_map(RAM, 0x40000)
+        u.mem_map(HEAP, 0x1000)
+        u.mem_map(PILHA, 0x1000)
+        u.mem_map(FIM & ~0xFFF, 0x1000)
+        return u, RAM, HEAP, PILHA, FIM
+
+    def test_parte1_captura_indice(self):
+        try:
+            from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R8,
+                                           UC_ARM_REG_LR, UC_ARM_REG_PC,
+                                           UC_ARM_REG_SP)
+        except ImportError:
+            self.skipTest("unicorn ausente")
+        u, RAM, HEAP, PILHA, FIM = self._maquina()
+        jd = HEAP
+        u.mem_write(0x0081BC84 + 0x20, struct.pack("<I", 0x12345678))
+        u.mem_write(jd + 0x1C, struct.pack("<I", 0x40))
+        u.reg_write(UC_ARM_REG_R8, jd)
+        u.reg_write(UC_ARM_REG_SP, PILHA + 0x800)
+        u.reg_write(UC_ARM_REG_LR, FIM | 1)
+        u.emu_start(G.X_R_CAPTURA | 1, FIM | 1, count=100)
+        self.assertEqual(u.reg_read(UC_ARM_REG_R0), 0x40)
+        self.assertEqual(struct.unpack("<I", bytes(u.mem_read(jd + 0x12C, 4)))[0],
+                         0x12345678)
+
+    def test_parte1_guarda_indice(self):
+        try:
+            from unicorn import UC_HOOK_BLOCK
+            from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R4,
+                                           UC_ARM_REG_SP, UC_ARM_REG_LR,
+                                           UC_ARM_REG_PC)
+        except ImportError:
+            self.skipTest("unicorn ausente")
+        def roda(curr):
+            u, RAM, HEAP, PILHA, FIM = self._maquina()
+            jd = HEAP
+            u.mem_write(jd + 0x12C, struct.pack("<I", 5))
+            u.mem_write(0x0081BC84 + 0x20, struct.pack("<I", curr))
+            sp = PILHA + 0x800
+            u.mem_write(sp - 4, struct.pack("<I", FIM | 1))
+            u.mem_write(sp - 8, struct.pack("<I", 0))
+            u.mem_write(sp - 12, struct.pack("<I", 0))
+            u.mem_write(sp - 16, struct.pack("<I", 0))
+            u.mem_write(sp - 20, struct.pack("<I", 0))
+            u.reg_write(UC_ARM_REG_SP, sp - 20)
+            u.reg_write(UC_ARM_REG_R4, jd)
+            u.reg_write(UC_ARM_REG_R0, 1)
+            u.reg_write(UC_ARM_REG_LR, FIM | 1)
+            yields = []
+            def bloco(uc, a, tam, _ud):
+                if a == 0x00C43634:
+                    yields.append(1)
+                    uc.reg_write(UC_ARM_REG_PC, uc.reg_read(UC_ARM_REG_LR))
+                elif a == FIM:
+                    uc.emu_stop()
+            u.hook_add(UC_HOOK_BLOCK, bloco)
+            u.emu_start(G.X_R_GUARDA_I | 1, FIM | 1, count=100)
+            return u.reg_read(UC_ARM_REG_R0), len(yields)
+        self.assertEqual(roda(5), (1, 1))
+        self.assertEqual(roda(6), (0, 0))
+
+    def test_parte1_guarda_ring(self):
+        try:
+            from unicorn import UC_HOOK_BLOCK
+            from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_LR,
+                                           UC_ARM_REG_PC)
+        except ImportError:
+            self.skipTest("unicorn ausente")
+        def roda(free, ate):
+            u, RAM, HEAP, PILHA, FIM = self._maquina()
+            u.mem_write(0x0081BBC8, struct.pack("<I", 0x20001000))
+            def bloco(uc, a, tam, _ud):
+                if a == 0x00D6A9EA:
+                    uc.reg_write(UC_ARM_REG_R0, free)
+                    uc.reg_write(UC_ARM_REG_PC, uc.reg_read(UC_ARM_REG_LR))
+                elif a == ate:
+                    uc.emu_stop()
+            u.hook_add(UC_HOOK_BLOCK, bloco)
+            u.emu_start(G.X_R_GUARDA_R | 1, ate, count=100)
+            return u.reg_read(UC_ARM_REG_R0)
+        self.assertEqual(roda(0x30C0, 0x00DAAC6C), 0x38F1)
+        self.assertEqual(roda(0x30BF, 0x00DAACFA), 0x30BF)
 
 
 if __name__ == "__main__":

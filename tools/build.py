@@ -913,6 +913,8 @@ RELOAD_3_2 = RELOAD_3_0 + [
 RELOAD_3_3 = RELOAD_3_2 + [
     ("fab_reload_3_3.py", [],
      "Parte 0: contexto da capa no lv_mem_alloc/lv_mem_free"),
+    ("fab_reload_3_3_guardas.py", [],
+     "Parte 1: indice da faixa no yield e reserva do ring"),
 ]
 
 RECEITAS = {
