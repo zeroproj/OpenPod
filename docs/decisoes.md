@@ -43,3 +43,9 @@
 - Etapas, nesta ordem: (1) o nome; (2) o estado e o tempo (HIPÓTESE: achar na RAM onde a fábrica guarda; a 3.4/Ghidra ajuda); (3) a capa (decodificada na CPU0, regra dos dois núcleos).
 - Se a etapa 2 ou 3 não fechar a tempo, a 3.6 sai com o que estiver provado.
 - As opções A/B (4 ou 3 ícones, `ideia_inicial_3ou4.png`) ficam guardadas: dependem de abrir telas da fábrica pelo menu Aplicativos. |
+| D27 | 2026-11-20 | **3.5 (10/12/2026): bichinho virtual próprio** (decisor: "sim… para 3.5"). Entra como app no menu Aplicativos, junto com os jogos já previstos. Modelo proposto: `assets/ideias/ideia_bichinho_virtual.png` (casa, menu, precisa de você, status, dormindo).
+- **Base:** as regras do **ePet** (`pliashkou/epet`, commit `347ceaf`, **MIT**, Yury Pliashkou): estado, cuidados, crescimento e salvamento. Desenhos **nossos**, para 128×160. Crédito MIT na aba Sobre e nos READMEs, como no D22.
+- **Fica de fora:** emulador com a ROM original. O TamaRecomp gera C a partir da ROM, então a ROM iria dentro do firmware; o TamaLIB e o TamaTool são GPL-2.0 (conferido no GitHub). A ideia de "ROM do próprio cliente pelo SD" fica guardada como opção para a 4.0, com interpretador próprio e sem nunca distribuir, linkar ou indicar ROM.
+- **Camagotchi descartado:** não tem licença, então todos os direitos são reservados.
+- **No site:** só "bichinho virtual", sem marca de terceiros.
+- **Etapas:** (1) o bichinho funcionando, com o estado mantido na RAM enquanto o aparelho está ligado; (2) salvar no cartão (`f_write`, ainda não provado) e contar o tempo com o aparelho desligado (HIPÓTESE: relógio). Se a etapa 2 não fechar até 10/12, ele sai sem salvar. Ficha 027. |
