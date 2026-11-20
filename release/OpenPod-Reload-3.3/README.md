@@ -16,18 +16,11 @@ Compatible with the **Ligenai GN-438** (tested) and the **GN-408** (tested by us
   full. *A capa do álbum não chama mais o heap do FreeRTOS pela CPU da
   interface: usa o alocador do LVGL e cai no quadrado cinza se o pool
   encher.*
-- The cover only starts sending when the view ring has room for all eight
-  pieces plus a 4 KiB reserve for the system. *A capa só começa a enviar
-  quando o ring da view tem espaço para os oito pedaços mais 4 KiB de
-  reserva para o sistema.*
-- The stale-cover abort (Part 1.1) was removed in review: the track index
-  only changes after the decode returns, so it did not detect a skip. It
-  needs the PreTask queue count and stays for the cover task. *O aborto da
-  capa velha (Parte 1.1) saiu na revisão: o índice da faixa só muda depois
-  que o decode volta, então não detectava o pulo. Precisa da contagem da
-  fila da PreTask e fica para a tarefa da capa.*
-- The clock rework (Part 2) is not in this version. *A reforma do relógio
-  (Parte 2) não entrou nesta versão.*
+- The cover decode still runs in the PreTask, so after skipping tracks
+  there can be a short delay at the start of the song. The clock/cover
+  task (Part 2) is planned for December. *O decode da capa ainda roda na
+  PreTask; depois de pular faixas pode haver um atraso curto no início da
+  música. A tarefa do relógio/capa (Parte 2) fica para dezembro.*
 
 ---
 
