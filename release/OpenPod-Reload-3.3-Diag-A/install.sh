@@ -1,5 +1,5 @@
 #!/bin/sh
-# 3.3 Diag A — installer / instalador
+# Reload 3.3 Diag A — installer / instalador
 set -eu
 export LC_ALL=C
 
@@ -46,7 +46,7 @@ if [ "$LANG_SEL" = en ]; then cat <<'TXT'
   4. After it reboots, DELETE update.up from the card.
      If it stays there, the player tries to update on every boot.
 
-  5. Check under  Settings -> Information :   3.3 Diag A
+  5. Check under  Settings -> Information :   Reload 3.3 Diag A
 
 TXT
 else cat <<'TXT'
@@ -67,7 +67,7 @@ else cat <<'TXT'
   4. Ao reiniciar, APAGUE o update.up do cartao.
      Se ficar la, o aparelho tenta atualizar toda vez que liga.
 
-  5. Confira em  Configurar -> Informacoes :   3.3 Diag A
+  5. Confira em  Configurar -> Informacoes :   Reload 3.3 Diag A
 
 TXT
 fi
