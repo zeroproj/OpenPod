@@ -1,26 +1,24 @@
 #!/usr/bin/env python3
-"""Testes de aceite da ficha 025 (Reload 3.3, Parte 0).
+"""Testes de aceite da ficha 025 (Reload 3.3, Parte 0.2 e Parte 1.2).
 
-Rode a mao:
+Rode a mao (o `tools/ci.sh` tambem roda):
 
     python3 tests/test_reload_3_3.py -v
 
-Nao entra no tools/ci.sh (que e protegido); o teste cobre:
+Cobre:
 
-  - a receita 3.3 e reproduzivel e difere da 3.2 so nos quatro intervalos
-    do lote da capa (alloc, os dois FREE e o trampolim), sem tocar abaixo
-    de 0xE000, no setor 0xD000 nem na PSMP;
-  - o `bl` do `corpo_cria` aponta para o trampolim e o trampolim usa
-    `lv_mem_alloc`/`memset` (provados por capstone);
-  - o trampolim, em unicorn, chama `lv_mem_alloc(0x2210)`, zera os
-    `0x2210` B e devolve o ponteiro; se o alocador devolve 0, nao chama
-    o memset e devolve 0 (o `cmp r7,#0` de fabrica leva ao cinza);
-  - `corpo_cria` e `corpo_apaga` nao chamam mais `0xCF7840`/`0xCF7885`
-    (heap do FreeRTOS na CPU1), mas o `carrega_capa` da CPU0 continua
-    chamando o heap de fabrica;
-  - a Parte 1: o indice da faixa e capturado em `jd+0x12C` e o yield
-    aborta quando ele muda; o ring exige `0x30C0` livres antes dos 8
-    pedacos e cai no caminho de falha quando nao ha espaco.
+  - a receita 3.3 e reproduzivel e difere da 3.2 so no lote da capa
+    (Parte 0.2, a area 0x1AAF00..0x1AAF4F de volta a 0xFF e a guarda do
+    ring), sem tocar abaixo de 0xE000, no setor 0xD000 nem na PSMP;
+  - o trampolim da Parte 0.2: `bl`, bytes, `lv_mem_alloc(0x2210)`,
+    `memset` e devolucao 0 sem memoria (unicorn);
+  - o wrapper B7b REAL (0xDAAE20) chamado por um chamador de verdade
+    (`emu_rc7.Maquina.chama`, frame de 16 B), com callback e yield
+    stubs: SP, PC e r4-r6 voltam iguais aos da 3.2 (o antigo `add sp,#4`
+    da Parte 1.1 reprovaria aqui);
+  - a guarda do ring chamada pelo `envia_path` REAL (0xDAAC00): com
+    `0x30C0` livres manda os 8 tipo 6; com `0x30BF` manda so o tipo 5,
+    preservando SP, PC e r4-r6 (comparado com a 3.2).
 """
 import hashlib
 import os
@@ -31,9 +29,11 @@ import unittest
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RAIZ, "tools"))
+sys.path.insert(0, os.path.join(RAIZ, "tests"))
 import fab_reload_3_3 as F  # noqa: E402
 import fab_reload_3_3_guardas as G  # noqa: E402
 import capa_album_asm as A  # noqa: E402
+import emu_rc7 as E  # noqa: E402
 
 ORIG = os.path.join(RAIZ, "firmware/ORIGINAL/GN438_original.bin")
 BUILD = os.path.join(RAIZ, "tools/build.py")
@@ -44,7 +44,8 @@ IMG33B = os.path.join(WORK, "reload_3_3_b.bin")
 
 
 def sha_file(p):
-    return hashlib.sha256(open(p, "rb").read()).hexdigest()
+    with open(p, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
 
 
 def build(receita, saida):
@@ -63,8 +64,10 @@ class Reload33(unittest.TestCase):
             build("reload_3.2", IMG32)
         build("reload_3.3", IMG33A)
         build("reload_3.3", IMG33B)
-        cls.o32 = open(IMG32, "rb").read()
-        cls.o33 = open(IMG33A, "rb").read()
+        with open(IMG32, "rb") as f:
+            cls.o32 = f.read()
+        with open(IMG33A, "rb") as f:
+            cls.o33 = f.read()
         cls.o33b = open(IMG33B, "rb").read()
 
     def test_repro(self):
@@ -74,17 +77,14 @@ class Reload33(unittest.TestCase):
         self.assertEqual(len(self.o32), len(self.o33))
         dif = [i for i in range(len(self.o32)) if self.o32[i] != self.o33[i]]
         self.assertTrue(dif)
-        cap, gid, ring = G.monta_rotinas()
+        ring = G.monta_rotinas()
         permitido = ((F.ALLOC, F.ALLOC + 16), (F.FREE1, F.FREE1 + 8),
                      (F.FREE2, F.FREE2 + 8), (F.TRAMP, F.TRAMP + 40),
-                     (G.CAPTURA, G.CAPTURA + 4),
-                     (G.GUARDA_I, G.GUARDA_I + 4),
                      (G.GUARDA_R, G.GUARDA_R + 4),
-                     (G.R_CAPTURA, G.R_CAPTURA + len(cap)),
-                     (G.R_GUARDA_I, G.R_GUARDA_I + len(gid)),
+                     (G.R_LIVRE, G.R_GUARDA_R),
                      (G.R_GUARDA_R, G.R_GUARDA_R + len(ring)))
         fora = [i for i in dif if not any(a <= i < b for a, b in permitido)]
-        self.assertEqual(fora, [], "mudou fora dos quatro intervalos")
+        self.assertEqual(fora, [], "mudou fora dos intervalos permitidos")
         self.assertTrue(all(i >= 0xE000 for i in dif))
         self.assertFalse(any(0xD000 <= i < 0xE000 for i in dif))
         self.assertFalse(any(i >= 0x1FC000 for i in dif))
@@ -93,8 +93,7 @@ class Reload33(unittest.TestCase):
     def test_bl_e_trampolim(self):
         lido = A.desvio(self.o33, F.ALLOC + 12)
         self.assertEqual(lido, ("bl", F.X_TRAMP))
-        self.assertEqual(bytes(self.o33[F.ALLOC:F.ALLOC + 12]),
-                         F.NOP * 6)
+        self.assertEqual(bytes(self.o33[F.ALLOC:F.ALLOC + 12]), F.NOP * 6)
         self.assertEqual(bytes(self.o33[F.TRAMP:F.TRAMP + 40]),
                          F.monta_trampolim())
         self.assertEqual(F.confere_trampolim(F.monta_trampolim()), [])
@@ -103,13 +102,10 @@ class Reload33(unittest.TestCase):
         free = F.enc_free()
         self.assertEqual(bytes(self.o33[F.FREE1:F.FREE1 + 8]), free)
         self.assertEqual(bytes(self.o33[F.FREE2:F.FREE2 + 8]), free)
-        self.assertEqual(bytes(self.o32[F.FREE1:F.FREE1 + 8]),
-                         F.ORIG_FREE)
-        self.assertEqual(bytes(self.o32[F.FREE2:F.FREE2 + 8]),
-                         F.ORIG_FREE)
+        self.assertEqual(bytes(self.o32[F.FREE1:F.FREE1 + 8]), F.ORIG_FREE)
+        self.assertEqual(bytes(self.o32[F.FREE2:F.FREE2 + 8]), F.ORIG_FREE)
 
     def test_cpu1_sem_heap_de_fabrica(self):
-        # corpo_cria 0xDAA028..0xDAA0E4 e corpo_apaga 0xDAA212..0xDAA254
         for ini, fim, nome in ((0x1AA028, 0x1AA0E4, "CRIA"),
                                (0x1AA212, 0x1AA254, "APAGA")):
             d = bytes(self.o33[ini:fim])
@@ -117,25 +113,17 @@ class Reload33(unittest.TestCase):
                              f"{nome} ainda chama CALLOC 0xCF7840")
             self.assertNotIn(bytes.fromhex("47f6850cc0f2cf0c"), d,
                              f"{nome} ainda chama FREE 0xCF7885")
-        # carrega_capa (CPU0) mantem os dois de fabrica
         self.assertIn(bytes.fromhex("47f6410cc0f2cf0c"),
                       self.o33[0x1AA256:0x1AA4A0])
         self.assertIn(bytes.fromhex("47f6850cc0f2cf0c"),
                       self.o33[0x1AA256:0x1AA4A0])
 
     def _roda_trampolim(self, aloca):
-        try:
-            from unicorn import (Uc, UC_ARCH_ARM, UC_MODE_THUMB, UC_HOOK_BLOCK,
-                                 UC_HOOK_MEM_INVALID)
-            from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R1,
-                                           UC_ARM_REG_R2, UC_ARM_REG_PC,
-                                           UC_ARM_REG_SP, UC_ARM_REG_LR)
-        except ImportError:
-            self.skipTest("unicorn ausente")
-        XIP = 0x00C00000
-        PILHA = 0x30000000
-        HEAP = 0x20000000
-        FIM = 0x3F000000
+        from unicorn import (Uc, UC_ARCH_ARM, UC_MODE_THUMB, UC_HOOK_BLOCK)
+        from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R1,
+                                       UC_ARM_REG_R2, UC_ARM_REG_PC,
+                                       UC_ARM_REG_SP, UC_ARM_REG_LR)
+        XIP, PILHA, HEAP, FIM = 0x00C00000, 0x30000000, 0x20000000, 0x3F000000
         u = Uc(UC_ARCH_ARM, UC_MODE_THUMB)
         u.mem_map(XIP, 0x200000)
         u.mem_write(XIP, self.o33)
@@ -185,106 +173,111 @@ class Reload33(unittest.TestCase):
         from unicorn.arm_const import UC_ARM_REG_R0
         self.assertEqual(u.reg_read(UC_ARM_REG_R0), 0)
 
-    def test_parte1_bls_e_rotinas(self):
-        cap, gid, ring = G.monta_rotinas()
-        for p, alvo in ((G.CAPTURA, G.X_R_CAPTURA),
-                        (G.GUARDA_I, G.X_R_GUARDA_I),
-                        (G.GUARDA_R, G.X_R_GUARDA_R)):
-            self.assertEqual(A.desvio(self.o33, p), ("bl", alvo))
-        for r, c in ((G.R_CAPTURA, cap), (G.R_GUARDA_I, gid),
-                     (G.R_GUARDA_R, ring)):
-            self.assertEqual(bytes(self.o33[r:r + len(c)]), c)
-        self.assertEqual(G.confere_rotinas((cap, gid, ring)), [])
+    def test_parte1_bl_e_rotina_ring(self):
+        ring = G.monta_rotinas()
+        self.assertEqual(A.desvio(self.o33, G.GUARDA_R),
+                         ("bl", G.X_R_GUARDA_R))
+        self.assertEqual(bytes(self.o33[G.R_LIVRE:G.R_GUARDA_R]),
+                         b"\xff" * (G.R_GUARDA_R - G.R_LIVRE))
+        self.assertEqual(bytes(self.o33[G.R_GUARDA_R:
+                                         G.R_GUARDA_R + len(ring)]), ring)
+        self.assertEqual(G.confere_rotinas(ring), [])
 
-    def _maquina(self):
-        from unicorn import Uc, UC_ARCH_ARM, UC_MODE_THUMB
-        XIP, RAM, HEAP, PILHA = 0x00C00000, 0x00800000, 0x20000000, 0x30000000
-        FIM = 0x3F000000
-        u = Uc(UC_ARCH_ARM, UC_MODE_THUMB)
-        u.mem_map(XIP, 0x200000)
-        u.mem_write(XIP, self.o33)
-        u.mem_map(RAM, 0x40000)
-        u.mem_map(HEAP, 0x1000)
-        u.mem_map(PILHA, 0x1000)
-        u.mem_map(FIM & ~0xFFF, 0x1000)
-        return u, RAM, HEAP, PILHA, FIM
+    def _roda_wrapper(self, imagem):
+        m = E.Maquina(imagem)
+        jd = 0x00810000
+        m.escreve32(jd, 0x12345678)
+        chamadas = []
 
-    def test_parte1_captura_indice(self):
-        try:
-            from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R8,
-                                           UC_ARM_REG_LR, UC_ARM_REG_PC,
-                                           UC_ARM_REG_SP)
-        except ImportError:
-            self.skipTest("unicorn ausente")
-        u, RAM, HEAP, PILHA, FIM = self._maquina()
-        jd = HEAP
-        u.mem_write(0x0081BC84 + 0x20, struct.pack("<I", 0x12345678))
-        u.mem_write(jd + 0x1C, struct.pack("<I", 0x40))
-        u.reg_write(UC_ARM_REG_R8, jd)
-        u.reg_write(UC_ARM_REG_SP, PILHA + 0x800)
-        u.reg_write(UC_ARM_REG_LR, FIM | 1)
-        u.emu_start(G.X_R_CAPTURA | 1, FIM | 1, count=100)
-        self.assertEqual(u.reg_read(UC_ARM_REG_R0), 0x40)
-        self.assertEqual(struct.unpack("<I", bytes(u.mem_read(jd + 0x12C, 4)))[0],
-                         0x12345678)
+        def yield_(_mq):
+            chamadas.append("yield")
+            return 0
 
-    def test_parte1_guarda_indice(self):
-        try:
-            from unicorn import UC_HOOK_BLOCK
-            from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R4,
-                                           UC_ARM_REG_SP, UC_ARM_REG_LR,
-                                           UC_ARM_REG_PC)
-        except ImportError:
-            self.skipTest("unicorn ausente")
-        def roda(curr):
-            u, RAM, HEAP, PILHA, FIM = self._maquina()
-            jd = HEAP
-            u.mem_write(jd + 0x12C, struct.pack("<I", 5))
-            u.mem_write(0x0081BC84 + 0x20, struct.pack("<I", curr))
-            sp = PILHA + 0x800
-            u.mem_write(sp - 4, struct.pack("<I", FIM | 1))
-            u.mem_write(sp - 8, struct.pack("<I", 0))
-            u.mem_write(sp - 12, struct.pack("<I", 0))
-            u.mem_write(sp - 16, struct.pack("<I", 0))
-            u.mem_write(sp - 20, struct.pack("<I", 0))
-            u.reg_write(UC_ARM_REG_SP, sp - 20)
-            u.reg_write(UC_ARM_REG_R4, jd)
-            u.reg_write(UC_ARM_REG_R0, 1)
-            u.reg_write(UC_ARM_REG_LR, FIM | 1)
-            yields = []
-            def bloco(uc, a, tam, _ud):
-                if a == 0x00C43634:
-                    yields.append(1)
-                    uc.reg_write(UC_ARM_REG_PC, uc.reg_read(UC_ARM_REG_LR))
-                elif a == FIM:
-                    uc.emu_stop()
-            u.hook_add(UC_HOOK_BLOCK, bloco)
-            u.emu_start(G.X_R_GUARDA_I | 1, FIM | 1, count=100)
-            return u.reg_read(UC_ARM_REG_R0), len(yields)
-        self.assertEqual(roda(5), (1, 1))
-        self.assertEqual(roda(6), (0, 0))
+        # o callback 0xDAA476 e codigo do lote da RC7: roda de verdade
+        m.falsas = {0x00C43634: yield_, 0x00C43635: yield_}
+        salvos = [0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB]
+        m.chama(0xDAAE20, (jd, 0, 0, 0), salvos=salvos)
+        self.assertEqual(m.erros, [])
+        return m, chamadas, salvos
 
-    def test_parte1_guarda_ring(self):
-        try:
-            from unicorn import UC_HOOK_BLOCK
-            from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_LR,
-                                           UC_ARM_REG_PC)
-        except ImportError:
-            self.skipTest("unicorn ausente")
-        def roda(free, ate):
-            u, RAM, HEAP, PILHA, FIM = self._maquina()
-            u.mem_write(0x0081BBC8, struct.pack("<I", 0x20001000))
-            def bloco(uc, a, tam, _ud):
-                if a == 0x00D6A9EA:
-                    uc.reg_write(UC_ARM_REG_R0, free)
-                    uc.reg_write(UC_ARM_REG_PC, uc.reg_read(UC_ARM_REG_LR))
-                elif a == ate:
-                    uc.emu_stop()
-            u.hook_add(UC_HOOK_BLOCK, bloco)
-            u.emu_start(G.X_R_GUARDA_R | 1, ate, count=100)
-            return u.reg_read(UC_ARM_REG_R0)
-        self.assertEqual(roda(0x30C0, 0x00DAAC6C), 0x38F1)
-        self.assertEqual(roda(0x30BF, 0x00DAACFA), 0x30BF)
+    def test_wrapper_real_frame(self):
+        m32, c32, salvos = self._roda_wrapper(self.o32)
+        m33, c33, _ = self._roda_wrapper(self.o33)
+        self.assertEqual(c32, ["yield"])
+        self.assertEqual(c33, c32)
+        for m in (m32, m33):
+            self.assertEqual(m.r(E.UC_ARM_REG_PC), E.FIM)
+            self.assertEqual(m.r(E.UC_ARM_REG_SP),
+                             E.PILHA[0] + E.PILHA[1] - 0x100)
+            self.assertEqual([m.r(x) for x in E.SALVOS], salvos)
+
+    def _roda_envia(self, imagem, livre):
+        m = E.Maquina(imagem)
+        sp = E.PILHA[0] + E.PILHA[1] - 0x100
+        # o guarda de chamadores do envia_path le [sp+0x14]
+        m.escreve32(sp + 0x14, 0xD088E0)
+        caminho = 0x00810000
+        m.escreve(caminho, b"0:/a.mp3\0")
+        with open(os.path.join(RAIZ, "tests/assets/rc7/01_capa_v23.mp3"),
+                  "rb") as f:
+            m.arquivos[b"0:/a.mp3"] = f.read()
+        m.escreve32(0x0081BBC8, 0x20001000)
+        chamadas = []
+
+        def ring_free(_mq):
+            chamadas.append("ring_free")
+            return livre
+
+        def send(mq):
+            tipo = mq.le(mq.r(E.UC_ARM_REG_R0) + 4, 1)[0]
+            chamadas.append(("send", tipo))
+            return 1
+
+        def fim(_mq):
+            chamadas.append("fim")
+            return 0
+
+        def yield_(_mq):
+            return 0
+
+        def like(_mq):
+            return 0
+
+        m.falsas = {0x00D6A9EA: ring_free,
+                    0x00D0D818: send, 0x00D0D819: send,
+                    0x00D0D880: fim, 0x00D0D881: fim,
+                    0x00C43634: yield_, 0x00C43635: yield_,
+                    0x00D6DB90: like, 0x00D6DB91: like}
+        salvos = [caminho, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB]
+        m.chama(0xDAAC00, (1, 0, 0, 0), salvos=salvos)
+        self.assertEqual(m.erros, [])
+        return m, chamadas, salvos
+
+    def test_ring_guard_envia_path(self):
+        m32, c32, salvos = self._roda_envia(self.o32, 0x30C0)
+        m33, c33, _ = self._roda_envia(self.o33, 0x30C0)
+        self.assertNotIn("ring_free", c32)
+        self.assertIn("ring_free", c33)
+        self.assertEqual([c for c in c32 if isinstance(c, tuple)],
+                         [("send", 6)] * 8)
+        self.assertEqual([c for c in c33 if isinstance(c, tuple)],
+                         [("send", 6)] * 8)
+        for m in (m32, m33):
+            self.assertEqual(m.r(E.UC_ARM_REG_PC), E.FIM)
+            self.assertEqual(m.r(E.UC_ARM_REG_SP),
+                             E.PILHA[0] + E.PILHA[1] - 0x100)
+            self.assertEqual([m.r(x) for x in E.SALVOS], salvos)
+
+        m32b, c32b, _ = self._roda_envia(self.o32, 0x30BF)
+        m33b, c33b, _ = self._roda_envia(self.o33, 0x30BF)
+        self.assertEqual([c for c in c32b if isinstance(c, tuple)],
+                         [("send", 6)] * 8)
+        self.assertEqual([c for c in c33b if isinstance(c, tuple)],
+                         [("send", 5)])
+        for m in (m32b, m33b):
+            self.assertEqual(m.r(E.UC_ARM_REG_PC), E.FIM)
+            self.assertEqual(m.r(E.UC_ARM_REG_SP),
+                             E.PILHA[0] + E.PILHA[1] - 0x100)
 
 
 if __name__ == "__main__":
