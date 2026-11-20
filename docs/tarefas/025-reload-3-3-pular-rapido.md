@@ -15,6 +15,33 @@ publicada). Desenvolvedor: `opencode/deepseek-v4.1-flash-free`.
   - o ring enche, e o `0xD0D818` devolve 0 e **perde mensagens da fábrica** (título, tempo, estado);
   - o resultado é travamento e, às vezes, reinício (watchdog ou estado inconsistente).
 
+## Parte 0 (obrigatória, primeiro) — o chip tem dois núcleos (achado de 2026-11-20)
+**Fonte:** README do SL6801_player, seção "Two cores" (commit `1e62711`, 2026-11-20; licença MIT). Os **endereços do Dmitry são de outra
+compilação** (`0xCD8C7A` não é `bl` no nosso ORIGINAL): só o conceito vale, e cada endereço nosso tem de ser provado no ORIGINAL.
+- **CPU0** roda o FreeRTOS e todas as tarefas (PreTask, MediaTask, cartão). **CPU1** roda a interface: LVGL, eventos, timers e o
+  `label_process`. Os dois conversam por rings de mensagem.
+- **Qualquer chamada ao kernel feita da CPU1** (heap do FreeRTOS, tarefas, semáforos, sleep, FatFs, dispositivos) corre junto com a CPU0
+  e às vezes corrompe o heap ou as listas do escalonador. O aparelho congela e o watchdog reinicia uns 15 s depois. A CPU0 está mais
+  ocupada **durante a música**. Isso explica os travamentos das fichas 011–014 (arquivo na "ViewTask").
+
+**CONFIRMADO pela coordenação na imagem da 3.2** (`reload_3.2`):
+- O gancho CRIA (`0xD31EB6` → `0xDAA010` → `0xDAA028`, `corpo_cria` em `tools/capa_album.s`) roda na criação da página Tocando Agora,
+  ou seja, **na CPU1**, e chama `CALLOC` `0xCF7840` (`fw_os_calloc`/OAL, **heap do FreeRTOS**, ficha 020) para o contexto de ~8 KiB.
+- O APAGA (`0xDAA024` → `0xDAA212`, cb de `LV_EVENT_DELETE`) roda **na CPU1** e chama `FREE` `0xCF7884`.
+- O TITULO está desviado para o epílogo desde a B6 (não chama arquivo) e o tipo 6 só copia pixels: ok.
+
+**O que fazer:**
+1. **Nenhuma chamada ao kernel a partir da CPU1** em código nosso. Auditar e listar, com endereço: CRIA, APAGA, `label_dispatch`
+   (tipos 5 e 6), o gancho do menu Apps, o SDK dos jogos (`sdk/src`, `sdk/apps`: `fw_os_*`, sleep, calloc, tarefas) e o overlay.
+2. **Tirar o contexto da capa do heap do FreeRTOS** na CPU1. Escolher uma opção e provar:
+   - (a) o alocador do **LVGL** (`lv_mem_alloc`/`lv_mem_free` da fábrica: provar endereço e a folga do pool, ~40 KiB, com o ORIGINAL rodando);
+   - (b) um buffer **alocado uma vez na CPU0** (na PreTask, no primeiro `envia_path`) e nunca liberado, com o ponteiro num lugar provadamente
+     livre. Justificar os ~8 KiB fixos no heap.
+3. **Provar** se a fábrica recria a página Tocando Agora ao trocar de faixa. Se recria, o CRIA/APAGA roda a cada pulo, e essa é a causa
+   mais provável do relato. Se não, registrar.
+4. Depois da Parte 0, fazer a Parte 1. Se a Parte 0 sozinha explicar o defeito, a Parte 1 continua (é guarda barata), mas a Parte 2
+   pode virar ficha própria.
+
 ## Parte 1 (obrigatória) — guardas sem estado global
 1. **Desistir da capa velha.** Antes do decode e **dentro do yield** de cada callback do TJpgDec (o wrapper da 015/B7b), conferir se
    **a fila da PreTask tem mensagem esperando**, ou seja, se o usuário já pulou.
