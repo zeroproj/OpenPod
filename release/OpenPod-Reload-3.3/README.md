@@ -11,16 +11,12 @@ Compatible with the **Ligenai GN-438** (tested) and the **GN-408** (tested by us
 
 ## New in 3.3 / Novidades da 3.3
 
-- The album cover no longer calls the FreeRTOS heap from the UI core: it
-  uses the LVGL allocator and falls back to the gray square if the pool is
-  full. *A capa do álbum não chama mais o heap do FreeRTOS pela CPU da
-  interface: usa o alocador do LVGL e cai no quadrado cinza se o pool
-  encher.*
-- The cover decode still runs in the PreTask, so after skipping tracks
-  there can be a short delay at the start of the song. The clock/cover
-  task (Part 2) is planned for December. *O decode da capa ainda roda na
-  PreTask; depois de pular faixas pode haver um atraso curto no início da
-  música. A tarefa do relógio/capa (Parte 2) fica para dezembro.*
+- Skipping songs quickly no longer freezes or restarts the player, and the
+  album cover keeps showing. *Pular músicas rápido não trava nem reinicia
+  mais o player, e a capa do álbum continua aparecendo.*
+- Known: after a skip, the song may take a moment to start. This improves
+  in upcoming versions. *Conhecido: depois de pular, a música pode levar um
+  instante para começar. Isso melhora nas próximas versões.*
 
 ---
 

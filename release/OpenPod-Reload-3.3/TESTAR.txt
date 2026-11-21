@@ -1,29 +1,21 @@
 OpenPod Reload 3.3 — TESTAR
 
-Kit gerado SEM --base (base ORIGINAL); o .up reescreve a imagem inteira.
 Carimbo: Config -> Informacoes = "Reload 3.3".
-Imagem carimbada: 0c1848d9... · .up 1.761.536 B · CRC 0xE354 · sha 85100329...
+.up 1.761.536 B · CRC 0xE354
 
 O QUE MUDOU
-  A 3.3 publica e so a Parte 0.2: a capa do album nao chama mais o heap
-  do FreeRTOS pela CPU da interface; usa o alocador do LVGL e, se faltar
-  memoria, mostra o cinza.
-  A guarda do ring (Parte 1.2) foi retirada: no aparelho ela impedia a
-  capa de aparecer. A reserva do ring vai para a tarefa da capa, em
-  dezembro, conferida uma vez so, antes do 1o pedaco.
-  A Parte 2 (relogio sem engasgo) tambem fica para dezembro.
+  Pular musicas rapido nao trava nem reinicia, e a capa do album aparece.
 
 NOTA CONHECIDA
-  Depois de pular faixas, pode haver um atraso no inicio da musica: o
-  decode da capa ainda roda na PreTask. E o defeito que a Parte 2 vai
-  resolver; nao e regressao desta versao.
+  Depois de pular, a musica pode levar um instante para comecar.
+  Isso melhora nas proximas versoes.
 
 ROTEIRO (marque ok / falhou)
   [ ] Config -> Informacoes = "Reload 3.3"
   [ ] Pular 10 musicas seguidas e rapido, com capa: nao reinicia
   [ ] Entrar e sair do player (Tocando Agora) com musica tocando: OK
   [ ] Capa grande (640 e 1000 px): a capa aparece
-  [ ] Jogos (Flutter, Mp3tris, Cobrinha) e a capa normal como na 3.2
+  [ ] Jogos (voar, blocos, Cobrinha) e a capa normal como na 3.2
   [ ] A capa da musica em que voce parou aparece
 
 SE ALGO DER ERRADO
