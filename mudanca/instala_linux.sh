@@ -27,7 +27,7 @@ passo "1. conferindo o pacote"
 passo "2. pacotes do sistema"
 if command -v apt-get >/dev/null; then
   sudo apt-get update -qq
-  sudo apt-get install -y -qq git python3 python3-venv python3-pip build-essential \
+  sudo apt-get install -y -qq git python3 python3-venv python3-pip build-essential clang \
        libusb-1.0-0-dev perl curl sqlite3 ca-certificates
   # o gh so vem no Ubuntu 23.04+; no 22.04 usa o repositorio oficial do GitHub
   if ! command -v gh >/dev/null && ! sudo apt-get install -y -qq gh; then
