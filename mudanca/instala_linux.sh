@@ -25,10 +25,15 @@ passo "1. conferindo o pacote"
 ( cd "$AQUI" && sha256sum -c OpenPod-mudanca.sha256 ) || pare "o pacote chegou corrompido; copie de novo"
 
 passo "2. pacotes do sistema"
-if command -v apt-get >/dev/null; then
+PKGS="git python3 python3-venv python3-pip build-essential clang libusb-1.0-0-dev perl curl sqlite3 ca-certificates"
+FALTAM=""
+for p in $PKGS; do dpkg -s "$p" >/dev/null 2>&1 || FALTAM="$FALTAM $p"; done
+if [ -z "$FALTAM" ]; then
+  echo "todos ja instalados"
+elif command -v apt-get >/dev/null; then
   sudo apt-get update -qq
-  sudo apt-get install -y -qq git python3 python3-venv python3-pip build-essential clang \
-       libusb-1.0-0-dev perl curl sqlite3 ca-certificates
+  # shellcheck disable=SC2086
+  sudo apt-get install -y -qq $FALTAM
   # o gh so vem no Ubuntu 23.04+; no 22.04 usa o repositorio oficial do GitHub
   if ! command -v gh >/dev/null && ! sudo apt-get install -y -qq gh; then
     curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
@@ -64,8 +69,12 @@ SL=$(mktemp -d)
 git clone -q https://github.com/zeroproj/smartlink_flash "$SL"
 git -C "$SL" checkout -q "$SMARTLINK_COMMIT"
 make -C "$SL" -s
-sudo mkdir -p /opt/smartlink_flash
-sudo cp -r "$SL"/. /opt/smartlink_flash/
+if [ -w /opt/smartlink_flash ]; then        # o decisor ja deu a pasta ao usuario: sem sudo
+  cp -r "$SL"/. /opt/smartlink_flash/
+else
+  sudo mkdir -p /opt/smartlink_flash
+  sudo cp -r "$SL"/. /opt/smartlink_flash/
+fi
 [ -x /opt/smartlink_flash/smtlink_dump ] || pare "o smtlink_dump nao compilou"
 rm -rf "$SL"
 
