@@ -1,5 +1,5 @@
 #!/bin/sh
-# instala_linux.sh — roda NO LINUX (Ubuntu/Debian), na pasta onde esta o
+# instala_linux.sh — roda NO LINUX (Ubuntu 22.04 ou mais novo), na pasta onde esta o
 # OpenPod-mudanca.tar.gz gerado pelo empacota_mac.sh (D30).
 # Monta tudo em ~/OpenPod: projeto, Python com as versoes certas, zig do SDK,
 # gravador por cabo (smartlink_flash), opencode e Claude Code, e roda o CI.
@@ -27,8 +27,16 @@ passo "1. conferindo o pacote"
 passo "2. pacotes do sistema"
 if command -v apt-get >/dev/null; then
   sudo apt-get update -qq
-  sudo apt-get install -y -qq git gh python3 python3-venv python3-pip build-essential \
+  sudo apt-get install -y -qq git python3 python3-venv python3-pip build-essential \
        libusb-1.0-0-dev perl curl sqlite3 ca-certificates
+  # o gh so vem no Ubuntu 23.04+; no 22.04 usa o repositorio oficial do GitHub
+  if ! command -v gh >/dev/null && ! sudo apt-get install -y -qq gh; then
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg status=none
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+    sudo apt-get update -qq && sudo apt-get install -y -qq gh
+  fi
 else
   echo "Sem apt-get. Instale a mao: git gh python3 (com venv) gcc make libusb-1.0 (dev) perl curl sqlite3"
 fi
@@ -44,8 +52,7 @@ echo "$ORIGINAL_SHA  $DEST/firmware/ORIGINAL/GN438_original.bin" | sha256sum -c 
 passo "4. Python do projeto ($VENV)"
 python3 -m venv "$VENV"
 "$VENV/bin/pip" install -q --upgrade pip
-"$VENV/bin/pip" install -q unicorn==2.1.4 capstone==5.0.9 keystone-engine==0.9.2 \
-     pillow numpy ziglang==0.13.0
+"$VENV/bin/pip" install -q unicorn==2.1.4 capstone==5.0.9 pillow numpy ziglang==0.13.0
 for rc in "$HOME/.bashrc" "$HOME/.profile"; do
   grep -q 'venvs/openpod/bin' "$rc" 2>/dev/null || \
     printf '\n# OpenPod: python3 do projeto (unicorn, capstone, zig 0.13)\nexport PATH="$HOME/.venvs/openpod/bin:$HOME/.local/bin:$PATH"\n' >> "$rc"
