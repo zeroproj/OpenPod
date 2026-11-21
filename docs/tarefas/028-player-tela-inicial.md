@@ -1,8 +1,8 @@
 # Ficha 028 — Player na tela inicial (Reload 3.5)
 
 Tipo: **Risco + Pesada** (mexe na home, a primeira tela ao ligar; vai ao aparelho e ao público). Base: a **3.3** publicada (ficha 025).
-Desenvolvedor: `opencode-go/deepseek-v4.1-flash`. Decisões D26 e D28 (2026-11-20). Prazo da 3.5: **10/12/2026**.
-**Começa depois da revisão da 025.** Se a 3.3 travar no teste do decisor, a 025 volta primeiro.
+Desenvolvedor: `opencode/deepseek-v4.1-flash-free` (decisor, 2026-11-21). Decisões D26 e D28 (2026-11-20). Prazo da 3.5: **10/12/2026**.
+A 3.3 foi testada pelo decisor e publicada em 21/11/2026 (receita `reload_3.3` = só a Parte 0.2 da 025).
 
 ## O que é
 Na home ficam os **9 ícones**, um pouco mais juntos, e embaixo deles um **cartão fixo e compacto** com a música que está tocando.
