@@ -178,6 +178,10 @@ MAPA = {
     # altera o lote e o `bl` de 4 bytes em 0x00123CF8.
     "fab_sdk_jogos.py":       (0x001AB000, 0x51000),
     "fab_reload_3_5.py":      (0x001AB000, 0x51000),
+    # Ficha 028b (Reload 3.5 Diag 2). A tool troca SO o SDK no mesmo lote
+    # da 3.5 (0x001AB000..0x001FC000): os quatro ganchos, a tabela das
+    # molduras e a folha dos icones ficam byte a byte.
+    "fab_reload_3_5b.py":     (0x001AB000, 0x51000),
     # Ficha 008 (RC7 trava ao tocar). A ferramenta das BISSECOES
     # (`fab_diag_trava.py`) NAO entra no MAPA de proposito: ela nao aloca
     # nada, so patcha 4/2/2 bytes DENTRO do lote que a RC7 ja montou, e o
@@ -920,6 +924,16 @@ RELOAD_3_5 = RELOAD_3_3 + [
     ("fab_reload_3_5.py", [],
      "Player na home: grade mais junta e cartao com o titulo"),
 ]
+# ficha 028b (Reload 3.5 Diag 2): o nome da musica no cartao da home.
+# A receita e a da 3.5 + UM passo que troca so o SDK (o `jogos35b`): a
+# home passa a separar o titulo da faixa (msg+4 == 1) do contador da fila
+# (msg+4 == 0), e o gancho do titulo filtra [view+4] (o rotulo do titulo)
+# em vez de [view+0] (o rotulo do contador).  A 3.5 publicada continua
+# reproduzivel byte a byte.
+RELOAD_3_5B = RELOAD_3_5 + [
+    ("fab_reload_3_5b.py", [],
+     "028b: o titulo da faixa no cartao da home (msg+4 == 1)"),
+]
 
 RECEITAS = {
     "core1.0": CORE_1_0,
@@ -975,6 +989,8 @@ RECEITAS = {
     "reload_3.3": RELOAD_3_3,
     # ficha 028: player na tela inicial (Reload 3.5)
     "reload_3.5": RELOAD_3_5,
+    # ficha 028b: o nome da musica no cartao da home (Reload 3.5 Diag 2)
+    "reload_3.5b": RELOAD_3_5B,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.
