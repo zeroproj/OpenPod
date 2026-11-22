@@ -199,16 +199,16 @@ SBS = CABEC + f"""# Barra base: aparece nos menus. Lista com os nossos icones e,
 %xl(N,nota28.bmp,0,0)
 %xl(P,play.bmp,0,0,5)
 %Cl(0,0,28,28,c,c)
-%Lb(item,128,18)
+%Lb(item,128,19)
 %?mp<%VI(cheia)|%VI(curta)>
 %?mp<|%Vd(m)>
 {BARRA}%Vi(cheia,0,19,128,141,1)
 %Vi(curta,0,19,128,101,1)
-%Vl(item,2,0,124,18,-)%Vb(000000)
+%Vl(item,2,0,124,19,-)%Vb(000000)
 %xd(H,%Lc)
-%Vl(item,6,2,14,14,-)%Vb(000000)
+%Vl(item,6,3,14,14,-)%Vb(000000)
 %?if(%LI,=,-1)<|%xd(I,%LI,2)>
-%Vl(item,24,0,100,17,1)%Vf(FFFFFF)%Vb(000000)
+%Vl(item,24,1,99,17,1)%Vf(FFFFFF)%Vb(000000)
 %s%LT
 %Vl(m,3,121,122,38,-)%Vb(000000)
 %xd(K)
@@ -282,7 +282,7 @@ def main():
     bateria().save(os.path.join(bmpdir, "bateria.bmp"))
     play().save(os.path.join(bmpdir, "play.bmp"))
     retangulo(122, 38, 6, fill=CARD).save(os.path.join(bmpdir, "cartao.bmp"))
-    retangulo(124, 18, 4, outline=(255, 255, 255), larg=1).save(os.path.join(bmpdir, "moldura.bmp"))
+    retangulo(124, 19, 4, outline=(255, 255, 255), larg=1).save(os.path.join(bmpdir, "moldura.bmp"))
     nota(28).save(os.path.join(bmpdir, "nota28.bmp"))
     nota(80).save(os.path.join(bmpdir, "nota80.bmp"))
     for nome, (ttf, px, peso) in FONTES.items():
