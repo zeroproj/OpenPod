@@ -72,3 +72,4 @@ referencias/
 
 # pasta de trabalho local (nao entra no commit)
 .tmp/
+_local/
