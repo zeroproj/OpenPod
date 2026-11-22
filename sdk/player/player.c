@@ -115,9 +115,11 @@ static void fw_player_set_counter(const char *text)
 }
 #endif
 
-/* Copies the title to the card only for the label at [page4_view+0] (the
- * others, +4/+8/+0x14/+0x18, are artist/album/...).  Called by the wrappers
- * below, never by the factory directly. */
+/* Picks the label of the page 4 view: the title is [view+4] and the
+ * queue counter is [view+0] (the factory's own view, docs/tarefas/
+ * 007-rc7-capa-album.md A4).  The 3.5 as published took [view+0], which
+ * is the counter.  Called by the wrapper below, never by the factory
+ * directly. */
 __attribute__((used, noinline))
 static void fw_player_title_update(lv_obj_t *label, const char *text)
 {
@@ -160,8 +162,8 @@ void fw_player_title_hook_home(void *msg)
 #ifdef FW_PLAYER_35B
 	{
 		const uint8_t *m = (const uint8_t *)msg;
-		/* The element index is a halfword at msg+4; it is read byte
-		 * by byte because the message is not aligned in the ring. */
+		/* The element index is the halfword at msg+4 -- the very field
+		 * the factory reads with `ldrh` (0xD2EEC6). */
 		uint16_t idx = (uint16_t)m[4] | ((uint16_t)m[5] << 8);
 
 		if (idx == FW_EL_COUNTER)
