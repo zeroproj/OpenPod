@@ -69,3 +69,6 @@ firmware/VENDOR/*.exe
 # zip de diagnostico, gerado sob demanda
 DIAG_*.zip
 referencias/
+
+# pasta de trabalho local (nao entra no commit)
+.tmp/

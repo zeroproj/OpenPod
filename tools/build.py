@@ -177,6 +177,7 @@ MAPA = {
     # A ferramenta confere a area inteira 0xFF antes de escrever e so
     # altera o lote e o `bl` de 4 bytes em 0x00123CF8.
     "fab_sdk_jogos.py":       (0x001AB000, 0x51000),
+    "fab_reload_3_5.py":      (0x001AB000, 0x51000),
     # Ficha 008 (RC7 trava ao tocar). A ferramenta das BISSECOES
     # (`fab_diag_trava.py`) NAO entra no MAPA de proposito: ela nao aloca
     # nada, so patcha 4/2/2 bytes DENTRO do lote que a RC7 ja montou, e o
@@ -914,6 +915,11 @@ RELOAD_3_3 = RELOAD_3_2 + [
     ("fab_reload_3_3.py", [],
      "Parte 0.2: contexto da capa no lv_mem_alloc/lv_mem_free"),
 ]
+# ficha 028: a grade mais junta e o cartao do player na home.
+RELOAD_3_5 = RELOAD_3_3 + [
+    ("fab_reload_3_5.py", [],
+     "Player na home: grade mais junta e cartao com o titulo"),
+]
 
 RECEITAS = {
     "core1.0": CORE_1_0,
@@ -967,6 +973,8 @@ RECEITAS = {
     "reload_3.2": RELOAD_3_2,
     # ficha 025: Parte 0 (LVGL no lugar do heap na CPU1)
     "reload_3.3": RELOAD_3_3,
+    # ficha 028: player na tela inicial (Reload 3.5)
+    "reload_3.5": RELOAD_3_5,
 }
 
 # Ferramentas que existem mas NAO entram na receita, e por que.

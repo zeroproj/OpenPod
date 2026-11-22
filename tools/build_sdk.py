@@ -47,11 +47,18 @@ def compile_obj(src, incs, obj):
     run([*ZIG, "cc", *COMMON, *incs, "-c", src, "-o", obj])
 
 
-def link(objs, elf, binf):
+def link(objs, elf, binf, variante):
+    extra = []
+    ld = "app.ld"
+    if variante == "jogos35":
+        ld = "app35.ld"
+        extra = ["-Wl,-u,hook_home_create", "-Wl,-u,fw_player_title_hook",
+                 "-Wl,-u,fw_player_title_hook_home_wrap",
+                 "-Wl,-u,fw_player_timer_cb"]
     run([*ZIG, "cc", *COMMON, *objs, "-nostdlib", "-static",
-         "-Wl,--gc-sections", f"-Wl,-e,{HOOK}",
-         "-Wl,--build-id=none", "-T", os.path.join(SDK, "app.ld"),
-         "-o", elf])
+         "-Wl,--gc-sections", f"-Wl,-e,{HOOK}", *extra,
+         "-Wl,--build-id=none",
+         "-T", os.path.join(SDK, ld), "-o", elf])
     extract_section(elf, ".text", binf)
 
 
@@ -157,12 +164,12 @@ def sources(variante):
     if variante == "diag":
         apps.append(os.path.join(SDK, "apps/keytest"))
         incs += ["-DFW_DIAG"]
-    elif variante == "jogos":
+    elif variante in ("jogos", "jogos35"):
         apps += [os.path.join(SDK, "apps/flutter"),
                  os.path.join(SDK, "apps/mp3tris"),
                  os.path.join(SDK, "apps/cobrinha")]
     else:
-        raise SystemExit("variante deve ser diag ou jogos")
+        raise SystemExit("variante deve ser diag, jogos ou jogos35")
     return incs, apps
 
 
@@ -174,7 +181,7 @@ def build(variante, outdir):
     gen = os.path.join(outdir, "gen")
     os.makedirs(gen)
 
-    if variante == "jogos":
+    if variante in ("jogos", "jogos35"):
         assets = os.path.join(SDK, "apps/flutter/assets")
         for f in sorted(os.listdir(assets)):
             if f.endswith(".png"):
@@ -194,10 +201,16 @@ def build(variante, outdir):
             obj = os.path.join(outdir, "obj", "sdk", f[:-2] + ".o")
             compile_obj(os.path.join(SDK, "src", f), incs, obj)
             objs.append(obj)
+    if variante == "jogos35":
+        for f in sorted(os.listdir(os.path.join(SDK, "player"))):
+            if f.endswith(".c"):
+                obj = os.path.join(outdir, "obj", "player", f[:-2] + ".o")
+                compile_obj(os.path.join(SDK, "player", f), incs, obj)
+                objs.append(obj)
 
     elf = os.path.join(outdir, "app.elf")
     binf = os.path.join(outdir, "app.bin")
-    link(objs, elf, binf)
+    link(objs, elf, binf, variante)
 
     _, _, secs = elf_sections(elf)
     for n in (".data", ".bss"):
@@ -212,6 +225,19 @@ def build(variante, outdir):
     size = os.path.getsize(binf)
     if size > 0x51000:
         raise SystemExit(f"SDK com {size} bytes nao cabe no lote 0x1AB000..0x1FC000")
+    syms = elf_symbols(elf)
+    symbols = {n: (syms[n] & ~1) for n in (
+        "hook_home_menu_create", "hook_home_create",
+        "fw_player_title_hook", "fw_player_title_hook_home_wrap",
+        "fw_player_timer_cb") if n in syms}
+    if variante == "jogos35":
+        symbols = {
+            "hook_home_menu_create": 0x00DAB000,
+            "hook_home_create": 0x00DAB200,
+            "fw_player_title_hook": 0x00DAB600,
+            "fw_player_title_hook_home_wrap": 0x00DAB700,
+            "fw_player_timer_cb": 0x00DAB800,
+        }
     info = {
         "variante": variante,
         "load": BASE,
@@ -220,6 +246,7 @@ def build(variante, outdir):
         "sha256": hashlib.sha256(open(binf, "rb").read()).hexdigest(),
         "hook": hook,
         "hook_symbol": HOOK,
+        "symbols": symbols,
     }
     with open(os.path.join(outdir, "app.json"), "w") as f:
         json.dump(info, f, indent=1)
@@ -229,7 +256,7 @@ def build(variante, outdir):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--variante", choices=("diag", "jogos"), default="jogos")
+    ap.add_argument("--variante", choices=("diag", "jogos", "jogos35"), default="jogos")
     ap.add_argument("--out-dir", default=os.path.join(SDK, "build", "sdk"))
     ap.add_argument("--check-repro", action="store_true")
     a = ap.parse_args()

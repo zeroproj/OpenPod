@@ -1,0 +1,37 @@
+OpenPod Reload 3.5 diag — TESTAR
+
+Kit de setores: parte da 3.3 publicada (base). O .up reescreve a imagem
+inteira. Carimbo: Config -> Informacoes = "Reload 3.5 Diag".
+Imagem 3.5 sem carimbo: f49c8195... · carimbada: 95e45cd9...
+.up 1.765.632 B · CRC 0x9112 · sha 656dca30...
+
+O QUE MUDOU
+  - A home tem os 9 icones um pouco mais juntos (faixas em 19..52,
+    58..93 e 97..132).
+  - Embaixo deles, um cartao fixo com o nome da musica que esta tocando
+    (ou "Nada tocando" / "Nothing playing").
+  - O cartao nao e selecionavel: as teclas e a navegacao da home nao mudam.
+  - O gancho da home e um b.w (nao bl): o LR da page_home_label_process
+    sobrevive. O gancho do titulo termina na cauda do TITULO da capa.
+  - A base e a 3.3 publicada (Parte 0.2); a capa do album NAO entra no
+    cartao. A etapa 2 (▶/❚❚, tempo e barra) NAO entra neste kit.
+
+ROTEIRO (marque ok / falhou)
+  [ ] Ligar: a home abre com os 9 icones e o cartao embaixo.
+  [ ] Sem musica: o cartao mostra "Nada tocando" (ou "Nothing playing").
+  [ ] Tocar uma musica e voltar a home: o cartao mostra o nome.
+  [ ] A capa do album ainda aparece no player (a 3.5 nao pode derrubar a
+      capa da 3.3).
+  [ ] Trocar de faixa estando na home nao trava (o gancho da home nao pode
+      estourar o LR da ViewTask).
+  [ ] Pular rapido (proxima/anterior) estando na home: o nome acompanha.
+  [ ] Deixar a musica avancar sozinha: o nome continua o da faixa.
+  [ ] Pausar: o cartao mantem o nome da faixa; o simbolo fica para a etapa 2.
+  [ ] Ficar sem musica (parar): o cartao mostra o ultimo nome ou "Nada
+      tocando" — este e o ponto que o decisor precisa medir.
+  [ ] Abrir os jogos (Aplicativos): os jogos abrem e voltam.
+  [ ] Config -> Informacoes = "Reload 3.5 Diag".
+
+SE ALGO DER ERRADO
+  Volta de seguranca: reinstale a 3.3 pelo cartao (update.up da 3.3) ou a
+  versao que ja funcionava no aparelho. O cartao nao e tocado pelo .up.
