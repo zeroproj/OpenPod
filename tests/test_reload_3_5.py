@@ -22,6 +22,10 @@ Cobre:
     r3=0x00823EB0, preserva SP/PC e o texto;
   - o hook REAL do titulo (0xDAB600) so copia o rotulo `[view+0]`; o
     `[view+4]` (artista) nao vira titulo.
+
+A ficha 028b (Reload 3.5 Diag 2) roda no MESMO CI: os testes dela estao
+em `tests/test_reload_3_5b.py` e sao importados aqui, porque o
+`tools/ci.sh` e protegido e nao pode ganhar linhas.
 """
 import hashlib
 import json
@@ -299,4 +303,7 @@ class Reload35(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    # a ficha 028b (Reload 3.5 Diag 2): o `tools/ci.sh` e protegido, entao
+    # os testes dela entram por aqui.
+    from test_reload_3_5b import Reload35b  # noqa: E402,F401
     unittest.main()
