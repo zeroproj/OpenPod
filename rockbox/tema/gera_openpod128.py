@@ -30,7 +30,7 @@ BAR = "16181E"                           # a barra de cima do OpenPod
 CARD = (30, 30, 34)
 CARD_HEX = "1E1E22"
 CINZA_HEX = "AAAAB0"
-TRILHO_HEX = "46464C"
+TRILHO_HEX = "6A6A72"
 
 # ------------------------------------------------------------------ icones
 FOLHA = Image.open(os.path.join(RAIZ, "assets", "IconesHome_escuro_colorido_apps.png")).convert("RGB")
@@ -195,25 +195,25 @@ SBS = CABEC + f"""# Barra base: aparece nos menus. Lista com os nossos icones e,
 %?mp<%VI(cheia)|%VI(curta)>
 %?mp<|%Vd(m)>
 {BARRA}%Vi(cheia,0,17,128,143,1)
-%Vi(curta,0,17,128,105,1)
+%Vi(curta,0,17,128,104,1)
 %Vl(item,2,0,124,17,-)%Vb(000000)
 %xd(H,%Lc)
 %Vl(item,6,1,14,14,-)%Vb(000000)
 %?if(%LI,=,-1)<|%xd(I,%LI,2)>
 %Vl(item,24,1,100,14,1)%Vf(FFFFFF)%Vb(000000)
 %s%LT
-%Vl(m,3,123,122,35,-)%Vb(000000)
+%Vl(m,3,122,122,36,-)%Vb(000000)
 %xd(K)
 %Vl(m,7,126,28,28,-)%Vb({CARD_HEX})
 %?C<%Cd|%xd(N)>
-%Vl(m,39,125,72,13,2)%Vf(FFFFFF)%Vb({CARD_HEX})
+%Vl(m,39,123,72,15,2)%Vf(FFFFFF)%Vb({CARD_HEX})
 %s%?it<%it|%fn>
 %Vl(m,113,127,9,9,-)%Vb({CARD_HEX})
 %xd(P,%mp)
-%Vl(m,39,138,82,11,3)%Vf({CINZA_HEX})%Vb({CARD_HEX})
+%Vl(m,39,138,82,13,3)%Vf({CINZA_HEX})%Vb({CARD_HEX})
 %s%?ia<%ia|%?iA<%iA|>>
-%Vl(m,39,151,80,3,-)%Vf(FFFFFF)%Vb({CARD_HEX})
-%dr(0,0,80,3,{TRILHO_HEX})%pb(0,0,80,3,noborder)
+%Vl(m,39,153,80,3,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
+%pb(0,0,80,3,noborder)
 """
 
 WPS = CABEC + f"""# Tocando agora: a capa grande (ou a nota), nome, artista, barra e tempos, como na 2.0+.
@@ -231,8 +231,8 @@ WPS = CABEC + f"""# Tocando agora: a capa grande (ou a nota), nome, artista, bar
 %ac%s%?it<%it|%fn>
 %V(2,119,124,13,3)%Vf({CINZA_HEX})%Vb(000000)
 %ac%s%?ia<%ia|%?iA<%iA|>>
-%V(8,136,112,4,-)%Vf(FFFFFF)%Vb(000000)
-%dr(0,0,112,4,{TRILHO_HEX})%pb(0,0,112,4,noborder)
+%V(8,136,112,5,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
+%pb(0,0,112,5,noborder)
 %V(8,143,40,13,3)%Vf({CINZA_HEX})%Vb(000000)
 %pc
 %V(60,145,9,9,-)%Vb(000000)
@@ -273,7 +273,7 @@ def main():
     faixa(ICONES).save(os.path.join(SAIDA, "icons", NOME + ".bmp"))
     bateria().save(os.path.join(bmpdir, "bateria.bmp"))
     play().save(os.path.join(bmpdir, "play.bmp"))
-    retangulo(122, 35, 6, fill=CARD).save(os.path.join(bmpdir, "cartao.bmp"))
+    retangulo(122, 36, 6, fill=CARD).save(os.path.join(bmpdir, "cartao.bmp"))
     retangulo(124, 17, 4, outline=(255, 255, 255), larg=1).save(os.path.join(bmpdir, "moldura.bmp"))
     nota(28).save(os.path.join(bmpdir, "nota28.bmp"))
     nota(80).save(os.path.join(bmpdir, "nota80.bmp"))
