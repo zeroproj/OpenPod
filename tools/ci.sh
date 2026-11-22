@@ -19,7 +19,7 @@ for f in tools/*.py; do
 done
 echo "== 4. testes"
 # os testes criam muitas copias de 2 MiB; tudo vai para uma pasta so, apagada no fim
-TMPDIR="$(mktemp -d -t openpod_ci)"; export TMPDIR
+TMPDIR="$(mktemp -d "${TMPDIR:-/tmp}/openpod_ci.XXXXXX")"; export TMPDIR   # GNU e BSD (Linux, D30)
 trap 'rm -rf "$TMPDIR"' EXIT
 python3 tests/test_roundtrip.py
 python3 tools/patch_icones_home.py --autoteste
