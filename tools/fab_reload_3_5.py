@@ -15,28 +15,14 @@ Saida: a mesma imagem com:
   - as tres faixas de icones movidas para 19..52, 58..93 e 97..132;
   - a tabela de posicoes das molduras em 0x486A0 nas posicoes novas.
 
-Premissas, conferidas antes de escrever (se uma falhar, sai sem criar a
-saida e sem tocar na entrada):
+Premissas: a 3.3 exata (sha), os quatro ganchos/bytes, o lote do SDK 3.3
+com o resto em 0xFF, a folha/paleta (preto 16) e a tabela; `--out` nao e a
+entrada. So se escreve no lote do SDK, nos quatro ganchos, na tabela
+0x486A0..0x486C4 e nos pixels 0x0CE15C..0x0D315C.
 
-  - a imagem tem 2 MiB e o sha256 e o da 3.3;
-  - os quatro ganchos ainda sao os da 3.3 (bytes exatos e alvo decodificado);
-  - o literal do label da home (0xD2EF0C) e 0x00823EB0;
-  - a tabela de posicoes e a da 3.3;
-  - a paleta e os pixels da folha sao os da 3.3, e o preto exato e o
-    indice 16;
-  - o SDK da 3.3 em 0x1AB000 tem 11868 B (sha 58611dd8...) e o resto do
-    lote ate 0x1FC000 e todo 0xFF;
-  - `--out` nao e a propria entrada (mesmo caminho, symlink ou hardlink).
-
-So se escreve dentro de: 0x1AB000..0x1FC000 (o lote do SDK), os quatro
-ganchos, a tabela 0x486A0..0x486C4 e os pixels da folha
-0x0CE15C..0x0D315C. Nada abaixo de 0xE000, no setor 0xD000 ou na PSMP.
-
-Uso:
-    python3 tools/fab_reload_3_5.py --in <3.3.bin> --out <3.5.bin>
+Uso: python3 tools/fab_reload_3_5.py --in <3.3.bin> --out <3.5.bin>
                                     [--dry-run]
-
-Dependencias: Python 3 + zig (o build_sdk) + capstone (a conferencia).
+Dependencias: Python 3 + zig (build_sdk) + capstone.
 """
 
 import argparse
@@ -59,6 +45,7 @@ SHA_ENTRADA = ("368a7c8c98f6b6b68c7e38853a69673bb05d5216219406f8ccd"
                "c9a858a73713d")
 
 LOTE_INI, LOTE_FIM = 0x1AB000, 0x1FC000
+SDK_BASE = 0xDAB000
 OLD_SDK_TAM = 11868
 OLD_SDK_SHA = ("58611dd86c3878a7e92c06e4c72f3625d681c4a302e437465987"
                "f916f2990c6a")
@@ -188,6 +175,26 @@ def confere_premissas(d):
     return erros
 
 
+def patch_sdk(sdk):
+    """Troca os dois `b.w .` dos wrappers pela cauda certa.
+
+    O assembler nao aceita um alvo absoluto numerico no `b.w` inline (o
+    linker o trata como offset de secao); por isso o SDK nasce com
+    `b.w .` e a ferramenta escreve o desvio depois, com o encoder Thumb-2.
+    """
+    sdk = bytearray(sdk)
+    for ini, alvo in ((0xDAB600, 0xDAA014), (0xDAB700, 0xD2EEE8)):
+        base = ini - 0xDAB000
+        for off in range(base, base + 0x40, 2):
+            lido = A.desvio(sdk, off, base=SDK_BASE)
+            if lido and lido[0] == "b.w" and lido[1] == SDK_BASE + off:
+                sdk[off:off + 4] = A.enc(SDK_BASE + off, alvo, False)
+                break
+        else:
+            raise SystemExit(f"PARE: o wrapper 0x{ini:06X} nao tem o b.w .")
+    return bytes(sdk)
+
+
 def monta(d, sdk_bin, symbols):
     novo = bytearray(d)
     novo[LOTE_INI:LOTE_FIM] = b"\xFF" * (LOTE_FIM - LOTE_INI)
@@ -200,7 +207,7 @@ def monta(d, sdk_bin, symbols):
     novo[PATCH_TITLE - XIP:PATCH_TITLE - XIP + 4] = A.enc(
         PATCH_TITLE, symbols["fw_player_title_hook"], False)
     novo[PATCH_HOME_LABEL - XIP:PATCH_HOME_LABEL - XIP + 4] = A.enc(
-        PATCH_HOME_LABEL, symbols["fw_player_title_hook_home_wrap"], True)
+        PATCH_HOME_LABEL, symbols["fw_player_title_hook_home_wrap"], False)
 
     novo[TABLE:TABLE + 36] = struct.pack(
         "<18h", *[v for p in TABLE_NOVO for v in p])
@@ -223,13 +230,18 @@ def confere_saida(d, novo, sdk_bin, symbols):
             ("home", PATCH_HOME, symbols["hook_home_create"], True),
             ("titulo", PATCH_TITLE, symbols["fw_player_title_hook"], False),
             ("label da home", PATCH_HOME_LABEL,
-             symbols["fw_player_title_hook_home_wrap"], True)):
+             symbols["fw_player_title_hook_home_wrap"], False)):
         lido = A.desvio(novo, addr - XIP)
         if not lido or lido[1] != alvo:
             erros.append(f"{nome}: a saida de 0x{addr:06X} nao vai a "
                          f"0x{alvo:06X} ({lido})")
         if lido and (lido[0] == "bl") != largo:
             erros.append(f"{nome}: tipo de desvio errado ({lido[0]})")
+    for ini, alvo in ((0xDAB600, 0xDAA014), (0xDAB700, 0xD2EEE8)):
+        base = ini - 0xDAB000
+        if not any(A.desvio(sdk_bin, off, base=SDK_BASE) == ("b.w", alvo)
+                   for off in range(base, base + 0x40, 2)):
+            erros.append(f"o wrapper 0x{ini:06X} nao tem a cauda 0x{alvo:06X}")
     lida = [tuple(struct.unpack_from("<hh", novo, TABLE + i * 4))
             for i in range(9)]
     if lida != TABLE_NOVO:
@@ -288,7 +300,7 @@ def main():
     try:
         out = os.path.join(tmp, "sdk")
         build_sdk.build("jogos35", out)
-        sdk_bin = open(os.path.join(out, "app.bin"), "rb").read()
+        sdk_bin = patch_sdk(open(os.path.join(out, "app.bin"), "rb").read())
         info = json.load(open(os.path.join(out, "app.json")))
         symbols = {k: v for k, v in info["symbols"].items()}
         if len(sdk_bin) > LOTE_FIM - LOTE_INI:

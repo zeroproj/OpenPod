@@ -64,17 +64,30 @@ static void fw_player_set_title(const char *text)
 	st->version++;
 }
 
-/* Patched over the factory's title set_text (0xD3225E).  Only the label at
- * [page4_view+0] is the title; the others (+4, +8, +0x14, +0x18) are
- * artist/album/... */
-void fw_player_title_hook(lv_obj_t *label, const char *text)
+/* Copies the title to the card only for the label at [page4_view+0] (the
+ * others, +4/+8/+0x14/+0x18, are artist/album/...).  Called by the wrappers
+ * below, never by the factory directly. */
+__attribute__((used, noinline))
+static void fw_player_title_update(lv_obj_t *label, const char *text)
 {
 	uint8_t *ctx = *(uint8_t **)FW_VIEW_CTX_PTR;
 	void *view = ctx ? *(void **)(ctx + FW_VIEW_PAGE4_OFF) : NULL;
 
 	if (view && label == *(lv_obj_t **)view)
 		fw_player_set_title(text);
-	lv_label_set_text(label, text);
+}
+
+/* Patched over 0xD3225E (3.3: `b.w 0xDAA014`, the cover TITULO entry).
+ * Saves r0/r1 and the caller's LR, updates the card, then tail-branches to
+ * the factory TITULO so the cover still loads.  The caller's LR survives:
+ * the `b.w` does not touch it. */
+__attribute__((naked)) void fw_player_title_hook(void)
+{
+	__asm__ volatile(
+		"push {r0, r1, r2, lr}\n"
+		"bl fw_player_title_update\n"
+		"pop {r0, r1, r2, lr}\n"
+		"b.w .\n");
 }
 
 /* Home label_process receives the same type 3 while the home is open. */
@@ -85,8 +98,11 @@ void fw_player_title_hook_home(void *msg)
 	fw_player_set_title((const char *)msg + 0x14);
 }
 
-/* Saves r0-r4 so the factory still sees the message pointer after the
- * call; keeps the stack 8-byte aligned (6 words). */
+/* Patched over 0xD2EEE4 with a `b.w` (not `bl`): the page_home_label_process
+ * is a leaf and its caller's LR must survive.  The 4-byte window covers the
+ * factory `ldr r3,[pc]; ldrb r3,[r3]`; we redo both, then tail-branch to
+ * 0xD2EEE8 (the factory `cmp r3,#3`).  r0-r4 and LR are saved/restored; six
+ * words keep the stack 8-byte aligned. */
 __attribute__((naked)) void fw_player_title_hook_home_wrap(void)
 {
 	__asm__ volatile(
@@ -95,7 +111,8 @@ __attribute__((naked)) void fw_player_title_hook_home_wrap(void)
 		"pop {r0, r1, r2, r3, r4, lr}\n"
 		"movw r3, #0x3EB0\n"
 		"movt r3, #0x0082\n"
-		"bx lr\n");
+		"ldrb r3, [r3]\n"
+		"b.w .\n");
 }
 
 static void fw_player_card_delete_cb(lv_event_t *e)
