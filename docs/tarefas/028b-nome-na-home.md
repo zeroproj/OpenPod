@@ -15,7 +15,7 @@ Teste do decisor: "está tudo certo; só o player da tela inicial não mostra o 
 ## O que fazer
 1. **O título só vem do gancho do player** (`0xD3225E`, que já filtra `[view+0]`). O gancho da home deixa de gravar o título e passa a
    guardar o texto como **contador** (campo novo no estado).
-2. **O cartão mostra "Título" e, embaixo e menor, o contador.** Sem título conhecido, mostra só "♪ 31/165". Sem nada, "Nada tocando".
+2. **O cartão mostra só o nome da música** (decisor, D37: "vamos lançar a 3.5 só com o nome da música"). O contador **não aparece**; ele só serve de sinal de troca de faixa. Sem título conhecido, ou com o título antigo descartado, mostra "Nada tocando". Modelo: `assets/ideias/previa_35.png`.
 3. **O título com a home aberta.** Este é o ponto que falta provar. Quando o contador muda e o título não veio, o título é de outra faixa.
    - Prove no ORIGINAL de onde a CPU0 tira o título na troca de faixa. Candidatos:
      - o presenter `0xD08448` (ficha 007, A3);
