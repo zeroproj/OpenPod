@@ -36,7 +36,27 @@ sys.path.insert(0, os.path.join(RAIZ, "tools"))
 sys.path.insert(0, os.path.join(RAIZ, "tests"))
 import fab_reload_3_5 as F  # noqa: E402
 import capa_album_asm as A  # noqa: E402
+import emu_rc7 as E  # noqa: E402
 import fw_common as fw  # noqa: E402
+
+
+class Maquina35(E.Maquina):
+    """O emu_rc7 libera o lote da capa; aqui liberamos tambem o SDK novo e as
+    duas funcoes de fabrica que os testes chamam de verdade."""
+
+    def _bloco(self, uc, a, tam, _ud):
+        if (0x00DAB000 <= a < 0x00E00000 or
+                0x00D2E000 <= a < 0x00D2F000 or
+                0x00D32000 <= a < 0x00D33000 or
+                0x00002000 <= a < 0x00002010):
+            return
+        super()._bloco(uc, a, tam, _ud)
+
+
+def chama_stub(m, alvo, regs=(), salvos=None, stub=0x2000):
+    """Chama `alvo` por um `bl` de um stub com LR conhecido (FIM)."""
+    m.escreve(stub, b"\x08\xb5" + A.enc(stub + 2, alvo, True) + b"\x08\xbd")
+    return m.chama(stub, regs, salvos)
 
 ORIG = os.path.join(RAIZ, "firmware/ORIGINAL/GN438_original.bin")
 BUILD = os.path.join(RAIZ, "tools/build.py")
@@ -45,10 +65,10 @@ IMG33 = os.path.join(WORK, "reload_3_3.bin")
 IMG35 = os.path.join(WORK, "reload_3_5_a.bin")
 IMG35B = os.path.join(WORK, "reload_3_5_b.bin")
 UP = os.path.join(RAIZ, "release/OpenPod-Reload-3.5-Diag",
-                  "OpenPod_OpenPodReload3.5Diag.up")
-SHA_35 = "f0faee10930e46cfd3338a265601ceee8323504925cf01f4926cf9465d95919d"
-SHA_SDK35 = "8431fe15cf1705441f9969697584fedddc378eb61d4af067a5c85d7f748f6a6e"
-SDK_TAM = 13912
+                  "OpenPodReload3.5Diag.up")
+SHA_35 = "f49c819534a12756ed1ee72fbda4444cf4dadd627c164c85faa48131d4b1d05d"
+SHA_SDK35 = "ee4636f4b21067bf59032adb0e17513e6df7d829f70d3276274157e4ad34af66"
+SDK_TAM = 13944
 MENU_NOVO, HOME_NOVO = 0xDAB000, 0xDAB200
 TITLE_NOVO, LABEL_NOVO = 0xDAB600, 0xDAB700
 TIMER_NOVO = 0xDAB800
@@ -117,7 +137,15 @@ class Reload35(unittest.TestCase):
         self.assertEqual(A.desvio(self.o35, F.PATCH_TITLE - F.XIP),
                          ("b.w", TITLE_NOVO))
         self.assertEqual(A.desvio(self.o35, F.PATCH_HOME_LABEL - F.XIP),
-                         ("bl", LABEL_NOVO))
+                         ("b.w", LABEL_NOVO))
+
+    def test_tails(self):
+        for ini, alvo in ((0xDAB600, 0xDAA014), (0xDAB700, 0xD2EEE8)):
+            off = ini - F.XIP
+            self.assertTrue(
+                any(A.desvio(self.o35, a) == ("b.w", alvo)
+                    for a in range(off, off + 0x40, 2)),
+                f"falta a cauda 0x{alvo:06X} no wrapper 0x{ini:06X}")
 
     def test_sdk(self):
         sdk = self.o35[F.LOTE_INI:F.LOTE_INI + SDK_TAM]
@@ -190,87 +218,84 @@ class Reload35(unittest.TestCase):
         self.assertEqual(fora, [], "o .up mudou fora do carimbo")
         self.assertTrue(dif)
 
-    def _roda(self, addr, regs, mem):
-        from unicorn import (Uc, UC_ARCH_ARM, UC_MODE_THUMB,
-                             UC_HOOK_BLOCK)
-        from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R1,
-                                       UC_ARM_REG_R3, UC_ARM_REG_PC,
-                                       UC_ARM_REG_SP, UC_ARM_REG_LR)
-        XIP, PILHA, FIM = 0x00C00000, 0x20000000, 0x10000000
-        u = Uc(UC_ARCH_ARM, UC_MODE_THUMB)
-        u.mem_map(XIP, 0x200000)
-        u.mem_write(XIP, self.o35)
-        u.mem_map(0x00800000, 0x40000)
-        u.mem_map(PILHA, 0x1000)
-        u.mem_map(FIM, 0x1000)
-        for a, b in mem.items():
-            u.mem_write(a, b)
-        u.reg_write(UC_ARM_REG_SP, PILHA + 0x800)
-        u.reg_write(UC_ARM_REG_LR, FIM | 1)
-        for reg, val in regs.items():
-            u.reg_write(reg, val)
+    def _estado(self, m, estado=0x00803000, node=0x00804000):
+        m.escreve32(0x0081D2D4, 0x18)
+        m.escreve32(0x0081D2D8, node)
+        m.escreve32(0x0081D2DC, node)
+        m.escreve32(node + 8, TIMER_NOVO | 1)
+        m.escreve32(node + 0xC, estado)
+        m.escreve32(node + 0x18, 0)
+        m.escreve32(node + 0x1C, 0)
+        m.escreve32(estado, 0x4F503335)
+        return estado
 
-        def bloco(uc, a, tam, _ud):
-            if a == FIM:
-                uc.emu_stop()
-            elif not (XIP <= a < XIP + 0x200000):
-                raise AssertionError(f"executou fora da flash: 0x{a:08X}")
+    def test_home_label_process_real(self):
+        for byte in (3, 0):
+            m = Maquina35(self.o35)
+            estado = self._estado(m)
+            ctx, table, msg = 0x00806000, 0x00807000, 0x00808000
+            m.escreve32(0x0081CE2C, ctx)
+            m.escreve32(ctx + 0xA0, table)
+            m.escreve32(table + 0x24, 1)
+            m.escreve(msg + 4, struct.pack("<H", 0))
+            m.escreve(msg + 6, struct.pack("<H", 3))
+            m.escreve(msg + 0x14, b"Musica\0")
+            m.escreve(0x00823EB0, bytes([byte]))
+            m.falsas = {0x2B0: lambda mq: 0}
+            salvos = [0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB]
+            chama_stub(m, 0xD2EEC4, (msg, 0, 0, 0), salvos=salvos)
+            self.assertEqual(m.erros, [], f"byte[0x823EB0]={byte}")
+            self.assertEqual(m.le(estado + 4, 7), b"Musica\0")
+            self.assertEqual(m.r(E.UC_ARM_REG_PC), E.FIM)
+            self.assertEqual(m.r(E.UC_ARM_REG_SP),
+                             E.PILHA[0] + E.PILHA[1] - 0x100)
+            self.assertEqual([m.r(x) for x in E.SALVOS], salvos)
 
-        u.hook_add(UC_HOOK_BLOCK, bloco)
-        u.emu_start(addr | 1, FIM | 1, count=2000)
-        return u
+    def test_titulo_caminho_real(self):
+        m = Maquina35(self.o35)
+        estado = self._estado(m)
+        ctx, view, msg = 0x00806000, 0x00807000, 0x00808000
+        label, artista = 0x50000100, 0x50000200
+        m.escreve32(0x0081CE2C, ctx)
+        m.escreve32(ctx + 0xAC, view)
+        m.escreve32(view, label)
+        m.escreve32(view + 4, artista)
+        m.escreve(msg + 4, struct.pack("<H", 0))
+        m.escreve(msg + 6, struct.pack("<H", 3))
+        m.escreve32(msg + 0x10, 1)
+        m.escreve(msg + 0x14, b"Musica\0")
+        m.escreve(0x00823EB0, b"\x03")
+        m.falsas = {0x2B0: lambda mq: 0}
+        salvos = [0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB]
+        chama_stub(m, 0xD32204, (msg, 0, 0, 0), salvos=salvos)
+        self.assertEqual(m.erros, [])
+        self.assertEqual(m.le(estado + 4, 7), b"Musica\0")
+        self.assertIn(("label_set_text", label, msg + 0x14), m.chamadas)
+        self.assertEqual(m.r(E.UC_ARM_REG_PC), E.FIM)
+        self.assertEqual(m.r(E.UC_ARM_REG_SP),
+                         E.PILHA[0] + E.PILHA[1] - 0x100)
+        self.assertEqual([m.r(x) for x in E.SALVOS], salvos)
 
-    def _lista_de_timers(self, estado, node):
-        mem = {
-            0x0081D2D4: struct.pack("<I", 0x18),
-            0x0081D2D8: struct.pack("<I", node),
-            0x0081D2DC: struct.pack("<I", node),
-            node + 8: struct.pack("<I", TIMER_NOVO | 1),
-            node + 0xC: struct.pack("<I", estado),
-            node + 0x18: struct.pack("<I", 0),
-            node + 0x1C: struct.pack("<I", 0),
-        }
-        return mem
+    def test_capa_contra_a_3_5(self):
+        import test_reload_3_3 as T33
+        t = T33.Reload33()
+        m, chamadas, salvos = t._roda_wrapper(self.o35)
+        self.assertEqual(m.erros, [])
+        self.assertEqual(chamadas, ["yield"])
+        self.assertEqual(m.r(E.UC_ARM_REG_PC), E.FIM)
+        self.assertEqual(m.r(E.UC_ARM_REG_SP),
+                         E.PILHA[0] + E.PILHA[1] - 0x100)
+        self.assertEqual([m.r(x) for x in E.SALVOS], salvos)
 
-    def test_wrapper_home_real(self):
-        from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R3,
-                                       UC_ARM_REG_PC, UC_ARM_REG_SP)
-        estado, node, msg = 0x00803000, 0x00804000, 0x00805000
-        mem = self._lista_de_timers(estado, node)
-        mem[estado] = struct.pack("<I", 0x4F503335)
-        mem[msg + 0x14] = b"Teste\0"
-        u = self._roda(LABEL_NOVO, {UC_ARM_REG_R0: msg}, mem)
-        self.assertEqual(u.mem_read(estado + 4, 6), b"Teste\0")
-        self.assertEqual(u.reg_read(UC_ARM_REG_R3), 0x00823EB0)
-        self.assertEqual(u.reg_read(UC_ARM_REG_SP), 0x20000800)
-        self.assertEqual(u.reg_read(UC_ARM_REG_PC), 0x10000000)
-
-    def test_titulo_so_do_rotulo_zero(self):
-        from unicorn.arm_const import (UC_ARM_REG_R0, UC_ARM_REG_R1,
-                                       UC_ARM_REG_PC)
-        estado, node, msg = 0x00803000, 0x00804000, 0x00805000
-        ctx, view = 0x00807000, 0x00806000
-        mem = self._lista_de_timers(estado, node)
-        mem[estado] = struct.pack("<I", 0x4F503335)
-        mem[0x0081CE2C] = struct.pack("<I", ctx)
-        mem[ctx + 0xAC] = struct.pack("<I", view)
-        mem[view] = struct.pack("<I", 0x1234)
-        mem[view + 4] = struct.pack("<I", 0x5678)
-        mem[msg + 0x14] = b"Musica\0"
-        mem[0x00D5ED94] = b"\x70\x47"  # lv_label_set_text: bx lr
-
-        u = self._roda(TITLE_NOVO, {
-            UC_ARM_REG_R0: 0x1234, UC_ARM_REG_R1: msg + 0x14,
-        }, mem)
-        self.assertEqual(u.mem_read(estado + 4, 7), b"Musica\0")
-        self.assertEqual(u.reg_read(UC_ARM_REG_PC), 0x10000000)
-
-        mem[msg + 0x14] = b"Artista\0"
-        u = self._roda(TITLE_NOVO, {
-            UC_ARM_REG_R0: 0x5678, UC_ARM_REG_R1: msg + 0x14,
-        }, mem)
-        self.assertEqual(u.mem_read(estado + 4, 7), b"\0" * 7)
-        self.assertEqual(u.reg_read(UC_ARM_REG_PC), 0x10000000)
+        m, chamadas, salvos = t._roda_envia(self.o35)
+        self.assertEqual(m.erros, [])
+        self.assertNotIn("ring_free", chamadas)
+        self.assertEqual([c for c in chamadas if isinstance(c, tuple)],
+                         [("send", 6)] * 8)
+        self.assertEqual(m.r(E.UC_ARM_REG_PC), E.FIM)
+        self.assertEqual(m.r(E.UC_ARM_REG_SP),
+                         E.PILHA[0] + E.PILHA[1] - 0x100)
+        self.assertEqual([m.r(x) for x in E.SALVOS], salvos)
 
 
 if __name__ == "__main__":
