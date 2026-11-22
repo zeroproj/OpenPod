@@ -4,11 +4,12 @@ Base: a **3.3** publicada, sha256 `368a7c8c98f6b6b68c7e38853a69673bb05d521621940
 (gerada por `python3 tools/build.py --receita reload_3.3`). Toda afirmação
 abaixo foi lida no binário; o que não foi provado está marcado.
 
-## 1. O título já chega à CPU1 (a)
+## 1. O título chega à CPU1 (a) — PROVÁVEL
 
-**CONFIRMADO — o título não precisa do presenter da CPU0.** A fábrica
-entrega o tipo 3 no **ring da view** (`0x0081BBC0`) e quem o processa é o
-`label_process` da página atual, na **ViewTask** (CPU1):
+**PROVÁVEL — a home trata o tipo 3; não está provado que a CPU0 o mande
+com a página 4 fechada.** A fábrica entrega o tipo 3 no **ring da view**
+(`0x0081BBC0`) e quem o processa é o `label_process` da página atual, na
+**ViewTask** (CPU1):
 
 - `page_music_play_label_process` `0xD32204`; tipo em `[msg+6]`, texto em
   `msg+0x14`; o tipo 3 cai em `0xD32226` e o `set_text` é o `b.w` em
@@ -17,19 +18,19 @@ entrega o tipo 3 no **ring da view** (`0x0081BBC0`) e quem o processa é o
   `docs/tarefas/013-analise.md` Q3.
 - `page_home_label_process` `0xD2EEC4`: o tipo 3 é reconhecido em
   `0xD2EEDE..0xD2EEE2` e o caminho termina em `0xD2EEFC`; a home **não**
-  tem rótulo de título, mas recebe a mensagem. Isso responde (a): a
-  mensagem tipo 3 é entregue à página atual; na home ela chega ao
-  `page_home_label_process`, e no player ao `page_music_play_label_process`.
-  Não é preciso o `page4_media_cb` (`0xD088B4`) nem o presenter
-  `0xD08448` da CPU0.
+  tem rótulo de título, mas recebe a mensagem. A home **trata** o tipo 3
+  (`0xD2EEDE`), então ela *pode* receber a mensagem — mas isso não prova
+  que a CPU0 a *mande* com a página 4 fechada. O kit Diag responde no
+  aparelho, no passo "deixar a música avançar sozinha na home".
 - O título é o rótulo **`[page4_view+0]`**. A tabela em `0xDAAA00`
   indexa `[view+0]`, `[view+4]`, `[view+8]`, `[view+0x14]` e `[view+0x18]`;
   o `b.w` de `0xD3225E` é o **tronco comum** dos cinco, então o hook
   precisa comparar o rótulo com `[view+0]` para não copiar artista/álbum
   como título. Prova: `0xD3224C` (`ldr r0,[r5]`) e `0xD32262/66/6A/6E`.
 
-Consequência: o cartão pode ser alimentado **inteiramente na CPU1**, sem
-buffer entre núcleos, sem `0x80001C` e sem alocar na CPU0.
+Consequência de projeto: o cartão pode ser alimentado **inteiramente na
+CPU1**, sem buffer entre núcleos, sem `0x80001C` e sem alocar na CPU0. A
+prova do envio com a página 4 fechada fica com o kit Diag, no aparelho.
 
 ## 2. Onde guardar o título sem lugar fixo na RAM
 
@@ -52,6 +53,15 @@ callback. Não há `.data`/`.bss` e não há endereço fixo de RAM.
 - O cartão é criado no hook da criação da página 1 (`page_home_create`
   `0xD2EBB8`), depois da fábrica, como filho do objeto principal da
   página (`[page+0x48]`, `docs/tarefas/021-analise.md`).
+- O gancho da home em `0xD2EEE4` é um **`b.w`** de 4 B para o trampolim,
+  não `bl`: a `page_home_label_process` é folha e o LR de quem chamou tem
+  de sobreviver. O trampolim faz `push {r0-r4,lr}`, chama o hook C,
+  `pop {r0-r4,lr}`, refaz `r3=0x00823EB0` e `ldrb r3,[r3]`, e volta com
+  `b.w 0xD2EEE8` (o `cmp r3,#3` da fábrica). São 6 palavras: 8 B.
+- O gancho do título em `0xD3225E` também é um wrapper naked: salva
+  `r0/r1/LR`, atualiza o estado e faz **`b.w 0xDAA014`** (a entrada TITULO
+  da capa), preservando a capa do álbum. Não chama `lv_label_set_text`
+  direto.
 - O timer roda a **2 Hz** (`lv_timer_create(cb, 500, st)`), só lê o estado
   e o título; troca o texto apenas quando `version` muda. Custo:
   ~20 instruções por tique (três leituras e uma comparação), sem tocar em
@@ -102,6 +112,8 @@ paleta.
 
 ## 7. O que fica para depois
 
+- A prova de envio da (a) com a página 4 fechada: o kit Diag responde no
+  aparelho. Até lá, a (a) é **PROVÁVEL**.
 - Etapa 2 (▶/❚❚, tempo restante e barra): o estado `[0x81CF4C]` e o
   `[0x81BC84+4/+8]` são legíveis, mas a semântica de play/pause/stop não
   está fechada; entra só se o decisor aprovar a medição.
