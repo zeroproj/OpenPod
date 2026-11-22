@@ -20,6 +20,8 @@ import shutil
 import zipfile
 from PIL import Image, ImageDraw
 
+import ttf2fnt
+
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.dirname(os.path.dirname(AQUI))
 SAIDA = os.path.join(AQUI, "saida", ".rockbox")
@@ -165,25 +167,31 @@ def nota(tam):
     return im
 
 
+# ------------------------------------------------------------------ fontes (Inter, SIL OFL 1.1)
+# (arquivo, px, peso): convertidas pelo ttf2fnt.py (nosso), suavizadas (4 bits).
+FONTES = {"12-Inter-Medium.fnt": ("Inter.ttf", 12, 500),     # lista (altura 17)
+          "13-Inter-Bold.fnt": ("Inter.ttf", 13, 700),       # titulos e "OpenPod" (17)
+          "10-Inter-Medium.fnt": ("Inter.ttf", 10, 500)}     # relogio, artista, tempos (15)
+
 # ------------------------------------------------------------------ skins
 CABEC = """# OpenPod128 - tema do OpenPod para o Rockbox YP3 (128x160). Linha Rockbox (D33).
-# Desenhos do OpenPod; fontes Cantarell (SIL OFL 1.1) que ja vem no cartao do Rockbox YP3.
+# Desenhos do OpenPod; fonte Inter (SIL OFL 1.1, fonts/Inter-OFL.txt), convertida pelo OpenPod.
 """
 
-BARRA = f"""%V(0,0,128,16,-)%Vb({BAR})
-%V(2,2,32,13,3)%Vf(FFFFFF)%Vb({BAR})
+BARRA = f"""%V(0,0,128,18,-)%Vb({BAR})
+%V(2,2,34,15,3)%Vf(FFFFFF)%Vb({BAR})
 %cH:%cM
-%V(32,1,72,14,2)%Vf(FFFFFF)%Vb({BAR})
+%V(34,0,70,17,2)%Vf(FFFFFF)%Vb({BAR})
 %acOpenPod
-%V(108,4,16,8,-)%Vb({BAR})
+%V(108,5,16,8,-)%Vb({BAR})
 %?bc<%xd(B,7)|%xd(B,%bl,-1)>
 """
 
 SBS = CABEC + f"""# Barra base: aparece nos menus. Lista com os nossos icones e, enquanto toca, o cartao do
 # player embaixo (capa, nome, play/pausa, artista e barra), como a 3.5 da linha de fabrica.
 %wd
-%Fl(2,13-Cantarell-Bold-1bit.fnt,48)
-%Fl(3,11-Cantarell-Regular-1bit.fnt,72)
+%Fl(2,13-Inter-Bold.fnt,48)
+%Fl(3,10-Inter-Medium.fnt,72)
 %xl(B,bateria.bmp,0,0,7)
 %xl(I,__list_icons__,0,0)
 %xl(H,moldura.bmp,0,0)
@@ -191,60 +199,60 @@ SBS = CABEC + f"""# Barra base: aparece nos menus. Lista com os nossos icones e,
 %xl(N,nota28.bmp,0,0)
 %xl(P,play.bmp,0,0,5)
 %Cl(0,0,28,28,c,c)
-%Lb(item,128,17)
+%Lb(item,128,18)
 %?mp<%VI(cheia)|%VI(curta)>
 %?mp<|%Vd(m)>
-{BARRA}%Vi(cheia,0,17,128,143,1)
-%Vi(curta,0,17,128,104,1)
-%Vl(item,2,0,124,17,-)%Vb(000000)
+{BARRA}%Vi(cheia,0,19,128,141,1)
+%Vi(curta,0,19,128,101,1)
+%Vl(item,2,0,124,18,-)%Vb(000000)
 %xd(H,%Lc)
-%Vl(item,6,1,14,14,-)%Vb(000000)
+%Vl(item,6,2,14,14,-)%Vb(000000)
 %?if(%LI,=,-1)<|%xd(I,%LI,2)>
-%Vl(item,24,1,100,14,1)%Vf(FFFFFF)%Vb(000000)
+%Vl(item,24,0,100,17,1)%Vf(FFFFFF)%Vb(000000)
 %s%LT
-%Vl(m,3,122,122,36,-)%Vb(000000)
+%Vl(m,3,121,122,38,-)%Vb(000000)
 %xd(K)
 %Vl(m,7,126,28,28,-)%Vb({CARD_HEX})
 %?C<%Cd|%xd(N)>
-%Vl(m,39,123,72,15,2)%Vf(FFFFFF)%Vb({CARD_HEX})
+%Vl(m,39,122,72,17,2)%Vf(FFFFFF)%Vb({CARD_HEX})
 %s%?it<%it|%fn>
 %Vl(m,113,127,9,9,-)%Vb({CARD_HEX})
 %xd(P,%mp)
-%Vl(m,39,138,82,13,3)%Vf({CINZA_HEX})%Vb({CARD_HEX})
+%Vl(m,39,138,82,15,3)%Vf({CINZA_HEX})%Vb({CARD_HEX})
 %s%?ia<%ia|%?iA<%iA|>>
-%Vl(m,39,153,80,3,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
+%Vl(m,39,154,80,3,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
 %pb(0,0,80,3,noborder)
 """
 
 WPS = CABEC + f"""# Tocando agora: a capa grande (ou a nota), nome, artista, barra e tempos, como na 2.0+.
 %wd
-%Fl(2,13-Cantarell-Bold-1bit.fnt,48)
-%Fl(3,11-Cantarell-Regular-1bit.fnt,72)
+%Fl(2,13-Inter-Bold.fnt,48)
+%Fl(3,10-Inter-Medium.fnt,72)
 %xl(B,bateria.bmp,0,0,7)
 %xl(N,nota80.bmp,0,0)
 %xl(P,play.bmp,0,0,5)
 %Cl(0,0,80,80,c,c)
 %V(0,0,128,160,-)%Vb(000000)
-{BARRA}%V(24,21,80,80,-)%Vb(000000)
+{BARRA}%V(24,22,80,80,-)%Vb(000000)
 %?C<%Cd|%xd(N)>
-%V(2,104,124,15,2)%Vf(FFFFFF)%Vb(000000)
+%V(2,104,124,17,2)%Vf(FFFFFF)%Vb(000000)
 %ac%s%?it<%it|%fn>
-%V(2,119,124,13,3)%Vf({CINZA_HEX})%Vb(000000)
+%V(2,121,124,15,3)%Vf({CINZA_HEX})%Vb(000000)
 %ac%s%?ia<%ia|%?iA<%iA|>>
-%V(8,136,112,5,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
+%V(8,139,112,5,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
 %pb(0,0,112,5,noborder)
-%V(8,143,40,13,3)%Vf({CINZA_HEX})%Vb(000000)
+%V(8,145,40,15,3)%Vf({CINZA_HEX})%Vb(000000)
 %pc
-%V(60,145,9,9,-)%Vb(000000)
+%V(60,148,9,9,-)%Vb(000000)
 %xd(P,%mp)
-%V(80,143,40,13,3)%Vf({CINZA_HEX})%Vb(000000)
+%V(80,145,40,15,3)%Vf({CINZA_HEX})%Vb(000000)
 %ar-%pr
 """
 
 CFG = f"""# OpenPod128 - tema do OpenPod (linha Rockbox, D33). Configuracoes > Tema > OpenPod128.
 wps: /.rockbox/wps/{NOME}.wps
 sbs: /.rockbox/wps/{NOME}.sbs
-font: /.rockbox/fonts/12-Cantarell-Regular-1bit.fnt
+font: /.rockbox/fonts/12-Inter-Medium.fnt
 iconset: /.rockbox/icons/{NOME}.bmp
 viewers iconset: -
 statusbar: off
@@ -265,7 +273,7 @@ def main():
     if os.path.isdir(os.path.dirname(SAIDA)):
         shutil.rmtree(os.path.dirname(SAIDA))
     bmpdir = os.path.join(SAIDA, "wps", NOME)
-    for p in ("themes", "icons", bmpdir):
+    for p in ("themes", "icons", "fonts", bmpdir):
         os.makedirs(os.path.join(SAIDA, p), exist_ok=True)
     open(os.path.join(SAIDA, "themes", NOME + ".cfg"), "w").write(CFG)
     open(os.path.join(SAIDA, "wps", NOME + ".sbs"), "w").write(SBS)
@@ -273,10 +281,13 @@ def main():
     faixa(ICONES).save(os.path.join(SAIDA, "icons", NOME + ".bmp"))
     bateria().save(os.path.join(bmpdir, "bateria.bmp"))
     play().save(os.path.join(bmpdir, "play.bmp"))
-    retangulo(122, 36, 6, fill=CARD).save(os.path.join(bmpdir, "cartao.bmp"))
-    retangulo(124, 17, 4, outline=(255, 255, 255), larg=1).save(os.path.join(bmpdir, "moldura.bmp"))
+    retangulo(122, 38, 6, fill=CARD).save(os.path.join(bmpdir, "cartao.bmp"))
+    retangulo(124, 18, 4, outline=(255, 255, 255), larg=1).save(os.path.join(bmpdir, "moldura.bmp"))
     nota(28).save(os.path.join(bmpdir, "nota28.bmp"))
     nota(80).save(os.path.join(bmpdir, "nota80.bmp"))
+    for nome, (ttf, px, peso) in FONTES.items():
+        ttf2fnt.converte(os.path.join(AQUI, "fontes", ttf), px, peso, 14, os.path.join(SAIDA, "fonts", nome))
+    shutil.copy(os.path.join(AQUI, "fontes", "Inter-OFL.txt"), os.path.join(SAIDA, "fonts", "Inter-OFL.txt"))
     zp = os.path.join(AQUI, NOME + ".zip")
     with zipfile.ZipFile(zp, "w", zipfile.ZIP_DEFLATED) as z:
         for raiz, _, arqs in os.walk(SAIDA):

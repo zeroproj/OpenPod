@@ -1,0 +1,42 @@
+#Theme Name: NanoClone
+#Notes: Replica of the original Apple iPod Nano with Volume Control
+#By: Billy Blair
+#Platform: iPod Nano (176x132x16) - Standard build
+#Version: 5.2
+#Licenced CC-BY-SA 3.0
+#Last updated: 3/2015
+#
+#NO STATUS
+%wd
+#
+#LOAD BACKGROUND
+%X(NanoClone.bmp)
+#
+#PRELOAD IMAGES(S)
+%xl(D,battery.bmp,153,2,10)
+%xl(G,playbtns.bmp,5,2,5)
+%xl(I,shuffle.bmp,153,22)
+%xl(F,hold.bmp,19,2)
+%xl(H,repeat.bmp,137,22,4)
+%xl(E,hdd.bmp,4,0,6)
+#
+#%?ps<%xd(Sa)|>
+#
+#IF HDD ACTIVE, PLAY ANIM ELSE IF HOLD, SHOW ICON
+%?lh<%t(0.1)%xd(Ea);%t(0.1)%xd(Eb);%t(0.1)%xd(Ec);%t(0.1)%xd(Ed);%t(0.1)%xd(Ee);%t(0.1)%xd(Ef)|%?mh<%xd(F)|%?mr<%xd(F)>>>
+#FROM ORIGINAL CODE FOR HDD/HOLD
+#%t(0.1)%?mh<%xd(F)|%?lh<%xd(Ea)|>>;%t(0.1)%?mh<%xd(F)|%?lh<%xd(Eb)|>>;%t(0.1)%?mh<%xd(F)|%?lh<%xd(Ec)|>>;%t(0.1)%?mh<%xd(F)|%?lh<%xd(Ed)|>>;%t(0.1)%?mh<%xd(F)|%?lh<%xd(Ee)|>>;%t(0.1)%?mh<%xd(F)|%?lh<%xd(Ef)|>>
+#
+#PLAY BUTTONS
+%?mp<%xd(Ga)|%xd(Gb)|%xd(Gc)|%xd(Gd)|%xd(Ge)>
+#
+#%?mp<%xdPa|%xdPb|%xdPc|%xdPd|%xdPe>
+#
+#BATTERY LEVEL
+%?bp<%?bc<%xd(Da)|%xd(Db)>|%?bl<|%xd(Dc)|%xd(Dd)|%xd(De)|%xd(Df)|%xd(Dg)|%xd(Dh)|%xd(Di)|%xd(Dj)>>
+#%?ps<%xdS|>
+#%?mm<|%xdRa|%xdRb|%xdRc|%xdRd>
+#%t0.1%?mh<%xdH|%?lh<%xdDa|>>;%t0.1%?mh<%xdH|%?lh<%xdDb|>>;%t0.1%?mh<%xdH|%?lh<%xdDc|>>;%t0.1%?mh<%xdH|%?lh<%xdDd|>>;%t0.1%?mh<%xdH|%?lh<%xdDe|>>;%t0.1%?mh<%xdH|%?lh<%xdDf|>>
+#
+#VIEWPORT
+%Vi(-,5,20,166,112,1)

@@ -1,10 +1,10 @@
 # OpenPod128 - tema do OpenPod para o Rockbox YP3 (128x160). Linha Rockbox (D33).
-# Desenhos do OpenPod; fontes Cantarell (SIL OFL 1.1) que ja vem no cartao do Rockbox YP3.
+# Desenhos do OpenPod; fonte Inter (SIL OFL 1.1, fonts/Inter-OFL.txt), convertida pelo OpenPod.
 # Barra base: aparece nos menus. Lista com os nossos icones e, enquanto toca, o cartao do
 # player embaixo (capa, nome, play/pausa, artista e barra), como a 3.5 da linha de fabrica.
 %wd
-%Fl(2,13-Cantarell-Bold-1bit.fnt,48)
-%Fl(3,11-Cantarell-Regular-1bit.fnt,72)
+%Fl(2,13-Inter-Bold.fnt,48)
+%Fl(3,10-Inter-Medium.fnt,72)
 %xl(B,bateria.bmp,0,0,7)
 %xl(I,__list_icons__,0,0)
 %xl(H,moldura.bmp,0,0)
@@ -12,33 +12,33 @@
 %xl(N,nota28.bmp,0,0)
 %xl(P,play.bmp,0,0,5)
 %Cl(0,0,28,28,c,c)
-%Lb(item,128,17)
+%Lb(item,128,18)
 %?mp<%VI(cheia)|%VI(curta)>
 %?mp<|%Vd(m)>
-%V(0,0,128,16,-)%Vb(16181E)
-%V(2,2,32,13,3)%Vf(FFFFFF)%Vb(16181E)
+%V(0,0,128,18,-)%Vb(16181E)
+%V(2,2,34,15,3)%Vf(FFFFFF)%Vb(16181E)
 %cH:%cM
-%V(32,1,72,14,2)%Vf(FFFFFF)%Vb(16181E)
+%V(34,0,70,17,2)%Vf(FFFFFF)%Vb(16181E)
 %acOpenPod
-%V(108,4,16,8,-)%Vb(16181E)
+%V(108,5,16,8,-)%Vb(16181E)
 %?bc<%xd(B,7)|%xd(B,%bl,-1)>
-%Vi(cheia,0,17,128,143,1)
-%Vi(curta,0,17,128,104,1)
-%Vl(item,2,0,124,17,-)%Vb(000000)
+%Vi(cheia,0,19,128,141,1)
+%Vi(curta,0,19,128,101,1)
+%Vl(item,2,0,124,18,-)%Vb(000000)
 %xd(H,%Lc)
-%Vl(item,6,1,14,14,-)%Vb(000000)
+%Vl(item,6,2,14,14,-)%Vb(000000)
 %?if(%LI,=,-1)<|%xd(I,%LI,2)>
-%Vl(item,24,1,100,14,1)%Vf(FFFFFF)%Vb(000000)
+%Vl(item,24,0,100,17,1)%Vf(FFFFFF)%Vb(000000)
 %s%LT
-%Vl(m,3,122,122,36,-)%Vb(000000)
+%Vl(m,3,121,122,38,-)%Vb(000000)
 %xd(K)
 %Vl(m,7,126,28,28,-)%Vb(1E1E22)
 %?C<%Cd|%xd(N)>
-%Vl(m,39,123,72,15,2)%Vf(FFFFFF)%Vb(1E1E22)
+%Vl(m,39,122,72,17,2)%Vf(FFFFFF)%Vb(1E1E22)
 %s%?it<%it|%fn>
 %Vl(m,113,127,9,9,-)%Vb(1E1E22)
 %xd(P,%mp)
-%Vl(m,39,138,82,13,3)%Vf(AAAAB0)%Vb(1E1E22)
+%Vl(m,39,138,82,15,3)%Vf(AAAAB0)%Vb(1E1E22)
 %s%?ia<%ia|%?iA<%iA|>>
-%Vl(m,39,153,80,3,-)%Vf(FFFFFF)%Vb(6A6A72)
+%Vl(m,39,154,80,3,-)%Vf(FFFFFF)%Vb(6A6A72)
 %pb(0,0,80,3,noborder)

@@ -1,0 +1,42 @@
+# NanoClone128: adaptacao para 128x160 do NanoClone de Billy Blair (CC-BY-SA 3.0).
+# Adaptado pelo OpenPod (CC-BY-SA 3.0). Fonte NanoSans: da Source Sans 3 (Adobe, SIL OFL 1.1).
+%wd
+%X(fundo_wps.bmp)
+%Fl(2,14-NanoSans-Semibold.fnt,48)
+%Fl(3,13-NanoSans-Regular.fnt,72)
+%xl(D,battery.bmp,0,0,10)
+%xl(G,playbtns.bmp,0,0,5)
+%xl(I,shuffle.bmp,0,0)
+%xl(H,repeat.bmp,0,0,4)
+%xl(F,hold.bmp,0,0)
+%?C<%Vd(a)|%Vd(b)>
+%?mv(2.0)<%Vd(f)|%Vd(d)>
+%V(4,2,15,13,-)
+%?mh<%xd(F)|%?mp<%xd(Ga)|%xd(Gb)|%xd(Gc)|%xd(Gd)|%xd(Ge)>>
+%V(22,0,82,18,2)%Vf(000000)
+%acTocando
+%V(105,2,21,13,-)
+%?bp<%?bc<%xd(Da)|%xd(Db)>|%?bl<|%xd(Dc)|%xd(Dd)|%xd(De)|%xd(Df)|%xd(Dg)|%xd(Dh)|%xd(Di)|%xd(Dj)>>
+%V(5,20,80,17,3)%Vf(000000)%Vb(FFFFFF)
+%al%pp de %pe
+%V(90,22,16,12,-)%Vb(FFFFFF)
+%?mm<|%xd(Ha)|%xd(Hb)|%t(1.0)%xd(Hc);%t(1.0)%xd(Ha)|%xd(Hd)>
+%V(108,22,16,12,-)%Vb(FFFFFF)
+%?ps<%xd(I)>
+%Vl(a,40,36,48,48,-)%Vb(FFFFFF)
+%Cl(0,0,48,48,c,c)
+%Cd
+%Vl(a,4,86,120,36,2)%Vf(000000)%Vb(FFFFFF)
+%ac%s%?it<%it|%fn>
+%ac%s%?ia<%ia|%?iA<%iA|>>
+%Vl(b,4,44,120,72,2)%Vf(000000)%Vb(FFFFFF)
+%ac%s%?it<%it|%fn>
+%Vf(000000)%ac%s%?ia<%ia|%?iA<%iA|>>
+%ac%s%?id<%id|>
+%ac%s%?iy<%iy|>
+%Vl(d,6,124,116,11,-)%Vb(FFFFFF)
+%pb(0,0,116,11,progresso.bmp)
+%Vl(f,6,124,116,11,-)%Vb(FFFFFF)
+%pv(0,0,116,11,volume.bmp)
+%V(6,138,116,17,3)%Vf(000000)%Vb(FFFFFF)
+%?mv(2.0)<%ac%pv dB|%al%pc%ar-%pr>
