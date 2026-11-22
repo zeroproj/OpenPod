@@ -171,9 +171,9 @@ CABEC = """# OpenPod128 - tema do OpenPod para o Rockbox YP3 (128x160). Linha Ro
 """
 
 BARRA = f"""%V(0,0,128,16,-)%Vb({BAR})
-%V(3,1,36,14,2)%Vf(FFFFFF)%Vb({BAR})
+%V(2,2,32,13,3)%Vf(FFFFFF)%Vb({BAR})
 %cH:%cM
-%V(38,1,52,14,2)%Vf(FFFFFF)%Vb({BAR})
+%V(32,1,72,14,2)%Vf(FFFFFF)%Vb({BAR})
 %acOpenPod
 %V(108,4,16,8,-)%Vb({BAR})
 %?bc<%xd(B,7)|%xd(B,%bl,-1)>
@@ -212,8 +212,8 @@ SBS = CABEC + f"""# Barra base: aparece nos menus. Lista com os nossos icones e,
 %xd(P,%mp)
 %Vl(m,39,138,82,11,3)%Vf({CINZA_HEX})%Vb({CARD_HEX})
 %s%?ia<%ia|%?iA<%iA|>>
-%Vl(m,39,151,80,3,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
-%pb(0,0,80,3,noborder)
+%Vl(m,39,151,80,3,-)%Vf(FFFFFF)%Vb({CARD_HEX})
+%dr(0,0,80,3,{TRILHO_HEX})%pb(0,0,80,3,noborder)
 """
 
 WPS = CABEC + f"""# Tocando agora: a capa grande (ou a nota), nome, artista, barra e tempos, como na 2.0+.
@@ -231,8 +231,8 @@ WPS = CABEC + f"""# Tocando agora: a capa grande (ou a nota), nome, artista, bar
 %ac%s%?it<%it|%fn>
 %V(2,119,124,13,3)%Vf({CINZA_HEX})%Vb(000000)
 %ac%s%?ia<%ia|%?iA<%iA|>>
-%V(8,136,112,4,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
-%pb(0,0,112,4,noborder)
+%V(8,136,112,4,-)%Vf(FFFFFF)%Vb(000000)
+%dr(0,0,112,4,{TRILHO_HEX})%pb(0,0,112,4,noborder)
 %V(8,143,40,13,3)%Vf({CINZA_HEX})%Vb(000000)
 %pc
 %V(60,145,9,9,-)%Vb(000000)

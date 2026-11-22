@@ -16,9 +16,9 @@
 %?mp<%VI(cheia)|%VI(curta)>
 %?mp<|%Vd(m)>
 %V(0,0,128,16,-)%Vb(16181E)
-%V(3,1,36,14,2)%Vf(FFFFFF)%Vb(16181E)
+%V(2,2,32,13,3)%Vf(FFFFFF)%Vb(16181E)
 %cH:%cM
-%V(38,1,52,14,2)%Vf(FFFFFF)%Vb(16181E)
+%V(32,1,72,14,2)%Vf(FFFFFF)%Vb(16181E)
 %acOpenPod
 %V(108,4,16,8,-)%Vb(16181E)
 %?bc<%xd(B,7)|%xd(B,%bl,-1)>
@@ -40,5 +40,5 @@
 %xd(P,%mp)
 %Vl(m,39,138,82,11,3)%Vf(AAAAB0)%Vb(1E1E22)
 %s%?ia<%ia|%?iA<%iA|>>
-%Vl(m,39,151,80,3,-)%Vf(FFFFFF)%Vb(46464C)
-%pb(0,0,80,3,noborder)
+%Vl(m,39,151,80,3,-)%Vf(FFFFFF)%Vb(1E1E22)
+%dr(0,0,80,3,46464C)%pb(0,0,80,3,noborder)
