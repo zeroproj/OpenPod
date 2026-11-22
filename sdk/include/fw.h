@@ -108,6 +108,7 @@ typedef void (*lv_event_cb_t)(lv_event_t *e);
 
 #define LV_LABEL_LONG_WRAP 0
 #define LV_LABEL_LONG_SCROLL_CIRCULAR 4
+#define LV_LABEL_LONG_DOT 3
 #define LV_TEXT_ALIGN_CENTER 2
 
 #define LV_OBJ_FLAG_HIDDEN (1u << 0)
@@ -224,6 +225,7 @@ static inline void lv_group_focus_freeze(lv_group_t *g, bool en)
 
 /* App menu (page 0x53).  The factory creates the page and its three rows;
  * the hook runs after it and modifies item[2] / appends rows. */
+#define FW_HOME_PAGE_CREATE FW_FN(0x00D2EBB8, int, (void))
 #define FW_MENU_PAGE_CREATE FW_FN(0x00D2F0A0, int, (void))
 #define FW_PAGE_MENU_EVENT_CB ((lv_event_cb_t)0x00D2EF5Du)
 #define FW_MENU_LIST_ITEM_CREATE FW_FN(0x00D21764, lv_obj_t *, (lv_obj_t *list))
