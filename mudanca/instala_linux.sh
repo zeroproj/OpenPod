@@ -96,6 +96,10 @@ for f in CLAUDE.md RTK.md; do
   [ -f "$TMPX/claude/$f" ] && [ ! -f "$HOME/.claude/$f" ] && cp "$TMPX/claude/$f" "$HOME/.claude/"
 done
 cp -rn "$TMPX/claude/skills/." "$HOME/.claude/skills/" 2>/dev/null || true
+if [ -d "$TMPX/openpod" ]; then                 # chave dos pacotes (D36): segredo
+  mkdir -p "$HOME/.openpod" && chmod 700 "$HOME/.openpod"
+  cp -p "$TMPX/openpod/"* "$HOME/.openpod/" && chmod 600 "$HOME/.openpod/"*.pem
+fi
 rm -rf "$TMPX"
 
 passo "8. CI do projeto"

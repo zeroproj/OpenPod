@@ -41,6 +41,8 @@ rm -rf "$STAGE"; mkdir -p "$STAGE/opencode" "$STAGE/claude/memory" "$STAGE/claud
 cp "$HOME/.config/opencode/opencode.jsonc" "$STAGE/opencode/"
 [ -f "$HOME/.local/share/opencode/auth.json" ] && cp "$HOME/.local/share/opencode/auth.json" "$STAGE/opencode/"
 cp "$MEM"/*.md "$STAGE/claude/memory/"
+# chave secreta que assina os pacotes do instalador (D36): SEGREDO, vai junto e volta com 600
+mkdir -p "$STAGE/openpod" && cp -p "$HOME/.openpod/"* "$STAGE/openpod/" 2>/dev/null || true
 for f in CLAUDE.md RTK.md; do [ -f "$HOME/.claude/$f" ] && cp "$HOME/.claude/$f" "$STAGE/claude/"; done
 cp -RL "$HOME/.claude/skills/." "$STAGE/claude/skills/" 2>/dev/null || true
 cp "$PROJ/mudanca/instala_linux.sh" "$OUT/"
@@ -49,7 +51,7 @@ echo "empacotando o projeto (uns 800 MB)..."
 tar -czf "$OUT/OpenPod-mudanca.tar.gz" \
     --exclude='__pycache__' --exclude='.DS_Store' --exclude='.publicar-tmp' \
     -C "$(dirname "$PROJ")" "$(basename "$PROJ")" \
-    -C "$STAGE" opencode claude
+    -C "$STAGE" opencode claude openpod
 chmod 600 "$OUT/OpenPod-mudanca.tar.gz"
 rm -rf "$STAGE"
 
