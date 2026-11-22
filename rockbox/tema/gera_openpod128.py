@@ -195,33 +195,34 @@ SBS = CABEC + f"""# Barra base: aparece nos menus. Lista com os nossos icones e,
 %xl(B,bateria.bmp,0,0,7)
 %xl(I,__list_icons__,0,0)
 %xl(H,moldura.bmp,0,0)
-%xl(K,cartao.bmp,0,0)
-%xl(N,nota28.bmp,0,0)
-%xl(P,play.bmp,0,0,5)
-%Cl(0,0,28,28,c,c)
+%xl(E,cartao_esq.bmp,0,0)
+%xl(D,cartao_dir.bmp,0,0)
+%xl(N,nota28.bmp,4,5)
+%xl(P,play.bmp,1,6,5)
+%Cl(4,5,28,28,c,c)
 %Lb(item,128,19)
 %?mp<%VI(cheia)|%VI(curta)>
 %?mp<|%Vd(m)>
 {BARRA}%Vi(cheia,0,19,128,141,1)
 %Vi(curta,0,19,128,101,1)
-%Vl(item,2,0,124,19,-)%Vb(000000)
+%Vl(item,1,0,126,19,-)%Vb(000000)
 %xd(H,%Lc)
 %Vl(item,6,3,14,14,-)%Vb(000000)
 %?if(%LI,=,-1)<|%xd(I,%LI,2)>
 %Vl(item,24,1,99,17,1)%Vf(FFFFFF)%Vb(000000)
 %s%LT
-%Vl(m,3,121,122,38,-)%Vb(000000)
-%xd(K)
-%Vl(m,7,126,28,28,-)%Vb({CARD_HEX})
-%?C<%Cd|%xd(N)>
-%Vl(m,39,122,72,17,2)%Vf(FFFFFF)%Vb({CARD_HEX})
+%Vl(m,3,121,36,38,-)%Vb({CARD_HEX})
+%xd(E)%?C<%Cd|%xd(N)>
+%Vl(m,113,121,12,38,-)%Vb({CARD_HEX})
+%xd(D)%xd(P,%mp)
+%Vl(m,39,121,74,18,2)%Vf(FFFFFF)%Vb({CARD_HEX})
 %s%?it<%it|%fn>
-%Vl(m,113,127,9,9,-)%Vb({CARD_HEX})
-%xd(P,%mp)
-%Vl(m,39,138,82,15,3)%Vf({CINZA_HEX})%Vb({CARD_HEX})
+%Vl(m,39,139,74,15,3)%Vf({CINZA_HEX})%Vb({CARD_HEX})
 %s%?ia<%ia|%?iA<%iA|>>
-%Vl(m,39,154,80,3,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
-%pb(0,0,80,3,noborder)
+%Vl(m,39,154,74,3,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
+%pb(0,0,74,3,noborder)
+%Vl(m,39,157,74,2,-)%Vb({CARD_HEX})
+%dr(0,0,74,2,{CARD_HEX})
 """
 
 WPS = CABEC + f"""# Tocando agora: a capa grande (ou a nota), nome, artista, barra e tempos, como na 2.0+.
@@ -281,8 +282,11 @@ def main():
     faixa(ICONES).save(os.path.join(SAIDA, "icons", NOME + ".bmp"))
     bateria().save(os.path.join(bmpdir, "bateria.bmp"))
     play().save(os.path.join(bmpdir, "play.bmp"))
-    retangulo(122, 38, 6, fill=CARD).save(os.path.join(bmpdir, "cartao.bmp"))
-    retangulo(124, 19, 4, outline=(255, 255, 255), larg=1).save(os.path.join(bmpdir, "moldura.bmp"))
+    cartao = Image.new("RGB", (122, 38), (0, 0, 0))
+    ImageDraw.Draw(cartao).rounded_rectangle((0, 0, 121, 37), 6, fill=CARD)
+    cartao.crop((0, 0, 36, 38)).save(os.path.join(bmpdir, "cartao_esq.bmp"))
+    cartao.crop((110, 0, 122, 38)).save(os.path.join(bmpdir, "cartao_dir.bmp"))
+    retangulo(126, 19, 2, outline=(255, 255, 255), larg=1).save(os.path.join(bmpdir, "moldura.bmp"))
     nota(28).save(os.path.join(bmpdir, "nota28.bmp"))
     nota(80).save(os.path.join(bmpdir, "nota80.bmp"))
     for nome, (ttf, px, peso) in FONTES.items():
