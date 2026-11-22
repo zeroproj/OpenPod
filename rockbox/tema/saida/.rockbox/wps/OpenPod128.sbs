@@ -1,0 +1,44 @@
+# OpenPod128 - tema do OpenPod para o Rockbox YP3 (128x160). Linha Rockbox (D33).
+# Desenhos do OpenPod; fontes Cantarell (SIL OFL 1.1) que ja vem no cartao do Rockbox YP3.
+# Barra base: aparece nos menus. Lista com os nossos icones e, enquanto toca, o cartao do
+# player embaixo (capa, nome, play/pausa, artista e barra), como a 3.5 da linha de fabrica.
+%wd
+%Fl(2,13-Cantarell-Bold-1bit.fnt,48)
+%Fl(3,11-Cantarell-Regular-1bit.fnt,72)
+%xl(B,bateria.bmp,0,0,7)
+%xl(I,__list_icons__,0,0)
+%xl(H,moldura.bmp,0,0)
+%xl(K,cartao.bmp,0,0)
+%xl(N,nota28.bmp,0,0)
+%xl(P,play.bmp,0,0,5)
+%Cl(0,0,28,28,c,c)
+%Lb(item,128,17)
+%?mp<%VI(cheia)|%VI(curta)>
+%?mp<|%Vd(m)>
+%V(0,0,128,16,-)%Vb(16181E)
+%V(3,1,36,14,2)%Vf(FFFFFF)%Vb(16181E)
+%cH:%cM
+%V(38,1,52,14,2)%Vf(FFFFFF)%Vb(16181E)
+%acOpenPod
+%V(108,4,16,8,-)%Vb(16181E)
+%?bc<%xd(B,7)|%xd(B,%bl,-1)>
+%Vi(cheia,0,17,128,143,1)
+%Vi(curta,0,17,128,105,1)
+%Vl(item,2,0,124,17,-)%Vb(000000)
+%xd(H,%Lc)
+%Vl(item,6,1,14,14,-)%Vb(000000)
+%?if(%LI,=,-1)<|%xd(I,%LI,2)>
+%Vl(item,24,1,100,14,1)%Vf(FFFFFF)%Vb(000000)
+%s%LT
+%Vl(m,3,123,122,35,-)%Vb(000000)
+%xd(K)
+%Vl(m,7,126,28,28,-)%Vb(1E1E22)
+%?C<%Cd|%xd(N)>
+%Vl(m,39,125,72,13,2)%Vf(FFFFFF)%Vb(1E1E22)
+%s%?it<%it|%fn>
+%Vl(m,113,127,9,9,-)%Vb(1E1E22)
+%xd(P,%mp)
+%Vl(m,39,138,82,11,3)%Vf(AAAAB0)%Vb(1E1E22)
+%s%?ia<%ia|%?iA<%iA|>>
+%Vl(m,39,151,80,3,-)%Vf(FFFFFF)%Vb(46464C)
+%pb(0,0,80,3,noborder)
