@@ -8,6 +8,7 @@
 %xl(N,nota80.bmp,0,0)
 %xl(P,play.bmp,0,0,5)
 %Cl(0,0,80,80,c,c)
+%?mv(2.0)<%Vd(v)|%Vd(p)>
 %V(0,0,128,160,-)%Vb(000000)
 %V(0,0,128,18,-)%Vb(16181E)
 %V(2,2,34,15,3)%Vf(FFFFFF)%Vb(16181E)
@@ -22,11 +23,15 @@
 %ac%s%?it<%it|%fn>
 %V(2,121,124,15,3)%Vf(AAAAB0)%Vb(000000)
 %ac%s%?ia<%ia|%?iA<%iA|>>
-%V(8,139,112,5,-)%Vf(FFFFFF)%Vb(6A6A72)
+%Vl(p,8,139,112,5,-)%Vf(FFFFFF)%Vb(6A6A72)
 %pb(0,0,112,5,noborder)
-%V(8,145,40,15,3)%Vf(AAAAB0)%Vb(000000)
+%Vl(p,8,145,40,15,3)%Vf(AAAAB0)%Vb(000000)
 %pc
-%V(60,148,9,9,-)%Vb(000000)
+%Vl(p,60,148,9,9,-)%Vb(000000)
 %xd(P,%mp)
-%V(80,145,40,15,3)%Vf(AAAAB0)%Vb(000000)
+%Vl(p,80,145,40,15,3)%Vf(AAAAB0)%Vb(000000)
 %ar-%pr
+%Vl(v,8,139,112,5,-)%Vf(FFFFFF)%Vb(6A6A72)
+%pv(0,0,112,5,noborder)
+%Vl(v,8,145,112,15,3)%Vf(FFFFFF)%Vb(000000)
+%acVolume  %pv dB

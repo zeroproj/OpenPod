@@ -233,6 +233,7 @@ WPS = CABEC + f"""# Tocando agora: a capa grande (ou a nota), nome, artista, bar
 %xl(N,nota80.bmp,0,0)
 %xl(P,play.bmp,0,0,5)
 %Cl(0,0,80,80,c,c)
+%?mv(2.0)<%Vd(v)|%Vd(p)>
 %V(0,0,128,160,-)%Vb(000000)
 {BARRA}%V(24,22,80,80,-)%Vb(000000)
 %?C<%Cd|%xd(N)>
@@ -240,14 +241,18 @@ WPS = CABEC + f"""# Tocando agora: a capa grande (ou a nota), nome, artista, bar
 %ac%s%?it<%it|%fn>
 %V(2,121,124,15,3)%Vf({CINZA_HEX})%Vb(000000)
 %ac%s%?ia<%ia|%?iA<%iA|>>
-%V(8,139,112,5,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
+%Vl(p,8,139,112,5,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
 %pb(0,0,112,5,noborder)
-%V(8,145,40,15,3)%Vf({CINZA_HEX})%Vb(000000)
+%Vl(p,8,145,40,15,3)%Vf({CINZA_HEX})%Vb(000000)
 %pc
-%V(60,148,9,9,-)%Vb(000000)
+%Vl(p,60,148,9,9,-)%Vb(000000)
 %xd(P,%mp)
-%V(80,145,40,15,3)%Vf({CINZA_HEX})%Vb(000000)
+%Vl(p,80,145,40,15,3)%Vf({CINZA_HEX})%Vb(000000)
 %ar-%pr
+%Vl(v,8,139,112,5,-)%Vf(FFFFFF)%Vb({TRILHO_HEX})
+%pv(0,0,112,5,noborder)
+%Vl(v,8,145,112,15,3)%Vf(FFFFFF)%Vb(000000)
+%acVolume  %pv dB
 """
 
 CFG = f"""# OpenPod128 - tema do OpenPod (linha Rockbox, D33). Configuracoes > Tema > OpenPod128.
