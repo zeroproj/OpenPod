@@ -78,6 +78,8 @@ def main():
                     help="pasta com os pacotes .tar.gz assinados e o index.json do instalador (vai em pacotes/)")
     ap.add_argument("--instalador", default=None,
                     help="pasta com o OpenPod Tune: openpod-tune-macos.dmg, -windows.exe e -linux-x86_64.tar.gz (vai em instalador/)")
+    ap.add_argument("--storepod", default=None,
+                    help="pasta da StorePod: index.json, itens .tar.gz assinados e prints .png (vai em storepod/)")
     ap.add_argument("--com-flashloader", action="store_true",
                     help="inclui windows/FlashloaderSL-DEV-6.9.5.exe (decisao do mantenedor, 2026-10-23)")
     a = ap.parse_args()
@@ -171,6 +173,13 @@ def main():
             for n in ("openpod-tune-macos.dmg", "openpod-tune-windows.exe", "openpod-tune-linux-x86_64.tar.gz"):
                 exigir(os.path.isfile(os.path.join(a.instalador, n)), "faltou %s em --instalador" % n)
                 shutil.copy2(os.path.join(a.instalador, n), os.path.join(wt, "instalador", n))
+
+        if a.storepod:
+            exigir(os.path.isfile(os.path.join(a.storepod, "index.json")), "faltou o index.json em --storepod")
+            os.makedirs(os.path.join(wt, "storepod"))
+            for n in sorted(os.listdir(a.storepod)):
+                if n == "index.json" or n.endswith(".tar.gz") or n.endswith(".png"):
+                    shutil.copy2(os.path.join(a.storepod, n), os.path.join(wt, "storepod", n))
 
         refs = os.path.join(RAIZ, "docs", "REFERENCIAS_PUBLICO.md")
         exigir(os.path.isfile(refs), "nao achei docs/REFERENCIAS_PUBLICO.md")
