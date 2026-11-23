@@ -11,6 +11,10 @@ crédito vai sempre para o projeto original.
 |---|---|---|---|---|---|
 | **SL6801_player** | Dmitry Brant | [dbrant/SL6801_player](https://github.com/dbrant/SL6801_player) | [zeroproj/SL6801_player](https://github.com/zeroproj/SL6801_player) | MIT | Os jogos e o kit de apps do menu Aplicativos (desde a 3.1). Ideias da caixa-preta (`crashlog.txt`) e da regra dos dois núcleos. |
 | **smartlink_flash** | Ilya Kurdyukov | [ilyakurdyukov/smartlink_flash](https://github.com/ilyakurdyukov/smartlink_flash) | [zeroproj/smartlink_flash](https://github.com/zeroproj/smartlink_flash) | — (sem arquivo de licença no original) | Ler e gravar a flash pelo USB no Linux e no macOS: o backup original do GN-438 e o instalador por cabo. Usado como programa, não entra no firmware. |
+| **Rockbox YP3** (port para o SL6801) | Jayden Milne | [jaydens-tasty-slop/rockbox](https://github.com/jaydens-tasty-slop/rockbox) | [zeroproj/rockbox-gn438](https://github.com/zeroproj/rockbox-gn438) | GPL | A base do **OpenPod RockBox**, distribuída sem mudança no código, com o tema OpenPod128. O código exato que distribuímos fica no nosso fork. |
+| **rockslop** | Jayden Milne | [jaydens-tasty-slop/rockslop](https://github.com/jaydens-tasty-slop/rockslop) | [zeroproj/rockslop](https://github.com/zeroproj/rockslop) | GPL-2.0-or-later | A camada que fala com o player pelo USB (modo da ROM, cópia de segurança, gravação e conferência) no **Instalador OpenPod**, que também é GPL: [zeroproj/openpod-installer](https://github.com/zeroproj/openpod-installer). |
+| **Rockbox** | Projeto Rockbox | [rockbox.org](https://www.rockbox.org/) | — | GPL | O firmware livre por trás do OpenPod RockBox: codecs, plugins, temas e idiomas. |
+| **Inter** (fonte) | Rasmus Andersson | [rsms/inter](https://github.com/rsms/inter) | — | SIL OFL 1.1 | A fonte do tema OpenPod do RockBox e do Instalador. |
 | **ePet** | Yury Pliashkou | [pliashkou/epet](https://github.com/pliashkou/epet) | [zeroproj/epet](https://github.com/zeroproj/epet) | MIT | As regras do bichinho virtual (fome, alegria, energia, cuidados), com desenhos próprios. Previsto para a 3.6. |
 
 ## Componentes de fábrica / Stock components
@@ -30,7 +34,11 @@ O gravador **Flashloader SL-DEV** (Shenju) é proprietário e vem no pacote só 
 ## Código-fonte / Source code
 
 **Quer estudar o chip ou programar para ele?** Comece pelo [SL6801_player](https://github.com/dbrant/SL6801_player). Ele é
-aberto e traz o kit, os exemplos e o mapa do chip. A engenharia reversa do OpenPod é independente e não é pública.
+aberto e traz o kit, os exemplos e o mapa do chip. A engenharia reversa e o código do OpenPod System são independentes e não são públicos. O lado RockBox (o Instalador e o Rockbox distribuído) é aberto, em GPL.
 
-*Want to study or program the chip? Start with [SL6801_player](https://github.com/dbrant/SL6801_player). OpenPod's own reverse
-engineering is independent and not public.*
+*Want to study or program the chip? Start with [SL6801_player](https://github.com/dbrant/SL6801_player). OpenPod System's reverse
+engineering and source are independent and not public. The RockBox side (the Installer and the distributed Rockbox) is open, under the GPL.*
+
+## Suporte / Support
+
+Problemas ou dúvidas: [abra uma issue](https://github.com/zeroproj/OpenPod/issues). *Problems or questions: [open an issue](https://github.com/zeroproj/OpenPod/issues).*

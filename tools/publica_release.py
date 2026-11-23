@@ -74,6 +74,10 @@ def main():
     ap.add_argument("--nome-tela", default=None,
                     help="o que a tela Informacao mostra, ex 'OpenPod 5.7 Beta 2'")
     ap.add_argument("--push", action="store_true")
+    ap.add_argument("--pacotes", default=None,
+                    help="pasta com os pacotes .tar.gz assinados e o index.json do instalador (vai em pacotes/)")
+    ap.add_argument("--instalador", default=None,
+                    help="pasta com openpod-instalador-macos.dmg e openpod-instalador-windows.exe (vai em instalador/)")
     ap.add_argument("--com-flashloader", action="store_true",
                     help="inclui windows/FlashloaderSL-DEV-6.9.5.exe (decisao do mantenedor, 2026-10-23)")
     a = ap.parse_args()
@@ -155,6 +159,19 @@ def main():
                 "# Gravador da Shenju: proprietario.\n"
                 "release/*/windows/*.exe\n")
 
+        # o Instalador OpenPod (D34): os pacotes assinados + o indice, e os instaladores
+        if a.pacotes:
+            exigir(os.path.isfile(os.path.join(a.pacotes, "index.json")), "faltou o index.json em --pacotes")
+            os.makedirs(os.path.join(wt, "pacotes"))
+            for n in sorted(os.listdir(a.pacotes)):
+                if n == "index.json" or n.endswith(".tar.gz"):
+                    shutil.copy2(os.path.join(a.pacotes, n), os.path.join(wt, "pacotes", n))
+        if a.instalador:
+            os.makedirs(os.path.join(wt, "instalador"))
+            for n in ("openpod-instalador-macos.dmg", "openpod-instalador-windows.exe"):
+                exigir(os.path.isfile(os.path.join(a.instalador, n)), "faltou %s em --instalador" % n)
+                shutil.copy2(os.path.join(a.instalador, n), os.path.join(wt, "instalador", n))
+
         refs = os.path.join(RAIZ, "docs", "REFERENCIAS_PUBLICO.md")
         exigir(os.path.isfile(refs), "nao achei docs/REFERENCIAS_PUBLICO.md")
         shutil.copy2(refs, os.path.join(wt, "REFERENCIAS.md"))
@@ -185,7 +202,8 @@ def main():
         vaza = [f for f in arqs if re.search(r"\.exe$|B27|CLAUDE\.md|^tools/|^analysis/"
                                              r"|^firmware/|^docs/.*\.md$", f)
                 and not (a.com_flashloader and (f.endswith("/windows/" + FLASHLOADER)
-                                                or f == "atual/" + FLASHLOADER))]
+                                                or f == "atual/" + FLASHLOADER))
+                and f != "instalador/openpod-instalador-windows.exe"]
         exigir(not vaza, "isto NAO pode subir:\n  " + "\n  ".join(vaza))
         print("\nconferido: nada de codigo-fonte, analise ou .exe")
 
