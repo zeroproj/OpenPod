@@ -77,7 +77,7 @@ def main():
     ap.add_argument("--pacotes", default=None,
                     help="pasta com os pacotes .tar.gz assinados e o index.json do instalador (vai em pacotes/)")
     ap.add_argument("--instalador", default=None,
-                    help="pasta com openpod-instalador-macos.dmg e openpod-instalador-windows.exe (vai em instalador/)")
+                    help="pasta com o OpenPod Tune: openpod-tune-macos.dmg, -windows.exe e -linux-x86_64.tar.gz (vai em instalador/)")
     ap.add_argument("--com-flashloader", action="store_true",
                     help="inclui windows/FlashloaderSL-DEV-6.9.5.exe (decisao do mantenedor, 2026-10-23)")
     a = ap.parse_args()
@@ -168,7 +168,7 @@ def main():
                     shutil.copy2(os.path.join(a.pacotes, n), os.path.join(wt, "pacotes", n))
         if a.instalador:
             os.makedirs(os.path.join(wt, "instalador"))
-            for n in ("openpod-instalador-macos.dmg", "openpod-instalador-windows.exe"):
+            for n in ("openpod-tune-macos.dmg", "openpod-tune-windows.exe", "openpod-tune-linux-x86_64.tar.gz"):
                 exigir(os.path.isfile(os.path.join(a.instalador, n)), "faltou %s em --instalador" % n)
                 shutil.copy2(os.path.join(a.instalador, n), os.path.join(wt, "instalador", n))
 
@@ -203,7 +203,7 @@ def main():
                                              r"|^firmware/|^docs/.*\.md$", f)
                 and not (a.com_flashloader and (f.endswith("/windows/" + FLASHLOADER)
                                                 or f == "atual/" + FLASHLOADER))
-                and f != "instalador/openpod-instalador-windows.exe"]
+                and f != "instalador/openpod-tune-windows.exe"]
         exigir(not vaza, "isto NAO pode subir:\n  " + "\n  ".join(vaza))
         print("\nconferido: nada de codigo-fonte, analise ou .exe")
 
