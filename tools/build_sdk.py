@@ -50,7 +50,7 @@ def compile_obj(src, incs, obj):
 def link(objs, elf, binf, variante):
     extra = []
     ld = "app.ld"
-    if variante == "jogos35":
+    if variante in ("jogos35", "jogos35b"):
         ld = "app35.ld"
         extra = ["-Wl,-u,hook_home_create", "-Wl,-u,fw_player_title_hook",
                  "-Wl,-u,fw_player_title_hook_home_wrap",
@@ -164,12 +164,17 @@ def sources(variante):
     if variante == "diag":
         apps.append(os.path.join(SDK, "apps/keytest"))
         incs += ["-DFW_DIAG"]
-    elif variante in ("jogos", "jogos35"):
+    elif variante in ("jogos", "jogos35", "jogos35b"):
         apps += [os.path.join(SDK, "apps/flutter"),
                  os.path.join(SDK, "apps/mp3tris"),
                  os.path.join(SDK, "apps/cobrinha")]
     else:
-        raise SystemExit("variante deve ser diag, jogos ou jogos35")
+        raise SystemExit("variante deve ser diag, jogos, jogos35 ou jogos35b")
+    if variante == "jogos35b":
+        # ficha 028b: o titulo da faixa (msg+4 == 1) e o contador da fila
+        # (msg+4 == 0) sao separados.  Sem esta flag o codigo e o da 3.5
+        # publicada, byte a byte.
+        incs += ["-DFW_PLAYER_35B"]
     return incs, apps
 
 
@@ -181,7 +186,7 @@ def build(variante, outdir):
     gen = os.path.join(outdir, "gen")
     os.makedirs(gen)
 
-    if variante in ("jogos", "jogos35"):
+    if variante in ("jogos", "jogos35", "jogos35b"):
         assets = os.path.join(SDK, "apps/flutter/assets")
         for f in sorted(os.listdir(assets)):
             if f.endswith(".png"):
@@ -201,7 +206,7 @@ def build(variante, outdir):
             obj = os.path.join(outdir, "obj", "sdk", f[:-2] + ".o")
             compile_obj(os.path.join(SDK, "src", f), incs, obj)
             objs.append(obj)
-    if variante == "jogos35":
+    if variante in ("jogos35", "jogos35b"):
         for f in sorted(os.listdir(os.path.join(SDK, "player"))):
             if f.endswith(".c"):
                 obj = os.path.join(outdir, "obj", "player", f[:-2] + ".o")
@@ -230,7 +235,7 @@ def build(variante, outdir):
         "hook_home_menu_create", "hook_home_create",
         "fw_player_title_hook", "fw_player_title_hook_home_wrap",
         "fw_player_timer_cb") if n in syms}
-    if variante == "jogos35":
+    if variante in ("jogos35", "jogos35b"):
         symbols = {
             "hook_home_menu_create": 0x00DAB000,
             "hook_home_create": 0x00DAB200,
@@ -256,7 +261,8 @@ def build(variante, outdir):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--variante", choices=("diag", "jogos", "jogos35"), default="jogos")
+    ap.add_argument("--variante", choices=("diag", "jogos", "jogos35", "jogos35b"),
+                    default="jogos")
     ap.add_argument("--out-dir", default=os.path.join(SDK, "build", "sdk"))
     ap.add_argument("--check-repro", action="store_true")
     a = ap.parse_args()

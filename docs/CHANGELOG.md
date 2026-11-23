@@ -7,6 +7,57 @@ número, hash e registro do que mudou.
 
 ---
 
+## 2026-11-22 — OpenPod Reload 3.5 Diag 2 (ficha 028b): o nome da música no cartão da home
+
+- **Diagnóstico (CONFIRMADO no ORIGINAL):** a mensagem tipo 3 traz o
+  **índice do elemento** no halfword de `msg+4`, não o texto do título.
+  Os cinco apresentadores da fábrica escrevem 0 = contador da fila
+  (`0xD083C4`), **1 = título** (`0xD08448`), 2 = caminho (`0xD084F8`),
+  3 e 4 = tempos (`0xD086B0`, `0xD087D8`); o texto vai em `msg+0x14`.
+  Na view do player (`0xD31E7C`) o rótulo `[view+0]` é o **contador**
+  ("1/253") e `[view+4]` é o **título** (ficha 007 A4; ficha 011 já
+  provou o mesmo `tbb` de `0xD32242`).
+- **A causa do "♪ 31/165":** a 3.5 copiava **qualquer** tipo 3 como
+  título, e a fábrica manda o título (1) e **depois** o contador (0) —
+  o contador ficava por cima. E o gancho do player filtrava `[view+0]`,
+  que é o rótulo do contador, não o do título.
+- **A home recebe tudo:** `page_home_label_process` (`0xD2EEC4`) usa o
+  índice para escolher o rótulo de um ícone da home
+  (`vista[0x24+4*índice]`), e a view da home tem um rótulo por ícone
+  (`0xD2ED84`/`0xD2ED8A`), então o `cbnz` de `0xD2ED4` passa para os
+  índices 0, 1 e 2. O `media_cb` (`0xD088B4`) roda com **qualquer**
+  página aberta (o guardião é o ponteiro em `0x0081CDE0`, e a chamada
+  é `blx r3` em `0xD0EEEC`), logo o título chega à home: a cópia da
+  mensagem no ring da view é o RAM que a CPU1 só lê.
+- **O que muda:** o gancho da home separa o título (índice 1) do
+  contador (índice 0); o gancho do player filtra `[view+4]` (o título)
+  e `[view+0]` (o contador). O contador **não aparece** no cartão: é
+  só o sinal de troca de faixa. Se o contador muda e nenhum título novo
+  chega, o título que temos é de outra faixa e **some** — nunca se
+  mostra o título de outra faixa.
+- **Build:** o SDK `jogos35b` (14.048 B, +104 B) no mesmo lote
+  `0x1AB000..0x1FC000`; a receita nova `reload_3.5b` = `reload_3.5` +
+  `fab_reload_3_5b.py`. O diff contra a 3.5 são **2.158 B**, todos no
+  lote do SDK: os quatro ganchos, a tabela das molduras e a folha dos
+  ícones ficam byte a byte. O fonte do player mudou, mas o SDK `jogos35`
+  não: a **3.5 publicada continua reproduzível byte a byte**
+  (`f49c8195…`).
+- **Testes:** `tests/test_reload_3_5b.py` (18 testes, no mesmo CI via
+  `tests/test_reload_3_5.py`, porque o `tools/ci.sh` é protegido): a
+  `page_home_label_process` **real** (`0xD2EEC4`) e a
+  `page_music_play_label_process` **real** (`0xD32204`) rodam no
+  unicorn com um chamador real — o índice 1 preenche o título, o 0
+  preenche o contador, o 2 não preenche nada, e o título some quando o
+  contador muda sem título novo. A capa do álbum continua (a cauda
+  `0xDAA014`).
+- **Kit:** `release/OpenPod-Reload-3.5-Diag2/`, carimbo **"Reload 3.5
+  Diag 2"** em `0x1A4F00`. Imagem sem carimbo `ba56813d…`, carimbada
+  `65fad72f…`; `.up` `OpenPod_OpenPodReload3.5Diag2.up`, 1.765.632 B,
+  CRC `0xC5C9`, sha `3c71a462…`; 5 setores de cabo (base: a 3.5 Diag).
+- **MEDIDA:** o stop (o cartão mantém o último nome ou volta a "Nada
+  tocando") é o ponto que o decisor mede neste kit.
+---
+
 ## 2026-11-20 — OpenPod Reload 3.3 (ficha 025): pular rápido e a capa fora do heap da CPU1
 
 - **Parte 0 (dois núcleos):** o CRIA/APAGA da capa do álbum rodava na

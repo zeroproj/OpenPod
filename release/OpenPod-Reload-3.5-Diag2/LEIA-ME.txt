@@ -1,0 +1,90 @@
+OpenPod_Install — OpenPod_OpenPodReload3.5Diag2
+===================================================
+
+OpenPod OpenPod Reload 3.5 Diag2
+
+GERADO por tools/make_install_kit.py. Nao edite a mao.
+Requisitos: Linux, python3, lsusb, smtlink_dump.
+
+
+A REGRA QUE NASCEU DE UM ERRO REAL
+----------------------------------
+  O write_flash grava A PARTIR DO OFFSET 0 DO ARQUIVO.
+  O 2o argumento NAO e o offset dentro do arquivo.
+
+  ERRADO  write_flash 0xD000 0xD000 0x1000 imagem_2MiB.bin
+  CERTO   write_flash 0xD000 0      0x1000 setor_D000.bin
+
+  Por isso: um arquivo POR SETOR, sempre 0 no 2o argumento.
+  Detalhe em docs/WRITE_FLASH_SEMANTICS.md.
+
+
+CONTEUDO
+--------
+  flash_OpenPod_OpenPodReload3.5Diag2.sh      grava (5 setores, 20 KiB)
+  diag.sh                diagnostico          (SO LEITURA)
+  recovery_check_linux.sh  confere a ferramenta (SO LEITURA)
+
+  SETORES A GRAVAR (4096 B cada)
+    OpenPod_OpenPodReload3.5Diag2_1A4000.bin 0x1A4000  14bf213f9efdea1e98ce504168b03fe6788f1f5737d47f8ef6c2bcedf5fff32a
+    OpenPod_OpenPodReload3.5Diag2_1AB000.bin 0x1AB000  e209436ef4c8923d5e45bc183624b305104e5bf233c22954f7e1207d117144f3
+    OpenPod_OpenPodReload3.5Diag2_1AC000.bin 0x1AC000  037426e5f8b6e4027aeb571d00c0d09e378cd3bc5d8202963391d8dde3555af6
+    OpenPod_OpenPodReload3.5Diag2_1AD000.bin 0x1AD000  3c9344424cc1701b1d9f9179cf6074cf7f61e313ee68369a32d3451ff81f5dd8
+    OpenPod_OpenPodReload3.5Diag2_1AE000.bin 0x1AE000  bc006461a964e4576c41b1a5b7a62c765d4ef10086715909f5a72bcb68a0263f
+
+  SETORES DE REVERSAO -> ESTADO ANTERIOR (a base deste kit)
+    base_1A4000.bin  0x1A4000  460fd73af7e960800e95e4e141fd98fe6842b70b6f39ae510c56e259e12218f5
+    base_1AB000.bin  0x1AB000  c0bc8eca950a81e2fc4fe16d37df4f0822c957221997b0f7ee6bfac885d4e46d
+    base_1AC000.bin  0x1AC000  3022093ebbc1a0f3eadb2fab98e8bbe74d2af2124bb442017d77852c160059c7
+    base_1AD000.bin  0x1AD000  e2f322ed2e84d951b5bcd8f6f837d2a4f84b66663002387276d1ba92b52c9bcd
+    base_1AE000.bin  0x1AE000  d2630e02f4e1e6f8ec52372668cdbaf6747700e38483a9894ce3970dfe74c479
+
+
+COMO RODAR
+----------
+  sha256sum *.bin          # conferir a transferencia
+
+  sudo sh diag.sh /opt/smartlink_flash        # so leitura
+  sudo sh flash_OpenPod_OpenPodReload3.5Diag2.sh /opt/smartlink_flash
+
+ORDEM RECOMENDADA (a que se mostrou mais confiavel):
+  1. plugue o aparelho, com o cartao, e espere o raio na tela
+  2. espere mais ~10 segundos
+  3. SO ENTAO rode o script
+
+O script tambem aceita a ordem inversa — se o aparelho nao estiver
+conectado ele espera e avisa a hora de plugar. Mas por esse caminho
+o aparelho costuma RE-ENUMERAR logo depois de detectado (observado
+em 2026-09-12: Device 094 na espera, Device 098 segundos depois).
+
+Por que a folga importa: o aparelho precisa de alguns segundos
+entre plugar e o primeiro comando, senao cai do modo card reader no
+meio da operacao. Era por isso que o recovery_check_linux.sh
+'funcionava melhor' — ele gastava tempo compilando antes de falar
+com o aparelho. Agora essa folga e explicita.
+
+O script para e pede GRAVAR digitado. Ate ai, so houve leitura.
+
+
+SE DER ERRADO
+-------------
+NAO DESLIGUE O APARELHO. Enquanto ele enumera, tem conserto.
+
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1A4000 0 0x1000 base_1A4000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1AB000 0 0x1000 base_1AB000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1AC000 0 0x1000 base_1AC000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1AD000 0 0x1000 base_1AD000.bin
+  sudo /opt/smartlink_flash/smtlink_dump --id 301a:2801 \
+       write_flash 0x1AE000 0 0x1000 base_1AE000.bin
+
+Isso devolve o aparelho ao estado ANTERIOR — o mesmo que ele tinha
+antes deste kit, ja verificado e ja testado bootando.
+
+NAO use setores de fabrica para reverter um patch parcial: o resto
+da flash continuaria no estado da base e a FIRM ficaria misturada,
+com o CRC da tabela de particoes sem bater. Para voltar de fato ao
+ORIGINAL DE FABRICA, use o procedimento completo de recuperacao.
