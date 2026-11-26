@@ -1,3 +1,5 @@
+> **DESATUALIZADO (set/2026).** O documento de entrada agora é **`docs/COMO-RETOMAR.md`**.
+
 # Estado atual — leia isto primeiro
 
 > Atualizado em **2026-09-17**, depois do incidente da 3.1.2.
