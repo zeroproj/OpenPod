@@ -166,11 +166,15 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
       mudar o site). O texto novo cabe no mesmo endereço `0x1A4F00`, então o **ponteiro não muda**.
     - O que muda no firmware são **12 bytes** (medido): `0x1A4F00..0x1A4F0B`, só o texto do carimbo
       (`"Reload 3.5\0"` → `"OpenPod 5.3\0"`).
-    - O que fazer: a mesma receita (`reload_3.5b`), `patch_versao.py --texto "OpenPod 5.3" --em 0x1A4F00`,
-      kit `release/OpenPod-5.3/`, pacote assinado `openpod-system-5.3.tar.gz`, `system: 5.3` no
-      `pacotes/index.json`, e o site (card 5.3, linha de histórico, e as próximas versões do System em
-      **5.x**: a antiga 3.6 vira **5.4**).
-    - **Ficha: `docs/tarefas/030-openpod-system-5-3.md`.**
+    - **FICHA 030 PRONTA** (`docs/tarefas/030-openpod-system-5-3.md`), com a conferência
+      (`030-conferencia.md`) e a revisão **APROVADO COM RESSALVAS** (`030-revisao.md`). `sh tools/ci.sh` verde.
+    - **Pronto, aguardando o teste do decisor:** imagem `firmware/WORKING/openpod_5_3_carimbado.bin`
+      (sha `8551ea02…`), kit `release/OpenPod-5.3/` (`.up` sha `63520f82…`, CRC16 `0xD5DF`), pacote do Tune
+      `openpod-system-5.3.tar.gz` (sha `612d015b…`, assinado) e o `index.json` com `system: 5.3`.
+      O `.up` novo difere do `.up` publicado da 3.5 em **14 bytes**: os 12 do carimbo + os 2 do CRC16.
+    - **Um ponto para o decisor:** o site renumerou também o `4.0 · previsto` para `5.5 · previsto`
+      (o desenvolvedor marcou como PROVÁVEL; a revisão apontou como ressalva BAIXA). Manter o 5.5 ou
+      voltar para 4.0?
     - **O decisor testa no aparelho antes. Publicar só com o "pode" dele.**
 0. **Ficha 032, o Tune como plataforma** (`OpenPod-instalador/docs/openpod/032-tune-plataforma.md`): a especificação do decisor de 26/11, já conferida contra o código e dividida nas fases A–E. As decisões (a)–(d) da §2 **já estão decididas** (D45–D49). Começar pela **Fase A** (registros e manifestos).
 1. **StorePod:**
