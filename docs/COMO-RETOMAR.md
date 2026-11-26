@@ -63,7 +63,7 @@ Os agentes estão em `.opencode/agents/` nos dois repositórios (`OpenPod/` e `O
 
 | Produto | Versão | Arquivo no site |
 |---|---|---|
-| **OpenPod System** (firmware de fábrica melhorado) | **Reload 3.5** (imagem `ba56813d…` + carimbo; o nome da música no cartão da home) | `pacotes/openpod-system-3.5.tar.gz`, `atual/update.up`, `release/OpenPod-Reload-3.5/` |
+| **OpenPod System** (firmware de fábrica melhorado) | **Reload 3.5** (imagem `ba56813d…` + carimbo; o nome da música no cartão da home) — **vai virar 5.3** (D51: só a renumeração, mesmas funções) | `pacotes/openpod-system-3.5.tar.gz`, `atual/update.up`, `release/OpenPod-Reload-3.5/` |
 | **OpenPod RockBox** | **5.3.822b9f5e99** (enxuto: só os temas OpenPod/Rockbox, sem jogos/apps/demos; volume na tela; registra o tema no cartão; plugins do sistema) | `pacotes/openpod-rockbox-5.3.822b9f5e99.tar.gz` |
 | **OpenPod Tune** (instalador, ex-"Instalador OpenPod") | 0.4 | `instalador/openpod-tune-macos.dmg`, `-windows.exe`, `-linux-x86_64.tar.gz` |
 | **StorePod** (a loja dentro do Tune) | o Tema OpenPod 1.2 (`sistema: true`) | `storepod/index.json`, `storepod/tema-openpod-1.2.tar.gz`, `storepod/tema-openpod.png` |
@@ -161,6 +161,15 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
 
 ## 8. Pendências (por ordem)
 00. ~~Publicar o RockBox 5.3~~ — **feito** em 26/11/2026 (D50).
+01. **Renumerar o OpenPod System: "Reload 3.5" → 5.3** (D51). Só a renumeração: as funções são as mesmas da 3.5.
+    - **Falta o decisor escolher o nome que aparece na tela** (`"5.3"`, `"OpenPod 5.3"` ou outro) — o carimbo é gravado
+      dentro do firmware, então não basta mudar o site.
+    - O que muda no firmware são **11 bytes** (medido): o texto do carimbo em `0x1A4F00..0x1A4F0A` e, só se o endereço
+      mudar, o ponteiro em `0x10A59C..0x10A59E`.
+    - O que fazer: a mesma receita (`reload_3.5b`), `patch_versao.py --em 0x1A4F00`, kit `release/OpenPod-5.3/`,
+      pacote assinado `openpod-system-5.3.tar.gz`, `system: 5.3` no `pacotes/index.json`, e o site (card 5.3, linha
+      de histórico, e as próximas versões do System em **5.x**: a antiga 3.6 vira **5.4**).
+    - **O decisor testa no aparelho antes. Publicar só com o "pode" dele.**
 0. **Ficha 032, o Tune como plataforma** (`OpenPod-instalador/docs/openpod/032-tune-plataforma.md`): a especificação do decisor de 26/11, já conferida contra o código e dividida nas fases A–E. As decisões (a)–(d) da §2 **já estão decididas** (D45–D49). Começar pela **Fase A** (registros e manifestos).
 1. **StorePod:**
    - ampliar o `requer` para a versão do RockBox (`rockbox >= 1.2`), antes de pôr jogos e apps;
@@ -169,7 +178,7 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
    troca de faixa na home.
 3. **OpenPod RockBox 6.0 (mudança de firmware):** a capa do álbum, **com os mesmos limites do OpenPod System** (D49): JPEG comum (baseline) embutido no MP3; ideal de 300×300 a 500×500; aceita até 1000×1000 e 512 KB. Acima disso, JPEG progressivo ou PNG: mostra a nota e a música toca normal. Os limites ficam no **código do nosso Rockbox**, que confere antes de decodificar. Junto vem o `.rockbox/aparelho.json` (F2b). Recompilar o Rockbox YP3 com `HAVE_ALBUMART` (melhor no Linux) e publicar a fonte em
    `rockbox-gn438`.
-4. **OpenPod 3.6** (10/01/2027): os jogos novos e o **bichinho virtual** (ficha 027, regras do ePet/MIT).
+4. **OpenPod 5.4** (10/01/2027, era a "3.6"): os jogos novos e o **bichinho virtual** (ficha 027, regras do ePet/MIT).
 5. **3.4 = Ghidra** (o firmware todo desmontado; D21), no Linux.
 6. **Mudança para o Linux:** `mudanca/empacota_mac.sh` e `instala_linux.sh` (D30).
 7. Ficha 026 (a caixa-preta `crashlog.txt`).
