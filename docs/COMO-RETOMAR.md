@@ -144,7 +144,7 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
    - depois, os jogos e apps que **o decisor testar** no aparelho entram no catálogo um por um.
 2. **Revisão externa da 028b** (3.5): só a conferência da coordenação foi feita. O decisor ainda não confirmou que o nome acompanha a
    troca de faixa na home.
-3. **OpenPod RockBox 1.3:** a capa do álbum. Recompilar o Rockbox YP3 com `HAVE_ALBUMART` (melhor no Linux) e publicar a fonte em
+3. **OpenPod RockBox 6.0 (mudança de firmware):** a capa do álbum, **com os mesmos limites do OpenPod System** (D49): JPEG comum (baseline) embutido no MP3; ideal de 300×300 a 500×500; aceita até 1000×1000 e 512 KB. Acima disso, JPEG progressivo ou PNG: mostra a nota e a música toca normal. Os limites ficam no **código do nosso Rockbox**, que confere antes de decodificar. Junto vem o `.rockbox/aparelho.json` (F2b). Recompilar o Rockbox YP3 com `HAVE_ALBUMART` (melhor no Linux) e publicar a fonte em
    `rockbox-gn438`.
 4. **OpenPod 3.6** (10/01/2027): os jogos novos e o **bichinho virtual** (ficha 027, regras do ePet/MIT).
 5. **3.4 = Ghidra** (o firmware todo desmontado; D21), no Linux.
