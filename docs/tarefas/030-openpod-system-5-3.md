@@ -20,9 +20,10 @@ As funções são **as mesmas** da 3.5. **Não é uma versão nova**: é a mesma
 - O `patch_versao.py` já faz isso: com `--em 0x1A4F00` e `--texto "5.3"`, ele escreve o texto novo,
   reponta o literal e **relê pelo ponteiro** para conferir. O ponteiro fica **igual** se o endereço não muda.
 
-**Consequência importante:** se o novo texto couber no mesmo endereço `0x1A4F00` (que é o caso de
-qualquer texto de até 10 caracteres), **só os bytes do texto mudam — 11 bytes**. Se o texto for maior,
-mudam também os 3 bytes do ponteiro, e o texto passa a ocupar um endereço novo (ainda na área livre).
+**Consequência importante:** o novo texto (`OpenPod 5.3`, 11 caracteres) cabe no mesmo endereço
+`0x1A4F00`, então **o ponteiro não muda** e **só os bytes do texto mudam** — a imagem nova difere da
+3.5 carimbada em **12 bytes** (`0x1A4F00..0x1A4F0B`), todos dentro do carimbo. Se o texto fosse maior
+e não coubesse, o endereço mudaria e os 3 bytes do ponteiro mudariam junto.
 
 ## O que fazer
 
@@ -65,8 +66,9 @@ mudam também os 3 bytes do ponteiro, e o texto passa a ocupar um endereço novo
      (e a equivalente em inglês);
    - as **próximas versões** do System passam a **5.x**: a antiga **"3.6 · 10/01/2027"** (jogos novos + bichinho
      virtual) vira **"5.4 · 10/01/2027"**;
-   - o texto que diz *"a versão do OpenPod (começa com `Reload`)"* (o passo a passo de instalação) precisa
-     ser conferido: se o carimbo novo não começa com "Reload", ajuste esse texto;
+   - o texto que diz *"a versão do OpenPod (começa com `Reload`)"* (o passo a passo de instalação,
+     PT e EN) **precisa mudar**: o carimbo novo **não** começa com "Reload", e sim com **"OpenPod 5.3"**.
+     Ajuste para o que faz sentido na frase (por exemplo, *"começa com `OpenPod`"*);
    - **não** mexa no card do RockBox (já está em 5.3) nem no histórico do RockBox.
 7. **Registre** em `docs/tarefas/030-analise.md` o que foi conferido, com CONFIRMADO / PROVÁVEL / HIPÓTESE.
 
@@ -74,11 +76,12 @@ mudam também os 3 bytes do ponteiro, e o texto passa a ocupar um endereço novo
 
 1. **A imagem nova só difere da 3.5 nos bytes do carimbo.** Compare `openpod_5_3_carimbado.bin` com
    `reload_3.5_carimbado.bin` **byte a byte**, e diga:
-   - quantos bytes mudaram e **em quais endereços** (tem de ser só `0x1A4F00..` e, se o texto for maior,
-     `0x10A59C..0x10A59E`);
+   - quantos bytes mudaram e **em quais endereços** — tem de ser **12 bytes, em `0x1A4F00..0x1A4F0B`**;
+   - que **o ponteiro em `0x10A59C` NÃO mudou** (tem de continuar `0x00DA4F00`);
    - que **nenhum outro byte** da imagem mudou.
 2. **A string lida pelo aparelho é a nova.** Releia o texto pelo ponteiro (o `patch_versao.py` já imprime
-   isso, mas confirme) e diga o que o aparelho mostra em Config → Informações.
+   isso, mas confirme) e diga o que o aparelho mostra em Config → Informações: tem de ser
+   **`OpenPod 5.3`**, e o `patch_versao.py` tem de dizer **72 px** (a tela aceita 113 px).
 3. **O ORIGINAL intacto:** `shasum -a 256 firmware/ORIGINAL/GN438_original.bin` =
    `b7cd5eb952be5328cbaa926099cf8d88168633c1fab6d0f31f3a283c9e24b36f`.
 4. **As regras de byte:** nada abaixo de `0xE000`; o setor `0xD000` e a PSMP (`0x1FC000+`) intocados.
@@ -112,13 +115,32 @@ Sinal: `PRONTO-030` ou `ESCALADA-030` sozinho numa linha.
 
 ## Texto do carimbo
 
-**A PREENCHER pela coordenação, depois da resposta do decisor.** O que o aparelho mostra em
-Config → Informações. São 11 bytes no máximo (10 caracteres + o `\0`).
+**DEFINIDO PELO DECISOR: `OpenPod 5.3`** (D51, 26/11/2026).
 
-- Opção A: `5.3`
-- Opção B: `OpenPod 5.3`
-- Opção C: (outro, a definir)
+É esse texto que o aparelho mostra em **Config → Informações**. São 12 bytes (11 caracteres + o `\0`):
 
-> O `patch_versao.py` também **confere a largura**: a tela Informacao aceita **113 px** por linha e
-> **não quebra linha**. Se o texto não couber, ele avisa a largura em px — mas o que decide é o
-> decisor, com o aparelho na mão.
+```
+OpenPod 5.3\0
+```
+
+- O **endereço** é `0x1A4F00` (o mesmo da 3.5) → o **ponteiro em `0x10A59C` NÃO muda**, e a imagem nova
+  difere da 3.5 carimbada em **exatamente 12 bytes**, todos em `0x1A4F00..0x1A4F0B`.
+- Como o texto novo é **1 byte mais longo** que `"Reload 3.5"`, o `\0` final fica em `0x1A4F0B` (na 3.5
+  ele estava em `0x1A4F0A`, e `0x1A4F0B` era `0xFF`). A diferença é **só o texto**; **nada mais** na imagem muda.
+- A largura do texto é conferida pelo `patch_versao.py` (a tela Informacao aceita **113 px** por linha e
+  **não quebra linha**). O "OpenPod 5.3" mede **72 px**: cabe com folga.
+
+> **Valores de referência (medidos pela coordenação em 26/11/2026, com o `reload_3.5b`):**
+>
+> | | valor |
+> |---|---|
+> | sha da imagem nova carimbada | (o desenvolvedor anota; **não** é `ba56813d…`, porque o carimbo mudou) |
+> | bytes diferentes da 3.5 carimbada | **12**, em `0x1A4F00..0x1A4F0B` |
+> | o ponteiro `0x10A59C` | **inalterado** (`0x00DA4F00`) |
+> | a string de fábrica `0x04EA8B` | **intacta** |
+>
+> Se a conferência der **outro** número de bytes, ou mexer no ponteiro, **PARE** e escale.
+
+> **Se o `patch_versao.py` recusar** (texto largo demais, ou `0x1A4F00` não virgem por algum motivo),
+> **PARE e escale** (`ESCALADA-030`). Não escolha outro endereço por conta própria: mudar o endereço
+> mudaria o ponteiro, e a conferência da coordenação espera **só 12 bytes** de diferença.
