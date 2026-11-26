@@ -138,6 +138,7 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
   Os plugins são compilados por aparelho, então só os da build YP3 servem. O JPEG progressivo nunca funciona.
 
 ## 8. Pendências (por ordem)
+0. **Ficha 032, o Tune como plataforma** (`OpenPod-instalador/docs/openpod/032-tune-plataforma.md`): a especificação do decisor de 26/11, já conferida contra o código e dividida nas fases A–E. Antes de começar, **pegue as decisões pendentes (a)–(d) da §2 com o decisor**.
 1. **StorePod:**
    - ampliar o `requer` para a versão do RockBox (`rockbox >= 1.2`), antes de pôr jogos e apps;
    - depois, os jogos e apps que **o decisor testar** no aparelho entram no catálogo um por um.
