@@ -51,20 +51,20 @@ Os agentes estão em `.opencode/agents/` nos dois repositórios (`OpenPod/` e `O
 | **Máquina Linux** | Mint 22.3 pelo Tailscale: `ssh lab-linux-ts` (usuário zeroproj, `sudo` pede senha). Ali se compila o Tune para Linux (`~/openpod-tune-build`). |
 | **GitHub** | O `gh` ativo é limtistech. Para a zeroproj: `GH_TOKEN=$(gh auth token --user zeroproj)`. O Git usa SSH (zeroproj). |
 
-## 4. O que está no ar (2026-11-23)
+## 4. O que está no ar (2026-11-26)
 
-> **PRONTO E NÃO PUBLICADO (26/11/2026): OpenPod RockBox 5.3.822b9f5e99** (D46, D49).
+> **PUBLICADO (26/11/2026, com o "pode" do decisor): OpenPod RockBox 5.3.822b9f5e99** (D46, D49, D50).
 > - Nova numeração `firmware.customização.compilação` (era 1.2) e de volta os plugins que o próprio Rockbox chama:
 >   `main_menu_config`, `playing_time`, `disktidy`. Mesma flash da 1.2.
-> - Já assinado em `_local/publicar/pacotes/openpod-rockbox-5.3.822b9f5e99.tar.gz`; o `_local/publicar/pacotes/index.json` já aponta
->   `rockbox: 5.3.822b9f5e99` (o 1.2 saiu da pasta). O site (`docs/index.html`) já mostra 5.3 no card e no histórico.
-> - **Publicar só quando o decisor disser "pode"**, com a receita do §5 (o mesmo comando). Depois confira online o sha do
->   `index.json` e o download do pacote.
+> - Conferido antes de publicar: assinatura Ed25519 válida, todos os sha256 do SHA256SUMS batem, o `config.cfg` e o
+>   `instalados.json` do usuário **não** estão no pacote, o `sistema.json` (tema 1.2) está.
+> - No ar: `pacotes/openpod-rockbox-5.3.822b9f5e99.tar.gz` (sha `dac4f8c6…`), o `pacotes/index.json` aponta para 5.3 e o
+>   pacote antigo da 1.2 dá **404**. O `index.html` mostra 5.3 no card e no histórico (PT/EN).
 
 | Produto | Versão | Arquivo no site |
 |---|---|---|
 | **OpenPod System** (firmware de fábrica melhorado) | **Reload 3.5** (imagem `ba56813d…` + carimbo; o nome da música no cartão da home) | `pacotes/openpod-system-3.5.tar.gz`, `atual/update.up`, `release/OpenPod-Reload-3.5/` |
-| **OpenPod RockBox** | **1.2.822b9f5e99** (enxuto: só os temas OpenPod/Rockbox, sem jogos/apps/demos; volume na tela; registra o tema no cartão) | `pacotes/openpod-rockbox-1.2.822b9f5e99.tar.gz` |
+| **OpenPod RockBox** | **5.3.822b9f5e99** (enxuto: só os temas OpenPod/Rockbox, sem jogos/apps/demos; volume na tela; registra o tema no cartão; plugins do sistema) | `pacotes/openpod-rockbox-5.3.822b9f5e99.tar.gz` |
 | **OpenPod Tune** (instalador, ex-"Instalador OpenPod") | 0.4 | `instalador/openpod-tune-macos.dmg`, `-windows.exe`, `-linux-x86_64.tar.gz` |
 | **StorePod** (a loja dentro do Tune) | o Tema OpenPod 1.2 (`sistema: true`) | `storepod/index.json`, `storepod/tema-openpod-1.2.tar.gz`, `storepod/tema-openpod.png` |
 | **Índice do Tune** | — | `pacotes/index.json` (System + RockBox). O Tune lê de `https://zeroproj.github.io/OpenPod/pacotes/index.json`. |
@@ -160,8 +160,8 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
   Os plugins são compilados por aparelho, então só os da build YP3 servem. O JPEG progressivo nunca funciona.
 
 ## 8. Pendências (por ordem)
-00. **Publicar o RockBox 5.3** quando o decisor disser "pode" (ver o quadro do §4).
-0. **Ficha 032, o Tune como plataforma** (`OpenPod-instalador/docs/openpod/032-tune-plataforma.md`): a especificação do decisor de 26/11, já conferida contra o código e dividida nas fases A–E. Antes de começar, **pegue as decisões pendentes (a)–(d) da §2 com o decisor**.
+00. ~~Publicar o RockBox 5.3~~ — **feito** em 26/11/2026 (D50).
+0. **Ficha 032, o Tune como plataforma** (`OpenPod-instalador/docs/openpod/032-tune-plataforma.md`): a especificação do decisor de 26/11, já conferida contra o código e dividida nas fases A–E. As decisões (a)–(d) da §2 **já estão decididas** (D45–D49). Começar pela **Fase A** (registros e manifestos).
 1. **StorePod:**
    - ampliar o `requer` para a versão do RockBox (`rockbox >= 1.2`), antes de pôr jogos e apps;
    - depois, os jogos e apps que **o decisor testar** no aparelho entram no catálogo um por um.
