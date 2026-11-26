@@ -1,6 +1,6 @@
 # OpenPod
 
-> **Coordenação: comece por `docs/COMO-RETOMAR.md`** (quem é quem, as regras, as pastas, o que está no ar, como publicar e as pendências).
+> **Coordenação: comece por `docs/COMO-RETOMAR.md`** (quem é quem, as regras, as pastas, o que está no ar, como publicar e as pendências). Depois, **`docs/COORDENACAO-AGENTES.md`** (os agentes `desenvolvedor`, `desenvolvedor-go` e `revisor`, o ciclo da ficha e a troca de modelo quando a cota acaba).
 
 Firmware do player **Iigenai GN-438** (Smartlink/YP3, `yp3_2.0.43`), modificado
 em degraus a partir do firmware de fábrica. ARM Thumb-2, XIP em `0x00C00000`,

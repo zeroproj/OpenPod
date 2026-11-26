@@ -5,14 +5,17 @@
 > As regras de byte e de revisão do firmware estão no `AGENTS.md` (raiz) e no `CLAUDE.md`.
 
 ## 1. Quem é quem
+**O guia completo de como coordenar os agentes está em `docs/COORDENACAO-AGENTES.md`. Leia logo depois deste.**
 
 | Papel | Quem | Observação |
 |---|---|---|
 | **Decisor** | Lucas (usuário) | Escreve em português. Só ele grava no aparelho e dá o **"pode"** para publicar. |
-| **Coordenação** (você) | LLM coordenadora | Escreve as fichas, despacha, **confere byte a byte**, manda revisar, empacota, assina e publica com o "pode". |
-| **Desenvolvedor** | `opencode-go/deepseek-v4.1-flash` (plano Go) ou `opencode/deepseek-v4.1-flash-free` | Faz as fichas. Quando a cota acaba, o opencode **fica parado em silêncio**: ver §8. |
-| **Reserva paga** | `minimax/MiniMax-M3` | Usado quando o DeepSeek não tem cota. Foi o melhor desenvolvedor nas fichas 028b–031. |
-| **Revisor** | `opencode/big-pickle` (grátis) | Só lê e escreve o parecer (`APROVADO` / `APROVADO COM RESSALVAS` / `REPROVADO`). |
+| **Coordenação** (você) | `opencode-go/minimax-m3` | Escreve as fichas, despacha, **confere byte a byte**, manda revisar, empacota, assina e publica com o "pode". Não desenvolve as fichas. |
+| **Desenvolvedor** | agente `desenvolvedor` = `opencode/deepseek-v4.1-flash-free` | Faz as fichas. Quando a cota acaba, o opencode **fica parado em silêncio**. |
+| **Desenvolvedor reserva** | agente `desenvolvedor-go` = `opencode-go/deepseek-v4.1-flash` | Quando a cota do grátis acabar. Se o Go também acabar, avise o decisor (a reserva paga `minimax/MiniMax-M3` só com o aval dele). |
+| **Revisor** | agente `revisor` = `opencode/big-pickle` (grátis) | Só lê e escreve o parecer (`APROVADO` / `APROVADO COM RESSALVAS` / `REPROVADO`). |
+
+Os agentes estão em `.opencode/agents/` nos dois repositórios (`OpenPod/` e `OpenPod-instalador/`).
 
 ## 2. Regras inegociáveis
 
@@ -50,6 +53,14 @@
 
 ## 4. O que está no ar (2026-11-23)
 
+> **PRONTO E NÃO PUBLICADO (26/11/2026): OpenPod RockBox 5.3.822b9f5e99** (D46, D49).
+> - Nova numeração `firmware.customização.compilação` (era 1.2) e de volta os plugins que o próprio Rockbox chama:
+>   `main_menu_config`, `playing_time`, `disktidy`. Mesma flash da 1.2.
+> - Já assinado em `_local/publicar/pacotes/openpod-rockbox-5.3.822b9f5e99.tar.gz`; o `_local/publicar/pacotes/index.json` já aponta
+>   `rockbox: 5.3.822b9f5e99` (o 1.2 saiu da pasta). O site (`docs/index.html`) já mostra 5.3 no card e no histórico.
+> - **Publicar só quando o decisor disser "pode"**, com a receita do §5 (o mesmo comando). Depois confira online o sha do
+>   `index.json` e o download do pacote.
+
 | Produto | Versão | Arquivo no site |
 |---|---|---|
 | **OpenPod System** (firmware de fábrica melhorado) | **Reload 3.5** (imagem `ba56813d…` + carimbo; o nome da música no cartão da home) | `pacotes/openpod-system-3.5.tar.gz`, `atual/update.up`, `release/OpenPod-Reload-3.5/` |
@@ -62,6 +73,16 @@
 O decisor testou o Tune no **macOS (com a senha), no Windows e no Linux**: funcionou. O System 3.5 e o RockBox estão no aparelho dele.
 
 ## 5. Como gerar e publicar (receitas)
+
+**O pacote do RockBox atual (5.3), para regerar se preciso** (de dentro de `OpenPod-instalador/`; a fonte original do Jayden fica guardada
+em `OpenPod/_local/fontes/rockbox-yp3-822b9f5e99-261122.tar.xz`, sha `1095e4b2…`):
+```
+python3 pacotes/gera_pacotes.py --rockbox "/Users/zeroproj/Sistemas LWP/OpenPod/_local/fontes/rockbox-yp3-822b9f5e99-261122.tar.xz" \
+  --tema assets/openpod/OpenPod128.zip --versao "5.3.822b9f5e99" --enxuto --tema-storepod tema-openpod 1.2 \
+  --saida "/Users/zeroproj/Sistemas LWP/OpenPod/_local/publicar/pacotes" --indice <indice-temporario.json>
+```
+e depois funda o índice temporário no `_local/publicar/pacotes/index.json` (conferindo o sha de cada pacote).
+Regra da versão (D46): mudou só a customização → sobe o 2º número (pelo cartão); mudou o firmware ou a compilação → sobe o 1º (Recovery).
 
 **OpenPod System (nova versão):**
 1. `python3 tools/build.py --receita <receita> --saida firmware/WORKING/x.bin`. A 3.5 usa a receita `reload_3.5b`.
@@ -86,7 +107,7 @@ O decisor testou o Tune no **macOS (com a senha), no Windows e no Linux**: funci
   `git archive HEAD | ssh lab-linux-ts 'rm -rf ~/openpod-tune-build && mkdir -p ~/openpod-tune-build && tar -x -C ~/openpod-tune-build && cd ~/openpod-tune-build/instalador && sh empacota-linux.sh'`,
   depois `scp lab-linux-ts:openpod-tune-build/instalador/dist/openpod-tune-linux-x86_64.tar.gz instalador/dist/`.
 - Copie os três para `OpenPod/_local/publicar/instalador/`.
-- **Pela GPL**, atualize o `zeroproj/openpod-installer` com uma cópia limpa: `git archive HEAD`, tire `docs/openpod` e `.tmp`, renomeie o
+- **Pela GPL**, atualize o `zeroproj/openpod-installer` com uma cópia limpa: `git archive HEAD`, tire `docs/openpod`, `.opencode` e `.tmp`, renomeie o
   README do rockslop para `README-rockslop.md`, mantenha o README do Tune e rode `gitleaks`.
 
 **Publicar (só com o "pode"):**
@@ -98,6 +119,7 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
 - O site é o `docs/index.html` (bilíngue PT/EN, abas, imagens embutidas). O `REFERENCIAS.md` público é o `docs/REFERENCIAS_PUBLICO.md`.
 
 ## 6. O processo das fichas
+> O passo a passo atualizado, com os agentes do opencode, está em **`docs/COORDENACAO-AGENTES.md`** (ele vale mais que esta seção).
 1. A coordenação escreve a ficha (OpenPod: `docs/tarefas/NNN-*.md`; Tune: `OpenPod-instalador/docs/openpod/NNN-*.md`). Ela tem o
    objetivo, o que provar, as regras e o sinal `PRONTO-NNN` / `ESCALADA-NNN`.
 2. Despache num **terminal do Orca**:
@@ -138,6 +160,7 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
   Os plugins são compilados por aparelho, então só os da build YP3 servem. O JPEG progressivo nunca funciona.
 
 ## 8. Pendências (por ordem)
+00. **Publicar o RockBox 5.3** quando o decisor disser "pode" (ver o quadro do §4).
 0. **Ficha 032, o Tune como plataforma** (`OpenPod-instalador/docs/openpod/032-tune-plataforma.md`): a especificação do decisor de 26/11, já conferida contra o código e dividida nas fases A–E. Antes de começar, **pegue as decisões pendentes (a)–(d) da §2 com o decisor**.
 1. **StorePod:**
    - ampliar o `requer` para a versão do RockBox (`rockbox >= 1.2`), antes de pôr jogos e apps;
