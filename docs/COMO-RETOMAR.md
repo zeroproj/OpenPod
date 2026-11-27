@@ -188,7 +188,16 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
         `sdcard.rs` só acha o volume do RockBox), então o `.openpod/` fica para a Fase B.
       - **O `flash_sha256` que vai no MANIFEST (034) tem que ser o sha256 dos bytes do segmento em `0xE000`** — o
         mesmo que o `registro.rs` calcula. Se a 034 usar outra definição, a comparação da D46 quebra.
-    - **034 (o manifesto v2) — a seguir.** **035 (o aviso de Tune novo) — depois.**
+    - **034 (o manifesto v2 + a regra da D46) — PRONTA e APROVADA** (`034-revisao2.md`, APROVADO COM
+      RESSALVAS, e a ressalva BAIXA foi corrigida). 110 testes; os três sistemas compilam.
+      - **O ponto que mata o projeto se estiver errado, e foi conferido:** o `flash_sha256` do MANIFEST é
+        **calculado** pelo gerador, e o gerador **recusa** um valor manual divergente (provado com o
+        gerador de verdade: divergente → recusa, correto → aceita, sem opção → calculado). Sem isso, o
+        pacote seria assinado com o sha errado e **todo mundo cairia no Recovery**.
+    - **035 (o aviso de Tune novo) — FICHA ESCRITA**, aguardando a decisão do número público da versão
+      (`docs/openpod/035-aviso-de-tune-novo.md`): **0.4** (o que o site anuncia) ou **0.1.0** (o que o
+      `Cargo.toml` tem). A coordenação sugere **0.4.0**, com o `Cargo.toml` como fonte única — o
+      `Info.plist` do macOS hoje tem a versão **escrita à mão** e não acompanha o `Cargo.toml`.
     - **Compatibilidade com o Tune 0.4 já instalado: CONFIRMADO.** O parser do MANIFEST é genérico
       (`chave=valor`), então chave desconhecida não é erro; o `index.json` é lido com `serde_json::Value`. O
       **único** jeito de quebrar o 0.4 é **subir o `formato`** → a 034 tem que manter `formato=1`.
