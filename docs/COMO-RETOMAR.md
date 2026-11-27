@@ -209,6 +209,38 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
         home explicando **os três tipos** (System, RockBox, Tune), os **recursos divididos por linha**, e
         os **métodos manuais antigos** numa página *legacy* escondida do menu. **O site no ar não foi
         trocado** — isso é publicação.
+    - **036, 037 e 038 — PRONTAS e aprovadas.** Três correções que vieram do teste no aparelho:
+      - **036 (os passos do modo de recuperação)**: a tela mostrava 3 passos do **modo normal** e
+        **nunca mencionava o RESET** — que é justamente o botão que falta em muitos players. Agora
+        são 4 passos com o RESET e o VOL para baixo (`036-revisao.md`, APROVADO COM RESSALVAS).
+      - **037 (as duas formas de entrar no modo)**: a tela passa a ter as **duas opções** — **com o
+        RESET** e **sem o RESET** (desligar, segurar o volume, ligar o cabo) — e **destaca** a que
+        serve para o que o Tune viu. 128 testes.
+      - **038 (o idioma do RockBox)**: **bug real** — duas constantes `PASTA_LANG` com o mesmo nome e
+        valores diferentes (uma com o prefixo `card/`, outra sem), e a comparação **nunca** batia, então
+        o idioma escolhido era **sempre descartado** e o `config.cfg` recebia o padrão do instalador.
+        O cartão do decisor estava com `italiano`. **Corrigido** e com testes que pegam o bug.
+        O StorePod **não** é afetado. 135 testes.
+    - **039 (a tela Device) — PRONTA.** A **Fase B** da 032: os **dois níveis** (normal e ROM), cada
+      dado dizendo **de onde veio**, o **estado** e o **caminho**, e o changelog do pacote. O que não
+      foi lido aparece como **"desconhecido"** — nunca inventado.
+      - **A regra da D46 continua com uma fonte só:** a `caminho::decidir` (034).
+      - **O revisor achou um ALTA** (a tela se contradizia: "mesma flash, pelo cartão" e, embaixo,
+        "a flash é outra, então Recovery") — corrigido com o estado novo `RecoveryNecessario`.
+      - **A conferência pegou o que o revisor não pega:** o **build do Linux** estava quebrado
+        (`sdcard.rs` usava `dev.join()` numa `String`, código **só de Linux** — macOS e Windows
+        compilavam). Corrigido; **os três alvos verdes**. 146 testes.
+    - **040 (a versão do Tune à vista, a Device como coluna à direita, botões no lugar de links) —
+      FICHA ESCRITA, aguardando a cota do OpenCode voltar** (D57). Veio do teste do decisor no Linux.
+    - **O site agora é de documentação** (`tools/gera_site_docs.py` → `docs/index.html`): **sidebar
+      fixa** com grupos, **campo de busca**, e **uma página por assunto** (11: Início, Instalar, Os
+      sistemas, Recursos, O Tune, A loja, Compatibilidade, Recovery, Histórico, Sobre, Método
+      antigo), em PT e EN. A home tem o botão grande, a grade dos sistemas, a tabela de estado e as
+      novidades com data — como o rockslop. **Está no ar** (D56).
+    - **PUBLICADO (27/11/2026, D56):** os **três OpenPod Tune 0.5.0**, o **`tune/index.json`
+      assinado** (versão 0.5.0) e o **site novo**. Conferido online: os três Tune com **HTTP 200** e sha
+      **igual** ao do índice; o índice com a assinatura **válida**; o site com os **três botões**
+      (macOS, Windows e Linux) na home.
     - **Compatibilidade com o Tune 0.4 já instalado: CONFIRMADO.** O parser do MANIFEST é genérico
       (`chave=valor`), então chave desconhecida não é erro; o `index.json` é lido com `serde_json::Value`. O
       **único** jeito de quebrar o 0.4 é **subir o `formato`** → a 034 tem que manter `formato=1`.
