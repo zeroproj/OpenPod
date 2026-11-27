@@ -193,6 +193,9 @@ th{text-align:left;border-top:1px solid var(--line);padding:9px 6px;font-size:13
 .topo{float:right;font-size:12px}
 </style>
 <script>
+// o idioma guardado (ou o do sistema). Aplica SO o rotulo dos <html>, para o
+// CSS ja esconder a lingua errada; o texto dos rotulos trocados e' preenchido
+// no DOMContentLoaded, quando o DOM ja existe.
 (function(){
   var l = null;
   try { l = localStorage.getItem("openpod-lang"); } catch (e) {}
@@ -269,14 +272,15 @@ function buscar(q){
 window.addEventListener("hashchange", function(){ marcarPagina(paginaAtual()); });
 document.addEventListener("DOMContentLoaded", function(){
   montarIndice();
-  marcarPagina(paginaAtual());
+  // preenche os rotulos trocados (sidebar, rodape) e marca a pagina certa
+  aplicarIdioma(document.documentElement.getAttribute("data-lang"));
 });
 </script>
 </head>
 <body>
 <nav class="lateral" aria-label="Menu">
   <a class="marca" href="#inicio">OpenPod</a>
-  <span class="submarca" data-pt="Firmware novo para players de música" data-en="New firmware for music players"></span>
+  <span class="submarca idioma-rot" data-pt="Firmware novo para players de música" data-en="New firmware for music players"></span>
 
   <div class="busca">
     <input type="search" id="campo-busca" placeholder="Buscar" aria-label="Buscar"
@@ -289,7 +293,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <button type="button" data-l="en" onclick="aplicarIdioma('en')">EN</button>
   </div>
 
-  <h4 data-pt="Navegar" data-en="Browse"></h4>
+  <h4 class="idioma-rot" data-pt="Navegar" data-en="Browse"></h4>
   <ul>
     <li><a href="#inicio" data-p="inicio"><span class="idioma-rot" data-pt="Início" data-en="Home"></span></a></li>
     <li><a href="#instalar" data-p="instalar"><span class="idioma-rot" data-pt="Instalar" data-en="Install"></span></a></li>
@@ -297,19 +301,19 @@ document.addEventListener("DOMContentLoaded", function(){
     <li><a href="#recursos" data-p="recursos"><span class="idioma-rot" data-pt="Recursos" data-en="Features"></span></a></li>
   </ul>
 
-  <h4 data-pt="Aparelhos" data-en="Players"></h4>
+  <h4 class="idioma-rot" data-pt="Aparelhos" data-en="Players"></h4>
   <ul>
     <li><a href="#compat" data-p="compat"><span class="idioma-rot" data-pt="Compatibilidade" data-en="Compatibility"></span></a></li>
     <li><a href="#recuperar" data-p="recuperar"><span class="idioma-rot" data-pt="Recovery" data-en="Recovery"></span></a></li>
   </ul>
 
-  <h4 data-pt="O Tune" data-en="The Tune"></h4>
+  <h4 class="idioma-rot" data-pt="O Tune" data-en="The Tune"></h4>
   <ul>
     <li><a href="#tune" data-p="tune"><span class="idioma-rot" data-pt="O que ele faz" data-en="What it does"></span></a></li>
     <li><a href="#loja" data-p="loja"><span class="idioma-rot" data-pt="A loja (StorePod)" data-en="The store (StorePod)"></span></a></li>
   </ul>
 
-  <h4 data-pt="Mais" data-en="More"></h4>
+  <h4 class="idioma-rot" data-pt="Mais" data-en="More"></h4>
   <ul>
     <li><a href="#historico" data-p="historico"><span class="idioma-rot" data-pt="Histórico" data-en="History"></span></a></li>
     <li><a href="#sobre" data-p="sobre"><span class="idioma-rot" data-pt="Sobre" data-en="About"></span></a></li>
@@ -820,8 +824,8 @@ e <strong>OpenPod Tune</strong> têm as suas próprias melhorias, e as versões 
 </ol></div>
 <div class="aviso"><strong>Outro modelo?</strong> Os dois arquivos são do <strong>GN-438</strong>. Em qualquer outro aparelho, restaure o <strong>seu próprio backup</strong>.</div></section>
 <div class="rodape">
-<a class="topo" href="#inicio">Voltar ao topo ↑</a>
-<p><span class="idioma-rot" data-pt="OpenPod é um projeto independente, sem ligação com a Smartlink, a Shenju ou o fabricante do aparelho. Jogos e kit de apps baseados no" data-en="OpenPod is an independent project, with no connection to Smartlink, Shenju or the player's manufacturer. Games and app kit based on"></span> <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a>, de Dmitry Brant (MIT). <a href="#sobre">Créditos</a>. Use por sua conta e risco.</p>
+<p><a class="topo" href="#inicio"><span class="idioma-rot" data-pt="Voltar ao topo" data-en="Back to top"></span> ↑</a></p>
+<p><span class="idioma-rot" data-pt="OpenPod é um projeto independente, sem ligação com a Smartlink, a Shenju ou o fabricante do aparelho. Jogos e kit de apps baseados no" data-en="OpenPod is an independent project, with no connection to Smartlink, Shenju or the player's manufacturer. Games and app kit based on"></span> <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a>, <span class="idioma-rot" data-pt="de Dmitry Brant (MIT). " data-en="by Dmitry Brant (MIT). "></span><a href="#sobre"><span class="idioma-rot" data-pt="Créditos" data-en="Credits"></span></a>. <span class="idioma-rot" data-pt="Use por sua conta e risco." data-en="Use at your own risk."></span></p>
 </div>
 </div>
 <div lang="en">
@@ -1324,10 +1328,7 @@ and <strong>OpenPod Tune</strong> have their own improvements, and their version
   <li>After that, the player <strong>no longer has</strong> <code>Update via SD</code>: back to OpenPod only through the computer.</li>
 </ol></div>
 <div class="aviso"><strong>Another model?</strong> Both files are for the <strong>GN-438</strong>. On any other player, restore <strong>your own backup</strong>.</div></section>
-<div class="rodape">
-<a class="topo" href="#inicio">Back to top ↑</a>
-<p>OpenPod is an independent project, with no connection to Smartlink, Shenju or the player's manufacturer. Games and app kit based on <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a>, by Dmitry Brant (MIT). <a href="#sobre">Credits</a>. Use at your own risk.</p>
-</div>
+
 </div>
 </main>
 </body>

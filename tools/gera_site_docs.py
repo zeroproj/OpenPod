@@ -152,7 +152,8 @@ function buscar(q){
 window.addEventListener("hashchange", function(){ marcarPagina(paginaAtual()); });
 document.addEventListener("DOMContentLoaded", function(){
   montarIndice();
-  marcarPagina(paginaAtual());
+  // preenche os rotulos trocados (sidebar, rodape) e marca a pagina certa
+  aplicarIdioma(document.documentElement.getAttribute("data-lang"));
 });
 """
 
@@ -160,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function(){
 def menu() -> str:
     return """<nav class="lateral" aria-label="Menu">
   <a class="marca" href="#inicio">OpenPod</a>
-  <span class="submarca" data-pt="Firmware novo para players de música" data-en="New firmware for music players"></span>
+  <span class="submarca idioma-rot" data-pt="Firmware novo para players de música" data-en="New firmware for music players"></span>
 
   <div class="busca">
     <input type="search" id="campo-busca" placeholder="Buscar" aria-label="Buscar"
@@ -173,7 +174,7 @@ def menu() -> str:
     <button type="button" data-l="en" onclick="aplicarIdioma('en')">EN</button>
   </div>
 
-  <h4 data-pt="Navegar" data-en="Browse"></h4>
+  <h4 class="idioma-rot" data-pt="Navegar" data-en="Browse"></h4>
   <ul>
     <li><a href="#inicio" data-p="inicio"><span class="idioma-rot" data-pt="Início" data-en="Home"></span></a></li>
     <li><a href="#instalar" data-p="instalar"><span class="idioma-rot" data-pt="Instalar" data-en="Install"></span></a></li>
@@ -181,19 +182,19 @@ def menu() -> str:
     <li><a href="#recursos" data-p="recursos"><span class="idioma-rot" data-pt="Recursos" data-en="Features"></span></a></li>
   </ul>
 
-  <h4 data-pt="Aparelhos" data-en="Players"></h4>
+  <h4 class="idioma-rot" data-pt="Aparelhos" data-en="Players"></h4>
   <ul>
     <li><a href="#compat" data-p="compat"><span class="idioma-rot" data-pt="Compatibilidade" data-en="Compatibility"></span></a></li>
     <li><a href="#recuperar" data-p="recuperar"><span class="idioma-rot" data-pt="Recovery" data-en="Recovery"></span></a></li>
   </ul>
 
-  <h4 data-pt="O Tune" data-en="The Tune"></h4>
+  <h4 class="idioma-rot" data-pt="O Tune" data-en="The Tune"></h4>
   <ul>
     <li><a href="#tune" data-p="tune"><span class="idioma-rot" data-pt="O que ele faz" data-en="What it does"></span></a></li>
     <li><a href="#loja" data-p="loja"><span class="idioma-rot" data-pt="A loja (StorePod)" data-en="The store (StorePod)"></span></a></li>
   </ul>
 
-  <h4 data-pt="Mais" data-en="More"></h4>
+  <h4 class="idioma-rot" data-pt="Mais" data-en="More"></h4>
   <ul>
     <li><a href="#historico" data-p="historico"><span class="idioma-rot" data-pt="Histórico" data-en="History"></span></a></li>
     <li><a href="#sobre" data-p="sobre"><span class="idioma-rot" data-pt="Sobre" data-en="About"></span></a></li>
@@ -568,6 +569,9 @@ def main() -> int:
     # o CSS: o do gera_site + o do layout de documentacao
     css = g.CSS.replace(":root{\n  --bg:#f6f5f2;", ":root{\n  --bg:#f6f5f2; --side:288px;") + CSS_EXTRA
     js = """
+// o idioma guardado (ou o do sistema). Aplica SO o rotulo dos <html>, para o
+// CSS ja esconder a lingua errada; o texto dos rotulos trocados e' preenchido
+// no DOMContentLoaded, quando o DOM ja existe.
 (function(){
   var l = null;
   try { l = localStorage.getItem("openpod-lang"); } catch (e) {}
@@ -587,13 +591,10 @@ def main() -> int:
         en_paginas.append(f'<section class="pagina" id="p-en-{pid}">{en}</section>')
 
     rodape = """<div class="rodape">
-<a class="topo" href="#inicio">Voltar ao topo ↑</a>
-<p><span class="idioma-rot" data-pt="OpenPod é um projeto independente, sem ligação com a Smartlink, a Shenju ou o fabricante do aparelho. Jogos e kit de apps baseados no" data-en="OpenPod is an independent project, with no connection to Smartlink, Shenju or the player's manufacturer. Games and app kit based on"></span> <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a>, de Dmitry Brant (MIT). <a href="#sobre">Créditos</a>. Use por sua conta e risco.</p>
+<p><a class="topo" href="#inicio"><span class="idioma-rot" data-pt="Voltar ao topo" data-en="Back to top"></span> ↑</a></p>
+<p><span class="idioma-rot" data-pt="OpenPod é um projeto independente, sem ligação com a Smartlink, a Shenju ou o fabricante do aparelho. Jogos e kit de apps baseados no" data-en="OpenPod is an independent project, with no connection to Smartlink, Shenju or the player's manufacturer. Games and app kit based on"></span> <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a>, <span class="idioma-rot" data-pt="de Dmitry Brant (MIT). " data-en="by Dmitry Brant (MIT). "></span><a href="#sobre"><span class="idioma-rot" data-pt="Créditos" data-en="Credits"></span></a>. <span class="idioma-rot" data-pt="Use por sua conta e risco." data-en="Use at your own risk."></span></p>
 </div>"""
-    rodape_en = """<div class="rodape">
-<a class="topo" href="#inicio">Back to top ↑</a>
-<p>OpenPod is an independent project, with no connection to Smartlink, Shenju or the player's manufacturer. Games and app kit based on <a href="https://github.com/dbrant/SL6801_player">SL6801_player</a>, by Dmitry Brant (MIT). <a href="#sobre">Credits</a>. Use at your own risk.</p>
-</div>"""
+    rodape_en = ""
 
     saida = f"""<!doctype html>
 <html lang="pt-BR" data-lang="pt">
