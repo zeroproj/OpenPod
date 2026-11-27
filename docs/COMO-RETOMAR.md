@@ -194,10 +194,21 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
         **calculado** pelo gerador, e o gerador **recusa** um valor manual divergente (provado com o
         gerador de verdade: divergente → recusa, correto → aceita, sem opção → calculado). Sem isso, o
         pacote seria assinado com o sha errado e **todo mundo cairia no Recovery**.
-    - **035 (o aviso de Tune novo) — FICHA ESCRITA**, aguardando a decisão do número público da versão
-      (`docs/openpod/035-aviso-de-tune-novo.md`): **0.4** (o que o site anuncia) ou **0.1.0** (o que o
-      `Cargo.toml` tem). A coordenação sugere **0.4.0**, com o `Cargo.toml` como fonte única — o
-      `Info.plist` do macOS hoje tem a versão **escrita à mão** e não acompanha o `Cargo.toml`.
+    - **035 (o aviso de Tune novo) — PRONTA e APROVADA COM RESSALVAS** (`035-revisao.md`, nenhum
+      CRÍTICO nem ALTO). 117 testes. O `tune/index.json` **assinado** no site; o Tune confere a
+      assinatura, compara com a versão local e **avisa** (sem baixar nem instalar).
+      - **O número público do Tune é `0.4.0`**, com o `Cargo.toml` como **fonte única** (o
+        `Info.plist` do macOS tinha a versão escrita à mão; agora vem do `versao.sh`, que falha alto).
+    - **A FASE A DA 032 ESTÁ COMPLETA** (D53). São 21 commits, do `32d0c85` ao `a81203c`.
+      - **Um ponto de vida:** se o `flash_sha256` do MANIFEST divergir do que o Tune calcula, **todo
+        mundo cai no Recovery**. Por isso o gerador **recusa** um `--flash-sha256` manual que não bate
+        (o revisor achou o buraco; a coordenação provou que ele fechava, com o gerador de verdade).
+      - **O `publica_release.py` agora publica o `tune/index.json`** (opção `--tune`) — sem isso o
+        aviso nunca chegaria ao cliente.
+      - **O site foi reformulado** (`tools/gera_site.py` → `docs/index_novo.html`): o Tune no centro, a
+        home explicando **os três tipos** (System, RockBox, Tune), os **recursos divididos por linha**, e
+        os **métodos manuais antigos** numa página *legacy* escondida do menu. **O site no ar não foi
+        trocado** — isso é publicação.
     - **Compatibilidade com o Tune 0.4 já instalado: CONFIRMADO.** O parser do MANIFEST é genérico
       (`chave=valor`), então chave desconhecida não é erro; o `index.json` é lido com `serde_json::Value`. O
       **único** jeito de quebrar o 0.4 é **subir o `formato`** → a 034 tem que manter `formato=1`.
