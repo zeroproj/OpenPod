@@ -211,7 +211,8 @@ def home_nova(img) -> tuple:
 <p class="sub"><small>Testado no <strong>Ligenai GN-438</strong> e no <strong>GN-408</strong>.</small></p>
 <div class="botoes">
   <a class="btn grande" href="https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-macos.dmg">Baixar o OpenPod Tune para macOS</a>
-  <a class="btn sec" href="#instalar">Baixar para Windows ou Linux</a>
+  <a class="btn" href="https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-windows.exe">Baixar para Windows (.exe)</a>
+  <a class="btn" href="https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-linux-x86_64.tar.gz">Baixar para Linux (.tar.gz)</a>
 </div>
 <p class="sub"><small><span class="linha sys">System 5.3</span> <span class="linha rb">RockBox 5.3</span> <span class="linha prog">Tune 0.4.0</span> · 27/11/2026</small></p>
 
@@ -273,7 +274,8 @@ def home_nova(img) -> tuple:
 <p class="sub"><small>Tested on the <strong>Ligenai GN-438</strong> and the <strong>GN-408</strong>.</small></p>
 <div class="botoes">
   <a class="btn grande" href="https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-macos.dmg">Get OpenPod Tune for macOS</a>
-  <a class="btn sec" href="#instalar">Get it for Windows or Linux</a>
+  <a class="btn" href="https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-windows.exe">Get it for Windows (.exe)</a>
+  <a class="btn" href="https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-linux-x86_64.tar.gz">Get it for Linux (.tar.gz)</a>
 </div>
 <p class="sub"><small><span class="linha sys">System 5.3</span> <span class="linha rb">RockBox 5.3</span> <span class="linha prog">Tune 0.4.0</span> · 2026-11-27</small></p>
 
