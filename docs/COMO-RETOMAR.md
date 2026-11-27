@@ -177,6 +177,21 @@ cd "/Users/zeroproj/Sistemas LWP/OpenPod" && python3 tools/publica_release.py --
       voltar para 4.0?
     - **O decisor testa no aparelho antes. Publicar só com o "pode" dele.**
 0. **Ficha 032, o Tune como plataforma** (`OpenPod-instalador/docs/openpod/032-tune-plataforma.md`): a especificação do decisor de 26/11, já conferida contra o código e dividida nas fases A–E. As decisões (a)–(d) da §2 **já estão decididas** (D45–D49). Começar pela **Fase A** (registros e manifestos).
+    - **033 (os registros no cartão) — PRONTA e APROVADA.** `OpenPod-instalador/docs/openpod/033-registros-no-cartao.md`.
+      - O registro do cartão: `.openpod/version.json` (System) e `.rockbox/openpod/version.json` (RockBox), com
+        `sistema`, `versao`, `flash_sha256`, `estado` (`pendente`\|`instalado`), `anterior`, `data`.
+      - **A ordem crítica virou barreira de tipo:** `conferir_flash` devolve a prova `FlashConferida`, e o passo do
+        cartão **exige** a prova — não dá para gravar o registro sem a conferência da ROM.
+      - 96 testes verdes; builds do macOS, do Windows e do Linux verdes; revisão **APROVADO** (`033-revisao2.md`).
+      - **Pendências do decisor:** (a) o `flash_sha256` do System — recomendo o sha do payload do `.up` a partir de
+        `0xE000` (mesmo conceito do segmento do RockBox); (b) o cartão do System **não** é acessível hoje (o
+        `sdcard.rs` só acha o volume do RockBox), então o `.openpod/` fica para a Fase B.
+      - **O `flash_sha256` que vai no MANIFEST (034) tem que ser o sha256 dos bytes do segmento em `0xE000`** — o
+        mesmo que o `registro.rs` calcula. Se a 034 usar outra definição, a comparação da D46 quebra.
+    - **034 (o manifesto v2) — a seguir.** **035 (o aviso de Tune novo) — depois.**
+    - **Compatibilidade com o Tune 0.4 já instalado: CONFIRMADO.** O parser do MANIFEST é genérico
+      (`chave=valor`), então chave desconhecida não é erro; o `index.json` é lido com `serde_json::Value`. O
+      **único** jeito de quebrar o 0.4 é **subir o `formato`** → a 034 tem que manter `formato=1`.
 1. **StorePod:**
    - ampliar o `requer` para a versão do RockBox (`rockbox >= 1.2`), antes de pôr jogos e apps;
    - depois, os jogos e apps que **o decisor testar** no aparelho entram no catálogo um por um.
