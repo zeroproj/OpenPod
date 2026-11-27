@@ -131,6 +131,7 @@ html[data-pag="legacy"] .menu{display:none}
 .linha-bloco .cabeca .linha{margin:0;font-size:12px;font-weight:700}
 .linha-bloco .intro{color:var(--soft);font-size:15px;margin:0 0 14px;max-width:720px}
 .linha-bloco .grade{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.sub-h{font-size:14px;font-weight:700;margin:16px 0 6px;color:var(--soft)}
 .sistemas{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .sistemas figure{margin:0}
 .sistemas img.tela{max-width:190px}
@@ -671,13 +672,23 @@ def painel_legacy():
 <p>Clique em <code>Select .up file</code> (canto superior direito) e escolha o <code>update.up</code> que você baixou. Confira se o caminho mostrado termina em <code>update.up</code>.</p></div>
 
 <div class="card"><h4>5. Coloque o aparelho no modo de gravação</h4>
-<p>Conecte o player ao computador pelo cabo USB.</p>
+<p>Conecte o player ao computador pelo cabo USB. Há <strong>dois jeitos</strong>:</p>
+
+<h4 class="sub-h">Com o botão RESET</h4>
 <ol type="a">
   <li>Com um <strong>clipe de papel desdobrado</strong> (ou outro objeto fino e adequado), pressione suavemente o botão <strong>RESET</strong>, no pequeno orifício na lateral do aparelho.</li>
   <li>Pressione e mantenha pressionado o botão <strong>VOL para baixo</strong> (diminuir volume).</li>
   <li>Enquanto mantém o volume pressionado, retire o clipe do botão RESET.</li>
   <li><strong>Continue segurando o volume para baixo por uns 3 segundos.</strong></li>
 </ol>
+
+<h4 class="sub-h">Se o seu player não tem o botão RESET</h4>
+<ol type="a">
+  <li><strong>Desligue</strong> o player.</li>
+  <li><strong>Segure</strong> o botão <strong>VOL para baixo</strong> (diminuir volume).</li>
+  <li><strong>Ligue o cabo USB</strong>, sem soltar o volume.</li>
+</ol>
+
 <p>A tela do aparelho fica <strong>preta</strong> e o computador reconhece o aparelho em modo de gravação.</p>
 <p>A tela do aparelho fica <strong>apagada</strong> — é assim mesmo. Se o Windows perguntar se quer <strong>formatar</strong>, responda <strong>não</strong> e feche a janela.</p>
 <p><strong>O botão <code>Burn</code> não ficou clicável?</strong> Tente nesta ordem (dica de um usuário do GN-408):</p>
@@ -743,13 +754,23 @@ def painel_legacy():
 <p>Click <code>Select .up file</code> (top right) and choose the <code>update.up</code> you downloaded. Check that the path shown ends with <code>update.up</code>.</p></div>
 
 <div class="card"><h4>5. Put the player in write mode</h4>
-<p>Connect the player to the computer with the USB cable.</p>
+<p>Connect the player to the computer with the USB cable. There are <strong>two ways</strong>:</p>
+
+<h4 class="sub-h">With the RESET button</h4>
 <ol type="a">
   <li>With an <strong>unfolded paper clip</strong> (or another thin, suitable object), press the <strong>RESET</strong> button gently, in the small hole on the side of the player.</li>
   <li>Press and hold the <strong>VOL down</strong> button (volume down).</li>
   <li>While holding the volume down, pull the clip out of the RESET button.</li>
   <li><strong>Keep holding volume down for about 3 seconds.</strong></li>
 </ol>
+
+<h4 class="sub-h">If your player has no RESET button</h4>
+<ol type="a">
+  <li><strong>Turn the player off.</strong></li>
+  <li><strong>Hold</strong> the <strong>VOL down</strong> button (volume down).</li>
+  <li><strong>Plug in the USB cable</strong>, without letting go of the volume.</li>
+</ol>
+
 <p>The player's screen stays <strong>black</strong> and the computer recognises the player in write mode.</p>
 <p>The player's screen stays <strong>blank</strong> — that is normal. If Windows asks whether it wants to <strong>format</strong>, answer <strong>no</strong> and close the window.</p>
 <p><strong>The <code>Burn</code> button is not clickable?</strong> Try in this order (a tip from a GN-408 user):</p>
