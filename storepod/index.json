@@ -1,0 +1,24 @@
+{
+  "formato": 1,
+  "itens": [
+    {
+      "id": "tema-openpod",
+      "tipo": "tema",
+      "nome": {
+        "pt": "Tema OpenPod",
+        "en": "OpenPod theme"
+      },
+      "descricao": {
+        "pt": "O visual do OpenPod RockBox: nossos ícones, a barra, o cartão do player e o volume na tela. Já vem instalado; aqui chegam as atualizações.",
+        "en": "The OpenPod RockBox look: our icons, the top bar, the player card and the volume on screen. It comes preinstalled; updates arrive here."
+      },
+      "versao": "1.2",
+      "tamanho": 22002,
+      "url": "https://zeroproj.github.io/OpenPod/storepod/tema-openpod-1.2.tar.gz",
+      "sha256": "1fdf9a65c3d2fadb21db1e9bc24fee9c4164a5592ed3239a458169a00c60ee06",
+      "requer": "rockbox",
+      "sistema": true,
+      "print": "https://zeroproj.github.io/OpenPod/storepod/tema-openpod.png"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "assinatura": "1658fed12fc0a312e13934055928056c44bf16998d36c4ed2b9c60a36766a4952f1900b4b5b4be1ed98f2ce809cc2fb11d6ee47f45bfd641c8e83d4190f2970c",
+  "changelog": {
+    "en": "The Device becomes a column on the right, always visible, and shows the button for what to do: update through the card or through Recovery. The Tune version shows at the top of the window. The links became buttons. Fixed the chosen RockBox language and the Linux build.",
+    "pt": "A Device vira uma coluna à direita, sempre visível, e mostra o botão do que fazer: atualizar pelo cartão ou pelo Recovery. A versão do Tune aparece no alto da janela. Os links viraram botões. Corrigido o idioma escolhido no RockBox e o build do Linux."
+  },
+  "data": "28/11/2026",
+  "formato": 1,
+  "sistemas": {
+    "linux": {
+      "sha256": "54bc01e014499a48d0bb3a9cf1a80e022064eb047f00c6ea3a859404398f238e",
+      "url": "https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-linux-x86_64.tar.gz"
+    },
+    "macos": {
+      "sha256": "c28bbc3330273079eedd03a4775357470162d2dd069f566b17eafa3689750fb1",
+      "url": "https://zeroproj.github.io/OpenPod/instalador/openpod-tune-macos.dmg"
+    },
+    "windows": {
+      "sha256": "c727d32e855e8032ffd7bf92b33edd22f87267e0888214fd435318a471e94814",
+      "url": "https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-windows.exe"
+    }
+  },
+  "versao": "0.6.0"
+}

@@ -1,0 +1,14 @@
+{
+  "system": {
+    "versao": "5.3",
+    "data": "26/11/2026",
+    "url": "https://zeroproj.github.io/OpenPod/pacotes/openpod-system-5.3.tar.gz",
+    "sha256": "612d015bb98b3c01848dea550cf3dbf5de79ec616d4228ec4522a085cbf8c39a"
+  },
+  "rockbox": {
+    "versao": "5.3.822b9f5e99",
+    "data": "26/11/2026",
+    "url": "https://zeroproj.github.io/OpenPod/pacotes/openpod-rockbox-5.3.822b9f5e99.tar.gz",
+    "sha256": "dac4f8c6162d256953ca851c4134b7ad1e0d885ef61b0fbda224e674cf5c0f3a"
+  }
+}
