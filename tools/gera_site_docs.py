@@ -214,7 +214,7 @@ def home_nova(img) -> tuple:
   <a class="btn" href="https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-windows.exe">Baixar para Windows (.exe)</a>
   <a class="btn" href="https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-linux-x86_64.tar.gz">Baixar para Linux (.tar.gz)</a>
 </div>
-<p class="sub"><small><span class="linha sys">System 5.3</span> <span class="linha rb">RockBox 5.3</span> <span class="linha prog">Tune 0.4.0</span> · 27/11/2026</small></p>
+<p class="sub"><small><span class="linha sys">System 5.3</span> <span class="linha rb">RockBox 5.3</span> <span class="linha prog">Tune 0.5.0</span> · 27/11/2026</small></p>
 
 <h2>Dois sistemas, você escolhe</h2>
 <div class="jogadores">
@@ -237,7 +237,7 @@ def home_nova(img) -> tuple:
   <tbody>
     <tr><td>OpenPod System</td><td><span class="etiqueta ok">5.3</span></td><td>Quem quer o player completo — rádio, gravador, vídeo, Bluetooth — com a cara nova em cima</td></tr>
     <tr><td>OpenPod RockBox</td><td><span class="etiqueta ok">5.3.822b9f5e99</span></td><td>Quem quer música e só, com mais formatos de áudio e uma loja de apps</td></tr>
-    <tr><td>OpenPod Tune</td><td><span class="etiqueta novo">0.4.0</span></td><td>O programa que instala, atualiza e guarda as cópias de segurança</td></tr>
+    <tr><td>OpenPod Tune</td><td><span class="etiqueta novo">0.5.0</span></td><td>O programa que instala, atualiza e guarda as cópias de segurança</td></tr>
   </tbody>
 </table>
 
@@ -263,7 +263,7 @@ def home_nova(img) -> tuple:
 
 <h2>Últimas novidades</h2>
 <ul class="anuncios">
-  <li><span class="quando">27/11/2026</span> <strong>OpenPod Tune 0.4.0</strong> — o cartão passa a guardar a versão instalada, o Tune escolhe sozinho entre cartão e Recovery, avisa de versão nova e respeita o idioma escolhido no RockBox. <a href="#tune">Ver</a></li>
+  <li><span class="quando">27/11/2026</span> <strong>OpenPod Tune 0.5.0</strong> — a <strong>tela Device</strong>: o que está instalado no cartão, de onde veio cada informação, e se a atualização vai pelo cartão ou precisa de Recovery. Também corrigido o idioma escolhido no RockBox. <a href="#tune">Ver</a></li>
   <li><span class="quando">26/11/2026</span> <strong>OpenPod RockBox 5.3</strong> — nova numeração e de volta os recursos do próprio sistema. <a href="#sistemas">Ver</a></li>
   <li><span class="quando">26/11/2026</span> <strong>OpenPod System 5.3</strong> — renumeração da 3.5, mesmas funções. <a href="#sistemas">Ver</a></li>
 </ul>
@@ -277,7 +277,7 @@ def home_nova(img) -> tuple:
   <a class="btn" href="https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-windows.exe">Get it for Windows (.exe)</a>
   <a class="btn" href="https://github.com/zeroproj/OpenPod/raw/main/instalador/openpod-tune-linux-x86_64.tar.gz">Get it for Linux (.tar.gz)</a>
 </div>
-<p class="sub"><small><span class="linha sys">System 5.3</span> <span class="linha rb">RockBox 5.3</span> <span class="linha prog">Tune 0.4.0</span> · 2026-11-27</small></p>
+<p class="sub"><small><span class="linha sys">System 5.3</span> <span class="linha rb">RockBox 5.3</span> <span class="linha prog">Tune 0.5.0</span> · 2026-11-27</small></p>
 
 <h2>Two systems, you choose</h2>
 <div class="jogadores">
@@ -300,7 +300,7 @@ def home_nova(img) -> tuple:
   <tbody>
     <tr><td>OpenPod System</td><td><span class="etiqueta ok">5.3</span></td><td>Those who want the complete player — radio, recorder, video, Bluetooth — with a new face on it</td></tr>
     <tr><td>OpenPod RockBox</td><td><span class="etiqueta ok">5.3.822b9f5e99</span></td><td>Those who want music and only that, with more audio formats and an app store</td></tr>
-    <tr><td>OpenPod Tune</td><td><span class="etiqueta novo">0.4.0</span></td><td>The program that installs, updates and keeps the backups</td></tr>
+    <tr><td>OpenPod Tune</td><td><span class="etiqueta novo">0.5.0</span></td><td>The program that installs, updates and keeps the backups</td></tr>
   </tbody>
 </table>
 
@@ -326,7 +326,7 @@ def home_nova(img) -> tuple:
 
 <h2>Latest announcements</h2>
 <ul class="anuncios">
-  <li><span class="quando">2026-11-27</span> <strong>OpenPod Tune 0.4.0</strong> — the card now keeps the installed version, Tune picks by itself between the card and Recovery, tells you about new versions and respects the language you pick for RockBox. <a href="#tune">See</a></li>
+  <li><span class="quando">2026-11-27</span> <strong>OpenPod Tune 0.5.0</strong> — the <strong>Device screen</strong>: what is installed on the card, where each piece of information came from, and whether the update goes through the card or needs Recovery. Also fixed the chosen RockBox language. <a href="#tune">See</a></li>
   <li><span class="quando">2026-11-26</span> <strong>OpenPod RockBox 5.3</strong> — new numbering and the system's own tools are back. <a href="#sistemas">See</a></li>
   <li><span class="quando">2026-11-26</span> <strong>OpenPod System 5.3</strong> — renumbering of 3.5, same features. <a href="#sistemas">See</a></li>
 </ul>
